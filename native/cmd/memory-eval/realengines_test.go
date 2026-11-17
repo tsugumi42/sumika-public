@@ -26,8 +26,8 @@ import (
 //
 //	SUMIKA_TEST_ORT            官方发布包里的 onnxruntime.dll（scripts/fetch-ort.ts 取回的 vendor/ort/1.24.4/onnxruntime.dll）的绝对路径
 //	SUMIKA_TEST_MODELS_ROOT    模型根目录
-//	SUMIKA_TEST_PYTHON         按 tools/local-models/requirements.txt 用 uv 建的独立环境里的 python.exe
-//	SUMIKA_TEST_SERVER         tools/local-models/server.py 的绝对路径
+//	SUMIKA_TEST_PYTHON         按已删的 tools/local-models/requirements.txt（ADR-389）用 uv 建的独立环境里的 python.exe
+//	SUMIKA_TEST_SERVER         tools/local-models/server.py 的绝对路径（这两个文件已删，要从 git 历史 76f0488faa6a 及以前取回）
 
 var realFacts = []string{
 	"阿青周四下午三点要去蓝纸诊所复查牙齿", "阿青把备用电池收在蓝柜最底层的抽屉里", "阿青养了一只叫团子的橘猫，最怕打雷", "阿青下个月十号要搬到河东路的新房子",

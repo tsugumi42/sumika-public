@@ -46,9 +46,9 @@ func main() {
 	flag.IntVar(&o.limit, "limit", 6, "本次前台最多跑多少个样本")
 	flag.Float64Var(&o.threshold, "threshold", .30, "丙的实测门槛；扫描固定为 0.30～0.90")
 	flag.StringVar(&o.python, "python", "", "-engine python：对拍参照环境的 python.exe（没有默认值，不写死本机路径）")
-	flag.StringVar(&o.server, "server", "../tools/local-models/server.py", "本地服务入口")
+	flag.StringVar(&o.server, "server", "", "-engine python：本地服务入口（没有默认值；Python 版已从仓库删掉，ADR-389）")
 	flag.BoolVar(&o.report, "report", false, "汇总已有三遍结果，不调用模型")
-	flag.StringVar(&o.engine, "engine", "python", "嵌入引擎：python（起 -python -server 的 server.py，原来的做法）或 go（起 sumika-models，要 -models-exe、-models-root）")
+	flag.StringVar(&o.engine, "engine", "go", "嵌入引擎：go（起 sumika-models，要 -models-exe、-models-root）或 python（起 -python -server 的 server.py；Python 版已从仓库删掉，要用先从历史取回，ADR-389）")
 	flag.StringVar(&o.modelsExe, "models-exe", "", "-engine go：sumika-models.exe 的路径")
 	flag.StringVar(&o.ortLibrary, "ort-library", "", "-engine go：onnxruntime.dll 的路径；空 = sumika-models.exe 所在目录里的")
 	flag.StringVar(&o.modelsRoot, "models-root", "", "-engine go：模型根目录")
@@ -357,6 +357,9 @@ func maxScore(vs [][]float32, denied []Memory, vectors map[string][]float32) (fl
 func startServer(o options) (func(), error) {
 	if o.python == "" {
 		return nil, errors.New("-engine python 要给 -python（对拍参照环境的 python.exe；没有默认值）")
+	}
+	if o.server == "" {
+		return nil, errors.New("-engine python 要给 -server（本地服务入口；没有默认值）")
 	}
 	token := make([]byte, 32)
 	if _, err := rand.Read(token); err != nil {

@@ -31,7 +31,7 @@ func TestWriteReadRoundTrip(t *testing.T) {
 	}
 	raw, _ := os.ReadFile(path)
 	if strings.Contains(string(raw), "\\u003c") {
-		t.Error("文本里的 < & > 被转义成 \\u003c 了，parity_ref.py 读得回但人看不懂")
+		t.Error("文本里的 < & > 被转义成 \\u003c 了，读得回但人看不懂")
 	}
 	if n := want.Texts(); n != 5 {
 		t.Errorf("Texts() = %d", n)

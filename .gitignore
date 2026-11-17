@@ -42,9 +42,8 @@ native/fonts/*.ttf
 # Twemoji（CC-BY 4.0）四千多个 SVG，放本机不进 git；正式程序从 exe 旁的 twemoji/ 读，打包时拷过去（native/README.md「界面字体」「打包」）
 native/twemoji/
 native/*.lnk
-native/shots/
 
-# 本机模型服务（tools/local-models）跑起来生成的 Python 缓存
+# Python 跑起来生成的缓存（scripts/subset-font.py）
 __pycache__/
 
 # bench-t2 题库的初始文件按原样（LF）检出，不被 autocrlf 改成 CRLF：b2-09 的"字节数"、几道题的哈希判分都按 LF 算

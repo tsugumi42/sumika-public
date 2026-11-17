@@ -87,7 +87,7 @@ func singleDiffs(t *testing.T, model string, tk *Tokenizer, cats map[string]Cate
 		{"probes", loadProbes(t), ref.Probes, ref.ProbesExplained},
 	} {
 		if len(set.texts) != len(set.ids) || len(set.texts) != len(set.expl) {
-			t.Fatalf("%s 的参考数据条数（%d、%d）和样本（%d）对不上：样本改过就要重新跑 tools/local-models/parity_ref.py", set.source, len(set.ids), len(set.expl), len(set.texts))
+			t.Fatalf("%s 的参考数据条数（%d、%d）和样本（%d）对不上：样本改过就要从 git 历史（提交 76f0488faa6a 及以前）取回 tools/local-models/parity_ref.py 重跑", set.source, len(set.ids), len(set.expl), len(set.texts))
 		}
 		for i, text := range set.texts {
 			if set.ids[i] == nil {

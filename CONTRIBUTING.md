@@ -26,7 +26,7 @@
 4. 可选，按要做的事装：
    - [Magpie](https://github.com/yetone/magpie) 模型网关（默认 `127.0.0.1:3425`）：要真调模型时才需要。
    - SnowLuma：要接真实 QQ 小号时才需要。Sumika 只连接它，不负责安装和登录。
-   - 本地嵌入服务：记忆的向量检索用，可选。Go 后台现在借用 MaiBot-Embeddings 项目的 `server.py`，在配置的 `embed` 一节写全 `python`、`serverDir`、`model` 三项（见 `sumika.example.yml`），receive 模式会自己把它当子进程起来。不配也能跑：记忆检索只用全文，发送前守卫只比原文。（`tools/local-models/` 是新的多模型服务，Go 还没接上，见 规格-本地模型服务（私有存档）。）
+   - 本地嵌入服务：记忆的向量检索用，可选。Go 后台现在借用 MaiBot-Embeddings 项目的 `server.py`，在配置的 `embed` 一节写全 `python`、`serverDir`、`model` 三项（见 `sumika.example.yml`），receive 模式会自己把它当子进程起来。不配也能跑：记忆检索只用全文，发送前守卫只比原文。
 
 开了新的 git worktree 时，`node_modules/` 和 `vendor/bin/` 都不会跟着过去（被 git 忽略），在 worktree 里再执行一次 `bun install`；只缺工具的话，也可以把主工作区的 `vendor/bin/` 拷过去。
 
@@ -136,11 +136,11 @@ AGENTS.md 里提到的"上级目录的 AGENTS.md"是维护者本机放通用约�
 | `internal/llm`、`prompts`、`persona` | 模型调用（OpenAI 兼容接口）、提示词、角色卡 |
 | `internal/channel` | 渠道中间件：收消息、入库、认人、闸门决定要不要开口、发送；`snowluma` 是 QQ 的 OneBot 适配器，`qq`、`repeat` 是 QQ 平台插件（戳一戳、复读等），`sendlock` 是发送权的跨进程锁，`types` 是各渠道共用的类型，`fake`、`contract` 是测试用的假协议端和适配器契约测试 |
 | `internal/audience` | 这一轮谁在听、在哪听：决定能用哪些记忆和工具 |
-| `internal/embedinputs` | `memory-eval -dump-embed-inputs` 写、`cmd/models-parity` 和 `tools/local-models/parity_ref.py` 读的"生产实际会送去嵌入和重排的字符串"文件格式（含真实原文，写之前问 git，在工作树里没被忽略就拒绝） |
+| `internal/embedinputs` | `memory-eval -dump-embed-inputs` 写的"生产实际会送去嵌入和重排的字符串"文件格式（含真实原文，写之前问 git，在工作树里没被忽略就拒绝） |
 | `internal/memory`、`memplugin`、`embed` | 记忆：召回、写入、发送前守卫；接进内核的适配器；文本向量 |
 | `internal/embed/embedtest` | 测试程序扮演的假 `sumika-models.exe`（embed、app、memory-eval、guard-eval 的测试共用；登记在 archcheck 的 `toolOnly` 里，不进常驻程序） |
 | `internal/pyspace` | Python 的 `str.strip()` 认的空白集合，只依赖标准库：嵌入服务（`engine`）判空和记忆切句（`memory.OutboundSentences`）调同一份，切句不会切出服务眼里的空句 |
-| `internal/localmodels`、`third_party/goSentencePiece` | Go 版本地模型（规格-Go本地模型，GM1～GM7 做完了分词器、ORT 封装、引擎、模型池、HTTP 服务五层、对拍命令，和后台起它：`embed.Local` 在 `embed.backend: go-models` 下起 `cmd/sumika-models`，默认仍是 `legacy`）：`tokenizer` 加载 gte 和 bge 的分词器；`ort` 是 ONNX Runtime 的薄封装（动态库哈希门）；`engine` 是登记表、池化、归一化、重排和每行一锁；`pool` 是模型池（按需加载、空闲卸载、同时上限、按实测内存记账）加上从模型目录加载的 `FileLoader`；`server` 是 HTTP 层加进程外壳（路由、令牌、错误码、启动检查和退出码、看门狗、stdin 关闭就退出），只有它可以 `net/http`；`cmd/sumika-models` 只是入口；`cmd/models-parity` 是对 Python 版的对拍命令（起 Go 版和 Python 版各一份，比分词 id、向量、重排、相似度差和翻转、速度、内存，只出计数和统计）；`third_party/goSentencePiece` 是拷进来自己改的 tggo fork（来源和改动见它的 `PROVENANCE.md`）。只给 `cmd/sumika-models` 和以后的对拍命令用，桌面程序和 `sumika-go` 不许链接 |
+| `internal/localmodels`、`third_party/goSentencePiece` | Go 版本地模型（规格-Go本地模型，GM1～GM7 做完了分词器、ORT 封装、引擎、模型池、HTTP 服务五层，和后台起它：`embed.Local` 在 `embed.backend: go-models` 下起 `cmd/sumika-models`，默认仍是 `legacy`）：`tokenizer` 加载 gte 和 bge 的分词器；`ort` 是 ONNX Runtime 的薄封装（动态库哈希门）；`engine` 是登记表、池化、归一化、重排和每行一锁；`pool` 是模型池（按需加载、空闲卸载、同时上限、按实测内存记账）加上从模型目录加载的 `FileLoader`；`server` 是 HTTP 层加进程外壳（路由、令牌、错误码、启动检查和退出码、看门狗、stdin 关闭就退出），只有它可以 `net/http`；`cmd/sumika-models` 只是入口；`third_party/goSentencePiece` 是拷进来自己改的 tggo fork（来源和改动见它的 `PROVENANCE.md`）。只给 `cmd/sumika-models` 用，桌面程序和 `sumika-go` 不许链接 |
 | `internal/linkreader`、`linkplugin` | 链接解析（X、B 站）和它接进渠道、内核的适配器 |
 | `internal/store`、`history`、`paths`、`config`、`secrets` | 聊天库和运行记录库、重建给她看的历史、数据目录路径、配置、密钥（只读 Bun 的密钥文件） |
 | `internal/api`、`desktopread`、`alert` | 给界面的只读接口和它的实现、"现在有什么事没恢复"的提醒登记 |

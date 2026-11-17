@@ -14,9 +14,7 @@
 
 ## 再生成
 
-按 `tools/local-models/requirements.txt` 用 uv 建的独立环境（python.exe 写它的路径，下面记作 <独立环境>\Scripts\python.exe）。在仓库根目录：
-
-    <独立环境>\Scripts\python.exe -I -B tools/local-models/parity_ref.py engine --models-root <模型根> --out native/internal/localmodels/ort/testdata
+生成器 `tools/local-models` 已从仓库删掉（ADR-389，提交 及以前在 git 历史里）。数据是冻结的对拍快照：要重新生成，先从那个提交取回目录，再按原来的命令导出（`parity_ref.py engine`）。
 
 换了 CPU、升了 onnxruntime 或 tokenizers，重新生成并看 `git diff`：`ref-meta.json` 变了，数据可能跟着变。
 参照由 `server.py` 实际走的那条路算出（`load_specs`、`build_tokenizer`、`LoadedModel`），Python 的会话是 onnxruntime 默认的 arena 开；

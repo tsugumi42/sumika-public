@@ -1,8 +1,8 @@
 // Package embedinputs 是"生产实际会送给嵌入和重排的字符串"的文件格式（规格-Go本地模型 第五节"真实的"一段）：
-// memory-eval -dump-embed-inputs 写，cmd/models-parity 读，tools/local-models/parity_ref.py 的 real 模式也读。
+// memory-eval -dump-embed-inputs 写（原来读它的 cmd/models-parity 和 Python 的 parity_ref.py 已删，ADR-389）。
 //
 // 文件里是各可见范围的记忆和群消息原文混在一起，所以只许写在临时目录或被 git 忽略的路径；
-// 写之前和 parity_ref.py 读之前都要过 CheckPrivatePath，不放在 git 工作树里没被忽略的地方（复核方提的，规格 GM6）。
+// 写之前要过 CheckPrivatePath，不放在 git 工作树里没被忽略的地方（复核方提的，规格 GM6）。
 package embedinputs
 
 import (

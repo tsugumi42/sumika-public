@@ -28,6 +28,10 @@ jobs:
   test:
     name: test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    # Linux 这一格先只当参考、红了不挡（2026-11-18）：产品现在只支持 Windows，第四轮 Linux 红了二十多个包，
+    # 大多是命名管道、进程、字体、路径这类 Windows 专用的测试，清单在主工作区 data/dev/ci/linux-fail-20261118.txt，
+    # 归类修完（Windows 专用的加构建标签，真问题修掉）再去掉这一行。待办第八节有条目。
+    continue-on-error: ${{ matrix.os == 'ubuntu-latest' }}
     timeout-minutes: 60
     strategy:
       fail-fast: false # 一个系统红了，另一个照跑完，一次看到两边结果

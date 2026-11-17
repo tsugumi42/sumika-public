@@ -511,12 +511,12 @@ func TestHealthAndModels(t *testing.T) {
 		t.Errorf("loaded 不对：%v", ml.Data)
 	}
 
-	// Python 独有的 id：404，列可用 id，并说只有 Python 版
+	// 登记表里没有的 id：404，列可用 id
 	code, out, _ = r.call(http.MethodPost, "/v1/embeddings", map[string]any{"model": "qwen3-embedding-0.6b", "input": "x"})
 	if code != 404 {
-		t.Fatalf("Python 独有的 id：想要 404，实际 %d", code)
+		t.Fatalf("登记表里没有的 id：想要 404，实际 %d", code)
 	}
-	mustContain(t, "detail", detailOf(t, out), "fake-embed, fake-rerank", "只有 Python 版")
+	mustContain(t, "detail", detailOf(t, out), "Unknown model", "fake-embed, fake-rerank")
 	// 太长的 id 不整条回显
 	code, out, _ = r.call(http.MethodPost, "/v1/embeddings", map[string]any{"model": strings.Repeat("长", 5000), "input": "x"})
 	if code != 404 || len(out) > 1000 {
@@ -533,7 +533,7 @@ func mustGet(t *testing.T, r *rig, path string) []byte {
 	return out
 }
 
-// 登记了但这次没点名的模型：说"登记了但没点名"，不说"只有 Python 版"；/v1/models 只列点名的。
+// 登记了但这次没点名的模型：说"登记了但没点名"，不说"不知道这个模型"；/v1/models 只列点名的。
 func TestModelsOnlyListsNamed(t *testing.T) {
 	r := newRig(t, rigOpts{only: []string{embedID}})
 	var ml struct {
@@ -548,8 +548,8 @@ func TestModelsOnlyListsNamed(t *testing.T) {
 	}
 	got := detailOf(t, out)
 	mustContain(t, "detail", got, "registered but not selected", "available: fake-embed")
-	if strings.Contains(got, "只有 Python 版") {
-		t.Errorf("登记了的模型不该说只有 Python 版：%s", got)
+	if strings.Contains(got, "Unknown model") {
+		t.Errorf("登记了的模型不该说不知道这个模型：%s", got)
 	}
 }
 

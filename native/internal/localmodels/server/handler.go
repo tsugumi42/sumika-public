@@ -30,7 +30,7 @@ const (
 type Config struct {
 	Pool *pool.Pool
 	// Models 是这个进程提供的模型（--models 点名的和 --lazy-models 的）；Registered 是登记表里的全部 id，
-	// 只用来区分 404 的两种原因："登记了但这次没点名"和"这个 id 只有 Python 版"。
+	// 只用来区分 404 的两种原因："登记了但这次没点名"和"登记表里没有"。
 	Models     []engine.Spec
 	Registered []string
 	Token      string // 必填
@@ -251,7 +251,7 @@ func (s *Server) unknownDetail(id string) string {
 	if s.registered[id] {
 		return fmt.Sprintf("Model '%s' is registered but not selected in this process (--models / --lazy-models); available: %s", clip(id), avail)
 	}
-	return fmt.Sprintf("Unknown model '%s'; available: %s（这个 id 只有 Python 版，见 tools/local-models）", clip(id), avail)
+	return fmt.Sprintf("Unknown model '%s'; available: %s", clip(id), avail)
 }
 
 // fail 把计算中的错误翻成响应。顺序有讲究：*pool.Error 先于 ctx 错误（池关闭时取消加载，错误里会包着 Canceled，

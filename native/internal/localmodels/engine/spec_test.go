@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -68,25 +66,13 @@ type refSpec struct {
 	QueryTask         string `json:"query_task"`
 }
 
-// 两份登记表会漂：Go 一份、Python 一份（tools/local-models/models.toml）。参照由 parity_ref.py rules 用 Python 自己的
-// load_specs 导出（缺省值已补上），带着 models.toml 的哈希：Python 的表一改，哈希对不上，这里先红，提醒重导再对。
+// 参照是 Python 版（tools/local-models，ADR-389 已删）用 parity_ref.py rules 从 Python 自己的 load_specs 导出的快照
+// （缺省值已补上，见 testdata/README.md）。Python 的表不在了，这份参照钉住的就是当时的字段值：改 BuiltinSpecs 要对上它。
 func TestRegistryMatchesPython(t *testing.T) {
 	var ref struct {
-		TomlSHA256 string             `json:"models_toml_sha256"`
-		Models     map[string]refSpec `json:"models"`
+		Models map[string]refSpec `json:"models"`
 	}
 	readTestdata(t, "ref-registry.json", &ref)
-
-	raw, err := os.ReadFile(filepath.Join("..", "..", "..", "..", "tools", "local-models", "models.toml"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	sum := sha256.Sum256([]byte(strings.ReplaceAll(string(raw), "\r\n", "\n")))
-	if got := hex.EncodeToString(sum[:]); got != ref.TomlSHA256 {
-		t.Fatalf("tools/local-models/models.toml 改过了（换行统一成 LF 后的 SHA-256 是 %s，参照里记的是 %s）：\n"+
-			"先看改的是不是 gte、bge 这两条，再重新导出参照：python -I tools/local-models/parity_ref.py rules --models-root <模型根> --out native/internal/localmodels/engine/testdata\n"+
-			"最后对着新参照改 registry.go 里的 BuiltinSpecs", got, ref.TomlSHA256)
-	}
 
 	reg, err := BuiltinRegistry()
 	if err != nil {

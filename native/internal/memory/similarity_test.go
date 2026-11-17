@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-// 三处比较的边界（规格-Go本地模型 第五节"翻转"一行，GM6 验收 2 的 TestFlipUsesProductionComparisons 在 models-parity 里，
+// 三处比较的边界（规格-Go本地模型 第五节"翻转"一行；models-parity 里原来的翻转测试随命令删除，ADR-389），
 // 这里钉住被调用的函数自己）：点积恰好等于 float32(常量) 的得分，三处都要判"够"。
 func TestComparisonsAtTheConstants(t *testing.T) {
 	t.Parallel()

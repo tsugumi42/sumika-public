@@ -12,7 +12,7 @@ import (
 
 // 已知差异的类别（testdata/categories.json，规格-Go本地模型 2.4"已解释怎么判"）：对拍时一个不一致的样本，把它含有的类别
 // 的字符全部去掉以后，Python 和 Go 对去掉之后的文本的 id 必须完全一致，才算"已解释"；归不到类别的不一致就是真的分词 bug。
-// 单测（parity_test.go）和对拍命令（cmd/models-parity）用同一份判法，所以放在这里，不各写一份。
+// 单测（parity_test.go）和原来的对拍命令（cmd/models-parity，ADR-389 已删）用同一份判法，所以放在这里，不各写一份。
 
 // Category 是一个类别：对哪些模型生效、为什么、"去掉哪些字符算去掉"。
 type Category struct {

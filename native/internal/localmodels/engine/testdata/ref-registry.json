@@ -1,5 +1,4 @@
 {
- "models_toml_sha256": "2d6494477d63c167de71eec33c21e8c24172239d8d0cebd6eecea40d5ecea0ca",
  "python": "3.12.14",
  "models": {
   "gte-multilingual-base": {

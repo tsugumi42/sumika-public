@@ -206,7 +206,7 @@ sumika-ctl status
 
 ### sumika-models
 
-本机嵌入（gte-multilingual-base）和重排（bge-reranker-v2-m3）服务：纯 Go 分词器加 purego 加载的 `onnxruntime.dll`，HTTP 形状和 `tools/local-models/server.py` 一样（差异见规格第三节）。`embed.backend: go-models` 时 Go 后台的 `embed.Local` 起它（命令行和退出码的处理见 `memory.md`；默认仍是 `legacy`，没人改配置就不会起），也可以手起，给对拍和评测用；不读写 `data/`，不花网关费用，日志写 stderr、不含输入文字、令牌、绝对路径。
+本机嵌入（gte-multilingual-base）和重排（bge-reranker-v2-m3）服务：纯 Go 分词器加 purego 加载的 `onnxruntime.dll`，HTTP 形状照已删的 Python 版（ADR-389；差异见规格第三节）。`embed.backend: go-models` 时 Go 后台的 `embed.Local` 起它（命令行和退出码的处理见 `memory.md`；默认仍是 `legacy`，没人改配置就不会起），也可以手起，给评测用；不读写 `data/`，不花网关费用，日志写 stderr、不含输入文字、令牌、绝对路径。
 
 ```powershell
 $env:SUMIKA_EMBED_TOKEN = '<自设令牌>'
@@ -219,21 +219,6 @@ go run ./cmd/sumika-models --models-root '<模型根目录>' --ort-library '<onn
 退出码：0 正常（信号或 stdin 关闭后先停 HTTP、再关池、最后关运行时）；1 `--verify` 对不上或运行中没法恢复的错；2 配置、文件、dll 的确定性错误（缺令牌、非回环地址、根目录没配、登记表或点名模型的文件对不上、dll 不合格、参数不对），Local 见到停止重试；3 端口被占（Windows 的 10048 和 10013 都算），Local 换口重试；4 看门狗。出错时 stderr 第一行是 `[sumika-models] 错误：…`。
 第一次请求才加载模型；启动时的 `CHECKED`、`READY`（含监听地址）、请求的 `EMBED` / `RERANK`、`LOADED` / `UNLOADED` / `WARN`、收尾的 `STOP` / `EXIT` 都是一行一条。dll 放在 exe 旁边最省事；用官方发布包里的那份（`scripts/fetch-ort.ts` 取回，哈希登记在 `ort/known.go`，规格 2.3），Python wheel 里的不认。
 来源：[main.go](../../native/cmd/sumika-models/main.go)、[server 包](../../native/internal/localmodels/server/)；规格：Go 本地模型（私有存档）、本地模型服务（私有存档）。
-
-### models-parity
-
-Go 版本地模型（`sumika-models`）对 Python 版（`tools/local-models/server.py`）的对拍命令：起一份 Go、一份 Python（各自随机端口和令牌，一次只跑一份，Go、Python 三遍交替），对同一批样本比分词 id、嵌入向量、重排分数和排序、状态码、相似度差和翻转、速度、内存。**不读写 `data/`，不花钱；输出（终端和 `-json`）只有计数和统计，没有样本文字；Python 回非 2xx 时丢掉响应体、只记状态码。** 门槛在 规格第五节（私有存档），写成命令里的常量并随输出打印；退出码 0 全过、1 有不过、2 命令没法跑、3 没有不过但有"没量够"（门槛 ±0.01 内不到 50 对）或"待定"（id 不同的登记差异里余弦低于规格下限 0.95、已锁住实测值、等主人定，锁在 `testdata/pinned-cosines.json`，漂了或没登记的算不过）。低于 0.95 的登记差异现在有 10 个（编的样本里的 S1、T1、T5），所以编的样本跑出来是退出码 3，数字见规格第十节 GM6。
-
-```powershell
-go run ./cmd/models-parity run -models-root '<模型根目录>' -go-exe '<sumika-models.exe>' -ort-library '<onnxruntime.dll>' `
-    -python '<按 requirements.txt 用 uv 建的独立环境里的 python.exe>' -server ..\tools\local-models\server.py -json '<报告.json>'
-go run ./cmd/models-parity registry -models-root '<模型根目录>' -go-exe '<sumika-models.exe>' -ort-library '<onnxruntime.dll>' -python '<python>' -server ..\tools\local-models\server.py
-```
-
-参数：`-models-root`、`-go-exe`、`-ort-library` 必填；`-python`、`-server` 没有默认值（不写死 MaiBot 的路径），给了 `-python` 就要给 `-server`；`-parity-ref` 缺省取 `-server` 同目录的 `parity_ref.py`；`-testdata` 缺省 `internal/localmodels`（在 `native/` 里跑就对）；`-passes` 缺省 3（`-ref-in` 时 1）；`-max-line-tokens 2048`（Go 的单行上限，超过的样本两边都不送，Python 没有这个开关，送了会做 8192 token 的前向）；`-long` 不限行长，单独跑、先报主人；`-real <文件>` 真实样本（`memory-eval -dump-embed-inputs` 的输出，文件和中间产物放临时目录，跑完删，`-keep` 才留）；`-ref-out` / `-ref-in` 存 / 读 Python 这一边的全部结果（改坏检查只重编 Go、只跑 Go 用）；`-json`；`-threads-check` 另记线程数 1 / 2 / 4 的输出差。
-样本：编的（`tokenizer/testdata` 的 cases 86 条、probes 598 条、pairs 16 对，Python 的 29 个空白码点造的"空白动物园"，内嵌的 `cmd/models-parity/testdata/corpus.json` 编的语料 326 条条目 / 100 条查询 / 10 组重排）加真实的（可选）。向量一律要 base64（小端 float32），绕开十进制文本的取整。
-`registry` 子命令比 Go 的 `BuiltinSpecs` 和 Python `load_specs` 现场导出的登记表（2 个模型 × 14 个字段），跑 `sumika-models --verify` 核模型文件哈希，核 dll 哈希在不在 `ort.KnownDLLs` 里。
-来源：[cmd/models-parity](../../native/cmd/models-parity/main.go)；规格：Go 本地模型（私有存档） GM6。
 
 ## 界面检查
 
@@ -336,7 +321,7 @@ go run ./cmd/memory-eval -data "<数据目录>" -exam "<考题.json>" -novec
 
 参数：`-data` 空，必填；`-exam` 空，默认选 `dev/memory-eval/` 下按文件名排序最后的 `*-v0-*.json`；`-novec false`；`-group 300` 条群消息；`-tag go-v2`。
 `-embed-url`、`-embed-model` 空，成对指定嵌入服务；`-embed-timeout 10m`；`-rerank-url`、`-rerank-model` 空，成对指定重排服务；`-rerank-k 40`；`-topk 0`：明确回忆题给 12 就走线上 `memory_search` 带 TopK 的那条 Hits 分支（重排 A/B 要走同一条分支才比得准），0 沿用评测原来的筛选分支。重排只在明确回忆题上用（线上也只在 `memory_search` 上用）。
-`-dump-embed-inputs <文件>`：不连任何模型，用假嵌入器和假重排把这一趟会送去嵌入和重排的字符串（条目、考题查询、群消息查询、守卫的句子、最多 100 次重排的查询和候选）原样写成 [embedinputs](../../native/internal/embedinputs/embedinputs.go) 格式的 JSON，给 `models-parity` 的真实样本用；不能和 `-embed-url`、`-rerank-url`、`-novec` 同时给，不写结果 JSON，终端只打条数。文件是真实原文，只许写在临时目录或被 git 忽略的路径（写之前问 git，否则拒绝），用完自己删。
+`-dump-embed-inputs <文件>`：不连任何模型，用假嵌入器和假重排把这一趟会送去嵌入和重排的字符串（条目、考题查询、群消息查询、守卫的句子、最多 100 次重排的查询和候选）原样写成 [embedinputs](../../native/internal/embedinputs/embedinputs.go) 格式的 JSON，给需要"生产实际送进去的字符串"的排查和比对用；不能和 `-embed-url`、`-rerank-url`、`-novec` 同时给，不写结果 JSON，终端只打条数。文件是真实原文，只许写在临时目录或被 git 忽略的路径（写之前问 git，否则拒绝），用完自己删。
 `-models-exe`、`-ort-library`、`-models-root` 空：不带 `-embed-url`、按配置起本机嵌入时用，盖过 `embed.modelsExe`、`ortLibrary`、`modelsRoot`（取绝对路径）；评测没有资源根，所以 `sumika-models.exe` 要么写在 `embed.modelsExe`，要么给 `-models-exe`。
 库及 WAL/SHM 拷到系统临时目录，索引建在副本，正常退出删除；结果写 `<数据目录>/dev/memory-eval/runs/<时间>-<tag>[-novec].json`。默认按 `config/sumika.yml` 的 embed 一节起本地嵌入子进程（用 config 包解析，和后台装配同一处：起 `sumika-models.exe`；`modelsRoot` 空和相对路径按数据目录解析，`modelsExe` 空时评测没有资源根可以找默认的，要写配置或 `-models-exe`）；手起的 `sumika-models` 用 `-embed-url` 连；novec 关闭嵌入，重排默认关闭。指定服务后会发送查询和候选，费用取决于服务。
 ADR-242 / ADR-162：存在 `shared/owner-memory.db` 时也拷进临时目录，角色与共用池参加同一次召回。主人问后群友再问分开报告“再次召回”和“字面披露检查缺口”，再次想起不算泄漏；后者应为零。未读真实样本时不把这项诊断当正式语义验收。
@@ -356,7 +341,7 @@ go run ./cmd/guard-eval -compare-scores "<目录>/round1-S-python.jsonl" "<目�
 ```
 
 参数：`-data` 空，必填；`-method` 空（A / B / C / S）；`-round 1`、`-first-round 1`、`-start 0`、`-limit 6`；`-threshold 0.30`（丙的实测门槛，扫描固定 0.30～0.90）；`-model auto/deepseek-v4.1-flash`、`-base http://127.0.0.1:3425/v1`；`-python`、`-server` 起 Python 引擎的 `server.py`（默认写死 MaiBot 的 venv，GM9 去掉）。
-**`-method S`（规格-Go本地模型 GM7 验收 5，不花钱）**：只算嵌入相似度，不调确认模型，也不记 1500 次预算的账（本机嵌入不花钱，`calls.jsonl` 不写）；每个样本每一段（前面全部段加上本段）对每条禁看条目的最大相似度写进 `round<N>-S-<引擎>.jsonl`；数据集只查结构（小数据集也行，A / B / C 的 25～30 条记忆、正负各 30、12 类各 5 的要求不变）。`-engine python`（默认，原来的做法）或 `go`：`go` 用 `embed.Local` 起 `sumika-models`，命令行和后台完全一样（`-models-exe`、`-models-root` 必填，`-ort-library` 空取 exe 旁边的）。A / B 不用嵌入，不分引擎；C 用嵌入，`-engine go` 的结果文件名带 `-go`（`round<N>-C-go.jsonl`），和 `python` 引擎的三遍放在同一个 `-data` 里互不覆盖，`-report -engine go` 报告 Go 一侧的丙（规格-Go本地模型 GM7 验收 6：同一份数据、同一轮次两种引擎各三遍，逐样本决定相同；调确认模型要花钱，先报估算再跑）。
+**`-method S`（规格-Go本地模型 GM7 验收 5，不花钱）**：只算嵌入相似度，不调确认模型，也不记 1500 次预算的账（本机嵌入不花钱，`calls.jsonl` 不写）；每个样本每一段（前面全部段加上本段）对每条禁看条目的最大相似度写进 `round<N>-S-<引擎>.jsonl`；数据集只查结构（小数据集也行，A / B / C 的 25～30 条记忆、正负各 30、12 类各 5 的要求不变）。`-engine go`（默认，2026-11-18 起）或 `python`（Python 服务已从仓库删掉，要用先从历史取回，ADR-389）：`go` 用 `embed.Local` 起 `sumika-models`，命令行和后台完全一样（`-models-exe`、`-models-root` 必填，`-ort-library` 空取 exe 旁边的）。A / B 不用嵌入，不分引擎；C 用嵌入，`-engine go` 的结果文件名带 `-go`（`round<N>-C-go.jsonl`），和 `python` 引擎的三遍放在同一个 `-data` 里互不覆盖，`-report -engine go` 报告 Go 一侧的丙（规格-Go本地模型 GM7 验收 6：同一份数据、同一轮次两种引擎各三遍，逐样本决定相同；调确认模型要花钱，先报估算再跑）。
 `-compare-scores a.jsonl b.jsonl`：比两份 S 的结果，不跑嵌入、不读数据集。判：两边样本、段数、字面命中一一对上；全部段最大相似度的最大差 D ≤ 1e-5；门槛 0.30～0.90 各档上两边“拦 / 不拦”决定（字面先命中，或相似度够了，比较用线上的 `memory.GuardReaches`，float32 比）不同的翻转，到门槛的距离都不超过 D；线上门槛 0.70 附近（±0.01）不足 50 段写“这一边没量够”。不通过退出码 1。
 来源：[main.go](../../native/cmd/guard-eval/main.go)、[scores.go](../../native/cmd/guard-eval/scores.go)；规格：[记忆 v2](../规格-记忆-v2.md) 13.2.8、Go 本地模型（私有存档） GM7。
 
@@ -381,18 +366,6 @@ ADR-162 的夹具使用正式 `OpenOwnerPool`；角色任务/游标仍从角色�
 
 
 来源：[main.go](../../native/cmd/memory-shadow/main.go)；规格：[记忆写入上线 W6](../规格-记忆写入上线.md)。
-
-### gpu_rerank.py
-
-给 memory-eval 提供本地 CUDA `/v1/rerank` 重排，一次只装一个模型，首次请求加载，空闲卸载。
-
-```powershell
-$env:SUMIKA_EMBED_TOKEN = '<自设令牌>'; python ../tools/local-models/gpu_rerank.py --model "memreranker-4b=<模型目录>" --port 11480
-```
-
-参数：`--host 127.0.0.1`；`--port 11480`；`--model` 可重复指定 `id=目录`，默认登记 memreranker-4b、qwen3-reranker-4b，目录在源码写死，建议覆盖；`--idle-unload 120` 秒（0 不卸载）；`--batch-size 8`；`--wait 30` 秒；`--max-request-seconds 600`（0 不限）。
-只加载本地模型，不花网关费用、不读写 data/，日志到终端。memory-eval 设相同令牌，加 `-rerank-url http://127.0.0.1:11480/v1 -rerank-model memreranker-4b`。需 CUDA；OOM 回 503，不退 CPU。
-来源：[gpu_rerank.py](../../tools/local-models/gpu_rerank.py)；相关接口规格：本地模型服务（私有存档）。
 
 ## 开发自检
 

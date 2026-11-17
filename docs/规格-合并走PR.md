@@ -1,0 +1,97 @@
+# 规格：合并走 PR
+
+> 状态：2026-11-18 草稿（ADR-386）。第 3 节“切换开发主仓库”要先问主人；其余按本规格做。
+>
+> 参考：
+> - GitHub 官方文档：分支保护的“合并前必须通过的检查”（required status checks）、提交状态接口（`POST /repos/{owner}/{repo}/statuses/{sha}`）、`gh pr create` / `gh pr merge`、公开仓库用 GitHub 自带机器跑 Actions 不计费。**采用**：必过检查加一条本机检查的提交状态；合并用合并提交。**不采用**：GitHub 自带的 merge queue（本机检查进不去它的队列；一天十来次合并用不上分组并行）。
+> - [规格-合并队列](规格-合并队列.md)：本机队列的合并、验证、记录、推送钩子复用验证记录，照旧用；本规格只改“谁来点合并”和“合并前还要看什么”。
+> - Claude 桌面应用的 PR 监看：PR 绑到会话后，CI 红了、绿了、有评审都会以事件发给会话，用来代替轮询（主人 2026-11-18 问起）。
+
+## 开工卡
+
+- **我理解成**：以后合进 main 的每一步都是公开仓库上的一个 PR。PR 上 GitHub 跑 Linux 和 Windows 两套检查，本机再跑一遍 GitHub 跑不了的部分，并把结论写回 PR；都绿了才合。
+  - 正例：P2-7 的 M1 做完 → 推 `feat/p2-7-providers` → 开 PR → GitHub 两套绿、本机检查绿 → 队列点合并 → main 上多一个合并提交，远端分支删掉。
+  - 反例：CI 还在跑就合；本机检查红了靠手动合绕过；把本机检查的结论只写在本机文件里，PR 页面上看不到；为了等 CI 写一个轮询脚本。
+- **领域正统做法**：开源项目通用的“分支保护 + 必过检查 + PR 合并”。GitHub 文档里的 required status checks 可以是 Actions 任务，也可以是任何往提交上写状态的外部系统，本机检查走后一种（出处见上面参考）。
+- **最省事的字面做法够不够**：只在本机 `gh pr create` 然后手动 `gh pr merge` 不够。没有分支保护，红了也能合；本机检查的结论不在 PR 上，等于没有记录。
+- **不做什么**：
+  - 不用 GitHub 的 merge queue；
+  - 不开自动合并（AGENTS：主人没要求不开）；
+  - 不改 go-verify 的挑包规则；
+  - 不在本规格里迁脚本到 Go（ADR-389 另做）。
+- **用户能看能试的验收**：在 GitHub 的 PR 页面上看得到三条检查（Linux、Windows、本机）；故意推一个红的 PR，合并按钮是灰的。
+
+## 一、现状
+
+- 合并走本机队列（[规格-合并队列](规格-合并队列.md)）：专用 worktree 合上 main、跑 go-verify、绿了快进 main。
+- 2026-11-18 起有了公开仓库 `tsugumi42/sumika-public`。目前它的内容是从私有仓库导出的，没有历史；CI（`.github/workflows/ci.yml`）在 push 和 pull_request 时跑 Linux、Windows 两套 `go vet` + `go test -short` + 检查脚本测试。
+- 公开仓库用 GitHub 自带机器跑 Actions 不计费，ADR-386 第 2、6 条担心的额度问题不再存在。
+- ADR-386 第 3 条原本想“GitHub 跑 Linux、本机跑 Windows”。现在 GitHub 也能跑 Windows，本机只需要跑 GitHub 跑不了的部分：
+  - 需要真字体（文渊圆体不进 git）的截图、排版测试；
+  - 需要 ffmpeg 的媒体测试；
+  - 需要中文 pwsh 的审批和命令拆分对拍；
+  - 每日整套里的慢对拍。
+
+## 二、PR 的流程
+
+1. 功能分支做完一步（路线里的一步，有验收、能单独撤回），推到公开仓库，推前照旧跑推送钩子的隐私扫描。
+2. `gh pr create`，标题照提交标题规矩写行为，正文写这一步的验收和改坏检查结果；高风险步骤把复核结论贴进 PR 正文。
+3. 主会话用桌面应用把 PR 绑到会话（`bind_pr`），CI 的结果以事件推过来，不轮询。
+4. 本机检查：`bun scripts/merge-queue.ts add <分支>` 照旧排队。执行者合上 main、跑 go-verify（**不带 `-short`，让需要字体、ffmpeg、中文 pwsh 的测试真跑**；挑包规则不变），结论写回 PR：
+   - 往 PR 头提交写状态 `local-verify`：`pending`（开跑时）、`success` / `failure`（结束时），`description` 是结论行（140 字以内），`target_url` 留空（日志在本机）。
+   - 红了照旧记队列状态，PR 上同时是 `failure`。
+5. 合并：队列看到 GitHub 两套检查和 `local-verify` 都绿，执行 `gh pr merge --merge --delete-branch`，合并提交说明照旧带结论行。GitHub 检查还没出结果时，该条标“等 GitHub 检查”，留在队首。
+6. 合并后本机 `git pull --ff-only` 更新 main；推送钩子不再需要（main 只能经 PR 改）。
+
+## 三、切换开发主仓库（先问主人）
+
+公开仓库要成为开发主仓库，本机的 `D:\Projects\Code\sumika` 要换到公开仓库的历史上。这一步改动主人的工作目录，**做之前单独问一次**。
+
+1. 等私有仓库手上在跑的分支都合进 main，导出最后一次、推到公开仓库。
+2. 本机仓库加 remote `public` 指向公开仓库，取下 `public/main`。它和私有仓库的历史没有共同祖先。
+3. 本机 `main` 改为跟踪 `public/main`：`git checkout -B main public/main`。工作区里公开版没有的已跟踪文件（`server/`、`desktop/`、`docs/archive/` 等）会从工作区消失，它们留在私有仓库的历史里；`data/` 等不进 git 的目录不受影响。
+4. 切换前还没合的分支：用导出脚本的“排除表 + 改写”处理成补丁，在新 main 上重开分支，不直接合（历史不相交）。
+5. 私有仓库设为只读存档，`origin` 改名为 `private`，`public` 改名为 `origin`。
+6. 导出脚本 `scripts/export-public.ts` 和同步脚本从此不再需要，按 ADR-389 的删除规则处理。
+
+撤回：私有仓库没有动过，`git checkout -B main private/main` 就能回去。
+
+## 四、分支保护（公开仓库）
+
+- `main` 要求 PR，要求通过 `test (ubuntu-latest)`、`test (windows-latest)`、`local-verify` 三条检查，要求分支是最新的（“Require branches to be up to date”）。
+- 管理员可以绕过，只用于检查本身坏了、修检查的那一个 PR；绕过时 PR 正文写原因。
+- 开“合并后删除分支”。不开自动合并。
+
+## 五、禁止的偷懒
+
+- 为了等 CI 写轮询循环（用 PR 绑会话收事件）。
+- GitHub 检查没出结果、或本机检查没跑，就手动合。
+- 本机检查只写本机文件、不写 PR 状态。
+- 为了让 PR 变绿，在 CI 里跳过测试而不写原因；只有“这台机器缺某样东西”的测试可以跳过，跳过信息里写缺什么（2026-11-18 第一次 CI 的做法）。
+
+## 六、已知的坑
+
+- GitHub 的提交状态挂在提交上，不挂在 PR 上：PR 每推一次新提交，`local-verify` 都要重跑。
+- 队列合 main 后再跑的 go-verify 测的是“合上最新 main 的树”，和 PR 头提交的树不一样；状态写在 PR 头提交上，描述里注明“合上 main <短号> 后验”。
+- 分支保护要求“分支是最新的”时，main 前进以后其他 PR 要先合上 main 再推，CI 要重跑一遍。一天十来次合并能接受。
+- Windows 机器的临时目录是 8.3 短名，产品代码遇到短名会误判成链接（待办已挂）；CI 里已换成长路径临时目录。
+
+## 七、验收
+
+1. 一个正常的 PR：三条检查都绿后由队列合并，main 上多一个合并提交，远端分支已删。
+2. 改坏检查（检查本身，AGENTS 第 7 条）：
+   - 故意红一条 Go 测试的 PR：GitHub 检查红，队列不合，PR 上 `local-verify` 也是 `failure`；
+   - 让 `local-verify` 永远不写：队列一直“等检查”，不合；
+   - 把队列里“三条都绿才合”的判断改成“两条”：上面的测试要红。
+3. 队列里判断“能不能合”的函数有单元测试，覆盖：三条都绿、任一红、任一没出结果、PR 已关闭、PR 头提交变了。
+4. PR 绑到会话后，CI 红了能在会话里收到事件（手试一次，记日期）。
+
+## 八、分步计划
+
+| 步 | 内容 | 依赖 |
+|---|---|---|
+| S1 | 公开仓库 CI 两套都绿（进行中，`chore/ci-fix`） | 无 |
+| S2 | 切换开发主仓库（第三节，先问主人） | S1 |
+| S3 | 队列写 `local-verify` 状态、按三条检查合并（`scripts/merge-queue.ts`，ADR-389 迁 Go 时一起迁） | S2 |
+| S4 | 公开仓库开分支保护 | S3 |
+| S5 | AGENTS「验收」合并那一条、[规格-合并队列](规格-合并队列.md)状态头改写 | S4 |

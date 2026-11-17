@@ -153,7 +153,7 @@ func readRefF32(t *testing.T, name string) []float32 {
 }
 
 // 参照在另一种 CPU 上生成的，就不拿它比：量化图的 int8 内核可能因指令集不同而不同，不放宽门槛，
-// 换电脑后以现场 models-parity 对拍为准（规格第五节"参照向量的机器"）。
+// 换电脑后以现场重新生成参照、或另找回已删的对拍命令（ADR-389）为准（规格第五节"参照向量的机器"）。
 func checkCPU(t *testing.T) {
 	t.Helper()
 	var meta struct {
@@ -165,7 +165,7 @@ func checkCPU(t *testing.T) {
 		t.Skip("读不到这台机器的 CPU 型号，没法确认参考数据是在同一种 CPU 上生成的")
 	}
 	if got != meta.CPU {
-		t.Skipf("参照在另一种 CPU 上生成（%q），这台是 %q：请重新生成（../ort/testdata/README.md），或以现场 models-parity 对拍为准", meta.CPU, got)
+		t.Skipf("参照在另一种 CPU 上生成（%q），这台是 %q：请重新生成（../ort/testdata/README.md），或以现场对拍为准（对拍命令已删，ADR-389）", meta.CPU, got)
 	}
 }
 

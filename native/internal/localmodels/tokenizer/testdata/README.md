@@ -8,7 +8,7 @@
 | `probes.json` | `go test -update` 生成 | 空白和控制字符探针：约 100 个字符 × 6 种位置 |
 | `pairs.json` | 手写 | 重排的（查询，文档）对，含刚好在 1024 上下的边界 |
 | `categories.json` | 手写 | 已知差异的类别（T1 NFD 韩文、T5 字素簇扩展字符、S1 特殊符号字面值）：原因，和"去掉哪些字符算去掉" |
-| `ref-ids-gte.json`、`ref-ids-bge.json`、`ref-pairs-bge.json` | `tools/local-models/parity_ref.py` | Python 版服务（`server.build_tokenizer`，含截断）给的 id；含类别字符的样本另带"去掉以后"的 id |
+| `ref-ids-gte.json`、`ref-ids-bge.json`、`ref-pairs-bge.json` | `tools/local-models/parity_ref.py`（生成器已删，ADR-389） | Python 版服务（`server.build_tokenizer`，含截断）给的 id；含类别字符的样本另带"去掉以后"的 id |
 | `known-diffs.json` | `go test -update` 生成，人看过再提交 | 登记的已解释差异：测试要求实际的差异和它一模一样 |
 | `golden-ids-*.json` | `go test -update` 生成 | fork 自己的回归基线（迷你词表两份、真 gte 一份）；最初在上游原样代码上生成 |
 
@@ -23,7 +23,7 @@
    go test ./internal/localmodels/tokenizer -run TestEncodeGolden -update
    ```
 
-2. 参考数据：用能 import `tools/local-models/server.py` 的 Python（按 `tools/local-models/requirements.txt` 用 uv 建的独立环境，版本钉在 `requirements.txt` 里），在仓库根目录：
+2. 参考数据：生成器已删（ADR-389）；要重导先从提交 76f0488faa6a 取回 `tools/local-models`，用它建的独立环境在仓库根目录跑：
 
    ```
    python -I tools/local-models/parity_ref.py tokenizer --models-root <模型根> --testdata native/internal/localmodels/tokenizer/testdata
@@ -51,7 +51,7 @@
 
 ## 全部码点的 NFD、NFKD 形式（不进 git）
 
-类别表漏了一类字符时，日常的样本里不一定有。`parity_ref.py sweep` 把全部码点的 NFD、NFKD 形式（去重后约 1.5 万条）的 Python id 导进临时目录，
+类别表漏了一类字符时，日常的样本里不一定有。`parity_ref.py sweep`（生成器已删，ADR-389；要先按提交 取回 `tools/local-models`）把全部码点的 NFD、NFKD 形式（去重后约 1.5 万条）的 Python id 导进临时目录，
 `TestUnicodeSweep` 逐条比（命令在 `tools/local-models/parity_ref.py` 的文件头）：
 
 ```

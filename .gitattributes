@@ -2,3 +2,8 @@
 scripts/bench-t2/tasks/** -text
 scripts/bench-t2/ref/** -text
 **/testdata/wire/*.body -text
+
+# 测评题库和网页快照是测试数据，不是我们的代码：不算进 GitHub 的语言统计（ADR-389 第 3 条）
+scripts/bench-t2/tasks/** linguist-vendored
+scripts/bench-t2/ref/** linguist-vendored
+native/internal/linkreader/testdata/** linguist-vendored

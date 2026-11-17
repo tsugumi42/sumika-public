@@ -8,7 +8,7 @@ import (
 )
 
 // 三处"够不够像"的比较（守卫 0.70、召回底线 0.6、近重复 0.92）和守卫给一条禁看条目打分的那段循环。
-// 生产代码（outbound.go、recall.go）和评测工具（cmd/guard-eval、cmd/models-parity）都调这里，不各写一份：
+// 生产代码（outbound.go、recall.go）和评测工具（cmd/guard-eval）都调这里，不各写一份：
 // 比较的类型是故意不一样的，评测自己再写一份，量到的就不是线上的行为（规格-Go本地模型 第五节"翻转"一行，LESSONS"读同一门槛的程序没一起改"）。
 
 // DupSimilarity：召回挑出来的候选里，和已选的某条点积不低于它的算近重复，不重复给（nearDuplicate）。

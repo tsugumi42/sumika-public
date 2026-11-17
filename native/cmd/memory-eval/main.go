@@ -76,7 +76,7 @@ func main() {
 	ortLibrary := flag.String("ort-library", "", "onnxruntime.dll 的绝对路径，盖过 embed.ortLibrary（go-models）；空 = 取 sumika-models.exe 所在目录里的")
 	modelsRoot := flag.String("models-root", "", "模型根目录的绝对路径，盖过 embed.modelsRoot（go-models）")
 	groupN := flag.Int("group", 300, "从事件库副本抽多少条真实的 QQ 群消息（长短都有）照日常那样想一遍")
-	dumpPath := flag.String("dump-embed-inputs", "", "不连任何模型，用假嵌入器和假重排把跑一遍会送给它们的字符串（条目、查询、群消息、守卫的句子、重排的查询和候选）原样写到这个文件，给 models-parity 的真实样本用；"+
+	dumpPath := flag.String("dump-embed-inputs", "", "不连任何模型，用假嵌入器和假重排把跑一遍会送给它们的字符串（条目、查询、群消息、守卫的句子、重排的查询和候选）原样写到这个文件，给需要生产实际输入的排查和比对用；"+
 		"文件里是真实记忆和聊天的原文，只许写在临时目录或被 git 忽略的路径，用完自己删")
 	flag.Parse()
 	if *dataDir == "" {
