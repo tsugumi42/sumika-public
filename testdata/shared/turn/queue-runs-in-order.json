@@ -1,0 +1,159 @@
+{
+  "id": "queue-runs-in-order",
+  "about": "queue 的话排在这一轮后面，按受理先后一轮一轮跑；每一轮的请求里只带到它为止的话",
+  "source_tests": [
+    "TestWithdrawQueuedBeforeItsTurn",
+    "TestStopThroughSequence"
+  ],
+  "replies": [
+    "text",
+    "text",
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "甲句",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "b",
+      "mode": "queue",
+      "text": "乙句",
+      "expect": {
+        "state": "accepted",
+        "run": "b",
+        "seq_rank": 2
+      }
+    },
+    {
+      "do": "submit",
+      "label": "c",
+      "mode": "queue",
+      "text": "丙句",
+      "expect": {
+        "state": "accepted",
+        "run": "c",
+        "seq_rank": 3
+      }
+    },
+    {
+      "do": "release",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "done"
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "release",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "b",
+      "expect": {
+        "outcome": "done"
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 3,
+      "expect": {}
+    },
+    {
+      "do": "release",
+      "n": 3,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "c",
+      "expect": {
+        "outcome": "done"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      },
+      {
+        "label": "b",
+        "state": "admitted",
+        "run": "b"
+      },
+      {
+        "label": "c",
+        "state": "admitted",
+        "run": "c"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "done"
+      },
+      {
+        "label": "b",
+        "state": "settled",
+        "outcome": "done"
+      },
+      {
+        "label": "c",
+        "state": "settled",
+        "outcome": "done"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      },
+      {
+        "n": 2,
+        "contains": [
+          "a",
+          "b"
+        ]
+      },
+      {
+        "n": 3,
+        "contains": [
+          "a",
+          "b",
+          "c"
+        ]
+      }
+    ],
+    "steers": []
+  }
+}

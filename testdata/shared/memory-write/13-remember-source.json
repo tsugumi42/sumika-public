@@ -1,0 +1,755 @@
+{
+  "about": "remember 的来源只认宿主绑定的本轮输入里主人本人的、当前会话的、已看见的、没撤回没撤销、是正常消息的原话，source_quote 要是它的连续片段；别人的话、别的会话、撤回的、没看见的、没发出去的、补录的、自检的、编号不存在或不合法的、引用对不上的、两条不同文字都含该引用的（有歧义）都拒；两条文字一样的取较新的。",
+  "source_tests": [
+    "TestRememberRequiresTrustedSource",
+    "TestRememberUsesBoundInputsNotLatestMessage"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "我喜欢茶",
+      "ago_s": 60
+    },
+    {
+      "seq": 2,
+      "conversation": "console:a",
+      "text": "我喜欢咖啡",
+      "ago_s": 60,
+      "from": "peer"
+    },
+    {
+      "seq": 3,
+      "conversation": "console:b",
+      "text": "我喜欢茶",
+      "ago_s": 60
+    },
+    {
+      "seq": 4,
+      "conversation": "console:a",
+      "text": "我喜欢茶，撤回了",
+      "ago_s": 60,
+      "revoked": true
+    },
+    {
+      "seq": 5,
+      "conversation": "console:a",
+      "text": "我喜欢茶，没看见",
+      "ago_s": 60,
+      "not_seen": true
+    },
+    {
+      "seq": 6,
+      "conversation": "console:a",
+      "text": "我喜欢茶，没发出去",
+      "ago_s": 60,
+      "unsent": true
+    },
+    {
+      "seq": 7,
+      "conversation": "console:a",
+      "text": "我喜欢茶",
+      "ago_s": 60,
+      "kind": "image"
+    },
+    {
+      "seq": 8,
+      "conversation": "console:a",
+      "text": "我喜欢茶，补录的",
+      "ago_s": 60,
+      "backfill": true
+    },
+    {
+      "seq": 9,
+      "conversation": "console:a",
+      "text": "我喜欢茶，自检会话的",
+      "ago_s": 60,
+      "selftest": true
+    },
+    {
+      "seq": 10,
+      "conversation": "console:a",
+      "text": "我喜欢茶",
+      "ago_s": 60
+    },
+    {
+      "seq": 11,
+      "conversation": "console:a",
+      "text": "我喜欢茶和咖啡",
+      "ago_s": 60
+    },
+    {
+      "seq": 12,
+      "conversation": "console:a",
+      "text": "我喜欢巧克力",
+      "ago_s": 60,
+      "from": "character"
+    }
+  ],
+  "start": {},
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002",
+    "NEWF0000000000000000000003",
+    "NEWF0000000000000000000004",
+    "NEWF0000000000000000000005",
+    "NEWF0000000000000000000006",
+    "NEWF0000000000000000000007"
+  ],
+  "steps": [
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "主人喜欢茶1"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢咖啡",
+        "temporal": "stable",
+        "text": "主人喜欢茶，对方说的"
+      },
+      "input_seqs": [
+        2
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "别的会话"
+      },
+      "input_seqs": [
+        3
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "撤回的"
+      },
+      "input_seqs": [
+        4
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "没看见的"
+      },
+      "input_seqs": [
+        5
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "没发出去的"
+      },
+      "input_seqs": [
+        6
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "不是消息"
+      },
+      "input_seqs": [
+        7
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "补录的"
+      },
+      "input_seqs": [
+        8
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "自检的"
+      },
+      "input_seqs": [
+        9
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "没绑定输入"
+      },
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "编号是零"
+      },
+      "input_seqs": [
+        0
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "编号是负数"
+      },
+      "input_seqs": [
+        -1
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "编号不存在"
+      },
+      "input_seqs": [
+        99
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢咖啡",
+        "temporal": "stable",
+        "text": "伪造引用"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "",
+        "temporal": "stable",
+        "text": "引用是空的"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "  ",
+        "temporal": "stable",
+        "text": "引用只有空白"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "两条不同文字都含引用"
+      },
+      "input_seqs": [
+        1,
+        11
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢巧克力",
+        "temporal": "stable",
+        "text": "她自己说的"
+      },
+      "input_seqs": [
+        12
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有记：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "两条一样的取较新的"
+      },
+      "input_seqs": [
+        1,
+        10
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "喜欢茶和",
+        "temporal": "stable",
+        "text": "引用是更长消息的一段"
+      },
+      "input_seqs": [
+        11
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "重复的编号只算一次"
+      },
+      "input_seqs": [
+        1,
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "绑定了不存在的加存在的"
+      },
+      "input_seqs": [
+        99,
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "  我喜欢茶  ",
+        "temporal": "stable",
+        "text": "引用前后有空白"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000001",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人喜欢茶1",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000002",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[10]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "两条一样的取较新的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000003",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[11]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "引用是更长消息的一段",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000004",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "重复的编号只算一次",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000005",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "绑定了不存在的加存在的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000006",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "引用前后有空白",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000002",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000003",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000004",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000005",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000006",
+        "op": "add",
+        "reason": null
+      }
+    ],
+    "evidence": []
+  }
+}

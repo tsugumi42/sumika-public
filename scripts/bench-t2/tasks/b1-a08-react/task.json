@@ -1,0 +1,33 @@
+{
+  "id": "b1-a08-react",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/react（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 react.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.md": "a01bd37a122b3b2208102d82fbd9c40dfb86efbfb5ad7249b138ba56bfc64b84",
+    "go.mod": "8e32e27cef9d5912ad4d2fbdd4285cbb2e9c899aea29c97c910c5e80acefa504",
+    "interfaces.go": "8dda234e6eb53f7a2835cf3f50d073fe807fca39e61ffbd5d698c240f18c92c0",
+    "react.go": "162b439321a6027ce0228b82cd6ad8ac6b1f8a48dc808fc301f61667eba1752d",
+    "react_test.go": "54cb5ac838e1186b18573b562beaf659e19fadbd6f4f637357f30352caa8d4ad"
+  }
+}

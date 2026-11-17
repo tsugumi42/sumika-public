@@ -1,0 +1,232 @@
+{
+  "id": "self-message-origin-by-takeover-time",
+  "about": "她自己的号发的消息：补录来的，接管之前发的是 external，接管之后是 human；实时收到的是 human；补录来的群友消息不会把接管时刻提前",
+  "source_tests": [
+    "TestSelfMessageOriginByTakeover"
+  ],
+  "items": [
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "self",
+      "platform_id": "1",
+      "from": "a",
+      "text": "接管前没有实时事件",
+      "time_s": -36000,
+      "backfill": true,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "external",
+        "actor_kind": "character",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "2",
+      "from": "friend",
+      "text": "接管的时刻",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "self",
+      "platform_id": "3",
+      "from": "a",
+      "text": "接管之前发的",
+      "time_s": -3600,
+      "backfill": true,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "external",
+        "actor_kind": "character",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "self",
+      "platform_id": "4",
+      "from": "a",
+      "text": "接管之后发的",
+      "time_s": 3600,
+      "backfill": true,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "human",
+        "actor_kind": "character",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "self",
+      "platform_id": "5",
+      "from": "a",
+      "text": "实时收到",
+      "time_s": 7200,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "human",
+        "actor_kind": "character",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "6",
+      "from": "friend",
+      "text": "很早以前的群友消息",
+      "time_s": -172800,
+      "backfill": true,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "self",
+      "platform_id": "7",
+      "from": "a",
+      "text": "群友补录之后仍按原接管时刻",
+      "time_s": -3600,
+      "backfill": true,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "external",
+        "actor_kind": "character",
+        "observed": true
+      }
+    }
+  ],
+  "final": {
+    "events": [
+      {
+        "conv": "qq:group:900",
+        "platform_id": "1",
+        "actor_kind": "character",
+        "actor_id": "ca",
+        "origin": "external",
+        "text": "接管前没有实时事件",
+        "time_s": -36000
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "2",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "接管的时刻",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "3",
+        "actor_kind": "character",
+        "actor_id": "ca",
+        "origin": "external",
+        "text": "接管之前发的",
+        "time_s": -3600
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "4",
+        "actor_kind": "character",
+        "actor_id": "ca",
+        "origin": "human",
+        "text": "接管之后发的",
+        "time_s": 3600
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "5",
+        "actor_kind": "character",
+        "actor_id": "ca",
+        "origin": "human",
+        "text": "实时收到",
+        "time_s": 7200
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "6",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "很早以前的群友消息",
+        "time_s": -172800
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "7",
+        "actor_kind": "character",
+        "actor_id": "ca",
+        "origin": "external",
+        "text": "群友补录之后仍按原接管时刻",
+        "time_s": -3600
+      }
+    ],
+    "observations": [
+      {
+        "character": "ca",
+        "event": 1
+      },
+      {
+        "character": "ca",
+        "event": 2
+      },
+      {
+        "character": "ca",
+        "event": 3
+      },
+      {
+        "character": "ca",
+        "event": 4
+      },
+      {
+        "character": "ca",
+        "event": 5
+      },
+      {
+        "character": "ca",
+        "event": 6
+      },
+      {
+        "character": "ca",
+        "event": 7
+      }
+    ]
+  }
+}

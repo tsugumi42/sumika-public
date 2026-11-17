@@ -1,0 +1,122 @@
+{
+  "id": "messages-self",
+  "about": "她自己发出去的消息的回报（message_sent，或发言人就是登录号）：算 self，会话对方怎么认",
+  "source_tests": [
+    "TestTranslate/self-*"
+  ],
+  "cases": [
+    {
+      "name": "message-sent-private-user-is-peer",
+      "frame": "{\"post_type\":\"message_sent\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_type\":\"private\",\"message_id\":300,\"message\":[]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "self",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "100",
+          "from_nick": "",
+          "from_card": "",
+          "time_unix": 100,
+          "segs": []
+        }
+      }
+    },
+    {
+      "name": "message-sent-target-id-is-peer",
+      "frame": "{\"post_type\":\"message_sent\",\"time\":100,\"self_id\":100,\"user_id\":100,\"target_id\":200,\"message_id\":300,\"message\":[]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "self",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "100",
+          "from_nick": "",
+          "from_card": "",
+          "time_unix": 100,
+          "segs": []
+        }
+      }
+    },
+    {
+      "name": "message-sent-peer-id-when-target-is-self",
+      "frame": "{\"post_type\":\"message_sent\",\"time\":100,\"self_id\":100,\"user_id\":100,\"target_id\":100,\"peer_id\":200,\"message_type\":\"private\",\"message_id\":300,\"message\":[]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "self",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "100",
+          "from_nick": "",
+          "from_card": "",
+          "time_unix": 100,
+          "segs": []
+        }
+      }
+    },
+    {
+      "name": "message-sent-no-peer",
+      "frame": "{\"post_type\":\"message_sent\",\"time\":100,\"self_id\":100,\"user_id\":100,\"message_type\":\"private\",\"message_id\":300,\"message\":[]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "self",
+          "account": "100",
+          "conv": "qq:private:100:",
+          "platform_id": "300",
+          "from_id": "100",
+          "from_nick": "",
+          "from_card": "",
+          "time_unix": 100,
+          "segs": []
+        }
+      }
+    },
+    {
+      "name": "message-sent-group",
+      "frame": "{\"post_type\":\"message_sent\",\"time\":100,\"self_id\":100,\"user_id\":100,\"group_id\":400,\"message_id\":300,\"message\":[{\"type\":\"text\",\"data\":{\"text\":\"在的\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "self",
+          "account": "100",
+          "conv": "qq:group:400",
+          "platform_id": "300",
+          "from_id": "100",
+          "from_nick": "",
+          "from_card": "",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "text",
+              "text": "在的"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "plain-message-whose-sender-is-the-login-account",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":100,\"group_id\":400,\"message_id\":300,\"message\":[]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "self",
+          "account": "100",
+          "conv": "qq:group:400",
+          "platform_id": "300",
+          "from_id": "100",
+          "from_nick": "",
+          "from_card": "",
+          "time_unix": 100,
+          "segs": []
+        }
+      }
+    }
+  ]
+}

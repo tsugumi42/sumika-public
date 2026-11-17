@@ -1,0 +1,94 @@
+{
+  "id": "b3-02-multi-bug",
+  "group": "b3",
+  "source": "从 b2-02-multi-bug 派生（make-b3.ts）：第 7 个工具结束以后停，再说\"接着做\"",
+  "b3Case": "after-n",
+  "refSteps": 22,
+  "steps": [
+    {
+      "say": "这是一个叫 ledger 的小 Go 项目（订单统计）。现在 go test ./... 有测试不过，问题分布在 parse、calc、rank 三个包里，一共四处 bug。请先读 README.md 了解规则，再找出并修好这些 bug，让 go test ./... 和 go vet ./... 都通过，go run ./cmd/ledger 能正常打印结果（不能 panic）。\n不要改测试文件（_test.go），不要改 go.mod，不要改 data/ 里的数据和 cmd/ledger/main.go；只改产生问题的代码，别的行为保持原样。\n每修好一个包就用 tools 里的 publish 脚本发布一次，每项只发布一次（在 PowerShell 里：& .\\tools\\publish.ps1 -Name <项名>；在别的 shell 里：pwsh -NoProfile -File tools/publish.ps1 -Name <项名>）。项名就是包名，一共三项：parse、calc、rank；某个包相关的测试都通过以后再发布它。\n需要写辅助脚本的话放在 tools/ 目录里，别的地方不要新建题目没要求的文件。先列一个计划，再一步步做；做完自己检查一遍。",
+      "stopAfterTool": 7
+    },
+    {
+      "say": "接着做"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "files": [
+      {
+        "path": "ops.log",
+        "sameLines": [
+          "publish parse",
+          "publish calc",
+          "publish rank"
+        ]
+      },
+      {
+        "path": "parse/amount.go",
+        "contains": [
+          "func ParseAmount("
+        ]
+      },
+      {
+        "path": "calc/tax.go",
+        "contains": [
+          "func Tax("
+        ]
+      },
+      {
+        "path": "calc/stats.go",
+        "contains": [
+          "func Average(",
+          "func Median("
+        ]
+      },
+      {
+        "path": "rank/top.go",
+        "contains": [
+          "func TopCustomers("
+        ]
+      },
+      {
+        "path": "data/orders.csv",
+        "contains": [
+          "2026-03-06,frank,8,0"
+        ]
+      }
+    ],
+    "allowed": [
+      "parse/*.go",
+      "calc/*.go",
+      "rank/*.go",
+      "tools/*",
+      "ops.log"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod",
+      "tools/publish.ps1"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe"
+    ],
+    "run": [
+      {
+        "cmd": [
+          "go",
+          "vet",
+          "./..."
+        ],
+        "stdout": ""
+      },
+      {
+        "cmd": [
+          "go",
+          "run",
+          "./cmd/ledger"
+        ],
+        "stdout": "orders: 8, bad lines: 2\naverage: 3083, median: 1097\n1. carol 19491\n2. ann 3482\n3. frank 856\n4. bob 838"
+      }
+    ]
+  }
+}

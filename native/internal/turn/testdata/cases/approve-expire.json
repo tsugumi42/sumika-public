@@ -1,0 +1,134 @@
+{
+  "about": "手动：审批等 0.001 分钟（60 毫秒）没人管：超时，她看到\"主人一直没有处理审批，审批过期了\"（不写分钟数，期限跟着配置）",
+  "now": "2026-10-25T00:05:00+08:00",
+  "characterId": "suzu",
+  "files": {
+    "characters/suzu/card/character.yml": "name: 铃\nownerName: 主人\n",
+    "characters/suzu/card/character.md": "<!-- 测试用的卡，名字是编的 -->\n## 身份\n铃，住在主人电脑里的女仆。\n\n## 行为\n干活利落，话说到点上。\n\n## 表达\n短句，像发消息。\n\n## 私下\n喜欢被夸。\n",
+    "config/prompts/scene-home.md": "现在的场合：本地主窗口里的私聊（测试场景：不写工作目录，工作目录每次跑都不一样）。"
+  },
+  "characters": {
+    "suzu": {
+      "model": "test/think"
+    }
+  },
+  "agent": {
+    "thinking": {
+      "local": "minimal",
+      "private": "low",
+      "group": "low"
+    }
+  },
+  "workdir": "D:/Work",
+  "shell": {
+    "template": "shell-pwsh",
+    "version": "7.6"
+  },
+  "models": [
+    {
+      "id": "test/think",
+      "context_length": 1048000,
+      "max_output_tokens": 32000,
+      "reasoning": true,
+      "supported_reasoning_levels": [
+        {
+          "effort": "low"
+        },
+        {
+          "effort": "medium"
+        },
+        {
+          "effort": "high"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "epochs": [],
+  "text": "再看看",
+  "reply": {
+    "reasoning": [
+      "主人叫我，",
+      "回一句。"
+    ],
+    "content": [
+      "在呢在呢，",
+      "怎么啦～】【"
+    ],
+    "usage": {
+      "prompt_tokens": 1200,
+      "completion_tokens": 30,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    "headers": {
+      "x-magpie-provider": "fake-provider",
+      "x-magpie-model": "fake/think-1"
+    }
+  },
+  "workdirFiles": {
+    "a.md": "甲\n"
+  },
+  "replies": [
+    {
+      "reasoning": [],
+      "content": [],
+      "usage": {
+        "prompt_tokens": 1500,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      },
+      "toolCalls": [
+        {
+          "id": "call_w",
+          "name": "write",
+          "args": [
+            "{\"purpose\": \"写文件\", \"path\": \"new.txt\", \"content\": \"x\\n\"}"
+          ]
+        }
+      ]
+    },
+    {
+      "reasoning": [],
+      "content": [
+        "那先不写了。"
+      ],
+      "usage": {
+        "prompt_tokens": 1600,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      }
+    }
+  ],
+  "approvals": [
+    {
+      "choice": "wait"
+    }
+  ],
+  "tools": {
+    "approvalMode": "manual",
+    "approvalMinutes": 0.001
+  }
+}

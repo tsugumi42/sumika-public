@@ -1,0 +1,106 @@
+{
+  "id": "withdraw-queued-before-its-turn",
+  "about": "排队中的话可以撤回（取消，不触发请求）；已经开始处理的撤不回（not_pending）",
+  "source_tests": [
+    "TestWithdrawQueuedBeforeItsTurn"
+  ],
+  "replies": [
+    "text",
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "前一句",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "b",
+      "mode": "queue",
+      "text": "排队后撤回的一句",
+      "expect": {
+        "state": "accepted",
+        "run": "b",
+        "seq_rank": 2
+      }
+    },
+    {
+      "do": "withdraw",
+      "label": "b",
+      "expect": {}
+    },
+    {
+      "do": "withdraw",
+      "label": "a",
+      "expect": {
+        "error": "not_pending"
+      }
+    },
+    {
+      "do": "release",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "done"
+      }
+    },
+    {
+      "do": "wait_run",
+      "run": "b",
+      "expect": {
+        "outcome": "stopped"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      },
+      {
+        "label": "b",
+        "state": "cancelled",
+        "run": "b"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "done"
+      },
+      {
+        "label": "b",
+        "state": "settled",
+        "outcome": "stopped"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      }
+    ],
+    "steers": []
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "about": "库关了以后：remember、memory_forget 回固定的“记忆这边出了点问题”（内部错误不给她看原文），批次回 closed，什么都不写。",
+  "source_tests": [
+    "TestCloseStopsWrites",
+    "TestRememberRefusesWhenMiscabled"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "有一句话",
+      "ago_s": 60
+    }
+  ],
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "text": "一条有效的事实",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "do": "close",
+      "expect": {}
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆这边出了点问题，这次没记上，过一会儿再说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "AI0001",
+        "reason": "想忘掉",
+        "source_quote": "有一句话"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆这边出了点问题，这次没忘掉，过一会儿再说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "closed",
+          "message": "记忆库已经关了"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "一条有效的事实",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [],
+    "evidence": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "thread": {
+    "$type": "app.bsky.feed.defs#threadViewPost",
+    "post": {
+      "uri": "at://did:plc:samplelabsamplelabsample/app.bsky.feed.post/3mzjmn67mak2z",
+      "author": {
+        "did": "did:plc:samplelabsamplelabsample",
+        "handle": "example-lab.bsky.social",
+        "displayName": "编造作者甲",
+        "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:samplelabsamplelabsample/bafkreicixoq23lsimr6cabhtss53jimjzouzkstif4xdjmvt4rcr5bjsku",
+        "labels": [],
+        "createdAt": "2023-11-28T19:15:32.965Z"
+      },
+      "record": {
+        "$type": "app.bsky.feed.post",
+        "createdAt": "2026-11-05T00:33:50.242Z",
+        "text": "编造的正文第一行\nsecond line of invented text"
+      },
+      "replyCount": 219,
+      "repostCount": 1009,
+      "likeCount": 12141,
+      "quoteCount": 71,
+      "labels": []
+    }
+  }
+}

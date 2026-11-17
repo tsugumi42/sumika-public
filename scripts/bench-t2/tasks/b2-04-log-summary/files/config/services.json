@@ -1,0 +1,9 @@
+{
+  "services": [
+    {"name": "auth", "log": "logs/auth.log", "format": "iso"},
+    {"name": "billing", "log": "logs/billing.log", "format": "syslog"},
+    {"name": "search", "log": "logs/search.jsonl", "format": "jsonl"},
+    {"name": "gateway", "log": "logs/gateway.log", "format": "bracket"},
+    {"name": "notify", "log": "logs/notify.log", "format": "iso"}
+  ]
+}

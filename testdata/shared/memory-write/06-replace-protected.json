@@ -1,0 +1,1070 @@
+{
+  "about": "取代保护（W2）：模型的 remember 只能取代 confirmed_by 是 ai 或 owner_said 的有效事实；主人放行的（owner）、历史导入的（NULL）、空串和不认识的值一律受保护；整理写的候选带 supersedes 不在写入时取代任何东西，只记想取代谁；主人本人的批次什么都能取代。",
+  "source_tests": [
+    "TestSupersedeProtectionMatrix",
+    "TestCandidateNeverSupersedesAtInsert",
+    "TestSupersedeProtectsOwnerConfirmed",
+    "TestOwnerSaidSupersedeAction",
+    "TestRememberAfterAIConfirm"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "新说法",
+      "ago_s": 60
+    }
+  ],
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000OWN001",
+        "kind": "fact",
+        "text": "旧说法 OWN001",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner"
+      },
+      {
+        "id": "SEED0000000000000000IMP001",
+        "kind": "fact",
+        "text": "旧说法 IMP001",
+        "subject": "owner",
+        "status": "active"
+      },
+      {
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "text": "旧说法 AI0001",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000OSD001",
+        "kind": "fact",
+        "text": "旧说法 OSD001",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner_said"
+      },
+      {
+        "id": "SEED0000000000000000WRD001",
+        "kind": "fact",
+        "text": "旧说法 WRD001",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "weird"
+      },
+      {
+        "id": "SEED0000000000000000EMP001",
+        "kind": "fact",
+        "text": "旧说法 EMP001",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": ""
+      },
+      {
+        "id": "SEED0000000000000000AI0002",
+        "kind": "fact",
+        "text": "旧说法 ai 直接编号",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      }
+    ]
+  },
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002",
+    "NEWF0000000000000000000003",
+    "NEWF0000000000000000000004",
+    "NEWF0000000000000000000005",
+    "NEWF0000000000000000000006",
+    "NEWF0000000000000000000007",
+    "NEWF0000000000000000000008",
+    "NEWF0000000000000000000009",
+    "NEWF0000000000000000000010",
+    "NEWF0000000000000000000011",
+    "NEWF0000000000000000000012",
+    "NEWF0000000000000000000013"
+  ],
+  "steps": [
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "OWN001",
+        "source_quote": "新说法",
+        "temporal": "stable",
+        "text": "新说法 OWN001"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这条记忆受所有者确认或历史导入保护，模型不能自行替换，这次没有修改。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "IMP001",
+        "source_quote": "新说法",
+        "temporal": "stable",
+        "text": "新说法 IMP001"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这条记忆受所有者确认或历史导入保护，模型不能自行替换，这次没有修改。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "AI0001",
+        "source_quote": "新说法",
+        "temporal": "stable",
+        "text": "新说法 AI0001"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了，原来那条（\"旧说法 AI0001\"）不再用了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "OSD001",
+        "source_quote": "新说法",
+        "temporal": "stable",
+        "text": "新说法 OSD001"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了，原来那条（\"旧说法 OSD001\"）不再用了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "WRD001",
+        "source_quote": "新说法",
+        "temporal": "stable",
+        "text": "新说法 WRD001"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这条记忆受所有者确认或历史导入保护，模型不能自行替换，这次没有修改。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "EMP001",
+        "source_quote": "新说法",
+        "temporal": "stable",
+        "text": "新说法 EMP001"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这条记忆受所有者确认或历史导入保护，模型不能自行替换，这次没有修改。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "新说法 直接编号",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000OWN001"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "replace_protected",
+          "message": "受保护的记忆不能由模型替换"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "新说法 直接编号 ai",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000AI0002"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "added",
+            "ref": "f:NEWF0000000000000000000008",
+            "status": "active",
+            "replaced": "旧说法 ai 直接编号"
+          }
+        ],
+        "counts": {
+          "added_active": 1,
+          "superseded": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "整理想顶掉导入的",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000IMP001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "added",
+            "ref": "f:NEWF0000000000000000000009",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "added_candidate": 1,
+          "supersede_deferred": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "整理想顶掉 ai 的",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000OSD001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "added",
+            "ref": "f:NEWF0000000000000000000010",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "added_candidate": 1,
+          "supersede_deferred": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "整理写有效的带 supersedes",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "ai",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000WRD001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "added",
+            "ref": "f:NEWF0000000000000000000011",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "added_candidate": 1,
+          "supersede_deferred": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人本人顶掉导入的",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000IMP001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "added",
+            "ref": "f:NEWF0000000000000000000012",
+            "status": "active",
+            "replaced": "旧说法 IMP001"
+          }
+        ],
+        "counts": {
+          "added_active": 1,
+          "superseded": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人本人顶掉自己放行的",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000OWN001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "added",
+            "ref": "f:NEWF0000000000000000000013",
+            "status": "active",
+            "replaced": "旧说法 OWN001"
+          }
+        ],
+        "counts": {
+          "added_active": 1,
+          "superseded": 1
+        }
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000003",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "新说法 AI0001",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000004",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "新说法 OSD001",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "NEWF0000000000000000000008",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "新说法 直接编号 ai",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "NEWF0000000000000000000009",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "整理想顶掉导入的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "NEWF0000000000000000000010",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "整理想顶掉 ai 的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "NEWF0000000000000000000011",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "整理写有效的带 supersedes",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "NEWF0000000000000000000012",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人本人顶掉导入的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "NEWF0000000000000000000013",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人本人顶掉自己放行的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "NEWF0000000000000000000003",
+        "temporal": null,
+        "text": "旧说法 AI0001",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0002",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "NEWF0000000000000000000008",
+        "temporal": null,
+        "text": "旧说法 ai 直接编号",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000EMP001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "旧说法 EMP001",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000IMP001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "NEWF0000000000000000000012",
+        "temporal": null,
+        "text": "旧说法 IMP001",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OSD001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "NEWF0000000000000000000004",
+        "temporal": null,
+        "text": "旧说法 OSD001",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OWN001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "NEWF0000000000000000000013",
+        "temporal": null,
+        "text": "旧说法 OWN001",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "weird",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000WRD001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "旧说法 WRD001",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "NEWF0000000000000000000003"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000AI0001",
+        "op": "supersede",
+        "reason": "被 NEWF0000000000000000000003 替换"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000003",
+        "op": "add",
+        "reason": "替换 SEED0000000000000000AI0001"
+      },
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "NEWF0000000000000000000004"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000OSD001",
+        "op": "supersede",
+        "reason": "被 NEWF0000000000000000000004 替换"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000004",
+        "op": "add",
+        "reason": "替换 SEED0000000000000000OSD001"
+      },
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "NEWF0000000000000000000008"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000AI0002",
+        "op": "supersede",
+        "reason": "被 NEWF0000000000000000000008 替换"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000008",
+        "op": "add",
+        "reason": "替换 SEED0000000000000000AI0002"
+      },
+      {
+        "after": {
+          "scopes": [
+            "owner"
+          ],
+          "status": "candidate",
+          "temporal": "",
+          "valid_to": null,
+          "wants_supersede": "SEED0000000000000000IMP001"
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "summary",
+        "fact_id": "NEWF0000000000000000000009",
+        "op": "add",
+        "reason": "想替换 SEED0000000000000000IMP001，等提升时再定"
+      },
+      {
+        "after": {
+          "scopes": [
+            "owner"
+          ],
+          "status": "candidate",
+          "temporal": "",
+          "valid_to": null,
+          "wants_supersede": "SEED0000000000000000OSD001"
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "summary",
+        "fact_id": "NEWF0000000000000000000010",
+        "op": "add",
+        "reason": "想替换 SEED0000000000000000OSD001，等提升时再定"
+      },
+      {
+        "after": {
+          "scopes": [
+            "owner"
+          ],
+          "status": "candidate",
+          "temporal": "",
+          "valid_to": null,
+          "wants_supersede": "SEED0000000000000000WRD001"
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "summary",
+        "fact_id": "NEWF0000000000000000000011",
+        "op": "add",
+        "reason": "想替换 SEED0000000000000000WRD001，等提升时再定"
+      },
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "NEWF0000000000000000000012"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember",
+        "fact_id": "SEED0000000000000000IMP001",
+        "op": "supersede",
+        "reason": "被 NEWF0000000000000000000012 替换"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember",
+        "fact_id": "NEWF0000000000000000000012",
+        "op": "add",
+        "reason": "替换 SEED0000000000000000IMP001"
+      },
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "NEWF0000000000000000000013"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember",
+        "fact_id": "SEED0000000000000000OWN001",
+        "op": "supersede",
+        "reason": "被 NEWF0000000000000000000013 替换"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember",
+        "fact_id": "NEWF0000000000000000000013",
+        "op": "add",
+        "reason": "替换 SEED0000000000000000OWN001"
+      }
+    ],
+    "evidence": []
+  }
+}

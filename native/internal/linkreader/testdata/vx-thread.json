@@ -1,0 +1,48 @@
+{
+ "allSameType": true,
+ "article": null,
+ "combinedMediaUrl": null,
+ "communityNote": null,
+ "conversationID": "1900000000000000009",
+ "date": "Thu Oct 29 14:28:34 +0000 2026",
+ "date_epoch": 1793284114,
+ "fetched_on": 1793284114,
+ "hasMedia": true,
+ "hashtags": [],
+ "lang": "en",
+ "likes": 0,
+ "mediaURLs": [
+  "https://video.twimg.com/amplify_video/fixture-4/vid/avc1/3840x2160/fixture.mp4"
+ ],
+ "media_extended": [
+  {
+   "altText": null,
+   "duration_millis": 34090,
+   "id_str": "1900000000000000007",
+   "size": {
+    "height": 2160,
+    "width": 3840
+   },
+   "thumbnail_url": "https://pbs.twimg.com/media/fixture-6.jpg",
+   "type": "video",
+   "url": "https://video.twimg.com/amplify_video/fixture-8/vid/avc1/3840x2160/fixture.mp4"
+  }
+ ],
+ "pollData": null,
+ "possibly_sensitive": false,
+ "qrt": null,
+ "qrtURL": null,
+ "replies": 0,
+ "replyingTo": "ex_author24",
+ "replyingToID": "1900000000000000010",
+ "retweet": null,
+ "retweetURL": null,
+ "retweets": 0,
+ "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用",
+ "translation": null,
+ "tweetID": "1900000000000000012",
+ "tweetURL": "https://x.com/ex_author06/status/1900000000000000012",
+ "user_name": "编造作者甹",
+ "user_profile_image_url": "https://pbs.twimg.com/profile_images/fixture/15_200x200.jpg",
+ "user_screen_name": "ex_author25"
+}

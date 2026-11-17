@@ -1,0 +1,107 @@
+{
+  "id": "steer-during-final-reply-gets-another-step",
+  "about": "插话到时模型正在写最后一段（没有工具）：这一步结束后模型还会再被请求一次，插话在这次请求里送到，仍是同一轮",
+  "source_tests": [
+    "steer.go",
+    "agent.ts steer（pi steeringMode all）"
+  ],
+  "replies": [
+    "text",
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "甲句",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "s",
+      "mode": "steer",
+      "text": "插话丁",
+      "expected_run": "a",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 2
+      }
+    },
+    {
+      "do": "release",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "wait_request",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "release",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "done"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      },
+      {
+        "label": "s",
+        "state": "admitted",
+        "run": "a"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "done"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      },
+      {
+        "n": 2,
+        "contains": [
+          "a",
+          "s"
+        ]
+      }
+    ],
+    "steers": [
+      {
+        "phase": "delivered",
+        "input": "s",
+        "requeue": false
+      }
+    ]
+  }
+}

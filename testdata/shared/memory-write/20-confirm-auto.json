@@ -1,0 +1,1491 @@
+{
+  "about": "autoConfirm 打开：攒够证据（confirmOccasions 次、至少一次本人说的）的待确认事实提升成有效，confirmed_by 是 ai、范围不动、记一条 confirm 修订；想取代的旧事实是 ai 的就在同一个事务里取代，受保护的这条不提升，旧的已经不是有效的或主体不一样就照常提升；已经不是待确认的不动；种类不在 confirmKinds 里不提升。",
+  "source_tests": [
+    "TestConfirmByEvidenceMatrix",
+    "TestConfirmWithWantsSupersede",
+    "TestConfirmOnlyTouchesCandidates",
+    "TestConfirmKeepsScopesAndRecallEligibility",
+    "TestRememberAfterAIConfirm"
+  ],
+  "options": {
+    "auto_confirm": true
+  },
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "我喜欢乌龙茶",
+      "ago_s": 60
+    }
+  ],
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000CAND01",
+        "kind": "preference",
+        "text": "主人喜欢茶",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000CAND02",
+        "kind": "fact",
+        "text": "旧的是 ai 的",
+        "subject": "owner",
+        "status": "candidate",
+        "scopes": [
+          "owner",
+          "conv:console:b"
+        ]
+      },
+      {
+        "id": "SEED0000000000000000CAND03",
+        "kind": "fact",
+        "text": "旧的受保护",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000CAND04",
+        "kind": "fact",
+        "text": "旧的已经被取代",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000CAND05",
+        "kind": "fact",
+        "text": "旧的是别人的事",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000CAND06",
+        "kind": "promise",
+        "text": "她答应周末陪主人",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000CAND07",
+        "kind": "fact",
+        "text": "没有人说过这件事",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000CAND08",
+        "kind": "fact",
+        "text": "启动补提升的那条",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "text": "已经有效的事实",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000OLD001",
+        "kind": "fact",
+        "text": "旧的 ai 事实",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000OLD002",
+        "kind": "fact",
+        "text": "旧的受保护的事实",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner"
+      },
+      {
+        "id": "SEED0000000000000000OLD003",
+        "kind": "fact",
+        "text": "旧的已经被取代的事实",
+        "subject": "owner",
+        "status": "superseded",
+        "confirmed_by": "ai",
+        "superseded_by": "SEED0000000000000000AI0001"
+      },
+      {
+        "id": "SEED0000000000000000OLD004",
+        "kind": "fact",
+        "text": "小红的事实",
+        "subject": "person:u9",
+        "status": "active",
+        "confirmed_by": "ai",
+        "scopes": [
+          "person:u9"
+        ]
+      }
+    ],
+    "revisions": [
+      {
+        "fact_id": "SEED0000000000000000CAND02",
+        "op": "add",
+        "by": "summary",
+        "after": {
+          "status": "candidate",
+          "wants_supersede": "SEED0000000000000000OLD001"
+        }
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND03",
+        "op": "add",
+        "by": "summary",
+        "after": {
+          "status": "candidate",
+          "wants_supersede": "SEED0000000000000000OLD002"
+        }
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND04",
+        "op": "add",
+        "by": "summary",
+        "after": {
+          "status": "candidate",
+          "wants_supersede": "SEED0000000000000000OLD003"
+        }
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND05",
+        "op": "add",
+        "by": "summary",
+        "after": {
+          "status": "candidate",
+          "wants_supersede": "SEED0000000000000000OLD004"
+        }
+      }
+    ],
+    "evidence": [
+      {
+        "fact_id": "SEED0000000000000000CAND01",
+        "days_ago": 1,
+        "conversation": "console:a",
+        "speaker": "主人",
+        "by_subject": true
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND02",
+        "days_ago": 1,
+        "conversation": "console:a",
+        "speaker": "主人",
+        "by_subject": true
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND03",
+        "days_ago": 1,
+        "conversation": "console:a",
+        "speaker": "主人",
+        "by_subject": true
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND04",
+        "days_ago": 1,
+        "conversation": "console:a",
+        "speaker": "主人",
+        "by_subject": true
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND05",
+        "days_ago": 1,
+        "conversation": "console:a",
+        "speaker": "主人",
+        "by_subject": true
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND06",
+        "days_ago": 1,
+        "conversation": "console:a",
+        "speaker": "主人",
+        "by_subject": true
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND07",
+        "days_ago": 1,
+        "conversation": "console:a",
+        "speaker": "小刚"
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND08",
+        "days_ago": 1,
+        "conversation": "console:a",
+        "speaker": "主人",
+        "by_subject": true
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND08",
+        "days_ago": 2,
+        "conversation": "console:a",
+        "speaker": "主人",
+        "by_subject": true
+      },
+      {
+        "fact_id": "SEED0000000000000000CAND08",
+        "days_ago": 3,
+        "conversation": "console:a",
+        "speaker": "主人",
+        "by_subject": true
+      }
+    ]
+  },
+  "new_ids": [
+    "NEWF0000000000000000000001"
+  ],
+  "steps": [
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:b",
+            "speaker": "小明"
+          },
+          "fact_id": "SEED0000000000000000CAND01"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND01",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "evidence_added": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:c",
+            "speaker": "小红"
+          },
+          "fact_id": "SEED0000000000000000CAND01"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND01",
+            "status": "active",
+            "confirmed": true
+          }
+        ],
+        "counts": {
+          "confirmed": 1,
+          "evidence_added": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:b",
+            "speaker": "小明"
+          },
+          "fact_id": "SEED0000000000000000CAND02"
+        },
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:c",
+            "speaker": "小红"
+          },
+          "fact_id": "SEED0000000000000000CAND02"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND02",
+            "status": "candidate"
+          },
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND02",
+            "status": "active",
+            "confirmed": true
+          }
+        ],
+        "counts": {
+          "confirmed": 1,
+          "evidence_added": 2,
+          "superseded": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:b",
+            "speaker": "小明"
+          },
+          "fact_id": "SEED0000000000000000CAND03"
+        },
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:c",
+            "speaker": "小红"
+          },
+          "fact_id": "SEED0000000000000000CAND03"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND03",
+            "status": "candidate"
+          },
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND03",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "confirm_blocked_protected": 1,
+          "evidence_added": 2,
+          "supersede_protected": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:b",
+            "speaker": "小明"
+          },
+          "fact_id": "SEED0000000000000000CAND04"
+        },
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:c",
+            "speaker": "小红"
+          },
+          "fact_id": "SEED0000000000000000CAND04"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND04",
+            "status": "candidate"
+          },
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND04",
+            "status": "active",
+            "confirmed": true
+          }
+        ],
+        "counts": {
+          "confirmed": 1,
+          "evidence_added": 2
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:b",
+            "speaker": "小明"
+          },
+          "fact_id": "SEED0000000000000000CAND05"
+        },
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:c",
+            "speaker": "小红"
+          },
+          "fact_id": "SEED0000000000000000CAND05"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND05",
+            "status": "candidate"
+          },
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND05",
+            "status": "active",
+            "confirmed": true
+          }
+        ],
+        "counts": {
+          "confirmed": 1,
+          "evidence_added": 2,
+          "supersede_subject_mismatch": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:b",
+            "speaker": "小明"
+          },
+          "fact_id": "SEED0000000000000000CAND06"
+        },
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:c",
+            "speaker": "小红"
+          },
+          "fact_id": "SEED0000000000000000CAND06"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND06",
+            "status": "candidate"
+          },
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND06",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "evidence_added": 2
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:b",
+            "speaker": "小明"
+          },
+          "fact_id": "SEED0000000000000000CAND07"
+        },
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:c",
+            "speaker": "小红"
+          },
+          "fact_id": "SEED0000000000000000CAND07"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND07",
+            "status": "candidate"
+          },
+          {
+            "result": "evidence",
+            "ref": "f:SEED0000000000000000CAND07",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "evidence_added": 2
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:e",
+            "speaker": "小刚"
+          },
+          "fact_id": "SEED0000000000000000CAND01"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "noop",
+            "ref": "f:SEED0000000000000000CAND01",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "evidence_gone": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:b",
+            "speaker": "小明"
+          },
+          "fact_id": "SEED0000000000000000AI0001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "noop",
+            "ref": "f:SEED0000000000000000AI0001",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "evidence_gone": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "confirm",
+          "fact_id": "SEED0000000000000000CAND08"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "confirmed",
+            "ref": "f:SEED0000000000000000CAND08",
+            "status": "active",
+            "confirmed": true
+          }
+        ],
+        "counts": {
+          "confirmed": 1
+        }
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "CAND01",
+        "source_quote": "乌龙茶",
+        "temporal": "stable",
+        "text": "主人喜欢茶，更正一下：是乌龙茶"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了，原来那条（\"主人喜欢茶\"）不再用了。"
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人喜欢茶，更正一下：是乌龙茶",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "已经有效的事实",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAND01",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "NEWF0000000000000000000001",
+        "temporal": null,
+        "text": "主人喜欢茶",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAND02",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "conv:console:b",
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "旧的是 ai 的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAND03",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "旧的受保护",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAND04",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "旧的已经被取代",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAND05",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "旧的是别人的事",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAND06",
+        "kind": "promise",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "她答应周末陪主人",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAND07",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "没有人说过这件事",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAND08",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "启动补提升的那条",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OLD001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "SEED0000000000000000CAND02",
+        "temporal": null,
+        "text": "旧的 ai 事实",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OLD002",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "旧的受保护的事实",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OLD003",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "SEED0000000000000000AI0001",
+        "temporal": null,
+        "text": "旧的已经被取代的事实",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OLD004",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "person:u9",
+        "scopes": [
+          "person:u9"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "person:u9",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "小红的事实",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "person",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "status": "candidate",
+          "wants_supersede": "SEED0000000000000000OLD001"
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "summary",
+        "fact_id": "SEED0000000000000000CAND02",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "status": "candidate",
+          "wants_supersede": "SEED0000000000000000OLD002"
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "summary",
+        "fact_id": "SEED0000000000000000CAND03",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "status": "candidate",
+          "wants_supersede": "SEED0000000000000000OLD003"
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "summary",
+        "fact_id": "SEED0000000000000000CAND04",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "status": "candidate",
+          "wants_supersede": "SEED0000000000000000OLD004"
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "summary",
+        "fact_id": "SEED0000000000000000CAND05",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "ai",
+          "evidence_rows": 3,
+          "occasions": 3,
+          "status": "active"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "evidence_rows": 3,
+          "status": "candidate"
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000CAND01",
+        "op": "confirm",
+        "reason": "攒够 3 次不同场合"
+      },
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "SEED0000000000000000CAND02"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000OLD001",
+        "op": "supersede",
+        "reason": "被 SEED0000000000000000CAND02 替换"
+      },
+      {
+        "after": {
+          "confirmed_by": "ai",
+          "evidence_rows": 3,
+          "occasions": 3,
+          "status": "active",
+          "superseded": "SEED0000000000000000OLD001"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "evidence_rows": 3,
+          "status": "candidate"
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000CAND02",
+        "op": "confirm",
+        "reason": "攒够 3 次不同场合"
+      },
+      {
+        "after": {
+          "confirmed_by": "ai",
+          "evidence_rows": 3,
+          "occasions": 3,
+          "status": "active"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "evidence_rows": 3,
+          "status": "candidate"
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000CAND04",
+        "op": "confirm",
+        "reason": "攒够 3 次不同场合"
+      },
+      {
+        "after": {
+          "confirmed_by": "ai",
+          "evidence_rows": 3,
+          "occasions": 3,
+          "status": "active"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "evidence_rows": 3,
+          "status": "candidate"
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000CAND05",
+        "op": "confirm",
+        "reason": "攒够 3 次不同场合"
+      },
+      {
+        "after": {
+          "confirmed_by": "ai",
+          "evidence_rows": 3,
+          "occasions": 3,
+          "status": "active"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "evidence_rows": 3,
+          "status": "candidate"
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000CAND08",
+        "op": "confirm",
+        "reason": "攒够 3 次不同场合"
+      },
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "NEWF0000000000000000000001"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000CAND01",
+        "op": "supersede",
+        "reason": "被 NEWF0000000000000000000001 替换"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "add",
+        "reason": "替换 SEED0000000000000000CAND01"
+      }
+    ],
+    "evidence": [
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 1,
+        "fact_id": "SEED0000000000000000CAND01",
+        "seq": null,
+        "speaker": "主人",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:b",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND01",
+        "seq": null,
+        "speaker": "小明",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:c",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND01",
+        "seq": null,
+        "speaker": "小红",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 1,
+        "fact_id": "SEED0000000000000000CAND02",
+        "seq": null,
+        "speaker": "主人",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:b",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND02",
+        "seq": null,
+        "speaker": "小明",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:c",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND02",
+        "seq": null,
+        "speaker": "小红",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 1,
+        "fact_id": "SEED0000000000000000CAND03",
+        "seq": null,
+        "speaker": "主人",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:b",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND03",
+        "seq": null,
+        "speaker": "小明",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:c",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND03",
+        "seq": null,
+        "speaker": "小红",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 1,
+        "fact_id": "SEED0000000000000000CAND04",
+        "seq": null,
+        "speaker": "主人",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:b",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND04",
+        "seq": null,
+        "speaker": "小明",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:c",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND04",
+        "seq": null,
+        "speaker": "小红",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 1,
+        "fact_id": "SEED0000000000000000CAND05",
+        "seq": null,
+        "speaker": "主人",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:b",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND05",
+        "seq": null,
+        "speaker": "小明",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:c",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND05",
+        "seq": null,
+        "speaker": "小红",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 1,
+        "fact_id": "SEED0000000000000000CAND06",
+        "seq": null,
+        "speaker": "主人",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:b",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND06",
+        "seq": null,
+        "speaker": "小明",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:c",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND06",
+        "seq": null,
+        "speaker": "小红",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:a",
+        "days_ago": 1,
+        "fact_id": "SEED0000000000000000CAND07",
+        "seq": null,
+        "speaker": "小刚",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:b",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND07",
+        "seq": null,
+        "speaker": "小明",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:c",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND07",
+        "seq": null,
+        "speaker": "小红",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 3,
+        "fact_id": "SEED0000000000000000CAND08",
+        "seq": null,
+        "speaker": "主人",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 2,
+        "fact_id": "SEED0000000000000000CAND08",
+        "seq": null,
+        "speaker": "主人",
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 1,
+        "fact_id": "SEED0000000000000000CAND08",
+        "seq": null,
+        "speaker": "主人",
+        "verdict": null
+      }
+    ]
+  }
+}

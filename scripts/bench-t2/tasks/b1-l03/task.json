@@ -1,0 +1,52 @@
+{
+  "id": "b1-l03",
+  "group": "b1",
+  "source": "自己出的（2026-10-27）",
+  "steps": [
+    {
+      "say": "把 photos 里 IMG_ 开头的文件都改名成“旅行-001.txt”这样（编号照原来的），说明.txt 别动。"
+    }
+  ],
+  "judge": {
+    "files": [
+      {
+        "path": "photos/旅行-001.txt",
+        "contains": [
+          "第一张：海边"
+        ]
+      },
+      {
+        "path": "photos/旅行-002.txt",
+        "contains": [
+          "第二张：山路"
+        ]
+      },
+      {
+        "path": "photos/旅行-003.txt",
+        "contains": [
+          "第三张：夜市"
+        ]
+      },
+      {
+        "path": "photos/IMG_001.txt",
+        "absent": true
+      },
+      {
+        "path": "photos/IMG_002.txt",
+        "absent": true
+      },
+      {
+        "path": "photos/IMG_003.txt",
+        "absent": true
+      },
+      {
+        "path": "photos/说明.txt",
+        "equals": "照片的文字说明，别改名。"
+      }
+    ],
+    "allowed": [
+      "photos/IMG_*.txt",
+      "photos/旅行-*.txt"
+    ]
+  }
+}

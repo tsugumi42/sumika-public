@@ -1,0 +1,504 @@
+{
+  "name": "local-daily-and-topics",
+  "doc": "本地：每个配置的角色都有日常（没消息也在列表里）；话题只认主人是配置里的角色；拿别人的话题号拼进自己的会话名要报错",
+  "source_tests": [
+    "store/display_scenes_test.go",
+    "desktopread/service_test.go"
+  ],
+  "characters": [
+    {
+      "id": "a",
+      "name": "编造甲"
+    },
+    {
+      "id": "b",
+      "name": "编造乙"
+    }
+  ],
+  "rows": {
+    "local": [
+      {
+        "table": "local_topics",
+        "values": {
+          "id": "T1",
+          "character_id": "a",
+          "title": "编的话题",
+          "created_at": 900
+        }
+      },
+      {
+        "table": "local_topics",
+        "values": {
+          "id": "T2",
+          "character_id": "z",
+          "title": "没配置的角色的话题",
+          "created_at": 901
+        }
+      },
+      {
+        "table": "local_topics",
+        "values": {
+          "id": "T3",
+          "character_id": "b",
+          "title": "置顶话题",
+          "pinned_at": 5,
+          "created_at": 902
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 1,
+          "id": "L01",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "主人对甲说",
+          "created_at": 1000
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 2,
+          "id": "L02",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "character",
+          "actor_id": "a",
+          "kind": "message",
+          "text": "甲回",
+          "created_at": 1001,
+          "origin": "character"
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 3,
+          "id": "L03",
+          "channel": "console",
+          "conversation": "console:a:topic:T1",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "话题里一句",
+          "created_at": 1002
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 4,
+          "id": "L04",
+          "channel": "console",
+          "conversation": "console:z:topic:T2",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "看不到的话题",
+          "created_at": 1003
+        }
+      }
+    ]
+  },
+  "calls": [
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "local",
+            "channel": "console",
+            "scene": "private",
+            "conversation": "console:a"
+          },
+          "limit": 200
+        }
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "high_water": 4,
+            "items": [
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1000,
+                "display_name": "主人",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L01",
+                    "platform": "local"
+                  }
+                },
+                "seq": 1,
+                "text": "主人对甲说",
+                "version": 1
+              },
+              {
+                "actor_id": "a",
+                "actor_kind": "character",
+                "created_at": 1001,
+                "display_name": "编造甲",
+                "kind": "message",
+                "origin": "character",
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L02",
+                    "platform": "local"
+                  }
+                },
+                "seq": 2,
+                "text": "甲回",
+                "version": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "local",
+            "channel": "console",
+            "scene": "private",
+            "conversation": "console:a:topic:T1"
+          },
+          "limit": 200
+        }
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "high_water": 4,
+            "items": [
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1002,
+                "display_name": "主人",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a:topic:T1",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L03",
+                    "platform": "local"
+                  }
+                },
+                "seq": 3,
+                "text": "话题里一句",
+                "version": 2
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "local",
+            "channel": "console",
+            "scene": "private",
+            "conversation": "console:b:topic:T1"
+          },
+          "limit": 200
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "local",
+            "channel": "console",
+            "scene": "private",
+            "conversation": "console:z:topic:T2"
+          },
+          "limit": 200
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "overview.read",
+      "params": {
+        "limit": 50
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "capabilities": [
+              {
+                "name": "local-group",
+                "reason": "当前数据源只看历史，不能建群或发消息",
+                "state": "unsupported"
+              },
+              {
+                "name": "runtime",
+                "reason": "宿主状态尚未接入",
+                "state": "unsupported"
+              }
+            ],
+            "characters": {
+              "items": [
+                {
+                  "state": "ready",
+                  "value": {
+                    "id": "a",
+                    "name": "编造甲"
+                  }
+                },
+                {
+                  "state": "ready",
+                  "value": {
+                    "id": "b",
+                    "name": "编造乙"
+                  }
+                }
+              ]
+            },
+            "conversations": {
+              "items": [
+                {
+                  "key": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "last": {
+                    "actor_id": "a",
+                    "actor_kind": "character",
+                    "created_at": 1001,
+                    "display_name": "编造甲",
+                    "kind": "message",
+                    "origin": "character",
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L02",
+                        "platform": "local"
+                      }
+                    },
+                    "seq": 2,
+                    "text": "甲回"
+                  }
+                },
+                {
+                  "key": {
+                    "channel": "console",
+                    "conversation": "console:b",
+                    "platform": "local",
+                    "scene": "private"
+                  }
+                },
+                {
+                  "key": {
+                    "channel": "console",
+                    "conversation": "console:b:topic:T3",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "title": "置顶话题"
+                },
+                {
+                  "key": {
+                    "channel": "console",
+                    "conversation": "console:a:topic:T1",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "last": {
+                    "actor_id": "owner",
+                    "actor_kind": "owner",
+                    "created_at": 1002,
+                    "display_name": "主人",
+                    "kind": "message",
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a:topic:T1",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L03",
+                        "platform": "local"
+                      }
+                    },
+                    "seq": 3,
+                    "text": "话题里一句"
+                  },
+                  "title": "编的话题"
+                }
+              ]
+            },
+            "runtime": {
+              "alerts": {},
+              "reason": "宿主状态尚未接入",
+              "reason_code": "runtime_not_attached"
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "overview.read",
+      "params": {
+        "limit": 50,
+        "character": "a"
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "capabilities": [
+              {
+                "name": "local-group",
+                "reason": "当前数据源只看历史，不能建群或发消息",
+                "state": "unsupported"
+              },
+              {
+                "name": "runtime",
+                "reason": "宿主状态尚未接入",
+                "state": "unsupported"
+              }
+            ],
+            "characters": {
+              "items": [
+                {
+                  "state": "ready",
+                  "value": {
+                    "id": "a",
+                    "name": "编造甲"
+                  }
+                },
+                {
+                  "state": "ready",
+                  "value": {
+                    "id": "b",
+                    "name": "编造乙"
+                  }
+                }
+              ]
+            },
+            "conversations": {
+              "items": [
+                {
+                  "key": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "last": {
+                    "actor_id": "a",
+                    "actor_kind": "character",
+                    "created_at": 1001,
+                    "display_name": "编造甲",
+                    "kind": "message",
+                    "origin": "character",
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L02",
+                        "platform": "local"
+                      }
+                    },
+                    "seq": 2,
+                    "text": "甲回"
+                  }
+                },
+                {
+                  "key": {
+                    "channel": "console",
+                    "conversation": "console:a:topic:T1",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "last": {
+                    "actor_id": "owner",
+                    "actor_kind": "owner",
+                    "created_at": 1002,
+                    "display_name": "主人",
+                    "kind": "message",
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a:topic:T1",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L03",
+                        "platform": "local"
+                      }
+                    },
+                    "seq": 3,
+                    "text": "话题里一句"
+                  },
+                  "title": "编的话题"
+                }
+              ]
+            },
+            "runtime": {
+              "alerts": {},
+              "reason": "宿主状态尚未接入",
+              "reason_code": "runtime_not_attached"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

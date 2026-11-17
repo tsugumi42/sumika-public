@@ -1,0 +1,113 @@
+{
+  "id": "steer-after-run-finished-becomes-queue",
+  "about": "steer 指向的那一轮已经结束：当作 queue 新开一轮（不报错、不丢）",
+  "source_tests": [
+    "input.go Submit",
+    "app/goalwire_steer_test.go"
+  ],
+  "replies": [
+    "text",
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "甲句",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "release",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "done"
+      }
+    },
+    {
+      "do": "submit",
+      "label": "s",
+      "mode": "steer",
+      "text": "插话丁",
+      "expected_run": "a",
+      "expect": {
+        "state": "accepted",
+        "run": "s",
+        "seq_rank": 2
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "release",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "s",
+      "expect": {
+        "outcome": "done"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      },
+      {
+        "label": "s",
+        "state": "admitted",
+        "run": "s"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "done"
+      },
+      {
+        "label": "s",
+        "state": "settled",
+        "outcome": "done"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      },
+      {
+        "n": 2,
+        "contains": [
+          "a",
+          "s"
+        ]
+      }
+    ],
+    "steers": []
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "b1-a10-bottle-song",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/bottle-song（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 bottle_song.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.md": "cd2bc1f6cbae2ed70c4ff8a5ab0e221f5c0b04137b8ae8e6de6868d36bf77f29",
+    "bottle_song.go": "ff79fa950999f99f45c07af368ec965ae2ede613fa811090eeca779b56e565c8",
+    "bottle_song_test.go": "275fd87ef7e2c513f62a899e23f48644fe8c4d4f01dc3ae7cd7ecb932c86efdd",
+    "cases_test.go": "e2dbf0b3ed01187f34d173af216155aa79db751e7cc6b50bb6c4b15e31b3ceac",
+    "go.mod": "3de99bc1c54be7c3b6ad64db4ce356c8c79828f951fbeed59232d7587c26de06"
+  }
+}

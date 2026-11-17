@@ -1,0 +1,40 @@
+{
+ "code": 0,
+ "data": {
+  "bvid": "BV1xx411c7mD",
+  "aid": 900000000000090003,
+  "cid": 900000000000090006,
+  "title": "编造的示例视频甲",
+  "desc": "这",
+  "pic": "http://i1.hdslb.com/bfs/fixture/1.jpg",
+  "pubdate": 1577835803,
+  "tname": "",
+  "owner": {
+   "name": "编造作者",
+   "mid": 900000000000090009,
+   "face": "https://i2.hdslb.com/bfs/fixture/2.jpg"
+  },
+  "pages": [
+   {
+    "cid": 900000000000090006,
+    "page": 1,
+    "part": "编造分P",
+    "duration": 213,
+    "dimension": {
+     "width": 1920,
+     "height": 1080,
+     "rotate": 0
+    }
+   }
+  ],
+  "stat": {
+   "view": 107987590,
+   "danmaku": 151611,
+   "like": 2970151,
+   "coin": 1290555,
+   "favorite": 1562798,
+   "share": 505201,
+   "reply": 239763
+  }
+ }
+}

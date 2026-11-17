@@ -1,0 +1,297 @@
+{
+  "$description": "深色：中性色阶每往上一层亮一档；字重各减 40；阴影用黑色",
+  "ramp": {
+    "$type": "color",
+    "text": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.9098, 0.9255, 0.9373],
+        "hex": "#e8ecef"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.94,
+            "k": 0.8
+          }
+        }
+      }
+    },
+    "text-2": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.6863, 0.7098, 0.7333],
+        "hex": "#afb5bb"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.77,
+            "k": 1.4
+          }
+        }
+      }
+    },
+    "text-3": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.5765, 0.6, 0.6235],
+        "hex": "#93999f"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.68,
+            "k": 1.4
+          }
+        }
+      }
+    },
+    "surface": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.1255, 0.1373, 0.1529],
+        "hex": "#202327"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.255,
+            "k": 1
+          }
+        }
+      }
+    },
+    "bg": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.0941, 0.1059, 0.1176],
+        "hex": "#181b1e"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.22,
+            "k": 1
+          }
+        }
+      }
+    },
+    "rail": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.0667, 0.0784, 0.0902],
+        "hex": "#111417"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.19,
+            "k": 1
+          }
+        }
+      }
+    },
+    "sunken": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.1608, 0.1765, 0.1922],
+        "hex": "#292d31"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.295,
+            "k": 1.2
+          }
+        }
+      }
+    },
+    "sunken-hover": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.1882, 0.2078, 0.2235],
+        "hex": "#303539"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.325,
+            "k": 1.2
+          }
+        }
+      }
+    },
+    "line": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.2078, 0.2275, 0.2471],
+        "hex": "#353a3f"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.345,
+            "k": 1.4
+          }
+        }
+      }
+    },
+    "line-strong": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.2745, 0.2941, 0.3137],
+        "hex": "#464b50"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.41,
+            "k": 1.4
+          }
+        }
+      }
+    },
+    "float": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.1686, 0.1882, 0.2039],
+        "hex": "#2b3034"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.305,
+            "k": 1.2
+          }
+        }
+      }
+    },
+    "bubble": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.1608, 0.1765, 0.1922],
+        "hex": "#292d31"
+      },
+      "$extensions": {
+        "sumika": {
+          "neutral": {
+            "l": 0.295,
+            "k": 1.2
+          }
+        }
+      }
+    },
+    "float-ring-base": {
+      "$value": "{ink.white}"
+    },
+    "shadow-base": {
+      "$value": "{ink.black}"
+    }
+  },
+  "ink": {
+    "$type": "color",
+    "on-danger": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [0.2, 0.01, 25]
+      }
+    }
+  },
+  "hue": {
+    "$type": "color",
+    "danger": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [0.72, 0.14, 30]
+      }
+    },
+    "ok": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [0.75, 0.12, 155]
+      }
+    },
+    "ok-text": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [0.85, 0.09, 155]
+      }
+    }
+  },
+  "alpha": {
+    "$type": "number",
+    "float-ring": {
+      "$value": 0.16
+    },
+    "shadow-a": {
+      "$value": 0.35
+    },
+    "shadow-b": {
+      "$value": 0.25
+    }
+  },
+  "contrast": {
+    "$type": "number",
+    "away": {
+      "$value": 1
+    },
+    "danger-hover-shift": {
+      "$value": 0.06
+    },
+    "diff-tint": {
+      "$value": 0.23
+    }
+  },
+  "weight": {
+    "$type": "fontWeight",
+    "normal": {
+      "$value": 360
+    },
+    "medium": {
+      "$value": 460
+    },
+    "semi": {
+      "$value": 560
+    },
+    "bold": {
+      "$value": 660
+    }
+  },
+  "accent-recipe": {
+    "$type": "number",
+    "hover-dl": {
+      "$value": 0.05
+    },
+    "press-dl": {
+      "$value": 0.1
+    },
+    "soft-l": {
+      "$value": 0.28
+    },
+    "soft-cmax": {
+      "$value": 0.045
+    },
+    "soft-hover-l": {
+      "$value": 0.31
+    },
+    "soft-hover-cmax": {
+      "$value": 0.055
+    },
+    "line-l": {
+      "$value": 0.46
+    },
+    "line-cmax": {
+      "$value": 0.085
+    },
+    "text-l": {
+      "$value": 0.8
+    },
+    "text-dir": {
+      "$value": 1
+    },
+    "text-cmul": {
+      "$value": 1
+    }
+  }
+}

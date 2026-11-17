@@ -1,0 +1,96 @@
+{
+  "id": "duplicate-by-channel-conversation-platform-id",
+  "about": "同一个会话里同一个平台消息号只存一条；重复的只补'看到了'，不新增事件",
+  "source_tests": [
+    "TestInboundStoresEvent",
+    "TestConcurrentDuplicateDelivery"
+  ],
+  "items": [
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "500",
+      "from": "friend",
+      "text": "第一次",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "500",
+      "from": "friend",
+      "text": "重连重推同一条",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": true,
+        "dropped": false,
+        "character": "",
+        "origin": "",
+        "actor_kind": "",
+        "observed": false
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "501",
+      "from": "friend",
+      "text": "另一条",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    }
+  ],
+  "final": {
+    "events": [
+      {
+        "conv": "qq:group:900",
+        "platform_id": "500",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "第一次",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "501",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "另一条",
+        "time_s": 0
+      }
+    ],
+    "observations": [
+      {
+        "character": "ca",
+        "event": 1
+      },
+      {
+        "character": "ca",
+        "event": 2
+      }
+    ]
+  }
+}

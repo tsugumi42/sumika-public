@@ -1,0 +1,29 @@
+{
+  "requests": [],
+  "rows": {
+    "events": [
+      {
+        "seq": 1,
+        "channel": "console",
+        "conversation": "console:suzu",
+        "actor_kind": "owner",
+        "actor_id": "owner",
+        "origin": "owner",
+        "kind": "message",
+        "text": "在吗",
+        "segments_json": null,
+        "reply_to": null,
+        "created_at": 1792857900000
+      }
+    ],
+    "observations": [
+      {
+        "character_id": "suzu",
+        "event_seq": 1
+      }
+    ],
+    "model_runs": [],
+    "prompt_sections": [],
+    "steps": []
+  }
+}

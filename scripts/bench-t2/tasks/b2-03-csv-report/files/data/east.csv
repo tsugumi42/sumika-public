@@ -1,0 +1,7 @@
+date,id,category,owner,amount
+"Mar 7, 2026",E-301,Trip,team-red,260.00
+"Mar 14, 2026",E-302,tools,team-green,44.99
+"Apr 1, 2026",E-303,Food,team-blue,19.2
+"Apr 2, 2026",E-304,software,team-red,$49.00
+"Apr 2, 2026",E-304,software,team-red,$49.00
+"Apr 9, 2026",E-305,Travel,team-green,

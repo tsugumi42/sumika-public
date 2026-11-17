@@ -1,0 +1,86 @@
+{
+  "id": "private-latest-continuous-fills-gap",
+  "about": "私聊最新页且协议端自证连续（Continuous 为真）并越过起点：旧洞 filled",
+  "source_tests": [
+    "TestAlignmentExistingCoverageContract/连续分页"
+  ],
+  "scene": "private",
+  "setup": {
+    "watermark_ago_ms": 3600000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": [
+      {
+        "from_ago_ms": 2400000,
+        "to_ago_ms": 600000,
+        "state": "open",
+        "reason": "outage",
+        "tries": 3,
+        "last_try_ago_ms": 0
+      }
+    ]
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "91",
+              "ago_ms": 60000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "92",
+              "ago_ms": 4800000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "91",
+            "ago_ms": 60000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 2400000,
+            "to_ago_ms": 600000,
+            "state": "filled",
+            "reason": "outage",
+            "tries": 3,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 3660000,
+          "through_ago_ms": 0
+        },
+        "complete_coverage": true
+      }
+    }
+  ]
+}

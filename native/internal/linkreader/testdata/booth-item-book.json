@@ -1,0 +1,54 @@
+{
+ "id": 900002,
+ "name": "编造的电子书",
+ "description": "这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明",
+ "is_adult": false,
+ "is_sold_out": false,
+ "is_end_of_sale": false,
+ "published_at": "2026-01-06T17:52:24.000+09:00",
+ "price": "¥ 600~",
+ "wish_lists_count": 40,
+ "category": {
+  "name": "编造的书籍分类"
+ },
+ "tags": [
+  {
+   "name": "编造标签00"
+  },
+  {
+   "name": "编造标签01"
+  },
+  {
+   "name": "编造标签02"
+  },
+  {
+   "name": "编造标签03"
+  },
+  {
+   "name": "编造标签04"
+  },
+  {
+   "name": "编造标签05"
+  },
+  {
+   "name": "编造标签06"
+  },
+  {
+   "name": "编造标签07"
+  },
+  {
+   "name": "编造标签08"
+  }
+ ],
+ "images": [
+  {
+   "original": "https://booth.pximg.net/0badc0de-0000-4000-8000-000000000001/i/900002/0badc0de-0000-4000-8000-000000000002_base_resized.jpg"
+  }
+ ],
+ "shop": {
+  "uuid": "0badc0de-0000-4000-8000-000000000001",
+  "name": "编造店铺乙",
+  "subdomain": "example-shop-b",
+  "thumbnail_url": "https://booth.pximg.net/c/48x48/users/1001/icon_image/0badc0de-0000-4000-8000-000000000003_base_resized.jpg"
+ }
+}

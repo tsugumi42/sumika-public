@@ -1,0 +1,952 @@
+{
+  "name": "quotes-and-parts",
+  "doc": "本地私聊、本地群里的引用回复和分块消息：reply_to 和被引的那一条、引用块的出处和片段、被撤回的目标、看不到的目标（unsupported）、附件占位",
+  "source_tests": [
+    "app/local_quote_test.go",
+    "desktopread/service.go（project、projectParts）",
+    "store/display_parts.go"
+  ],
+  "characters": [
+    {
+      "id": "a",
+      "name": "编造甲"
+    },
+    {
+      "id": "b",
+      "name": "编造乙"
+    }
+  ],
+  "rows": {
+    "local": [
+      {
+        "table": "events",
+        "values": {
+          "seq": 1,
+          "id": "L01",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "先说一段",
+          "created_at": 1000
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 2,
+          "id": "L02",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "character",
+          "actor_id": "a",
+          "kind": "message",
+          "text": "第一句。第二句。第三句。",
+          "created_at": 1001,
+          "origin": "character"
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 3,
+          "id": "L03",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "这句什么意思\n顺便问下",
+          "created_at": 1002,
+          "segments_json": "{\"kernel_input_digest\":\"d1\",\"local_parts\":[{\"quote\":{\"id\":\"L02\",\"name\":\"编造甲\",\"at\":1001,\"clock\":\"00:00\",\"text\":\"第二句。\",\"start\":4,\"end\":8},\"text\":\"这句什么意思\"},{\"text\":\"顺便问下\"}]}",
+          "reply_to": "L02"
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 4,
+          "id": "L04",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "character",
+          "actor_id": "a",
+          "kind": "message",
+          "text": "会被撤回的话",
+          "created_at": 1003,
+          "origin": "character"
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 5,
+          "id": "L05",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "system",
+          "actor_id": "system",
+          "kind": "notice",
+          "text": "撤回了",
+          "created_at": 1004,
+          "segments_json": "{\"notice\":\"recall\"}",
+          "reply_to": "L04"
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 6,
+          "id": "L06",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "引用撤回了的",
+          "created_at": 1005,
+          "segments_json": "{\"kernel_input_digest\":\"d2\",\"local_parts\":[{\"quote\":{\"id\":\"L04\",\"name\":\"编造甲\",\"at\":1003,\"clock\":\"00:00\",\"text\":\"会被撤回的话\",\"start\":0,\"end\":0,\"whole\":true},\"text\":\"引用撤回了的\"}]}",
+          "reply_to": "L04"
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 7,
+          "id": "L07",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "引用已经看不到的",
+          "created_at": 1006,
+          "segments_json": "{\"kernel_input_digest\":\"d3\",\"local_parts\":[{\"quote\":{\"id\":\"L99\",\"name\":\"别处\",\"at\":900,\"clock\":\"00:00\",\"text\":\"别处的话\",\"start\":0,\"end\":0},\"text\":\"引用已经看不到的\"}]}",
+          "reply_to": "L99"
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 8,
+          "id": "L08",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "带附件\n第二段",
+          "created_at": 1007,
+          "segments_json": "{\"kernel_input_digest\":\"d4\",\"local_parts\":[{\"quote\":{\"id\":\"L01\",\"name\":\"主人\",\"at\":1000,\"clock\":\"00:00\",\"text\":\"先说一段\",\"start\":0,\"end\":0,\"whole\":true},\"text\":\"带附件\",\"attachments\":[{\"kind\":\"file\",\"path\":\"D:/files/笔记.txt\"}]},{\"text\":\"第二段\",\"attachments\":[{\"kind\":\"image\",\"name\":\"截图\",\"path\":\"D:/files/截图.png\",\"width\":64,\"height\":32}]}]}",
+          "reply_to": "L01"
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 9,
+          "id": "G01",
+          "channel": "console",
+          "conversation": "console:group:g1",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "群里一句",
+          "created_at": 1000
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 10,
+          "id": "G02",
+          "channel": "console",
+          "conversation": "console:group:g1",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "引用群里那句",
+          "created_at": 1001,
+          "segments_json": "{\"kernel_input_digest\":\"d5\",\"local_parts\":[{\"quote\":{\"id\":\"G01\",\"name\":\"主人\",\"at\":1000,\"clock\":\"00:00\",\"text\":\"群里一句\",\"start\":0,\"end\":0,\"whole\":true},\"text\":\"引用群里那句\"}]}",
+          "reply_to": "G01"
+        }
+      },
+      {
+        "table": "local_groups",
+        "values": {
+          "id": "g1",
+          "name": "编的群",
+          "created_at": 800
+        }
+      },
+      {
+        "table": "local_group_members",
+        "values": {
+          "group_id": "g1",
+          "character_id": "a",
+          "position": 0
+        }
+      },
+      {
+        "table": "local_group_members",
+        "values": {
+          "group_id": "g1",
+          "character_id": "b",
+          "position": 1
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 11,
+          "id": "M01",
+          "channel": "console",
+          "conversation": "console:b",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "别的会话里的话",
+          "created_at": 900
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 12,
+          "id": "L10",
+          "channel": "console",
+          "conversation": "console:a",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "引用别的会话",
+          "created_at": 1008,
+          "segments_json": "{\"kernel_input_digest\":\"d6\",\"local_parts\":[{\"quote\":{\"id\":\"M01\",\"name\":\"主人\",\"at\":900,\"clock\":\"00:00\",\"text\":\"别的会话里的话\",\"start\":0,\"end\":0,\"whole\":true},\"text\":\"引用别的会话\"}]}",
+          "reply_to": "M01"
+        }
+      }
+    ]
+  },
+  "calls": [
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "local",
+            "channel": "console",
+            "scene": "private",
+            "conversation": "console:a"
+          },
+          "limit": 200
+        }
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "high_water": 12,
+            "items": [
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1000,
+                "display_name": "主人",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L01",
+                    "platform": "local"
+                  }
+                },
+                "seq": 1,
+                "text": "先说一段",
+                "version": 1
+              },
+              {
+                "actor_id": "a",
+                "actor_kind": "character",
+                "created_at": 1001,
+                "display_name": "编造甲",
+                "kind": "message",
+                "origin": "character",
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L02",
+                    "platform": "local"
+                  }
+                },
+                "seq": 2,
+                "text": "第一句。第二句。第三句。",
+                "version": 1
+              },
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1002,
+                "display_name": "主人",
+                "kind": "message",
+                "parts": [
+                  {
+                    "has_quote": true,
+                    "quote": {
+                      "state": "ready",
+                      "value": {
+                        "actor_kind": "character",
+                        "display_name": "编造甲",
+                        "ref": {
+                          "conversation": {
+                            "channel": "console",
+                            "conversation": "console:a",
+                            "platform": "local",
+                            "scene": "private"
+                          },
+                          "event": {
+                            "event_id": "L02",
+                            "platform": "local"
+                          }
+                        },
+                        "snippet": "第二句。",
+                        "snippet_end": 8,
+                        "snippet_start": 4,
+                        "text": "第一句。第二句。第三句。"
+                      }
+                    },
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L02",
+                        "platform": "local"
+                      }
+                    },
+                    "text": "这句什么意思"
+                  },
+                  {
+                    "text": "顺便问下"
+                  }
+                ],
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L03",
+                    "platform": "local"
+                  }
+                },
+                "reply": {
+                  "state": "ready",
+                  "value": {
+                    "actor_kind": "character",
+                    "display_name": "编造甲",
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L02",
+                        "platform": "local"
+                      }
+                    },
+                    "snippet": "第二句。",
+                    "snippet_end": 8,
+                    "snippet_start": 4,
+                    "text": "第一句。第二句。第三句。"
+                  }
+                },
+                "reply_to": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L02",
+                    "platform": "local"
+                  }
+                },
+                "seq": 3,
+                "text": "这句什么意思\n顺便问下",
+                "version": 1
+              },
+              {
+                "actor_id": "a",
+                "actor_kind": "character",
+                "created_at": 1003,
+                "display_name": "编造甲",
+                "kind": "message",
+                "origin": "character",
+                "recalled": true,
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L04",
+                    "platform": "local"
+                  }
+                },
+                "seq": 4,
+                "text": "会被撤回的话",
+                "version": 1
+              },
+              {
+                "actor_id": "system",
+                "actor_kind": "system",
+                "created_at": 1004,
+                "display_name": "系统",
+                "kind": "notice",
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L05",
+                    "platform": "local"
+                  }
+                },
+                "reply": {
+                  "state": "ready",
+                  "value": {
+                    "actor_kind": "character",
+                    "display_name": "编造甲",
+                    "recalled": true,
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L04",
+                        "platform": "local"
+                      }
+                    },
+                    "text": "会被撤回的话"
+                  }
+                },
+                "reply_to": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L04",
+                    "platform": "local"
+                  }
+                },
+                "seq": 5,
+                "text": "撤回了",
+                "version": 1
+              },
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1005,
+                "display_name": "主人",
+                "kind": "message",
+                "parts": [
+                  {
+                    "has_quote": true,
+                    "quote": {
+                      "state": "ready",
+                      "value": {
+                        "actor_kind": "character",
+                        "display_name": "编造甲",
+                        "recalled": true,
+                        "ref": {
+                          "conversation": {
+                            "channel": "console",
+                            "conversation": "console:a",
+                            "platform": "local",
+                            "scene": "private"
+                          },
+                          "event": {
+                            "event_id": "L04",
+                            "platform": "local"
+                          }
+                        },
+                        "snippet": "会被撤回的话",
+                        "snippet_whole": true,
+                        "text": "会被撤回的话"
+                      }
+                    },
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L04",
+                        "platform": "local"
+                      }
+                    },
+                    "text": "引用撤回了的"
+                  }
+                ],
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L06",
+                    "platform": "local"
+                  }
+                },
+                "reply": {
+                  "state": "ready",
+                  "value": {
+                    "actor_kind": "character",
+                    "display_name": "编造甲",
+                    "recalled": true,
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L04",
+                        "platform": "local"
+                      }
+                    },
+                    "snippet": "会被撤回的话",
+                    "snippet_whole": true,
+                    "text": "会被撤回的话"
+                  }
+                },
+                "reply_to": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L04",
+                    "platform": "local"
+                  }
+                },
+                "seq": 6,
+                "text": "引用撤回了的",
+                "version": 1
+              },
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1006,
+                "display_name": "主人",
+                "kind": "message",
+                "parts": [
+                  {
+                    "has_quote": true,
+                    "quote": {
+                      "state": "unsupported"
+                    },
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L99",
+                        "platform": "local"
+                      }
+                    },
+                    "text": "引用已经看不到的"
+                  }
+                ],
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L07",
+                    "platform": "local"
+                  }
+                },
+                "reply": {
+                  "state": "unsupported"
+                },
+                "reply_to": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L99",
+                    "platform": "local"
+                  }
+                },
+                "seq": 7,
+                "text": "引用已经看不到的",
+                "version": 1
+              },
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1007,
+                "display_name": "主人",
+                "kind": "message",
+                "parts": [
+                  {
+                    "attachments": [
+                      {
+                        "kind": "file",
+                        "path": "D:/files/笔记.txt"
+                      }
+                    ],
+                    "has_quote": true,
+                    "quote": {
+                      "state": "ready",
+                      "value": {
+                        "actor_kind": "owner",
+                        "display_name": "主人",
+                        "ref": {
+                          "conversation": {
+                            "channel": "console",
+                            "conversation": "console:a",
+                            "platform": "local",
+                            "scene": "private"
+                          },
+                          "event": {
+                            "event_id": "L01",
+                            "platform": "local"
+                          }
+                        },
+                        "snippet": "先说一段",
+                        "snippet_whole": true,
+                        "text": "先说一段"
+                      }
+                    },
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L01",
+                        "platform": "local"
+                      }
+                    },
+                    "text": "带附件"
+                  },
+                  {
+                    "attachments": [
+                      {
+                        "height": 32,
+                        "kind": "image",
+                        "name": "截图",
+                        "path": "D:/files/截图.png",
+                        "width": 64
+                      }
+                    ],
+                    "text": "第二段"
+                  }
+                ],
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L08",
+                    "platform": "local"
+                  }
+                },
+                "reply": {
+                  "state": "ready",
+                  "value": {
+                    "actor_kind": "owner",
+                    "display_name": "主人",
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "L01",
+                        "platform": "local"
+                      }
+                    },
+                    "snippet": "先说一段",
+                    "snippet_whole": true,
+                    "text": "先说一段"
+                  }
+                },
+                "reply_to": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L01",
+                    "platform": "local"
+                  }
+                },
+                "seq": 8,
+                "text": "带附件\n第二段",
+                "version": 1
+              },
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1008,
+                "display_name": "主人",
+                "kind": "message",
+                "parts": [
+                  {
+                    "has_quote": true,
+                    "quote": {
+                      "state": "unsupported"
+                    },
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:a",
+                        "platform": "local",
+                        "scene": "private"
+                      },
+                      "event": {
+                        "event_id": "M01",
+                        "platform": "local"
+                      }
+                    },
+                    "text": "引用别的会话"
+                  }
+                ],
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "L10",
+                    "platform": "local"
+                  }
+                },
+                "reply": {
+                  "state": "unsupported"
+                },
+                "reply_to": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  },
+                  "event": {
+                    "event_id": "M01",
+                    "platform": "local"
+                  }
+                },
+                "seq": 12,
+                "text": "引用别的会话",
+                "version": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "local",
+            "channel": "console",
+            "scene": "group",
+            "conversation": "console:group:g1"
+          },
+          "limit": 200
+        }
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "high_water": 12,
+            "items": [
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1000,
+                "display_name": "主人",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:group:g1",
+                    "platform": "local",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "G01",
+                    "platform": "local"
+                  }
+                },
+                "seq": 9,
+                "text": "群里一句",
+                "version": 2
+              },
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1001,
+                "display_name": "主人",
+                "kind": "message",
+                "parts": [
+                  {
+                    "has_quote": true,
+                    "quote": {
+                      "state": "ready",
+                      "value": {
+                        "actor_kind": "owner",
+                        "display_name": "主人",
+                        "ref": {
+                          "conversation": {
+                            "channel": "console",
+                            "conversation": "console:group:g1",
+                            "platform": "local",
+                            "scene": "group"
+                          },
+                          "event": {
+                            "event_id": "G01",
+                            "platform": "local"
+                          }
+                        },
+                        "snippet": "群里一句",
+                        "snippet_whole": true,
+                        "text": "群里一句"
+                      }
+                    },
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:group:g1",
+                        "platform": "local",
+                        "scene": "group"
+                      },
+                      "event": {
+                        "event_id": "G01",
+                        "platform": "local"
+                      }
+                    },
+                    "text": "引用群里那句"
+                  }
+                ],
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:group:g1",
+                    "platform": "local",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "G02",
+                    "platform": "local"
+                  }
+                },
+                "reply": {
+                  "state": "ready",
+                  "value": {
+                    "actor_kind": "owner",
+                    "display_name": "主人",
+                    "ref": {
+                      "conversation": {
+                        "channel": "console",
+                        "conversation": "console:group:g1",
+                        "platform": "local",
+                        "scene": "group"
+                      },
+                      "event": {
+                        "event_id": "G01",
+                        "platform": "local"
+                      }
+                    },
+                    "snippet": "群里一句",
+                    "snippet_whole": true,
+                    "text": "群里一句"
+                  }
+                },
+                "reply_to": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:group:g1",
+                    "platform": "local",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "G01",
+                    "platform": "local"
+                  }
+                },
+                "seq": 10,
+                "text": "引用群里那句",
+                "version": 2
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

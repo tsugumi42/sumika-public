@@ -1,0 +1,35 @@
+{
+  "thread": {
+    "$type": "app.bsky.feed.defs#threadViewPost",
+    "post": {
+      "uri": "at://did:plc:samplelabsamplelabsample/app.bsky.feed.post/3myi2ihquwk26",
+      "author": {
+        "did": "did:plc:samplelabsamplelabsample",
+        "handle": "example-lab.bsky.social",
+        "displayName": "编造作者甲",
+        "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:samplelabsamplelabsample/bafkreihwihm6kpd6zuwhhlro75p5qks5qtrcu55jp3gddbfjsieiv7wuka",
+        "labels": [],
+        "createdAt": "2023-04-12T04:53:57.057Z"
+      },
+      "record": {
+        "$type": "app.bsky.feed.post",
+        "createdAt": "2026-10-22T16:11:13.754Z",
+        "text": "编造的正文第一行\nsecond line of invented text"
+      },
+      "embed": {
+        "playlist": "https://video.bsky.app/watch/did%3Aplc%3Asamplelabsamplelabsample/bafkreicibfmga2ff53e2ek3afepuwron44dve5gef2cximk67t7szxgamq/playlist.m3u8",
+        "thumbnail": "https://video.bsky.app/watch/did%3Aplc%3Asamplelabsamplelabsample/bafkreicibfmga2ff53e2ek3afepuwron44dve5gef2cximk67t7szxgamq/thumbnail.jpg",
+        "aspectRatio": {
+          "height": 1920,
+          "width": 1080
+        },
+        "$type": "app.bsky.embed.video#view"
+      },
+      "replyCount": 314,
+      "repostCount": 1593,
+      "likeCount": 5850,
+      "quoteCount": 741,
+      "labels": []
+    }
+  }
+}

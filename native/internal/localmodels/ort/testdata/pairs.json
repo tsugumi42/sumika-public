@@ -1,0 +1,26 @@
+[
+ {
+  "q": "怎么把Go程序打包成一个exe",
+  "d": "可以用 go build 生成单个可执行文件，CGO_ENABLED=0 时不依赖 C 运行库。"
+ },
+ {
+  "q": "怎么把Go程序打包成一个exe",
+  "d": "今天晚上想吃火锅，你有什么推荐的店吗？"
+ },
+ {
+  "q": "角色卡放在哪个目录",
+  "d": "角色卡以后只放数据目录，项目里的 characters 目录只留一张示例卡。"
+ },
+ {
+  "q": "角色卡放在哪个目录",
+  "d": "onnxruntime 的 API 版本要和动态库匹配。"
+ },
+ {
+  "q": "what is purego",
+  "d": "purego is a library for calling C functions from Go without Cgo."
+ },
+ {
+  "q": "what is purego",
+  "d": "The quick brown fox jumps over the lazy dog."
+ }
+]

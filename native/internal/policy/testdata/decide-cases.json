@@ -1,0 +1,590 @@
+{
+ "calls": [
+  {
+   "tool": "read",
+   "args": {
+    "path": "a.txt"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "..\\x.txt"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "~\\.ssh\\id_rsa"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "~/.aws/credentials"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "C:\\Users\\someone\\.gnupg\\x"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "C:\\Users\\someone\\sumika-data\\config\\sumika.yml"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "D:\\allowed\\x"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": ".env"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "sub\\.env.local"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "sub\\.envrc"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "@a.txt"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "/c/Users/someone/.ssh/config"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "file:///C:/Users/someone/.aws/x"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "link\\x"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "link\\z"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "a b.txt"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "~"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {
+    "path": "C:\\work\\proj\\..\\proj2\\x"
+   }
+  },
+  {
+   "tool": "read",
+   "args": {}
+  },
+  {
+   "tool": "ls",
+   "args": {
+    "path": "."
+   }
+  },
+  {
+   "tool": "ls",
+   "args": {
+    "path": "~"
+   }
+  },
+  {
+   "tool": "ls",
+   "args": {}
+  },
+  {
+   "tool": "grep",
+   "args": {
+    "pattern": "x",
+    "path": "."
+   }
+  },
+  {
+   "tool": "grep",
+   "args": {
+    "pattern": "x",
+    "path": "C:\\Users\\someone"
+   }
+  },
+  {
+   "tool": "grep",
+   "args": {
+    "pattern": "x",
+    "path": "C:\\Users"
+   }
+  },
+  {
+   "tool": "grep",
+   "args": {
+    "pattern": "x",
+    "path": "C:\\Users\\someone\\sumika-data"
+   }
+  },
+  {
+   "tool": "grep",
+   "args": {
+    "pattern": "x",
+    "path": "sub"
+   }
+  },
+  {
+   "tool": "find",
+   "args": {
+    "pattern": "*.txt",
+    "path": "C:\\"
+   }
+  },
+  {
+   "tool": "find",
+   "args": {
+    "pattern": "*.txt"
+   }
+  },
+  {
+   "tool": "write",
+   "args": {
+    "purpose": "写",
+    "path": "a.txt",
+    "content": "x"
+   }
+  },
+  {
+   "tool": "write",
+   "args": {
+    "purpose": "写",
+    "path": "..\\out.txt",
+    "content": "x"
+   }
+  },
+  {
+   "tool": "write",
+   "args": {
+    "purpose": "写",
+    "path": "D:\\allowed\\y",
+    "content": "x"
+   }
+  },
+  {
+   "tool": "write",
+   "args": {
+    "purpose": "写",
+    "path": "link\\y",
+    "content": "x"
+   }
+  },
+  {
+   "tool": "write",
+   "args": {
+    "purpose": "写",
+    "path": "C:\\Users\\someone\\sumika-data\\secrets.bin",
+    "content": "x"
+   }
+  },
+  {
+   "tool": "write",
+   "args": {
+    "purpose": "写",
+    "path": "~\\notes.txt",
+    "content": "x"
+   }
+  },
+  {
+   "tool": "write",
+   "args": {
+    "purpose": "写",
+    "path": "sub\\deep\\b.txt",
+    "content": "x"
+   }
+  },
+  {
+   "tool": "edit",
+   "args": {
+    "purpose": "改",
+    "path": "sub\\b.txt",
+    "edits": [
+     {
+      "oldText": "a",
+      "newText": "b"
+     }
+    ]
+   }
+  },
+  {
+   "tool": "edit",
+   "args": {
+    "purpose": "改",
+    "path": "C:\\Windows\\x.ini",
+    "edits": []
+   }
+  },
+  {
+   "tool": "write",
+   "args": {
+    "purpose": "写",
+    "path": 123,
+    "content": "x"
+   }
+  },
+  {
+   "tool": "memory_search",
+   "args": {
+    "query": "x"
+   }
+  },
+  {
+   "tool": "remember",
+   "args": {
+    "text": "x"
+   }
+  },
+  {
+   "tool": "todo_write",
+   "args": {
+    "todos": []
+   }
+  },
+  {
+   "tool": "mcp_unknown",
+   "args": {
+    "x": 1
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Get-ChildItem"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Get-ChildItem | Sort-Object"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item a.txt"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item ..\\x"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item $x"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "iex \"rm x\""
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Invoke-Expression $s"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Get-Content ~\\.ssh\\id_rsa"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "type sumika.yml"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Get-Content C:\\Users\\someone\\sumika-data\\x.txt"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "curl http://127.0.0.1:7720/api/settings"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Format-Volume -DriveLetter D"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item C:\\ -Recurse"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item ~\\Desktop -Recurse"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "npx cowsay"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "npx eslint ."
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "npx eslint@9 ."
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "npx --prefix ..\\other eslint"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "setx X 1"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "npm install -g x"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": ".\\tool.exe"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "C:\\tools\\x.exe"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "link\\x\\run.exe"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Get-ChildItem ./build | Remove-Item"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Get-ChildItem \\Windows | Remove-Item"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Copy-Item a D:\\allowed\\b"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Copy-Item a E:\\elsewhere\\b"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item HKCU:\\Software\\x"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "git status"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "git push"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "npm install"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Set-Content a.txt x"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Set-Content ..\\a.txt x"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Get-ChildItem > out.txt"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "cd ..; Remove-Item a"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item a; Remove-Item b"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "git commit -m x | Out-Null"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "[IO.File]::Delete(\"a\")"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item ("
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Write-Output 7720 127.0.0.1"
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item \"ab: c\""
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item \"ab:c\""
+   }
+  },
+  {
+   "tool": "powershell",
+   "args": {
+    "purpose": "跑",
+    "command": "Remove-Item ~\\Documents\\proj\\build"
+   }
+  }
+ ]
+}

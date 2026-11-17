@@ -1,0 +1,293 @@
+{
+  "id": "notices",
+  "about": "通知：戳一戳、撤回、表情回应、其他通知；私聊里认不出对方的戳不翻；操作人是 0 怎么找人",
+  "source_tests": [
+    "TestTranslate notices"
+  ],
+  "cases": [
+    {
+      "name": "group-poke-to-her",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"group_id\":400,\"notice_type\":\"notify\",\"sub_type\":\"poke\",\"target_id\":100}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "poke",
+          "account": "100",
+          "conv": "qq:group:400",
+          "time_unix": 100,
+          "actor": "200",
+          "target": "100",
+          "msg_id": "",
+          "ref": "",
+          "raw": ""
+        }
+      }
+    },
+    {
+      "name": "private-poke-to-her",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"notice_type\":\"notify\",\"sub_type\":\"poke\",\"target_id\":100}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "poke",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "time_unix": 100,
+          "actor": "200",
+          "target": "100",
+          "msg_id": "",
+          "ref": "",
+          "raw": ""
+        }
+      }
+    },
+    {
+      "name": "private-poke-by-her",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":100,\"notice_type\":\"notify\",\"sub_type\":\"poke\",\"target_id\":200}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "poke",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "time_unix": 100,
+          "actor": "100",
+          "target": "200",
+          "msg_id": "",
+          "ref": "",
+          "raw": ""
+        }
+      }
+    },
+    {
+      "name": "private-poke-her-to-herself-not-translated",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":100,\"notice_type\":\"notify\",\"sub_type\":\"poke\",\"target_id\":100}",
+      "expect": {
+        "dropped": true
+      }
+    },
+    {
+      "name": "group-recall-operator-differs",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":201,\"group_id\":400,\"notice_type\":\"group_recall\",\"message_id\":300}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "recall",
+          "account": "100",
+          "conv": "qq:group:400",
+          "time_unix": 100,
+          "actor": "201",
+          "target": "",
+          "msg_id": "300",
+          "ref": "",
+          "raw": ""
+        }
+      }
+    },
+    {
+      "name": "group-recall-operator-zero-uses-user",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":0,\"group_id\":400,\"notice_type\":\"group_recall\",\"message_id\":300}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "recall",
+          "account": "100",
+          "conv": "qq:group:400",
+          "time_unix": 100,
+          "actor": "200",
+          "target": "",
+          "msg_id": "300",
+          "ref": "",
+          "raw": ""
+        }
+      }
+    },
+    {
+      "name": "friend-recall",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"notice_type\":\"friend_recall\",\"message_id\":300}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "recall",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "time_unix": 100,
+          "actor": "200",
+          "target": "",
+          "msg_id": "300",
+          "ref": "",
+          "raw": ""
+        }
+      }
+    },
+    {
+      "name": "friend-recall-by-her-no-peer",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":100,\"notice_type\":\"friend_recall\",\"message_id\":300}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "recall",
+          "account": "100",
+          "conv": "qq:private:100:",
+          "time_unix": 100,
+          "actor": "100",
+          "target": "",
+          "msg_id": "300",
+          "ref": "",
+          "raw": ""
+        }
+      }
+    },
+    {
+      "name": "reaction-add",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":200,\"group_id\":400,\"notice_type\":\"group_msg_emoji_like\",\"message_id\":300,\"sub_type\":\"add\",\"likes\":[{\"emoji_id\":\"76\",\"count\":1}]}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "reaction",
+          "account": "100",
+          "conv": "qq:group:400",
+          "time_unix": 100,
+          "actor": "200",
+          "target": "",
+          "msg_id": "300",
+          "ref": "76",
+          "raw": ""
+        }
+      }
+    },
+    {
+      "name": "reaction-remove-is-other",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":200,\"group_id\":400,\"notice_type\":\"group_msg_emoji_like\",\"message_id\":300,\"sub_type\":\"remove\",\"likes\":[{\"emoji_id\":\"76\",\"count\":1}]}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "other",
+          "account": "100",
+          "conv": "qq:group:400",
+          "time_unix": 100,
+          "actor": "200",
+          "target": "",
+          "msg_id": "",
+          "ref": "",
+          "raw": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":200,\"group_id\":400,\"notice_type\":\"group_msg_emoji_like\",\"message_id\":300,\"sub_type\":\"remove\",\"likes\":[{\"emoji_id\":\"76\",\"count"
+        }
+      }
+    },
+    {
+      "name": "reaction-is-add-false-is-other",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":200,\"group_id\":400,\"notice_type\":\"group_msg_emoji_like\",\"message_id\":300,\"is_add\":false,\"likes\":[{\"emoji_id\":\"76\",\"count\":1}]}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "other",
+          "account": "100",
+          "conv": "qq:group:400",
+          "time_unix": 100,
+          "actor": "200",
+          "target": "",
+          "msg_id": "",
+          "ref": "",
+          "raw": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":200,\"group_id\":400,\"notice_type\":\"group_msg_emoji_like\",\"message_id\":300,\"is_add\":false,\"likes\":[{\"emoji_id\":\"76\",\"count\":1}]"
+        }
+      }
+    },
+    {
+      "name": "reaction-two-likes-is-other",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":200,\"group_id\":400,\"notice_type\":\"group_msg_emoji_like\",\"message_id\":300,\"sub_type\":\"add\",\"likes\":[{\"emoji_id\":\"76\",\"count\":1},{\"emoji_id\":\"66\",\"count\":1}]}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "other",
+          "account": "100",
+          "conv": "qq:group:400",
+          "time_unix": 100,
+          "actor": "200",
+          "target": "",
+          "msg_id": "",
+          "ref": "",
+          "raw": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":200,\"group_id\":400,\"notice_type\":\"group_msg_emoji_like\",\"message_id\":300,\"sub_type\":\"add\",\"likes\":[{\"emoji_id\":\"76\",\"count\":1"
+        }
+      }
+    },
+    {
+      "name": "reaction-no-likes-is-other",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":200,\"group_id\":400,\"notice_type\":\"group_msg_emoji_like\",\"message_id\":300}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "other",
+          "account": "100",
+          "conv": "qq:group:400",
+          "time_unix": 100,
+          "actor": "200",
+          "target": "",
+          "msg_id": "",
+          "ref": "",
+          "raw": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"operator_id\":200,\"group_id\":400,\"notice_type\":\"group_msg_emoji_like\",\"message_id\":300}"
+        }
+      }
+    },
+    {
+      "name": "group-ban-actor-from-operator",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":0,\"operator_id\":201,\"group_id\":400,\"notice_type\":\"group_ban\",\"sub_type\":\"ban\",\"duration\":0}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "other",
+          "account": "100",
+          "conv": "qq:group:400",
+          "time_unix": 100,
+          "actor": "201",
+          "target": "",
+          "msg_id": "",
+          "ref": "",
+          "raw": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":0,\"operator_id\":201,\"group_id\":400,\"notice_type\":\"group_ban\",\"sub_type\":\"ban\",\"duration\":0}"
+        }
+      }
+    },
+    {
+      "name": "group-card-change-is-other",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"group_id\":400,\"notice_type\":\"group_card\",\"card_new\":\"虚构乙\"}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "other",
+          "account": "100",
+          "conv": "qq:group:400",
+          "time_unix": 100,
+          "actor": "200",
+          "target": "",
+          "msg_id": "",
+          "ref": "",
+          "raw": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":200,\"group_id\":400,\"notice_type\":\"group_card\",\"card_new\":\"虚构乙\"}"
+        }
+      }
+    },
+    {
+      "name": "private-notice-user-zero-uses-target",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":0,\"target_id\":200,\"notice_type\":\"notify\",\"sub_type\":\"profile_like\"}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "other",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "time_unix": 100,
+          "actor": "",
+          "target": "",
+          "msg_id": "",
+          "ref": "",
+          "raw": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"user_id\":0,\"target_id\":200,\"notice_type\":\"notify\",\"sub_type\":\"profile_like\"}"
+        }
+      }
+    },
+    {
+      "name": "input-status-unknown-peer-not-translated",
+      "frame": "{\"post_type\":\"notice\",\"time\":100,\"self_id\":100,\"notice_type\":\"notify\",\"sub_type\":\"input_status\"}",
+      "expect": {
+        "dropped": true
+      }
+    }
+  ]
+}

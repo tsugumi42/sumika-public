@@ -1,0 +1,53 @@
+{
+  "webapp.video-detail": {
+    "itemInfo": {
+      "itemStruct": {
+        "id": "7000000000000000003",
+        "desc": "#fixture #photo #tiktok ",
+        "createTime": "1640896362",
+        "video": {
+          "cover": "https://p16-common-sign.tiktokcdn-us.com/fixture/photo-cover.jpeg",
+          "width": 0,
+          "height": 0,
+          "duration": 0
+        },
+        "imagePost": {
+          "images": [
+            {
+              "imageURL": {
+                "urlList": [
+                  "https://p16-common-sign.tiktokcdn-us.com/fixture/photo-1.jpeg",
+                  "https://p19-common-sign.tiktokcdn-us.com/fixture/photo-1-alt.jpeg"
+                ]
+              },
+              "imageWidth": 1080,
+              "imageHeight": 1920
+            },
+            {
+              "imageURL": {
+                "urlList": [
+                  "https://p16-common-sign.tiktokcdn-us.com/fixture/photo-2.jpeg"
+                ]
+              },
+              "imageWidth": 1080,
+              "imageHeight": 1440
+            }
+          ]
+        },
+        "author": {
+          "id": "7000000000000000005",
+          "uniqueId": "hullcity",
+          "nickname": "hullcity"
+        },
+        "statsV2": {
+          "playCount": "34500",
+          "diggCount": "4072",
+          "commentCount": "78",
+          "shareCount": "409",
+          "collectCount": "136"
+        }
+      }
+    },
+    "statusCode": 0
+  }
+}

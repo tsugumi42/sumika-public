@@ -1,0 +1,175 @@
+{
+  "version": 2,
+  "note": "画师线索表（docs/规格-画师原图.md 第七节）：Go 的判断函数和确认页生成脚本读同一份。正则是 RE2 写法、大小写不敏感，Python 的 re 也认。scope：profile 是名字、简介、地点、链接合在一起；tweet 是这条推文的正文。 第 2 版（2026-11-13）：按主人在确认页 v1、v3、v4、v5 的标注（是 141、不是 37）加了 13 条正负线索，门槛 3 时认出 121/141、误收 2/37（第 1 版 84/141、1/37）。 “画画”不收“絵を描”：主人定过“描く”只加 0.5，加了它就绕过去了。",
+  "clues": [
+    {
+      "name": "自称绘师",
+      "weight": 3,
+      "scope": "profile",
+      "pattern": "絵師|絵描き|イラストレーター|illustrator|画师|畫師|插画师|插畫師|原画师|漫画家|マンガ家"
+    },
+    {
+      "name": "pixiv链接",
+      "weight": 2,
+      "scope": "profile",
+      "pattern": "pixiv\\.net|pixiv\\.me"
+    },
+    {
+      "name": "skeb链接",
+      "weight": 2,
+      "scope": "profile",
+      "pattern": "skeb\\.jp"
+    },
+    {
+      "name": "fanbox链接",
+      "weight": 2,
+      "scope": "profile",
+      "pattern": "fanbox\\.cc"
+    },
+    {
+      "name": "イラスト",
+      "weight": 2,
+      "scope": "profile",
+      "pattern": "イラスト|illustration|插画|插畫"
+    },
+    {
+      "name": "fantia或booth链接",
+      "weight": 1,
+      "scope": "profile",
+      "pattern": "fantia\\.jp|booth\\.pm"
+    },
+    {
+      "name": "接稿",
+      "weight": 1,
+      "scope": "profile",
+      "pattern": "依頼|お仕事|commissions?|約稿|约稿|接稿"
+    },
+    {
+      "name": "漫画同人",
+      "weight": 1,
+      "scope": "profile",
+      "pattern": "漫画|マンガ|同人|作画"
+    },
+    {
+      "name": "二次创作或原创",
+      "weight": 1,
+      "scope": "profile",
+      "pattern": "ファンアート|fan ?art|二次創作|二次创作|オリジナル"
+    },
+    {
+      "name": "描く",
+      "weight": 0.5,
+      "scope": "profile",
+      "pattern": "描く|描いて|描き|i draw"
+    },
+    {
+      "name": "patreon",
+      "weight": 0,
+      "scope": "profile",
+      "pattern": "patreon\\.com"
+    },
+    {
+      "name": "推文画师标签",
+      "weight": 1.5,
+      "scope": "tweet",
+      "pattern": "#(?:イラスト|illustration|illust|fanart|ファンアート|オリジナル|創作|二次創作|絵描きさんと繋がりたい|artwork|rkgk|落書き)"
+    },
+    {
+      "name": "展会摊位",
+      "weight": 1.5,
+      "scope": "profile",
+      "pattern": "[東西南]\\s*\\d?\\s*[ア-ンァ-ヶA-Za-zＡ-Ｚ]\\s*[-‐－ー]?\\s*\\d{1,2}\\s*[abｂａ]{1,2}|\\bc\\s?1\\d\\d\\b|コミケ|コミティア|comitia|例大祭|\\d日目"
+    },
+    {
+      "name": "同人サークル",
+      "weight": 1,
+      "scope": "profile",
+      "pattern": "サークル|同人誌"
+    },
+    {
+      "name": "防转载反AI声明",
+      "weight": 1.5,
+      "scope": "profile",
+      "pattern": "無断転載|無断使用|転載禁止|無断利用|ai学習|学習禁止|do not repost|don.?t repost|no repost|repost禁止|禁止转载|禁止二传|무단|no ai\\b|ai禁止"
+    },
+    {
+      "name": "R18声明",
+      "weight": 1,
+      "scope": "profile",
+      "pattern": "18歳未満|未成年の方|18禁|under 18|minors? dni|已成年|all characters are"
+    },
+    {
+      "name": "画画",
+      "weight": 1,
+      "scope": "profile",
+      "pattern": "絵を気長|お絵かき|drawing|\\bi draw\\b|\\bdraws?\\b"
+    },
+    {
+      "name": "作品站点其他",
+      "weight": 1,
+      "scope": "profile",
+      "pattern": "xfolio|ci-en|dlsite|melonbooks|toranoana|potofu|foriio|artstation|vgen|cara\\.app|tinami|nijie|飯盒|ピクシブ"
+    },
+    {
+      "name": "插画工作",
+      "weight": 1,
+      "scope": "profile",
+      "pattern": "挿絵|ラノベ|表紙|キャラデザ|キャラクターデザイン|立ち絵|live2d"
+    },
+    {
+      "name": "游戏开发",
+      "weight": -2,
+      "scope": "profile",
+      "pattern": "gamedev|game dev|indie ?dev|game developer|godot|\bunity\b|unreal|wishlist|steampowered|programmer|engineer|software|github\\.com|\\bfounder\\b|\\bceo\\b|startup|ゲーム開発|個人開発|プログラマ"
+    },
+    {
+      "name": "官方运营",
+      "weight": -2,
+      "scope": "profile",
+      "pattern": "公式(アカウント|ツイッター|twitter|x(です|アカウント|\\b)|】)|【公式|運営|株式会社|をお届け|ニュース|\\bofficial (account|twitter|x)\\b|\\bnews\\b|문의"
+    },
+    {
+      "name": "Coser",
+      "weight": -2,
+      "scope": "profile",
+      "pattern": "コスプレ|cosplay|レイヤー"
+    },
+    {
+      "name": "配音",
+      "weight": -2,
+      "scope": "profile",
+      "pattern": "声優|voice actor|声のお仕事"
+    },
+    {
+      "name": "音乐",
+      "weight": -1.5,
+      "scope": "profile",
+      "pattern": "作曲|\\bdtm\\b|ボカロp|composer|歌い手|シンガー|singer"
+    },
+    {
+      "name": "摄影",
+      "weight": -1.5,
+      "scope": "profile",
+      "pattern": "photographer|写真家|カメラマン|フォトグラファー"
+    }
+  ],
+  "ratio": [
+    {
+      "name": "带图比例高",
+      "minRatio": 0.6,
+      "minStatuses": 100,
+      "weight": 1.5
+    },
+    {
+      "name": "带图比例偏高",
+      "minRatio": 0.3,
+      "minStatuses": 50,
+      "weight": 1
+    }
+  ],
+  "thresholds": {
+    "autoPending": 3,
+    "followingArtist": 4,
+    "followingMaybe": 2
+  }
+}

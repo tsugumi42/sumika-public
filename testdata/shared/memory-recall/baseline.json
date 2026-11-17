@@ -1,0 +1,110 @@
+{
+  "embedder": "stub-hash-uni-bigram-256",
+  "topk": 12,
+  "total": {
+    "pass": 47,
+    "n": 62
+  },
+  "by_type": {
+    "expired": {
+      "pass": 6,
+      "n": 6
+    },
+    "hearsay": {
+      "pass": 6,
+      "n": 6
+    },
+    "isolation": {
+      "pass": 3,
+      "n": 4
+    },
+    "no_answer": {
+      "pass": 3,
+      "n": 6
+    },
+    "paraphrase": {
+      "pass": 6,
+      "n": 10
+    },
+    "schedule": {
+      "pass": 3,
+      "n": 5
+    },
+    "supersede": {
+      "pass": 5,
+      "n": 7
+    },
+    "time": {
+      "pass": 8,
+      "n": 8
+    },
+    "visibility": {
+      "pass": 7,
+      "n": 10
+    }
+  },
+  "questions": {
+    "q01": false,
+    "q02": true,
+    "q03": false,
+    "q04": true,
+    "q05": false,
+    "q06": true,
+    "q07": true,
+    "q08": true,
+    "q09": false,
+    "q10": true,
+    "q11": true,
+    "q12": true,
+    "q13": true,
+    "q14": true,
+    "q15": true,
+    "q16": true,
+    "q17": true,
+    "q18": true,
+    "q19": false,
+    "q20": true,
+    "q21": true,
+    "q22": true,
+    "q23": false,
+    "q24": true,
+    "q25": true,
+    "q26": true,
+    "q27": false,
+    "q28": true,
+    "q29": true,
+    "q30": false,
+    "q31": true,
+    "q32": false,
+    "q33": true,
+    "q34": true,
+    "q35": true,
+    "q36": true,
+    "q37": true,
+    "q38": true,
+    "q39": true,
+    "q40": true,
+    "q41": true,
+    "q42": true,
+    "q43": true,
+    "q44": true,
+    "q45": true,
+    "q46": true,
+    "q47": true,
+    "q48": true,
+    "q49": true,
+    "q50": true,
+    "q51": false,
+    "q52": false,
+    "q53": true,
+    "q54": false,
+    "q55": true,
+    "q56": true,
+    "q57": false,
+    "q58": false,
+    "q59": false,
+    "q60": true,
+    "q61": true,
+    "q62": true
+  }
+}

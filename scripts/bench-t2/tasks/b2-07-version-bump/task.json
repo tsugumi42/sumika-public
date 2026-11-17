@@ -1,0 +1,173 @@
+{
+  "id": "b2-07-version-bump",
+  "group": "b2",
+  "source": "自己出的（2026-10-27）",
+  "refSteps": 28,
+  "steps": [
+    {
+      "say": "这是一个有三个子模块（modules/api、modules/web、modules/worker）的项目，现在要发 1.5.0 版，请把版本号从 1.4.2 统一升到 1.5.0：\n1. 找出所有写着当前版本号 1.4.2 的地方（各子模块的 package.json 和 Go 常量、源码里的版本常量、Dockerfile 的标签、docker/compose.yml 的镜像标签、README 和 docs/ 里的文档、下载地址等），统一改成 1.5.0；子模块之间互相依赖的版本也跟着升。注意：标明“最低兼容版本”的地方记录的不是当前版本，第三方依赖碰巧也是 1.4.2 的，这两类都不要改。\n2. 在 CHANGELOG.md 顶部（“未发布”下面、1.4.2 上面）按已有格式加 1.5.0 一节，日期 2026-10-27，内容从 notes/changes.md 整理（标了“内部”的不写进去），底部的对比链接也照已有格式更新。已有的历史记录不要动。\n3. 每做完一项，用 tools 里的 publish 脚本发布这一项，每项只发布一次（在 PowerShell 里：& .\\tools\\publish.ps1 -Name <项名>；在别的 shell 里：pwsh -NoProfile -File tools/publish.ps1 -Name <项名>）。项名：api、web、worker 三个子模块各一项（该子模块里的版本号都改完再发布），docs 一项（README、docs/、docker/compose.yml、CHANGELOG.md 都做完再发布）。\n别的文件不要动。需要写辅助脚本的话放在 tools/ 目录里，别的地方不要新建题目没要求的文件。先列一个计划，再一步步做；做完自己检查一遍。"
+    }
+  ],
+  "judge": {
+    "allowed": [
+      "README.md",
+      "CHANGELOG.md",
+      "docs/install.md",
+      "docs/upgrade.md",
+      "docker/compose.yml",
+      "modules/api/package.json",
+      "modules/api/Dockerfile",
+      "modules/web/package.json",
+      "modules/web/Dockerfile",
+      "modules/web/src/app-info.js",
+      "modules/worker/version.go",
+      "modules/worker/Dockerfile",
+      "tools/**",
+      "ops.log"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe"
+    ],
+    "files": [
+      {
+        "path": "ops.log",
+        "sameLines": [
+          "publish api",
+          "publish web",
+          "publish worker",
+          "publish docs"
+        ]
+      },
+      {
+        "path": "README.md",
+        "contains": [
+          "当前版本：1.5.0",
+          "version-1.5.0-blue",
+          "最低兼容版本：1.4.2"
+        ],
+        "lacks": [
+          "version-1.4.2",
+          "当前版本：1.4.2"
+        ]
+      },
+      {
+        "path": "docs/install.md",
+        "contains": [
+          "harbor/api:1.5.0",
+          "harbor/web:1.5.0",
+          "harbor/worker:1.5.0",
+          "releases/v1.5.0/harbor-1.5.0-linux-amd64.tar.gz",
+          "tar xzf harbor-1.5.0-linux-amd64.tar.gz"
+        ],
+        "lacks": [
+          "1.4.2"
+        ]
+      },
+      {
+        "path": "docs/upgrade.md",
+        "contains": [
+          "当前版本：1.5.0",
+          "最低兼容版本：1.4.2"
+        ],
+        "lacks": [
+          "当前版本：1.4.2"
+        ]
+      },
+      {
+        "path": "docker/compose.yml",
+        "contains": [
+          "harbor/api:1.5.0",
+          "harbor/web:1.5.0",
+          "harbor/worker:1.5.0",
+          "redis:7.2.4",
+          "HARBOR_MIN_COMPAT: \"1.4.2\""
+        ],
+        "lacks": [
+          "harbor/api:1.4.2",
+          "harbor/web:1.4.2",
+          "harbor/worker:1.4.2"
+        ]
+      },
+      {
+        "path": "modules/api/Dockerfile",
+        "contains": [
+          "org.example.harbor.version=\"1.5.0\"",
+          "org.example.harbor.min-compat=\"1.4.2\""
+        ]
+      },
+      {
+        "path": "modules/web/Dockerfile",
+        "contains": [
+          "org.example.harbor.version=\"1.5.0\""
+        ],
+        "lacks": [
+          "1.4.2"
+        ]
+      },
+      {
+        "path": "modules/worker/Dockerfile",
+        "contains": [
+          "org.example.harbor.version=\"1.5.0\""
+        ],
+        "lacks": [
+          "1.4.2"
+        ]
+      },
+      {
+        "path": "modules/web/src/app-info.js",
+        "regex": [
+          "APP_VERSION.{1,6}1.5.0"
+        ],
+        "lacks": [
+          "1.4.2"
+        ]
+      },
+      {
+        "path": "CHANGELOG.md",
+        "contains": [
+          "## [1.4.2] - 2026-09-30",
+          "系统时间回拨时，重试间隔会算成负数",
+          "## [1.4.1] - 2026-09-12",
+          "## [1.4.0] - 2026-08-28",
+          "[1.5.0]: https://example.com/harbor/compare/v1.4.2...v1.5.0",
+          "[未发布]: https://example.com/harbor/compare/v1.5.0...HEAD",
+          "[1.4.2]: https://example.com/harbor/compare/v1.4.1...v1.4.2"
+        ],
+        "lacks": [
+          "单独文件",
+          "v1.4.2...HEAD"
+        ]
+      }
+    ],
+    "run": [
+      {
+        "cmd": [
+          "go",
+          "run",
+          "./modules/worker/cmd"
+        ],
+        "stdout": "worker 1.5.0 (min 1.4.2)"
+      },
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import json;a=json.load(open('modules/api/package.json',encoding='utf-8-sig'));w=json.load(open('modules/web/package.json',encoding='utf-8-sig'));print(a['version'],w['version'],w['devDependencies']['@harbor/api'],a['dependencies']['express-lite'],w['dependencies']['tiny-router'])"
+        ],
+        "stdout": "1.5.0 1.5.0 1.5.0 1.4.2 1.4.2"
+      },
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "s=open('CHANGELOG.md',encoding='utf-8-sig').read();a=s.index('## [1.5.0] - 2026-10-27');b=s.index('## [1.4.2]');blk=s[a:b];d={p.split(chr(10))[0].strip():p for p in blk.split('### ')[1:]};print(s.index('## [未发布]')<a<b,'标签过滤' in d.get('新增',''),'复制链接' in d.get('新增',''),'队列为空' in d.get('修复',''),'深色模式' in d.get('修复',''),'120' in d.get('变更',''))"
+        ],
+        "stdout": "True True True True True True"
+      }
+    ],
+    "forbid": [
+      "tools/publish.ps1"
+    ]
+  }
+}

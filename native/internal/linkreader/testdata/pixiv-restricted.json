@@ -1,0 +1,15 @@
+{
+  "artwork": {
+    "error": false,
+    "body": {
+      "illustId": "90020", "illustTitle": "编造的受限作品", "userId": "90021", "userName": "编造画师丙", "userAccount": "sample-restricted-artist",
+      "createDate": "2026-11-01T12:00:00+09:00", "illustType": 0, "xRestrict": 1, "aiType": 2, "pageCount": 38,
+      "urls": {"original": null, "regular": null}, "width": 1200, "height": 1600,
+      "bookmarkCount": 0, "viewCount": 0, "tags": {"tags": [{"tag": "R-18"}]}
+    }
+  },
+  "novel": {
+    "error": false,
+    "body": {"id": "90020", "title": "编造的受限小说", "userId": "90021", "userName": "编造作者丙", "xRestrict": 1, "aiType": 1, "characterCount": 16480, "tags": {"tags": [{"tag": "R-18"}]}, "textEmbeddedImages": null}
+  }
+}

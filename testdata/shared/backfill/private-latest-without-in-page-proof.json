@@ -1,0 +1,86 @@
+{
+  "id": "private-latest-without-in-page-proof",
+  "about": "私聊最新页但 Continuous 为假：Latest 不能替代页内证明，旧洞不能 filled",
+  "source_tests": [
+    "TestBackfillUnprovenCoverage/最新私聊仍无页内证明"
+  ],
+  "scene": "private",
+  "setup": {
+    "watermark_ago_ms": 3600000,
+    "peer": {
+      "latest": true,
+      "continuous": false,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": [
+      {
+        "from_ago_ms": 2400000,
+        "to_ago_ms": 600000,
+        "state": "open",
+        "reason": "outage",
+        "tries": 3,
+        "last_try_ago_ms": 0
+      }
+    ]
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "91",
+              "ago_ms": 60000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "92",
+              "ago_ms": 4800000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "91",
+            "ago_ms": 60000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 3660000,
+            "to_ago_ms": 0,
+            "state": "blocked",
+            "reason": "unverified-history",
+            "tries": 3,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 3660000,
+          "through_ago_ms": 3660001
+        },
+        "complete_coverage": false
+      }
+    }
+  ]
+}

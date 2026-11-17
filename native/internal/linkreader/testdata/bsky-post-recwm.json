@@ -1,0 +1,79 @@
+{
+  "thread": {
+    "$type": "app.bsky.feed.defs#threadViewPost",
+    "post": {
+      "uri": "at://did:plc:samplelabsamplelabsample/app.bsky.feed.post/3mxucjrmulk2x",
+      "author": {
+        "did": "did:plc:samplelabsamplelabsample",
+        "handle": "example-lab.bsky.social",
+        "displayName": "编造作者甲",
+        "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:samplelabsamplelabsample/bafkreihxtnc37g7jqdcgidtkknwuswtjiijcdnc6cx4imc4oq33cnsc5da",
+        "labels": [],
+        "createdAt": "2022-11-17T06:31:40.296Z"
+      },
+      "record": {
+        "$type": "app.bsky.feed.post",
+        "createdAt": "2026-10-14T19:41:52.827Z",
+        "text": "编造的正文第一行\nsecond line of invented text"
+      },
+      "embed": {
+        "media": {
+          "external": {
+            "uri": "https://delve.town",
+            "title": "编造的标题",
+            "description": "编造的简介"
+          },
+          "$type": "app.bsky.embed.external#view"
+        },
+        "record": {
+          "record": {
+            "uri": "at://did:plc:samplelabsamplelabsample/app.bsky.feed.post/3mwrd5db7tk23",
+            "author": {
+              "did": "did:plc:samplelabsamplelabsample",
+              "handle": "example-lab.bsky.social",
+              "displayName": "编造作者甲",
+              "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:samplelabsamplelabsample/bafkreihsveorkjqnaxfs2ihgtbspmf4vkgxkk4c67vw6rcvo7m5gf4yccu",
+              "labels": [],
+              "createdAt": "2026-08-20T22:47:19.166Z"
+            },
+            "value": {
+              "$type": "app.bsky.feed.post",
+              "createdAt": "2026-09-30T21:49:38.012Z",
+              "embed": {
+                "$type": "app.bsky.embed.external",
+                "external": {
+                  "description": "编造的简介",
+                  "title": "编造的标题",
+                  "uri": "https://delve.town"
+                }
+              },
+              "text": "编造的正文第一行\nsecond line of invented text"
+            },
+            "labels": [],
+            "likeCount": 108,
+            "replyCount": 16,
+            "repostCount": 16,
+            "quoteCount": 32,
+            "embeds": [
+              {
+                "external": {
+                  "uri": "https://delve.town",
+                  "title": "编造的标题",
+                  "description": "编造的简介"
+                },
+                "$type": "app.bsky.embed.external#view"
+              }
+            ],
+            "$type": "app.bsky.embed.record#viewRecord"
+          }
+        },
+        "$type": "app.bsky.embed.recordWithMedia#view"
+      },
+      "replyCount": 53,
+      "repostCount": 22,
+      "likeCount": 322,
+      "quoteCount": 63,
+      "labels": []
+    }
+  }
+}

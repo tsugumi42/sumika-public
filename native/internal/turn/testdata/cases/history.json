@@ -1,0 +1,487 @@
+{
+  "about": "有历史：新话题分隔、她的号别人发的、自动发的、没说出口的、通知、别的角色、空白回复、带符号的话，超过 30 条只带最近 30 条；模型支持思考，档位 high 原样发",
+  "now": "2026-10-25T00:05:00+08:00",
+  "characterId": "suzu",
+  "files": {
+    "characters/suzu/card/character.yml": "name: 铃\nownerName: 主人\n",
+    "characters/suzu/card/character.md": "<!-- 测试用的卡，名字是编的 -->\n## 身份\n铃，住在主人电脑里的女仆。\n\n## 行为\n干活利落，话说到点上。\n\n## 表达\n短句，像发消息。\n\n## 私下\n喜欢被夸。\n"
+  },
+  "characters": {
+    "suzu": {
+      "model": "test/think"
+    }
+  },
+  "agent": {
+    "thinking": {
+      "local": "high",
+      "private": "low",
+      "group": "low"
+    }
+  },
+  "workdir": "D:/Work",
+  "shell": {
+    "template": "shell-pwsh",
+    "version": "7.6"
+  },
+  "models": [
+    {
+      "id": "test/think",
+      "context_length": 1048000,
+      "max_output_tokens": 32000,
+      "reasoning": true,
+      "supported_reasoning_levels": [
+        {
+          "effort": "low"
+        },
+        {
+          "effort": "medium"
+        },
+        {
+          "effort": "high"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "很久以前说的话（在新话题分隔前面，不该带上）",
+      "created_at": 1792800000000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "notice",
+      "text": "从这里开始新话题（之前的聊天不再带给她）",
+      "created_at": 1792800060000,
+      "segments": {
+        "notice": "context-break"
+      }
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 1 句",
+      "created_at": 1792800120000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 2 句",
+      "created_at": 1792800180000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 3 句",
+      "created_at": 1792800240000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 4 句",
+      "created_at": 1792800300000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 5 句",
+      "created_at": 1792800360000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 6 句",
+      "created_at": 1792800420000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "automation:qq-selftest",
+      "kind": "message",
+      "text": "自检：收发正常",
+      "created_at": 1792800480000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 8 句",
+      "created_at": 1792800540000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 9 句",
+      "created_at": 1792800600000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "automation:dry-run",
+      "kind": "message",
+      "text": "试运行时她会说的话（没说出口，不算数）",
+      "created_at": 1792800660000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 11 句",
+      "created_at": 1792800720000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 12 句",
+      "created_at": 1792800780000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "notice",
+      "text": "普通通知（不是分隔）",
+      "created_at": 1792800840000,
+      "segments": {
+        "notice": "other"
+      }
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 14 句",
+      "created_at": 1792800900000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 15 句",
+      "created_at": 1792800960000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "rin",
+      "origin": "character",
+      "kind": "message",
+      "text": "别的角色在这个会话里说的（她看不到）",
+      "created_at": 1792801020000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 17 句",
+      "created_at": 1792801080000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 18 句",
+      "created_at": 1792801140000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "  前后带空格的回复  ",
+      "created_at": 1792801200000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 20 句",
+      "created_at": 1792801260000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 21 句",
+      "created_at": 1792801320000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "   ",
+      "created_at": 1792801380000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 23 句",
+      "created_at": 1792801440000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 24 句",
+      "created_at": 1792801500000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "带符号的话 <b>&amp;</b> \"引号\" \\ 反斜杠 和 emoji 😀",
+      "created_at": 1792801560000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 26 句",
+      "created_at": 1792801620000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 27 句",
+      "created_at": 1792801680000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 28 句",
+      "created_at": 1792801740000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:rin",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "别的会话里的话",
+      "created_at": 1792801800001
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 29 句",
+      "created_at": 1792801800000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 30 句",
+      "created_at": 1792801860000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 31 句",
+      "created_at": 1792801920000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 32 句",
+      "created_at": 1792801980000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 33 句",
+      "created_at": 1792802040000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "human",
+      "kind": "message",
+      "text": "这句是主人登录她的号手动发的",
+      "created_at": 1792802100000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 35 句",
+      "created_at": 1792802160000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 36 句",
+      "created_at": 1792802220000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 37 句",
+      "created_at": 1792802280000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 38 句",
+      "created_at": 1792802340000
+    }
+  ],
+  "epochs": [],
+  "text": "接着说",
+  "reply": {
+    "reasoning": [
+      "嗯。"
+    ],
+    "content": [
+      "好"
+    ],
+    "usage": {
+      "prompt_tokens": 1200,
+      "completion_tokens": 30,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    "headers": {
+      "x-magpie-provider": "fake-provider",
+      "x-magpie-model": "fake/think-1"
+    }
+  }
+}

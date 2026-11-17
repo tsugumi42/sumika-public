@@ -1,0 +1,7 @@
+{
+  "neutral": {
+    "$type": "number",
+    "hue": { "$value": 250 },
+    "chroma": { "$value": 0.002 }
+  }
+}

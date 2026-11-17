@@ -1,0 +1,7 @@
+{
+  "name": "Sumika Prototype",
+  "slug": "sumika-proto",
+  "identifier": "dev.sumika.prototype",
+  "version": "0.1.0",
+  "main": "."
+}

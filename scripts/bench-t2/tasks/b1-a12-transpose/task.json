@@ -1,0 +1,33 @@
+{
+  "id": "b1-a12-transpose",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/transpose（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 transpose.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.md": "013855ecc1b083c98707db94e542f2cfd980cb1c46516d7999d9e12c7c783a5e",
+    "cases_test.go": "4666c06af100edad321ae415ed098863279e661378d9aba00d22a3dbcc4edfa8",
+    "go.mod": "0861e02ea41acd06290948045c58bc5d5eba44170b2a9bb12ece3e22322d5ea3",
+    "transpose.go": "96f3e7180679894a896146e30c242a7440774fa44387596105554907708745b8",
+    "transpose_test.go": "d41bee27c6a291a5c7b0d811b14cd708a317bb7b695d25c8dc7533e6eb0a19f5"
+  }
+}

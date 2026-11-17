@@ -1,0 +1,28 @@
+{
+  "output_columns": ["id", "date", "category", "amount", "owner"],
+  "sources": [
+    {"file": "data/north.csv", "date_format": "YYYY-MM-DD"},
+    {"file": "data/south.csv", "date_format": "DD/MM/YYYY"},
+    {"file": "data/east.csv", "date_format": "MMM D, YYYY"},
+    {"file": "data/west.csv", "date_format": "YYYY/M/D"},
+    {"file": "data/central.csv", "date_format": "DD.MM.YY"}
+  ],
+  "date_output": "YYYY-MM-DD",
+  "amount": {
+    "strip": ["$", ",", " "],
+    "output": "两位小数，不带货币符号和千分位",
+    "note": "0 是有效金额（输出 0.00），只有去掉空白后什么都没有才算空"
+  },
+  "category": {
+    "file": "config/categories.json",
+    "output": "小写的标准分类名"
+  },
+  "check_order": [
+    "missing-amount：金额为空",
+    "missing-category：分类为空",
+    "unknown-category：分类（经别名换成标准名后）不在 known 里",
+    "duplicate：前面都通过的行里，id 已经出现过（按 sources 的顺序、文件里从上到下，留第一次出现的，后面的算 duplicate）"
+  ],
+  "sort": "合并结果按 date 升序，同一天按 id 升序（字符串比较）",
+  "ignore_columns": "文件里有、但不在 output_columns 里的列（比如 note）直接丢掉"
+}

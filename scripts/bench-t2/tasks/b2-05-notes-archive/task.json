@@ -1,0 +1,56 @@
+{
+  "id": "b2-05-notes-archive",
+  "group": "b2",
+  "source": "自己出的（2026-10-27）",
+  "refSteps": 30,
+  "steps": [
+    {
+      "say": "这个目录里 notes/ 放着 20 篇还没整理的 Markdown 笔记。先读 README.md 和 tags.txt 了解约定，然后做这几件事：1. 按每篇笔记文件头里的“标签”，把它移到 archive/<目录名>/ 下（目录名见 tags.txt），文件名不变；2. 笔记之间有相对链接，移动之后要让所有链接都还能打开，其中有几篇改过名（文件头里有“原文件名”），别的笔记里还按旧文件名写着链接，要改成现在的文件，只改链接的地址，笔记的其他内容别动；3. 在根目录生成 index.md，格式照 README 里写的；4. 每个标签的笔记都归档好、链接都修好以后，用 tools 里的 publish 脚本发布这个标签，每个标签只发布一次（在 PowerShell 里：& .\\tools\\publish.ps1 -Name <项名>；在别的 shell 里：pwsh -NoProfile -File tools/publish.ps1 -Name <项名>），项名就是 tags.txt 里的目录名：cooking、travel、garden、music。需要写辅助脚本的话放在 tools/ 目录里，别的地方不要新建题目没要求的文件。先列一个计划，再一步步做；做完自己检查一遍。"
+    }
+  ],
+  "judge": {
+    "files": [
+      {
+        "path": "ops.log",
+        "sameLines": [
+          "publish cooking",
+          "publish travel",
+          "publish garden",
+          "publish music"
+        ]
+      },
+      {
+        "path": "index.md",
+        "contains": [
+          "做饭",
+          "旅行",
+          "园艺",
+          "音乐"
+        ]
+      }
+    ],
+    "allowed": [
+      "archive/*/*.md",
+      "notes/*.md",
+      "index.md",
+      "tools/*",
+      "ops.log"
+    ],
+    "forbid": [
+      "tools/publish.ps1"
+    ],
+    "ignore": [
+      "tools/__pycache__/**"
+    ],
+    "run": [
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import os,re,hashlib,posixpath\nM={'做饭':'cooking','旅行':'travel','园艺':'garden','音乐':'music'}\ndef rd(p):\n    return open(p,encoding='utf-8-sig').read().replace('\\r\\n','\\n')\nL=re.compile(r'\\[([^\\]]*)\\]\\(([^)]*)\\)')\ndef res(p,l):\n    return posixpath.normpath(posixpath.join(posixpath.dirname(p),l.split('#')[0]))\nnotes=[]\nfor dp,dn,fn in os.walk('archive'):\n    for f in fn:\n        if f.endswith('.md'):\n            notes.append((dp+'/'+f).replace(os.sep,'/').replace('//','/'))\nnotes.sort(key=lambda p:posixpath.basename(p))\ninfo={};mis=0;dead=0;ll=[];tx=[]\nfor p in notes:\n    t=rd(p)\n    m=re.search(r'^标签:\\s*(\\S+)\\s*$',t,re.M)\n    tag=m.group(1) if m else ''\n    ti=re.search(r'^title:\\s*(.+?)\\s*$',t,re.M)\n    info[p]=(tag,ti.group(1) if ti else '')\n    if p!='archive/%s/%s'%(M.get(tag,'?'),posixpath.basename(p)): mis+=1\n    ts=[]\n    for a,l in L.findall(t):\n        if '://' in l: continue\n        q=res(p,l)\n        ts.append(q)\n        if not os.path.exists(q): dead+=1\n    s=posixpath.basename(p)[:-3]\n    ll.append('%s:%s\\n'%(s,','.join(ts)))\n    n='\\n'.join(x.rstrip() for x in re.sub(r'\\]\\([^)]*\\)',']()',t).split('\\n')).strip('\\n')\n    tx.append('%s:%s\\n'%(s,n))\nleft=0\nif os.path.isdir('notes'):\n    left=sum(1 for f in os.listdir('notes') if f.endswith('.md'))\ngood=bad=0;seen={};head=''\nif os.path.exists('index.md'):\n    for line in rd('index.md').split('\\n'):\n        h=re.match(r'^#+\\s*(.*)',line)\n        if h:\n            head=h.group(1);continue\n        for a,l in L.findall(line):\n            if '://' in l: continue\n            q=res('index.md',l)\n            if q in info and info[q][0] in head and a.strip()==info[q][1] and q not in seen: seen[q]=1\n            else: bad+=1\ngood=len(seen)\nprint('notes',len(notes))\nprint('misplaced',mis)\nprint('left',left)\nprint('dead',dead)\nprint('linkmap',hashlib.sha256(''.join(ll).encode('utf-8')).hexdigest()[:8])\nprint('text',hashlib.sha256(''.join(tx).encode('utf-8')).hexdigest()[:8])\nprint('index',good,bad)\n"
+        ],
+        "stdout": "notes 20\nmisplaced 0\nleft 0\ndead 0\nlinkmap a0d0ccb7\ntext fc58a606\nindex 20 0"
+      }
+    ]
+  }
+}

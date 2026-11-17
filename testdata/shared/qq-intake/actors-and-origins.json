@@ -1,0 +1,139 @@
+{
+  "id": "actors-and-origins",
+  "about": "发言人身份按号认：主人、朋友、陌生人、她自己的号；实时收到她自己的号发的算 human（主人手发的）",
+  "source_tests": [
+    "TestActorsAndOrigins"
+  ],
+  "items": [
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "800",
+      "from": "owner",
+      "text": "主人说",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "owner",
+        "actor_kind": "owner",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "801",
+      "from": "friend",
+      "text": "朋友说",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "802",
+      "from": "stranger",
+      "text": "陌生人说",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "self",
+      "platform_id": "803",
+      "from": "a",
+      "text": "她的号手发",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "human",
+        "actor_kind": "character",
+        "observed": true
+      }
+    }
+  ],
+  "final": {
+    "events": [
+      {
+        "conv": "qq:group:900",
+        "platform_id": "800",
+        "actor_kind": "owner",
+        "actor_id": "owner",
+        "origin": "owner",
+        "text": "主人说",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "801",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "朋友说",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "802",
+        "actor_kind": "human",
+        "actor_id": "qq:30999",
+        "origin": "peer",
+        "text": "陌生人说",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "803",
+        "actor_kind": "character",
+        "actor_id": "ca",
+        "origin": "human",
+        "text": "她的号手发",
+        "time_s": 0
+      }
+    ],
+    "observations": [
+      {
+        "character": "ca",
+        "event": 1
+      },
+      {
+        "character": "ca",
+        "event": 2
+      },
+      {
+        "character": "ca",
+        "event": 3
+      },
+      {
+        "character": "ca",
+        "event": 4
+      }
+    ]
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "id": "group-abandoned-gap-does-not-rewind",
+  "about": "已放弃的旧缺口不拖住回溯：只查一页，水位照推；下一轮也不再翻旧区间",
+  "source_tests": [
+    "TestBackfillAbandonedDoesNotRewind"
+  ],
+  "scene": "group",
+  "setup": {
+    "watermark_ago_ms": 90000000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": [
+      {
+        "from_ago_ms": 93600000,
+        "to_ago_ms": 60000,
+        "state": "abandoned",
+        "reason": "page-cap",
+        "tries": 3,
+        "last_try_ago_ms": 0
+      }
+    ]
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "9401",
+              "ago_ms": 0,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "9400",
+              "ago_ms": 120000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": true,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "9401",
+            "ago_ms": 0
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 93600000,
+            "to_ago_ms": 60000,
+            "state": "abandoned",
+            "reason": "page-cap",
+            "tries": 3,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 93600000,
+          "through_ago_ms": 93600001
+        },
+        "complete_coverage": false
+      }
+    },
+    {
+      "advance_ms": 600000,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "9401",
+              "ago_ms": 0,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "9400",
+              "ago_ms": 120000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": true,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          },
+          {
+            "anchor": "9400",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "9401",
+            "ago_ms": 600000
+          },
+          {
+            "id": "9400",
+            "ago_ms": 120000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 94200000,
+            "to_ago_ms": 660000,
+            "state": "abandoned",
+            "reason": "page-cap",
+            "tries": 3,
+            "last_try_ago_ms": 600000
+          },
+          {
+            "from_ago_ms": 659999,
+            "to_ago_ms": 120000,
+            "state": "blocked",
+            "reason": "stalled",
+            "tries": 0,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 94200000,
+          "through_ago_ms": 94200001
+        },
+        "complete_coverage": false
+      }
+    }
+  ]
+}

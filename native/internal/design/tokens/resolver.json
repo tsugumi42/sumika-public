@@ -1,0 +1,32 @@
+{
+  "name": "Sumika",
+  "version": "2025-10-01",
+  "description": "Sumika 的设计令牌：原料、语义、组件三层；亮暗、冷暖、有无壁纸只覆盖原料层（规格-设计令牌 第三节）",
+  "sets": {
+    "primitive": { "sources": [{ "$ref": "primitive.tokens.json" }] },
+    "semantic": { "sources": [{ "$ref": "semantic.tokens.json" }] },
+    "component": { "sources": [{ "$ref": "component.tokens.json" }] }
+  },
+  "modifiers": {
+    "appearance": {
+      "default": "light",
+      "contexts": { "light": [], "dark": [{ "$ref": "modes/dark.tokens.json" }] }
+    },
+    "neutral": {
+      "default": "cool",
+      "contexts": { "cool": [], "plain": [{ "$ref": "modes/plain.tokens.json" }], "warm": [{ "$ref": "modes/warm.tokens.json" }] }
+    },
+    "wallpaper": {
+      "default": "on",
+      "contexts": { "on": [], "off": [{ "$ref": "modes/wallpaper-off.tokens.json" }] }
+    }
+  },
+  "resolutionOrder": [
+    { "$ref": "#/sets/primitive" },
+    { "$ref": "#/modifiers/appearance" },
+    { "$ref": "#/modifiers/neutral" },
+    { "$ref": "#/modifiers/wallpaper" },
+    { "$ref": "#/sets/semantic" },
+    { "$ref": "#/sets/component" }
+  ]
+}

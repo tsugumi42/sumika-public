@@ -1,0 +1,101 @@
+{
+  "id": "echo-claims-unknown-part-within-window",
+  "about": "结果未知的段在第一次 Send 起 5 分钟内（含边界）能被回声认领；每个回声只认一段，每段只认一次；没认领的号不登记映射",
+  "source_tests": [
+    "TestEchoClaimsUnknownPartWithinWindow"
+  ],
+  "receipt": "unknown",
+  "steps": [
+    {
+      "do": "say",
+      "label": "p",
+      "as": "ca",
+      "texts": [
+        "好的"
+      ],
+      "expect": {}
+    },
+    {
+      "do": "wait_plan",
+      "label": "p",
+      "state": "unknown",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "unknown",
+          "parts": [
+            {
+              "state": "unknown",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "advance",
+      "ms": 300000,
+      "expect": {}
+    },
+    {
+      "do": "claim",
+      "platform_id": "7001",
+      "text": "好的",
+      "expect": {
+        "claimed": true
+      }
+    },
+    {
+      "do": "wait_plan",
+      "label": "p",
+      "state": "done",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "done",
+          "parts": [
+            {
+              "state": "confirmed",
+              "via": "echo",
+              "platform_id": "7001",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "7002",
+      "text": "好的",
+      "expect": {
+        "claimed": false
+      }
+    }
+  ],
+  "final": {
+    "plans": [
+      {
+        "label": "p",
+        "state": "done",
+        "parts": [
+          {
+            "state": "confirmed",
+            "via": "echo",
+            "platform_id": "7001",
+            "attempts": 1
+          }
+        ]
+      }
+    ],
+    "sends": 1,
+    "mapped": {
+      "7001": "p"
+    },
+    "unmapped": [
+      "7002"
+    ]
+  }
+}

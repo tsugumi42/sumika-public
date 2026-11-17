@@ -1,0 +1,156 @@
+{
+  "id": "private-restart-dedup",
+  "about": "重启几秒的空档补上；补录后实时又推同一条仍是一条；下一轮读持久水位，比起点老的不再写",
+  "source_tests": [
+    "TestBackfillRestartDedup"
+  ],
+  "scene": "private",
+  "setup": {
+    "watermark_ago_ms": 6000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [
+      {
+        "id": "1001",
+        "ago_ms": 8000,
+        "seq": 0,
+        "from": ""
+      }
+    ],
+    "gaps": []
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "1002",
+              "ago_ms": 3000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "1001",
+              "ago_ms": 8000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "1001",
+            "ago_ms": 8000
+          },
+          {
+            "id": "1002",
+            "ago_ms": 3000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 66000,
+            "to_ago_ms": 8000,
+            "state": "blocked",
+            "reason": "page-cap",
+            "tries": 0,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 66000,
+          "through_ago_ms": 66001
+        },
+        "complete_coverage": false
+      }
+    },
+    {
+      "advance_ms": 0,
+      "live_before": [
+        {
+          "id": "1002",
+          "ago_ms": 3000,
+          "seq": 0,
+          "from": ""
+        }
+      ],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "1000",
+              "ago_ms": 120000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "1002",
+              "ago_ms": 3000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "1001",
+            "ago_ms": 8000
+          },
+          {
+            "id": "1002",
+            "ago_ms": 3000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 66000,
+            "to_ago_ms": 8000,
+            "state": "blocked",
+            "reason": "page-cap",
+            "tries": 0,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 66000,
+          "through_ago_ms": 66001
+        },
+        "complete_coverage": false
+      }
+    }
+  ]
+}

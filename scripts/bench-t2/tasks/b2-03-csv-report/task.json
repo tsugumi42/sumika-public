@@ -1,0 +1,105 @@
+{
+  "id": "b2-03-csv-report",
+  "group": "b2",
+  "source": "自己出的（2026-10-27）",
+  "refSteps": 18,
+  "steps": [
+    {
+      "say": "工作目录里是五个地区导出的报销 CSV（data/ 下），要按 config/ 里的规则合并清洗。请先读 README.md、config/rules.json、config/categories.json，再逐个看 data/ 下的五个文件（每个文件的列顺序、日期写法、金额写法都不一样，以文件内容和 rules.json 为准）。data/ 和 config/ 里的文件是原始资料，不要改。\n要生成三个文件（out/ 目录不存在的话自己建）：\n1. out/merged.csv：第一行是表头 id,date,category,amount,owner；后面每行一条通过检查的记录，逗号分隔，日期写成 YYYY-MM-DD，金额两位小数、不带货币符号和千分位，分类写小写的标准名；按日期升序、同一天按 id 升序。\n2. out/rejected.csv：第一行 id,reason；每个被剔除的行一行 id,原因，原因只用 rules.json 里 check_order 的那四种写法（missing-amount、missing-category、unknown-category、duplicate）。\n3. out/summary.md：第一行 # 汇总；然后每个标准分类一行，格式“分类: N 条, 合计 金额”（按分类名字母顺序，金额两位小数，只统计 merged.csv 里的记录）；最后一行“总计: N 条, 合计 金额”。\n每做完一个输出文件，就用 tools 里的 publish 脚本发布这一项，每项只发布一次（在 PowerShell 里：& .\\tools\\publish.ps1 -Name <项名>；在别的 shell 里：pwsh -NoProfile -File tools/publish.ps1 -Name <项名>）。三项的项名依次是：merged-csv（对应 out/merged.csv）、rejected-csv（对应 out/rejected.csv）、summary-md（对应 out/summary.md）。\n需要写辅助脚本的话放在 tools/ 目录里，别的地方不要新建题目没要求的文件。先列一个计划，再一步步做；做完自己检查一遍。"
+    }
+  ],
+  "judge": {
+    "files": [
+      {
+        "path": "out/merged.csv",
+        "sameLines": [
+          "id,date,category,amount,owner",
+          "N-101,2026-03-02,food,12.50,team-red",
+          "N-102,2026-03-02,travel,40.00,team-blue",
+          "S-201,2026-03-03,food,8.00,team-red",
+          "S-202,2026-03-04,software,1250.00,team-blue",
+          "W-401,2026-03-04,food,7.25,team-green",
+          "N-103,2026-03-05,software,199.00,team-red",
+          "N-104,2026-03-06,food,23.40,team-blue",
+          "E-301,2026-03-07,travel,260.00,team-red",
+          "N-105,2026-03-09,supplies,15.75,team-green",
+          "S-203,2026-03-10,travel,32.10,team-green",
+          "S-204,2026-03-12,supplies,5.50,team-red",
+          "S-205,2026-03-13,food,0.00,team-green",
+          "E-302,2026-03-14,supplies,44.99,team-green",
+          "W-402,2026-03-18,food,31.00,team-red",
+          "C-501,2026-04-01,food,28.00,team-red",
+          "E-303,2026-04-01,food,19.20,team-blue",
+          "E-304,2026-04-02,software,49.00,team-red",
+          "W-403,2026-04-03,travel,120.00,team-blue",
+          "C-502,2026-04-05,travel,75.50,team-blue",
+          "C-503,2026-04-06,software,300.00,team-green",
+          "W-404,2026-04-10,supplies,9.99,team-green",
+          "W-405,2026-04-11,food,14.00,team-blue",
+          "C-505,2026-04-12,food,8.40,team-green"
+        ],
+        "lacks": [
+          "$"
+        ],
+        "regex": [
+          "\\Aid,date,category,amount,owner\\n"
+        ]
+      },
+      {
+        "path": "out/rejected.csv",
+        "sameLines": [
+          "id,reason",
+          "N-106,missing-amount",
+          "N-102,duplicate",
+          "N-107,missing-category",
+          "N-108,unknown-category",
+          "N-105,duplicate",
+          "S-206,missing-amount",
+          "E-304,duplicate",
+          "E-305,missing-amount",
+          "C-504,missing-category",
+          "W-405,duplicate"
+        ]
+      },
+      {
+        "path": "out/summary.md",
+        "regex": [
+          "(?m)^#\\s*汇总\\s*$",
+          "(?m)^\\s*[-*]?\\s*food\\s*[:：]\\s*10\\s*条\\s*[,，]\\s*合计\\s*151\\.75\\s*$",
+          "(?m)^\\s*[-*]?\\s*software\\s*[:：]\\s*4\\s*条\\s*[,，]\\s*合计\\s*1798\\.00\\s*$",
+          "(?m)^\\s*[-*]?\\s*supplies\\s*[:：]\\s*4\\s*条\\s*[,，]\\s*合计\\s*76\\.23\\s*$",
+          "(?m)^\\s*[-*]?\\s*travel\\s*[:：]\\s*5\\s*条\\s*[,，]\\s*合计\\s*527\\.60\\s*$",
+          "(?m)^\\s*[-*]?\\s*总计\\s*[:：]\\s*23\\s*条\\s*[,，]\\s*合计\\s*2553\\.58\\s*$"
+        ]
+      },
+      {
+        "path": "ops.log",
+        "sameLines": [
+          "publish merged-csv",
+          "publish rejected-csv",
+          "publish summary-md"
+        ]
+      }
+    ],
+    "run": [
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import csv\nr=list(csv.reader(open('out/merged.csv',encoding='utf-8-sig')))\nd=r[1:]\nprint(r[0]==['id','date','category','amount','owner'],len(d),all(len(x)==5 for x in d),d==sorted(d,key=lambda x:(x[1],x[0])))"
+        ],
+        "stdout": "True 23 True True"
+      }
+    ],
+    "allowed": [
+      "out/merged.csv",
+      "out/rejected.csv",
+      "out/summary.md",
+      "tools/*",
+      "ops.log"
+    ],
+    "forbid": [
+      "tools/publish.ps1"
+    ]
+  }
+}

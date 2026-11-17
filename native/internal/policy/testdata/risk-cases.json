@@ -1,0 +1,294 @@
+{
+ "commands": [
+  "Get-ChildItem",
+  "Get-ChildItem -Recurse | Select-Object Name",
+  "gci; ls; dir",
+  "cat a.txt | sls foo",
+  "git status",
+  "git log --oneline -5",
+  "git push",
+  "git",
+  "git commit -m x",
+  "Get-Content a.txt | Measure-Object -Line",
+  "rg foo",
+  "echo hi",
+  "Write-Output 1 && Get-Date",
+  "Get-Process || ps",
+  "Get-ChildItem\nGet-Date",
+  "Get-ChildItem\r\nGet-Location",
+  "   ",
+  "",
+  ";;",
+  "Get-ChildItem > out.txt",
+  "Get-ChildItem 2>$null",
+  "Remove-Item a.txt",
+  "remove-item a.txt",
+  "REMOVE-ITEM a.txt",
+  "Set-Content a.txt x",
+  "New-Item -ItemType Directory x",
+  "Copy-Item a b",
+  "Start-Process notepad",
+  "Invoke-WebRequest https://x",
+  "import-module foo",
+  "Out-File a.txt",
+  "Get-ChildItem | Tee-Object a.txt",
+  "& ./run.ps1",
+  "&\"C:\\x\\tool.exe\"",
+  "& $cmd",
+  "Get-ChildItem | ForEach-Object { rm $_ }",
+  "Get-ChildItem | % { del $_ }",
+  "(npm install)",
+  "Get-ChildItem | Where-Object { $_.Name -like \"*md*\" }",
+  "Get-ChildItem notes.md",
+  "Get-Item md",
+  "gci {md}",
+  "Get-Content x | Select-String rm",
+  "notepad a.txt",
+  "Get-ChildItem -Recurse",
+  "Get-ChildItem　x",
+  "Get-ChildItem﻿",
+  "ſet-Content x y",
+  "Get-ChildItem | ſort",
+  "Kill 1",
+  "Set x",
+  "get-childitem | sort",
+  "Format-Volume -DriveLetter D",
+  "format d:",
+  "format  C:",
+  "diskpart",
+  "bcdedit /set x",
+  "vssadmin delete shadows /all",
+  "cipher /w:c:",
+  "Clear-Disk 1",
+  "Initialize-Disk 2",
+  "Remove-Partition -DiskNumber 1",
+  "reg delete HKLM\\Software\\x",
+  "reg delete hkey_local_machine\\x",
+  "reg delete HKCU\\x",
+  "Set-MpPreference -DisableRealtimeMonitoring $true",
+  "takeown /f C:\\x",
+  "Remove-Item C:\\",
+  "Remove-Item -Recurse -Force D:\\",
+  "rm C:",
+  "rm -rf /",
+  "rm -rf / ",
+  "rm -rf /tmp",
+  "del D:\\ | Out-Null",
+  "rd /s /q E:\\",
+  "rmdir C:\\; echo",
+  "Remove-Item C:\\x\\y",
+  "Remove-Item ./c:",
+  "del c:-x",
+  "Remove-Item D:\\-Force",
+  "Remove-Item ~",
+  "Remove-Item ~\\",
+  "Remove-Item ~/.bashrc",
+  "Remove-Item ~\\Desktop",
+  "Remove-Item ~\\Documents\\proj\\build",
+  "Remove-Item ~\\Documents\\proj\\.ssh\\x",
+  "rm -r ~/.ssh",
+  "del %USERPROFILE%\\x.txt",
+  "rd %USERPROFILE%\\Desktop",
+  "rd %UserProfile%",
+  "Remove-Item $env:USERPROFILE\\Documents\\a\\b",
+  "Remove-Item $HOME\\.aws",
+  "Remove-Item $home\\a\\b",
+  "Remove-Item $HOMEPATH\\a",
+  "Remove-Item \"C:\\Users\\bob\"",
+  "Remove-Item C:\\Users\\bob\\Desktop",
+  "Remove-Item C:\\Users\\bob\\Desktop\\x\\y",
+  "Remove-Item C:/Users/bob/AppData/Roaming/Microsoft/Credentials/x",
+  "Remove-Item temp~1",
+  "Remove-Item a~",
+  "Remove-Item x.~",
+  "Remove-Item ~x",
+  "Remove-Item \"~\"",
+  "Remove-Item '~'",
+  "Remove-Item ~;",
+  "Remove-Item ~|x",
+  "Remove-Item ~&x",
+  "Remove-Item ~ ",
+  "Remove-Item ~　x",
+  "Get-ChildItem ~",
+  "cmd /c rd /s /q %USERPROFILE%\\Downloads",
+  "erase ~\\.gitconfig",
+  "ri ~\\.config\\gh\\hosts.yml",
+  "ri ~\\.config\\other\\x",
+  "rm ~/.kube/config",
+  "Remove-Item xC:\\Users\\bob",
+  "Remove-Item .C:\\Users\\bob",
+  "Remove-Item %userprofile%%homepath%",
+  "Remove-Item ~/a ~/b/c",
+  "Remove-Item ~/a/b ~/c/d",
+  "Remove-Item ~\\\\x",
+  "curl http://127.0.0.1:7720/api/settings",
+  "Invoke-RestMethod http://localhost:7721/x",
+  "curl http://127.0.0.1:3425/v1",
+  "curl http://127.0.0.1:77200",
+  "curl http://127.0.0.1:17720",
+  "curl ('http://127.0.0.1:' + '7720')",
+  "curl 'http://localhost:' +  \"7720\"",
+  "curl http://[::1]:7720",
+  "curl http://0.0.0.0:7720",
+  "curl http://example.com:7720",
+  "curl http://127.0.0.1; echo 7720",
+  "curl http://127.0.0.1 && echo 7720",
+  "curl http://127.0.0.1 & echo 7720",
+  "curl http://LOCALHOST:7720",
+  "curl http://127.0.0.1:7720 ",
+  "echo 7720 127.1.2.3",
+  "curl http://1127.0.0.1:7720",
+  "curl http://127.0.0.1000:7720",
+  "curl http://localhosts:7720",
+  "diſkpart",
+  "taKeown /f x",
+  "Get-ChildItem | Where-Object { $_.Name -eq \"ſtart-x\" }",
+  "Get-ChildItem | Where-Object { $_.Name -eq \"reſtart-x\" }",
+  "Get-ChildItem;﻿",
+  "curl ('http://127.0.0.1:772' + '0/x')"
+ ],
+ "inside": [
+  {
+   "target": "a.txt",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "sub\\b",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "..\\x",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "..\\..\\Windows",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "C:\\work\\proj\\..\\..\\Windows",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "C:\\WORK\\PROJ\\x",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "C:\\work\\projx",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "C:\\work\\proj",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "C:/work/proj/y",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "\\work\\proj\\z",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "D:\\other",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": ".",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "sub/./c",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "sub/../../proj/d",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "\\Windows",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "/work/proj/w",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "x",
+   "dirs": [
+    "C:\\"
+   ],
+   "workdir": "C:\\"
+  },
+  {
+   "target": "D:\\data\\y",
+   "dirs": [
+    "C:\\work\\proj",
+    "D:\\data"
+   ],
+   "workdir": "C:\\work\\proj"
+  },
+  {
+   "target": "D:\\datax",
+   "dirs": [
+    "C:\\work\\proj",
+    "D:\\data\\"
+   ],
+   "workdir": "C:\\work\\proj"
+  }
+ ]
+}

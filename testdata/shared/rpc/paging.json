@@ -1,0 +1,385 @@
+{
+  "name": "paging",
+  "doc": "翻页：按（时间，seq）倒着取，同一时刻按 seq；游标原样传回；has_more、high_water 和最后一页",
+  "source_tests": [
+    "store/display_test.go",
+    "desktopread/paging_test.go"
+  ],
+  "characters": [
+    {
+      "id": "a",
+      "name": "编造甲"
+    },
+    {
+      "id": "b",
+      "name": "编造乙"
+    }
+  ],
+  "rows": {
+    "qq": [
+      {
+        "table": "events",
+        "values": {
+          "seq": 1,
+          "id": "E01",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "一",
+          "created_at": 1000
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 1
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 2,
+          "id": "E02",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "二",
+          "created_at": 1001
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 2
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 3,
+          "id": "E03",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "三（和四同一刻）",
+          "created_at": 1002
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 3
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 4,
+          "id": "E04",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "四（和三同一刻）",
+          "created_at": 1002
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 4
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 5,
+          "id": "E05",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "五",
+          "created_at": 1003
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 5
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 6,
+          "id": "E06",
+          "channel": "qq",
+          "conversation": "qq:group:90003",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "别的群",
+          "created_at": 999
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 6
+        }
+      }
+    ]
+  },
+  "calls": [
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 2
+        }
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "before": {
+              "actor_id": "70001",
+              "actor_kind": "human",
+              "created_at": 1002,
+              "display_name": "70001",
+              "kind": "message",
+              "ref": {
+                "conversation": {
+                  "channel": "qq",
+                  "conversation": "qq:group:90002",
+                  "platform": "qq",
+                  "scene": "group"
+                },
+                "event": {
+                  "event_id": "E03",
+                  "platform": "qq"
+                }
+              },
+              "seq": 3,
+              "text": "三（和四同一刻）"
+            },
+            "has_more": true,
+            "high_water": 6,
+            "items": [
+              {
+                "actor_id": "70001",
+                "actor_kind": "human",
+                "actor_uid": "70001",
+                "created_at": 1002,
+                "display_name": "70001",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E04",
+                    "platform": "qq"
+                  }
+                },
+                "seq": 4,
+                "text": "四（和三同一刻）",
+                "version": 1
+              },
+              {
+                "actor_id": "70001",
+                "actor_kind": "human",
+                "actor_uid": "70001",
+                "created_at": 1003,
+                "display_name": "70001",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E05",
+                    "platform": "qq"
+                  }
+                },
+                "seq": 5,
+                "text": "五",
+                "version": 1
+              }
+            ],
+            "next_cursor": "（游标）"
+          }
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 2
+        }
+      },
+      "cursor_from": 0,
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "before": {
+              "actor_id": "70001",
+              "actor_kind": "human",
+              "created_at": 1000,
+              "display_name": "70001",
+              "kind": "message",
+              "ref": {
+                "conversation": {
+                  "channel": "qq",
+                  "conversation": "qq:group:90002",
+                  "platform": "qq",
+                  "scene": "group"
+                },
+                "event": {
+                  "event_id": "E01",
+                  "platform": "qq"
+                }
+              },
+              "seq": 1,
+              "text": "一"
+            },
+            "has_more": true,
+            "high_water": 6,
+            "items": [
+              {
+                "actor_id": "70001",
+                "actor_kind": "human",
+                "actor_uid": "70001",
+                "created_at": 1001,
+                "display_name": "70001",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E02",
+                    "platform": "qq"
+                  }
+                },
+                "seq": 2,
+                "text": "二",
+                "version": 2
+              },
+              {
+                "actor_id": "70001",
+                "actor_kind": "human",
+                "actor_uid": "70001",
+                "created_at": 1002,
+                "display_name": "70001",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E03",
+                    "platform": "qq"
+                  }
+                },
+                "seq": 3,
+                "text": "三（和四同一刻）",
+                "version": 2
+              }
+            ],
+            "next_cursor": "（游标）"
+          }
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 2
+        }
+      },
+      "cursor_from": 1,
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "high_water": 6,
+            "items": [
+              {
+                "actor_id": "70001",
+                "actor_kind": "human",
+                "actor_uid": "70001",
+                "created_at": 1000,
+                "display_name": "70001",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E01",
+                    "platform": "qq"
+                  }
+                },
+                "seq": 1,
+                "text": "一",
+                "version": 3
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

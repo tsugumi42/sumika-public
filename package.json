@@ -1,0 +1,21 @@
+{
+  "name": "sumika",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "setup": "bun scripts/fetch-tools.ts",
+    "postinstall": "bun scripts/fetch-tools.ts",
+    "test": "bun test",
+    "check:docs": "bun scripts/check-docs.ts"
+  },
+  "dependencies": {
+    "@zip.js/zip.js": "^2.24.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "lefthook": "2.2.2",
+    "typescript": "^7.0.2"
+  }
+}

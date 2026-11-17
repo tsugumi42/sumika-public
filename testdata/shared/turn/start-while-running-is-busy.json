@@ -1,0 +1,75 @@
+{
+  "id": "start-while-running-is-busy",
+  "about": "start 只能在会话空闲时开新一轮；这一轮还在跑，再来一句 start 被拒（busy），不入库、不触发请求",
+  "source_tests": [
+    "input.go Submit",
+    "TestSubmitLocal*"
+  ],
+  "replies": [
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "甲句",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "b",
+      "mode": "start",
+      "text": "乙句",
+      "expect": {
+        "error": "busy"
+      }
+    },
+    {
+      "do": "release",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "done"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "done"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      }
+    ],
+    "steers": []
+  }
+}

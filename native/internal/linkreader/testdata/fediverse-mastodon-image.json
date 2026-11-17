@@ -1,0 +1,39 @@
+{
+ "id": "9000000000000000001",
+ "created_at": "2026-11-05T14:01:27.749Z",
+ "sensitive": false,
+ "spoiler_text": "",
+ "visibility": "public",
+ "replies_count": 3,
+ "reblogs_count": 32,
+ "favourites_count": 155,
+ "content": "<p>这是编造的联邦宇宙示例正文。</p><p>第二段：编造的说明。</p>",
+ "reblog": null,
+ "account": {
+  "id": "1",
+  "username": "example_user",
+  "acct": "example_user",
+  "display_name": "编造用户",
+  "created_at": "2016-03-16T00:00:00.000Z",
+  "note": "这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的联邦宇宙示例正文，仅用于",
+  "avatar": "https://files.mastodon.social/fixture/1",
+  "followers_count": 381204,
+  "following_count": 769,
+  "statuses_count": 82766
+ },
+ "media_attachments": [
+  {
+   "type": "image",
+   "url": "https://files.mastodon.social/fixture/2",
+   "preview_url": "https://files.mastodon.social/fixture/3",
+   "meta": {
+    "original": {
+     "width": 3356,
+     "height": 2225
+    }
+   }
+  }
+ ],
+ "card": null,
+ "poll": null
+}

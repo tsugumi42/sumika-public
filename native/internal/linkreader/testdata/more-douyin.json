@@ -1,0 +1,5 @@
+{
+ "video":{"status_code":0,"aweme_detail":{"aweme_id":"90001","desc":"编造的视频描述","create_time":1793620800,"author":{"uid":"90002","nickname":"编造作者甲"},"statistics":{"digg_count":0,"comment_count":12,"share_count":3},"video":{"cover":{"url_list":["https://p3-pc-sign.douyinpic.com/fixture.jpg"]},"duration":12345,"width":720,"height":1280}}},
+ "note":{"status_code":0,"aweme_details":[{"aweme_id":"90003","desc":"编造图文","author":{"uid":"90002","nickname":"编造作者甲"},"images":[{"url_list":["https://p3-pc-sign.douyinpic.com/first.jpg"],"width":600,"height":800},{"url_list":["https://p3-pc-sign.douyinpic.com/second.jpg"],"width":900,"height":600}]}]},
+ "blocked_slides":{"status_code":0,"aweme_details":null}
+}

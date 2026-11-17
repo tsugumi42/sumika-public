@@ -1,0 +1,338 @@
+{
+  "name": "bad-requests",
+  "doc": "坏请求：条数越界、会话身份和会话号对不上、会话号残缺、别的会话的游标、伪造的游标——都报错，不退回读别的",
+  "source_tests": [
+    "desktopread/service_test.go",
+    "store/display_test.go"
+  ],
+  "characters": [
+    {
+      "id": "a",
+      "name": "编造甲"
+    },
+    {
+      "id": "b",
+      "name": "编造乙"
+    }
+  ],
+  "rows": {
+    "qq": [
+      {
+        "table": "events",
+        "values": {
+          "seq": 1,
+          "id": "E01",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "一",
+          "created_at": 1000
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 1
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 2,
+          "id": "E02",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "二",
+          "created_at": 1001
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 2
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 3,
+          "id": "E03",
+          "channel": "qq",
+          "conversation": "qq:group:90003",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "别的群",
+          "created_at": 1002
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 3
+        }
+      }
+    ]
+  },
+  "calls": [
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 0
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1001
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "private",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 10
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:"
+          },
+          "limit": 10
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "private",
+            "conversation": "qq:private:80001"
+          },
+          "limit": 10
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "nochannel"
+          },
+          "limit": 10
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1
+        }
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "before": {
+              "actor_id": "70001",
+              "actor_kind": "human",
+              "created_at": 1000,
+              "display_name": "70001",
+              "kind": "message",
+              "ref": {
+                "conversation": {
+                  "channel": "qq",
+                  "conversation": "qq:group:90002",
+                  "platform": "qq",
+                  "scene": "group"
+                },
+                "event": {
+                  "event_id": "E01",
+                  "platform": "qq"
+                }
+              },
+              "seq": 1,
+              "text": "一"
+            },
+            "has_more": true,
+            "high_water": 3,
+            "items": [
+              {
+                "actor_id": "70001",
+                "actor_kind": "human",
+                "actor_uid": "70001",
+                "created_at": 1001,
+                "display_name": "70001",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E02",
+                    "platform": "qq"
+                  }
+                },
+                "seq": 2,
+                "text": "二",
+                "version": 1
+              }
+            ],
+            "next_cursor": "（游标）"
+          }
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90003"
+          },
+          "limit": 1
+        }
+      },
+      "cursor_from": 6,
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1
+        },
+        "cursor": "不是游标"
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "overview.read",
+      "params": {
+        "limit": 0
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "overview.read",
+      "params": {
+        "limit": 10,
+        "cursor": "不是游标"
+      },
+      "expect": {
+        "result": {
+          "error": {
+            "code": "failed",
+            "message": "展示查询参数错误"
+          },
+          "state": "failed"
+        }
+      }
+    }
+  ]
+}

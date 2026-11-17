@@ -1,0 +1,291 @@
+// 从 protocol/sumika-rpc.json 生成 Go 和 TS 的线上类型（规格-Bun后台第1批 4.4）。
+//
+//   bun scripts/gen-rpc.ts           写 native/internal/rpcwire/wire_gen.go 和 server/src/protocol/gen.ts
+//   bun scripts/gen-rpc.ts --check   只比对，不一致列出文件、退出 1（钩子和合并队列用）
+//
+// 公开导出的仓库没有 server/：只生成、检查 Go 那份，结论里写明只查了 Go 侧。
+// 生成必须确定：类型和字段按定义里的顺序，不按映射顺序；不写时间戳；Go 那份过一遍 gofmt。
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+
+const ROOT = resolve(import.meta.dir, "..");
+export const SOURCE = join(ROOT, "protocol", "sumika-rpc.json");
+export const GO_OUT = join(ROOT, "native", "internal", "rpcwire", "wire_gen.go");
+export const TS_OUT = join(ROOT, "server", "src", "protocol", "gen.ts");
+
+type TypeDef = { name: string; doc?: string; fields: string[] };
+type MethodDef = { name: string; go: string; params: string; result?: string; notification?: boolean };
+type ErrorDef = { code: number; name: string; doc?: string };
+export type Spec = {
+  doc: string; protocol_version: number;
+  limits: { max_request_mib: number; max_response_mib: number };
+  errors: ErrorDef[]; types: TypeDef[]; methods: MethodDef[];
+};
+
+type Field = { name: string; optional: boolean; type: TypeExpr; doc: string };
+export type TypeExpr =
+  | { k: "prim"; name: string }
+  | { k: "named"; name: string }
+  | { k: "array"; of: TypeExpr }
+  | { k: "map"; of: TypeExpr }
+  | { k: "result"; of: TypeExpr }
+  | { k: "list"; of: TypeExpr };
+
+const PRIMS = new Set(["string", "int", "int64", "float", "bool", "bytes", "any"]);
+
+export function parseType(src: string, known: Set<string>): TypeExpr {
+  const s = src.trim();
+  if (s.endsWith("[]")) return { k: "array", of: parseType(s.slice(0, -2), known) };
+  const g = /^(Result|List|map)<(.+)>$/.exec(s);
+  if (g) {
+    if (g[1] === "map") {
+      const m = /^string,(.+)$/.exec(g[2].replace(/\s+/g, ""));
+      if (!m) throw new Error(`映射的键只能是 string：${s}`);
+      return { k: "map", of: parseType(m[1], known) };
+    }
+    return { k: g[1] === "Result" ? "result" : "list", of: parseType(g[2], known) };
+  }
+  if (PRIMS.has(s)) return { k: "prim", name: s };
+  if (!known.has(s)) throw new Error(`不认识的类型：${s}`);
+  return { k: "named", name: s };
+}
+
+export function parseField(src: string, known: Set<string>): Field {
+  const [decl, ...rest] = src.split("//");
+  const m = /^\s*([a-z][a-z0-9_]*)(\?)?\s*:\s*(.+?)\s*$/.exec(decl);
+  if (!m) throw new Error(`字段写法不对：${src}`);
+  return { name: m[1], optional: !!m[2], type: parseType(m[3], known), doc: rest.join("//").trim() };
+}
+
+export function load(path = SOURCE): Spec {
+  const spec = JSON.parse(readFileSync(path, "utf8")) as Spec;
+  const allowedTop = new Set(["doc", "protocol_version", "limits", "errors", "types", "methods"]);
+  for (const k of Object.keys(spec)) if (!allowedTop.has(k)) throw new Error(`定义里不认识的键：${k}`);
+  const names = new Set<string>();
+  for (const t of spec.types) {
+    if (names.has(t.name)) throw new Error(`类型重名：${t.name}`);
+    names.add(t.name);
+  }
+  for (const k of ["max_request_mib", "max_response_mib"] as const) if (!Number.isInteger(spec.limits?.[k]) || !(spec.limits[k] > 0)) throw new Error(`limits 要写正整数的 ${k}`);
+  const codes = new Set<number>(), enames = new Set<string>();
+  for (const e of spec.errors ?? []) {
+    if (!Number.isInteger(e.code) || codes.has(e.code)) throw new Error(`错误码重复或不是整数：${e.code}`);
+    if (!/^[a-z][a-z_]*$/.test(e.name) || enames.has(e.name)) throw new Error(`错误名重复或写法不对：${e.name}`);
+    codes.add(e.code); enames.add(e.name);
+  }
+  const mnames = new Set<string>();
+  for (const m of spec.methods) {
+    if (mnames.has(m.name)) throw new Error(`方法重名：${m.name}`);
+    mnames.add(m.name);
+    if (!m.notification && !m.result) throw new Error(`方法 ${m.name} 没有 result`);
+  }
+  return spec;
+}
+
+// ───── Go ─────
+
+const INITIALISMS: Record<string, string> = { id: "ID", url: "URL", uid: "UID", ms: "MS", mime: "MIME", png: "PNG", cwd: "CWD" };
+export function goName(snake: string): string {
+  return snake.split("_").map(p => INITIALISMS[p] ?? p[0].toUpperCase() + p.slice(1)).join("");
+}
+
+// 上限在定义里按 MiB 写，生成 N << 20
+const mib = (n: number) => `${n} << 20`;
+
+function goType(t: TypeExpr): string {
+  switch (t.k) {
+    case "prim":
+      return { string: "string", int: "int", int64: "int64", float: "float64", bool: "bool", bytes: "[]byte", any: "any" }[t.name]!;
+    case "named": return t.name;
+    case "array": return "[]" + goType(t.of);
+    case "map": return "map[string]" + goType(t.of);
+    case "result": return `Result[${goType(t.of)}]`;
+    case "list": return `List[${goType(t.of)}]`;
+  }
+}
+
+function isStructLike(t: TypeExpr) { return t.k === "named" || t.k === "result" || t.k === "list"; }
+
+function goComment(text: string, indent = ""): string {
+  return text ? text.split("\n").map(l => `${indent}// ${l}`).join("\n") + "\n" : "";
+}
+
+export function genGo(spec: Spec): string {
+  const known = new Set(spec.types.map(t => t.name));
+  let out = "// Code generated by scripts/gen-rpc.ts from protocol/sumika-rpc.json; DO NOT EDIT.\n\n";
+  out += "package rpcwire\n\n";
+  out += `// ProtocolVersion 是协议版本，initialize 两边必须一致\nconst ProtocolVersion = ${spec.protocol_version}\n\n`;
+  out += `// 帧上限：请求（认证过的连接）和回复各一个；超过的直接关连接\nconst (\n\tMaxRequestBytes = ${mib(spec.limits.max_request_mib)}\n\tMaxResponseBytes = ${mib(spec.limits.max_response_mib)}\n)\n\n`;
+  out += "// 错误码\nconst (\n";
+  for (const e of spec.errors) out += `\tCode${goName(e.name)} = ${e.code}${e.doc ? " // " + e.doc : ""}\n`;
+  out += ")\n\n";
+  for (const t of spec.types) {
+    out += goComment(t.doc ? `${t.name}：${t.doc}` : "");
+    out += `type ${t.name} struct {\n`;
+    for (const raw of t.fields) {
+      const f = parseField(raw, known);
+      let ty = goType(f.type);
+      let tag: string;
+      if (isStructLike(f.type)) {
+        if (f.optional) { ty = "*" + ty; tag = `json:"${f.name},omitempty"`; }
+        else tag = `json:"${f.name}"`;
+      } else tag = `json:"${f.name},omitempty"`;
+      out += `\t${goName(f.name)} ${ty} \`${tag}\`${f.doc ? " // " + f.doc : ""}\n`;
+    }
+    out += "}\n\n";
+  }
+  out += "// 方法名\nconst (\n";
+  for (const m of spec.methods) out += `\tMethod${m.go} = "${m.name}"\n`;
+  out += ")\n\n";
+  out += "// MethodInfo 是一个方法的参数和结果类型名（定义里的写法）\ntype MethodInfo struct {\n\tName, Params, Result string\n\tNotification bool\n}\n\n";
+  out += "// Methods 是定义里全部方法，按定义顺序\nvar Methods = []MethodInfo{\n";
+  for (const m of spec.methods) {
+    out += `\t{Name: ${JSON.stringify(m.name)}, Params: ${JSON.stringify(m.params)}, Result: ${JSON.stringify(m.result ?? "")}, Notification: ${!!m.notification}},\n`;
+  }
+  out += "}\n";
+  const fmt = Bun.spawnSync(["gofmt"], { stdin: new TextEncoder().encode(out) });
+  if (fmt.exitCode !== 0) throw new Error("gofmt 失败：" + fmt.stderr.toString());
+  return fmt.stdout.toString().replace(/\r\n/g, "\n");
+}
+
+// ───── TS ─────
+
+function tsType(t: TypeExpr): string {
+  switch (t.k) {
+    case "prim":
+      return { string: "string", int: "number", int64: "number", float: "number", bool: "boolean", bytes: "string", any: "unknown" }[t.name]!;
+    case "named": return t.name;
+    case "array": { const inner = tsType(t.of); return /[<|]/.test(inner) ? `Array<${inner}>` : inner + "[]"; }
+    case "map": return `Record<string, ${tsType(t.of)}>`;
+    case "result": return `Result<${tsType(t.of)}>`;
+    case "list": return `List<${tsType(t.of)}>`;
+  }
+}
+
+// typeSource 把类型写回统一的源码形式（去空格），给运行时类型表用
+export function typeSource(t: TypeExpr): string {
+  switch (t.k) {
+    case "prim": case "named": return t.name;
+    case "array": return typeSource(t.of) + "[]";
+    case "map": return `map<string,${typeSource(t.of)}>`;
+    case "result": return `Result<${typeSource(t.of)}>`;
+    case "list": return `List<${typeSource(t.of)}>`;
+  }
+}
+
+export function genTS(spec: Spec): string {
+  const known = new Set(spec.types.map(t => t.name));
+  const L: string[] = [];
+  L.push("// Code generated by scripts/gen-rpc.ts from protocol/sumika-rpc.json; DO NOT EDIT.");
+  L.push("");
+  L.push(`export const PROTOCOL_VERSION = ${spec.protocol_version};`);
+  L.push(`export const MAX_REQUEST_BYTES = ${mib(spec.limits.max_request_mib)};`);
+  L.push(`export const MAX_RESPONSE_BYTES = ${mib(spec.limits.max_response_mib)};`);
+  L.push("/** 错误码 */");
+  L.push("export const Code = {");
+  for (const e of spec.errors) L.push(`  ${goName(e.name)}: ${e.code},${e.doc ? " // " + e.doc : ""}`);
+  L.push("} as const;");
+  L.push("");
+  L.push(`export type State = "loading" | "ready" | "failed" | "unsupported";`);
+  L.push("/** Result 区分成功没数据、失败、不支持；stale 表示刷新失败但带着旧值 */");
+  L.push("export interface Result<T> {");
+  L.push("  state: State;");
+  L.push("  value?: T;");
+  L.push("  error?: ResultError;");
+  L.push("  stale?: boolean;");
+  L.push("}");
+  L.push("export interface ResultError {");
+  L.push("  code: string;");
+  L.push("  message: string;");
+  L.push("}");
+  L.push("export interface List<T> {");
+  L.push("  items?: T[];");
+  L.push("  next_cursor?: string;");
+  L.push("  has_more?: boolean;");
+  L.push("}");
+  L.push("");
+  for (const t of spec.types) {
+    if (t.doc) L.push(`/** ${t.doc} */`);
+    if (t.fields.length === 0) { L.push(`export type ${t.name} = Record<string, never>;`); L.push(""); continue; }
+    L.push(`export interface ${t.name} {`);
+    for (const raw of t.fields) {
+      const f = parseField(raw, known);
+      const opt = !isStructLike(f.type) || f.optional;
+      if (f.doc) L.push(`  /** ${f.doc} */`);
+      L.push(`  ${f.name}${opt ? "?" : ""}: ${tsType(f.type)};`);
+    }
+    L.push("}");
+    L.push("");
+  }
+  const ts = (n: string) => tsType(parseType(n, known));
+  L.push("/** 请求方法：参数和结果 */");
+  L.push("export interface Methods {");
+  for (const m of spec.methods.filter(m => !m.notification)) L.push(`  ${JSON.stringify(m.name)}: { params: ${ts(m.params)}; result: ${ts(m.result!)} };`);
+  L.push("}");
+  L.push("");
+  L.push("/** 服务端推的通知 */");
+  L.push("export interface Notifications {");
+  for (const m of spec.methods.filter(m => m.notification)) L.push(`  ${JSON.stringify(m.name)}: ${ts(m.params)};`);
+  L.push("}");
+  L.push("");
+  L.push("/** 运行时用的类型表（参数校验）：字段名、类型写法、是否可选结构体；和上面的接口出自同一份定义 */");
+  L.push("export const TYPES: Record<string, ReadonlyArray<readonly [string, string, boolean]>> = {");
+  for (const t of spec.types) {
+    const fs = t.fields.map(raw => { const f = parseField(raw, known); return `[${JSON.stringify(f.name)}, ${JSON.stringify(typeSource(f.type))}, ${f.optional}]`; });
+    L.push(`  ${t.name}: [${fs.join(", ")}],`);
+  }
+  L.push("};");
+  L.push("");
+  L.push("/** 每个方法的参数类型名 */");
+  L.push("export const METHOD_PARAMS: Record<string, string> = {");
+  for (const m of spec.methods) L.push(`  ${JSON.stringify(m.name)}: ${JSON.stringify(m.params)},`);
+  L.push("};");
+  L.push("");
+  L.push("export type MethodName = keyof Methods;");
+  L.push("export const METHOD_NAMES: readonly MethodName[] = [");
+  for (const m of spec.methods.filter(m => !m.notification)) L.push(`  ${JSON.stringify(m.name)},`);
+  L.push("];");
+  return L.join("\n") + "\n";
+}
+
+/** 公开导出的仓库没有 server/：只生成、检查 Go 侧那份 */
+export function hasServer(root = ROOT) {
+  return existsSync(join(root, "server"));
+}
+
+export function outputs(spec = load(), root = ROOT): { path: string; content: string }[] {
+  const files = [{ path: join(root, "native", "internal", "rpcwire", "wire_gen.go"), content: genGo(spec) }];
+  if (hasServer(root)) files.push({ path: join(root, "server", "src", "protocol", "gen.ts"), content: genTS(spec) });
+  return files;
+}
+
+/** 生成或检查；没有 server/ 时只碰 Go 侧。返回相对 root 的路径，给结论行和测试看 */
+export function runGen(root = ROOT, check = false): { stale: string[]; wrote: string[]; hasServer: boolean } {
+  const files = outputs(load(join(root, "protocol", "sumika-rpc.json")), root);
+  const stale: string[] = [];
+  const wrote: string[] = [];
+  for (const f of files) {
+    const cur = existsSync(f.path) ? readFileSync(f.path, "utf8").replace(/\r\n/g, "\n") : null;
+    if (cur === f.content) continue;
+    const rel = f.path.slice(root.length + 1).replaceAll("\\", "/");
+    if (check) stale.push(rel);
+    else {
+      mkdirSync(dirname(f.path), { recursive: true });
+      writeFileSync(f.path, f.content);
+      wrote.push(rel);
+    }
+  }
+  return { stale, wrote, hasServer: hasServer(root) };
+}
+
+if (import.meta.main) {
+  const check = process.argv.includes("--check");
+  const r = runGen(ROOT, check);
+  for (const w of r.wrote) console.log("写了", w);
+  if (check && r.stale.length) {
+    console.error("协议生成文件和 protocol/sumika-rpc.json 对不上，跑 bun scripts/gen-rpc.ts 重新生成：");
+    for (const s of r.stale) console.error("  " + s);
+    process.exit(1);
+  }
+  if (check) console.log(r.hasServer ? "协议生成文件是新的" : "协议生成文件是新的（没有 server/，只查了 Go 侧）");
+}

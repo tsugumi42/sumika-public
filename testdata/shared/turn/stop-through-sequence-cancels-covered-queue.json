@@ -1,0 +1,187 @@
+{
+  "id": "stop-through-sequence-cancels-covered-queue",
+  "about": "停止带上界序号：旧轮停掉，序号不超过上界的排队话取消，上界之后新来的照常跑；同角色另一个会话不受影响",
+  "source_tests": [
+    "TestStopThroughSequence"
+  ],
+  "replies": [
+    "text",
+    "text",
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "旧任务甲",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "n",
+      "mode": "start",
+      "text": "邻会话任务",
+      "conv": "neighbor",
+      "expect": {
+        "state": "accepted",
+        "run": "n",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "q1",
+      "mode": "queue",
+      "text": "上界内排队乙",
+      "expect": {
+        "state": "accepted",
+        "run": "q1",
+        "seq_rank": 2
+      }
+    },
+    {
+      "do": "stop",
+      "run": "a",
+      "through": "q1",
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "q2",
+      "mode": "queue",
+      "text": "新任务丙",
+      "expect": {
+        "state": "accepted",
+        "run": "q2",
+        "seq_rank": 3
+      }
+    },
+    {
+      "do": "release",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "n",
+      "expect": {
+        "outcome": "done"
+      }
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "stopped"
+      }
+    },
+    {
+      "do": "wait_run",
+      "run": "q1",
+      "expect": {
+        "outcome": "stopped"
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 3,
+      "expect": {}
+    },
+    {
+      "do": "release",
+      "n": 3,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "q2",
+      "expect": {
+        "outcome": "done"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      },
+      {
+        "label": "n",
+        "state": "admitted",
+        "run": "n"
+      },
+      {
+        "label": "q1",
+        "state": "cancelled",
+        "run": "q1"
+      },
+      {
+        "label": "q2",
+        "state": "admitted",
+        "run": "q2"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "stopped"
+      },
+      {
+        "label": "n",
+        "state": "settled",
+        "outcome": "done"
+      },
+      {
+        "label": "q1",
+        "state": "settled",
+        "outcome": "stopped"
+      },
+      {
+        "label": "q2",
+        "state": "settled",
+        "outcome": "done"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      },
+      {
+        "n": 2,
+        "contains": [
+          "n"
+        ]
+      },
+      {
+        "n": 3,
+        "contains": [
+          "a",
+          "q1",
+          "q2"
+        ]
+      }
+    ],
+    "steers": []
+  }
+}

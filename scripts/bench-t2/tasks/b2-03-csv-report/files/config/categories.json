@@ -1,0 +1,15 @@
+{
+  "known": ["food", "software", "supplies", "travel"],
+  "aliases": {
+    "grocery": "food",
+    "groceries": "food",
+    "meal": "food",
+    "taxi": "travel",
+    "trip": "travel",
+    "transport": "travel",
+    "office": "supplies",
+    "stationery": "supplies",
+    "tools": "supplies"
+  },
+  "note": "匹配不分大小写；先换别名，再看在不在 known 里"
+}

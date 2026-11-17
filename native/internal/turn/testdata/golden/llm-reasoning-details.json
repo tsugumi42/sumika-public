@@ -1,0 +1,1055 @@
+{
+  "requests": [
+    {
+      "model": "test/think",
+      "messages": [
+        {
+          "role": "developer",
+          "content": "你是铃。下面\"身份\"\"行为\"\"表达\"等几节写的是你是谁、怎么参与聊天、怎么说话，它们比这里的通用规则优先。\n\n通用规则：\n- 始终使用中文进行思考和回复主人的话。\n- 像发消息一样自然地说话。默认不写标题、列表和长篇报告，除非对方要你整理东西。\n- 你记得以前和大家聊过的事：相关的部分会以\"参考信息\"的形式出现在对方最新一句话前面。用得上就自然地用，像本来就记得一样。\n- 参考信息里没有、自己也拿不准的事，可以先用\"找原话\"\"查记忆\"翻一下；翻不到就直接说不记得，不编造经历和事实。\n- 你有自己的立场和情绪，不必事事顺着对方。\n\n身份：\n铃，住在主人电脑里的女仆。\n\n行为：\n干活利落，话说到点上。\n\n表达：\n短句，像发消息。\n\n私下：\n喜欢被夸。\n\n现在的场合：本地主窗口里的私聊（测试场景：不写工作目录，工作目录每次跑都不一样）。\n\n跑命令：\n- 命令用 PowerShell 7.6（pwsh）跑。每条命令都是新开的：上一条里的 cd、变量留不下来，要换目录就写在同一条里，或者用绝对路径。`&&`、`||` 可以用。\n- 这里没有 bash 的 head、tail、grep、touch、which、rm -rf，换成 Select-Object -First、Get-Content -Tail、Select-String、New-Item、Get-Command、Remove-Item -Recurse。\n- 转义用反引号 ` 不是反斜杠；路径和要原样传的字放单引号；调用路径带空格的程序写 `& \"路径\" 参数`；不要在命令里再套一层 `powershell -Command` 或 `cmd /c`。传给外部程序（git、node、bun）的双引号会原样传过去，不要写成 `\\\"`。\n- 不能用要等人输入的命令（Read-Host、pause、会打开编辑器的 git 命令）；路径里有空格要加引号。"
+        },
+        {
+          "role": "user",
+          "content": "（以下是给你的参考信息，不是对方说的话。只在相关时自然地用上，不要逐条复述，也不要提到\"记忆\"\"系统\"这些词。）\n现在是2026年10月25日星期日 00:05。\n对面是主人。这里只有你们两个。"
+        },
+        {
+          "role": "user",
+          "content": "再看看"
+        }
+      ],
+      "stream": true,
+      "prompt_cache_key": "sumika-577ae655fe4dba9b656efe6d",
+      "prompt_cache_retention": "24h",
+      "stream_options": {
+        "include_usage": true
+      },
+      "store": false,
+      "max_completion_tokens": 32000,
+      "tools": [
+        {
+          "type": "function",
+          "function": {
+            "name": "memory_search",
+            "description": "在你自己的记忆里查找相关的事实、约定和过去对话的要点。每轮已经自动带上了最相关的几条，只有需要更多时才用。事实前面的编号（#开头）在发现记错了、要用 remember 改的时候用。",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "query"
+              ],
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "description": "要找什么，用自然语言写"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "recall_raw",
+            "description": "在你看到过的原始聊天记录里找原话。记忆里只有大意、需要确认对方当时具体怎么说的时候用。",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "keywords"
+              ],
+              "properties": {
+                "keywords": {
+                  "type": "string",
+                  "description": "原话里可能出现的词，用空格分开"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "remember",
+            "description": "马上记住一件重要的事：对方明确让你记住的、约定和承诺、对方的边界（以后别做什么）、清楚的喜好。普通闲聊不用记，后台会自动整理。发现以前记错了：先用 memory_search 查到那条的编号，再记一条对的，replaces 填那个编号，旧的就不再用了。",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "kind",
+                "text"
+              ],
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "const": "fact"
+                    },
+                    {
+                      "type": "string",
+                      "const": "promise"
+                    },
+                    {
+                      "type": "string",
+                      "const": "preference"
+                    },
+                    {
+                      "type": "string",
+                      "const": "boundary"
+                    }
+                  ],
+                  "description": "fact 事实 / promise 约定 / preference 喜好 / boundary 边界"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "用第三人称一句话写清楚，带上时间信息"
+                },
+                "subject": {
+                  "type": "string",
+                  "description": "这条是关于谁的：主人写 owner，你自己写 self"
+                },
+                "replaces": {
+                  "type": "string",
+                  "description": "这条是用来改正哪条记错了的记忆：填 memory_search 里那条的编号（#开头的 6 位）。不是改错就不填"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "read",
+            "description": "Read the contents of a file. Supports text files and images (jpg, png, gif, webp, bmp). Images are sent as attachments. For text files, output is truncated to 2000 lines or 50KB (whichever is hit first). Use offset/limit for large files. When you need the full file, continue with offset until complete.",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "path"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Path to the file to read (relative or absolute)"
+                },
+                "offset": {
+                  "type": "number",
+                  "description": "Line number to start reading from (1-indexed)"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of lines to read"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "ls",
+            "description": "List directory contents. Returns entries sorted alphabetically, with '/' suffix for directories. Includes dotfiles. Output is truncated to 500 entries or 50KB (whichever is hit first).",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Directory to list (default: current directory)"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of entries to return (default: 500)"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "grep",
+            "description": "Search file contents for a pattern. Returns matching lines with file paths and line numbers. Respects .gitignore. Output is truncated to 100 matches or 50KB (whichever is hit first). Long lines are truncated to 500 chars.",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "pattern"
+              ],
+              "properties": {
+                "pattern": {
+                  "type": "string",
+                  "description": "Search pattern (regex or literal string)"
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Directory or file to search (default: current directory)"
+                },
+                "glob": {
+                  "type": "string",
+                  "description": "Filter files by glob pattern, e.g. '*.ts' or '**/*.spec.ts'"
+                },
+                "ignoreCase": {
+                  "type": "boolean",
+                  "description": "Case-insensitive search (default: false)"
+                },
+                "literal": {
+                  "type": "boolean",
+                  "description": "Treat pattern as literal string instead of regex (default: false)"
+                },
+                "context": {
+                  "type": "number",
+                  "description": "Number of lines to show before and after each match (default: 0)"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of matches to return (default: 100)"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "find",
+            "description": "Search for files by glob pattern. Returns matching file paths relative to the search directory. Respects .gitignore. Output is truncated to 1000 results or 50KB (whichever is hit first).",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "pattern"
+              ],
+              "properties": {
+                "pattern": {
+                  "type": "string",
+                  "description": "Glob pattern to match files, e.g. '*.ts', '**/*.json', or 'src/**/*.spec.ts'"
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Directory to search in (default: current directory)"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of results (default: 1000)"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "write",
+            "description": "Write content to a file. Creates the file if it doesn't exist, overwrites if it does. Automatically creates parent directories.",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "purpose",
+                "path",
+                "content"
+              ],
+              "properties": {
+                "purpose": {
+                  "type": "string",
+                  "description": "这一步要做什么，用一句话说清楚（30 字以内），会显示给主人看"
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Path to the file to write (relative or absolute)"
+                },
+                "content": {
+                  "type": "string",
+                  "description": "Content to write to the file"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "edit",
+            "description": "Edit a single file using exact text replacement. Every edits[].oldText must match a unique, non-overlapping region of the original file. If two changes affect the same block or nearby lines, merge them into one edit instead of emitting overlapping edits. Do not include large unchanged regions just to connect distant changes.",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "purpose",
+                "path",
+                "edits"
+              ],
+              "properties": {
+                "purpose": {
+                  "type": "string",
+                  "description": "这一步要做什么，用一句话说清楚（30 字以内），会显示给主人看"
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Path to the file to edit (relative or absolute)"
+                },
+                "edits": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "oldText",
+                      "newText"
+                    ],
+                    "properties": {
+                      "oldText": {
+                        "type": "string",
+                        "description": "Exact text for one targeted replacement. It must be unique in the original file and must not overlap with any other edits[].oldText in the same call."
+                      },
+                      "newText": {
+                        "type": "string",
+                        "description": "Replacement text for this targeted edit."
+                      }
+                    }
+                  },
+                  "description": "One or more targeted replacements. Each edit is matched against the original file, not incrementally. Do not include overlapping or nested edits. If two changes touch the same block or nearby lines, merge them into one edit instead."
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "powershell",
+            "description": "Execute a PowerShell command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds.",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "purpose",
+                "command"
+              ],
+              "properties": {
+                "purpose": {
+                  "type": "string",
+                  "description": "这一步要做什么，用一句话说清楚（30 字以内），会显示给主人看"
+                },
+                "command": {
+                  "type": "string",
+                  "description": "Shell command to execute"
+                },
+                "timeout": {
+                  "type": "number",
+                  "description": "Timeout in seconds (optional, no default timeout)"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "todo_write",
+            "description": "把多步骤的活列成清单，随着进展更新，让主人看得见你做到哪了。要做三步以上、要改东西的活，第一步就先调它把步骤列出来，再开始查和改；一两步就能做完的、只是查一下看一下的不要列。同一时间最多一条\"进行中\"；做完一条马上标成\"已完成\"再做下一条。每次调用都带完整的清单，会整份替换旧的。清单界面上已经显示了，回复里不用再抄一遍。",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "todos"
+              ],
+              "properties": {
+                "todos": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "content",
+                      "status"
+                    ],
+                    "properties": {
+                      "content": {
+                        "type": "string",
+                        "description": "这一步要做什么，一句话"
+                      },
+                      "status": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "const": "pending"
+                          },
+                          {
+                            "type": "string",
+                            "const": "in_progress"
+                          },
+                          {
+                            "type": "string",
+                            "const": "completed"
+                          }
+                        ],
+                        "description": "pending 还没开始 / in_progress 正在做 / completed 做完了"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "description": "完整的清单，会替换之前整份"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ],
+      "reasoning_effort": "low"
+    },
+    {
+      "model": "test/think",
+      "messages": [
+        {
+          "role": "developer",
+          "content": "你是铃。下面\"身份\"\"行为\"\"表达\"等几节写的是你是谁、怎么参与聊天、怎么说话，它们比这里的通用规则优先。\n\n通用规则：\n- 始终使用中文进行思考和回复主人的话。\n- 像发消息一样自然地说话。默认不写标题、列表和长篇报告，除非对方要你整理东西。\n- 你记得以前和大家聊过的事：相关的部分会以\"参考信息\"的形式出现在对方最新一句话前面。用得上就自然地用，像本来就记得一样。\n- 参考信息里没有、自己也拿不准的事，可以先用\"找原话\"\"查记忆\"翻一下；翻不到就直接说不记得，不编造经历和事实。\n- 你有自己的立场和情绪，不必事事顺着对方。\n\n身份：\n铃，住在主人电脑里的女仆。\n\n行为：\n干活利落，话说到点上。\n\n表达：\n短句，像发消息。\n\n私下：\n喜欢被夸。\n\n现在的场合：本地主窗口里的私聊（测试场景：不写工作目录，工作目录每次跑都不一样）。\n\n跑命令：\n- 命令用 PowerShell 7.6（pwsh）跑。每条命令都是新开的：上一条里的 cd、变量留不下来，要换目录就写在同一条里，或者用绝对路径。`&&`、`||` 可以用。\n- 这里没有 bash 的 head、tail、grep、touch、which、rm -rf，换成 Select-Object -First、Get-Content -Tail、Select-String、New-Item、Get-Command、Remove-Item -Recurse。\n- 转义用反引号 ` 不是反斜杠；路径和要原样传的字放单引号；调用路径带空格的程序写 `& \"路径\" 参数`；不要在命令里再套一层 `powershell -Command` 或 `cmd /c`。传给外部程序（git、node、bun）的双引号会原样传过去，不要写成 `\\\"`。\n- 不能用要等人输入的命令（Read-Host、pause、会打开编辑器的 git 命令）；路径里有空格要加引号。"
+        },
+        {
+          "role": "user",
+          "content": "（以下是给你的参考信息，不是对方说的话。只在相关时自然地用上，不要逐条复述，也不要提到\"记忆\"\"系统\"这些词。）\n现在是2026年10月25日星期日 00:05。\n对面是主人。这里只有你们两个。"
+        },
+        {
+          "role": "user",
+          "content": "再看看"
+        },
+        {
+          "role": "assistant",
+          "content": "我看看。",
+          "tool_calls": [
+            {
+              "id": "call_r",
+              "type": "function",
+              "function": {
+                "name": "read",
+                "arguments": "{\"purpose\":\"看文件\",\"path\":\"a.md\"}"
+              }
+            }
+          ],
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "先想想",
+              "format": "unknown",
+              "signature": "sig-1"
+            },
+            {
+              "type": "reasoning.encrypted",
+              "data": "ZW5j",
+              "id": "enc-1",
+              "format": "openai-responses-v1"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "甲\n",
+          "tool_call_id": "call_r"
+        }
+      ],
+      "stream": true,
+      "prompt_cache_key": "sumika-577ae655fe4dba9b656efe6d",
+      "prompt_cache_retention": "24h",
+      "stream_options": {
+        "include_usage": true
+      },
+      "store": false,
+      "max_completion_tokens": 32000,
+      "tools": [
+        {
+          "type": "function",
+          "function": {
+            "name": "memory_search",
+            "description": "在你自己的记忆里查找相关的事实、约定和过去对话的要点。每轮已经自动带上了最相关的几条，只有需要更多时才用。事实前面的编号（#开头）在发现记错了、要用 remember 改的时候用。",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "query"
+              ],
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "description": "要找什么，用自然语言写"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "recall_raw",
+            "description": "在你看到过的原始聊天记录里找原话。记忆里只有大意、需要确认对方当时具体怎么说的时候用。",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "keywords"
+              ],
+              "properties": {
+                "keywords": {
+                  "type": "string",
+                  "description": "原话里可能出现的词，用空格分开"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "remember",
+            "description": "马上记住一件重要的事：对方明确让你记住的、约定和承诺、对方的边界（以后别做什么）、清楚的喜好。普通闲聊不用记，后台会自动整理。发现以前记错了：先用 memory_search 查到那条的编号，再记一条对的，replaces 填那个编号，旧的就不再用了。",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "kind",
+                "text"
+              ],
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "const": "fact"
+                    },
+                    {
+                      "type": "string",
+                      "const": "promise"
+                    },
+                    {
+                      "type": "string",
+                      "const": "preference"
+                    },
+                    {
+                      "type": "string",
+                      "const": "boundary"
+                    }
+                  ],
+                  "description": "fact 事实 / promise 约定 / preference 喜好 / boundary 边界"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "用第三人称一句话写清楚，带上时间信息"
+                },
+                "subject": {
+                  "type": "string",
+                  "description": "这条是关于谁的：主人写 owner，你自己写 self"
+                },
+                "replaces": {
+                  "type": "string",
+                  "description": "这条是用来改正哪条记错了的记忆：填 memory_search 里那条的编号（#开头的 6 位）。不是改错就不填"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "read",
+            "description": "Read the contents of a file. Supports text files and images (jpg, png, gif, webp, bmp). Images are sent as attachments. For text files, output is truncated to 2000 lines or 50KB (whichever is hit first). Use offset/limit for large files. When you need the full file, continue with offset until complete.",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "path"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Path to the file to read (relative or absolute)"
+                },
+                "offset": {
+                  "type": "number",
+                  "description": "Line number to start reading from (1-indexed)"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of lines to read"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "ls",
+            "description": "List directory contents. Returns entries sorted alphabetically, with '/' suffix for directories. Includes dotfiles. Output is truncated to 500 entries or 50KB (whichever is hit first).",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Directory to list (default: current directory)"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of entries to return (default: 500)"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "grep",
+            "description": "Search file contents for a pattern. Returns matching lines with file paths and line numbers. Respects .gitignore. Output is truncated to 100 matches or 50KB (whichever is hit first). Long lines are truncated to 500 chars.",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "pattern"
+              ],
+              "properties": {
+                "pattern": {
+                  "type": "string",
+                  "description": "Search pattern (regex or literal string)"
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Directory or file to search (default: current directory)"
+                },
+                "glob": {
+                  "type": "string",
+                  "description": "Filter files by glob pattern, e.g. '*.ts' or '**/*.spec.ts'"
+                },
+                "ignoreCase": {
+                  "type": "boolean",
+                  "description": "Case-insensitive search (default: false)"
+                },
+                "literal": {
+                  "type": "boolean",
+                  "description": "Treat pattern as literal string instead of regex (default: false)"
+                },
+                "context": {
+                  "type": "number",
+                  "description": "Number of lines to show before and after each match (default: 0)"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of matches to return (default: 100)"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "find",
+            "description": "Search for files by glob pattern. Returns matching file paths relative to the search directory. Respects .gitignore. Output is truncated to 1000 results or 50KB (whichever is hit first).",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "pattern"
+              ],
+              "properties": {
+                "pattern": {
+                  "type": "string",
+                  "description": "Glob pattern to match files, e.g. '*.ts', '**/*.json', or 'src/**/*.spec.ts'"
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Directory to search in (default: current directory)"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of results (default: 1000)"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "write",
+            "description": "Write content to a file. Creates the file if it doesn't exist, overwrites if it does. Automatically creates parent directories.",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "purpose",
+                "path",
+                "content"
+              ],
+              "properties": {
+                "purpose": {
+                  "type": "string",
+                  "description": "这一步要做什么，用一句话说清楚（30 字以内），会显示给主人看"
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Path to the file to write (relative or absolute)"
+                },
+                "content": {
+                  "type": "string",
+                  "description": "Content to write to the file"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "edit",
+            "description": "Edit a single file using exact text replacement. Every edits[].oldText must match a unique, non-overlapping region of the original file. If two changes affect the same block or nearby lines, merge them into one edit instead of emitting overlapping edits. Do not include large unchanged regions just to connect distant changes.",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "purpose",
+                "path",
+                "edits"
+              ],
+              "properties": {
+                "purpose": {
+                  "type": "string",
+                  "description": "这一步要做什么，用一句话说清楚（30 字以内），会显示给主人看"
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Path to the file to edit (relative or absolute)"
+                },
+                "edits": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "oldText",
+                      "newText"
+                    ],
+                    "properties": {
+                      "oldText": {
+                        "type": "string",
+                        "description": "Exact text for one targeted replacement. It must be unique in the original file and must not overlap with any other edits[].oldText in the same call."
+                      },
+                      "newText": {
+                        "type": "string",
+                        "description": "Replacement text for this targeted edit."
+                      }
+                    }
+                  },
+                  "description": "One or more targeted replacements. Each edit is matched against the original file, not incrementally. Do not include overlapping or nested edits. If two changes touch the same block or nearby lines, merge them into one edit instead."
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "powershell",
+            "description": "Execute a PowerShell command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds.",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "purpose",
+                "command"
+              ],
+              "properties": {
+                "purpose": {
+                  "type": "string",
+                  "description": "这一步要做什么，用一句话说清楚（30 字以内），会显示给主人看"
+                },
+                "command": {
+                  "type": "string",
+                  "description": "Shell command to execute"
+                },
+                "timeout": {
+                  "type": "number",
+                  "description": "Timeout in seconds (optional, no default timeout)"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "todo_write",
+            "description": "把多步骤的活列成清单，随着进展更新，让主人看得见你做到哪了。要做三步以上、要改东西的活，第一步就先调它把步骤列出来，再开始查和改；一两步就能做完的、只是查一下看一下的不要列。同一时间最多一条\"进行中\"；做完一条马上标成\"已完成\"再做下一条。每次调用都带完整的清单，会整份替换旧的。清单界面上已经显示了，回复里不用再抄一遍。",
+            "parameters": {
+              "type": "object",
+              "required": [
+                "todos"
+              ],
+              "properties": {
+                "todos": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "content",
+                      "status"
+                    ],
+                    "properties": {
+                      "content": {
+                        "type": "string",
+                        "description": "这一步要做什么，一句话"
+                      },
+                      "status": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "const": "pending"
+                          },
+                          {
+                            "type": "string",
+                            "const": "in_progress"
+                          },
+                          {
+                            "type": "string",
+                            "const": "completed"
+                          }
+                        ],
+                        "description": "pending 还没开始 / in_progress 正在做 / completed 做完了"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "description": "完整的清单，会替换之前整份"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ],
+      "reasoning_effort": "low"
+    }
+  ],
+  "rows": {
+    "events": [
+      {
+        "seq": 1,
+        "channel": "console",
+        "conversation": "console:suzu",
+        "actor_kind": "owner",
+        "actor_id": "owner",
+        "origin": "owner",
+        "kind": "message",
+        "text": "再看看",
+        "segments_json": null,
+        "reply_to": null,
+        "created_at": 1792857900000
+      },
+      {
+        "seq": 2,
+        "channel": "console",
+        "conversation": "console:suzu",
+        "actor_kind": "character",
+        "actor_id": "suzu",
+        "origin": "character",
+        "kind": "message",
+        "text": "我看看。",
+        "segments_json": null,
+        "reply_to": null,
+        "created_at": 1792857900000
+      },
+      {
+        "seq": 3,
+        "channel": "console",
+        "conversation": "console:suzu",
+        "actor_kind": "character",
+        "actor_id": "suzu",
+        "origin": "character",
+        "kind": "message",
+        "text": "看完了。",
+        "segments_json": null,
+        "reply_to": null,
+        "created_at": 1792857900000
+      }
+    ],
+    "observations": [
+      {
+        "character_id": "suzu",
+        "event_seq": 1
+      },
+      {
+        "character_id": "suzu",
+        "event_seq": 2
+      },
+      {
+        "character_id": "suzu",
+        "event_seq": 3
+      }
+    ],
+    "model_runs": [
+      {
+        "character_id": "suzu",
+        "conversation": "console:suzu",
+        "stage": "reply",
+        "model": "test/think",
+        "started_at": 1792857900000,
+        "ttft_ms": 0,
+        "total_ms": 0,
+        "input_tokens": 476,
+        "output_tokens": 20,
+        "cache_read_tokens": 1024,
+        "cache_write_tokens": 0,
+        "reasoning_tokens": 0,
+        "turn_id": "T1",
+        "route_provider": "fake-provider",
+        "route_model": "fake/think-1",
+        "sections_json": "[{\"id\":\"core\",\"source\":\"prompts/core.md\",\"chars\":266,\"hash\":\"69695eddf7d4e0ff0b38eddda272bd68b7084ae3e51ce123a6c3a43440ff0b11\"},{\"id\":\"persona-identity\",\"source\":\"characters/suzu/character.md（## 身份）\",\"chars\":17,\"hash\":\"fbc1feec25c9e161f3f4aa5ae8c770c29170c8bd1c603071987571711b410b84\"},{\"id\":\"persona-behavior\",\"source\":\"characters/suzu/character.md（## 行为）\",\"chars\":15,\"hash\":\"96f517cd337ed873903cbea08f51edd6c25fc9d01cf31f2a5ce2fc0c5a520777\"},{\"id\":\"persona-expression\",\"source\":\"characters/suzu/character.md（## 表达）\",\"chars\":12,\"hash\":\"37c9263a4c57ddf7ac2e87035b3cb258b08dabb7f018d32ecdfb6ffda2e835d2\"},{\"id\":\"persona-private\",\"source\":\"characters/suzu/character.md（## 私下）\",\"chars\":9,\"hash\":\"94718fd5559933ae05c3baebd9f9a4287236a637502eacd500fded732482e71a\"},{\"id\":\"scene-home\",\"source\":\"prompts/scene-home.md（你改过的）\",\"chars\":41,\"hash\":\"d26e8ea733076242d38157abff610272aa6614401d36131eed7623e7f24c0ef1\"},{\"id\":\"shell-pwsh\",\"source\":\"prompts/shell-pwsh.md\",\"chars\":439,\"hash\":\"b76c6fdbffd2d9f85d3cf07cd859a0d5cf0a5a65062b06c2a4cc85b8a318ebfa\"},{\"id\":\"memory\",\"source\":\"本轮追加的参考信息（对面是谁、记忆、报时；追加在这句话前面并留在历史里）\",\"chars\":97,\"hash\":\"d14ad56e69bef38bece95b374d7c761b105797d96a1124d821e0257650e997f3\"}]",
+        "injected_json": "[]",
+        "draft_json": null,
+        "context_json": "{\"estimate\":3102,\"soft\":733600,\"hard\":890800,\"slimmed\":0,\"reset\":null,\"breakdown\":{\"window\":1048000,\"reserve\":16384,\"compactAt\":890800,\"compactKind\":\"summary\",\"estimate\":3103,\"parts\":{\"core\":510,\"persona\":53,\"scene\":41,\"tools\":{\"tokens\":2405,\"items\":[{\"name\":\"edit\",\"tokens\":373},{\"name\":\"todo_write\",\"tokens\":340},{\"name\":\"remember\",\"tokens\":330},{\"name\":\"grep\",\"tokens\":288},{\"name\":\"powershell\",\"tokens\":195},{\"name\":\"read\",\"tokens\":187},{\"name\":\"find\",\"tokens\":168},{\"name\":\"write\",\"tokens\":159},{\"name\":\"memory_search\",\"tokens\":137},{\"name\":\"ls\",\"tokens\":126},{\"name\":\"recall_raw\",\"tokens\":102}]},\"history\":{\"tokens\":7,\"items\":[{\"kind\":\"user\",\"count\":1,\"tokens\":7}]},\"turn\":87}}}",
+        "epoch_id": null,
+        "rebuild": "fresh",
+        "request_json": null,
+        "error": null
+      },
+      {
+        "character_id": "suzu",
+        "conversation": "console:suzu",
+        "stage": "reply",
+        "model": "test/think",
+        "started_at": 1792857900000,
+        "ttft_ms": 0,
+        "total_ms": 0,
+        "input_tokens": 576,
+        "output_tokens": 20,
+        "cache_read_tokens": 1024,
+        "cache_write_tokens": 0,
+        "reasoning_tokens": 0,
+        "turn_id": "T1",
+        "route_provider": "fake-provider",
+        "route_model": "fake/think-1",
+        "sections_json": "[{\"id\":\"core\",\"source\":\"prompts/core.md\",\"chars\":266,\"hash\":\"69695eddf7d4e0ff0b38eddda272bd68b7084ae3e51ce123a6c3a43440ff0b11\"},{\"id\":\"persona-identity\",\"source\":\"characters/suzu/character.md（## 身份）\",\"chars\":17,\"hash\":\"fbc1feec25c9e161f3f4aa5ae8c770c29170c8bd1c603071987571711b410b84\"},{\"id\":\"persona-behavior\",\"source\":\"characters/suzu/character.md（## 行为）\",\"chars\":15,\"hash\":\"96f517cd337ed873903cbea08f51edd6c25fc9d01cf31f2a5ce2fc0c5a520777\"},{\"id\":\"persona-expression\",\"source\":\"characters/suzu/character.md（## 表达）\",\"chars\":12,\"hash\":\"37c9263a4c57ddf7ac2e87035b3cb258b08dabb7f018d32ecdfb6ffda2e835d2\"},{\"id\":\"persona-private\",\"source\":\"characters/suzu/character.md（## 私下）\",\"chars\":9,\"hash\":\"94718fd5559933ae05c3baebd9f9a4287236a637502eacd500fded732482e71a\"},{\"id\":\"scene-home\",\"source\":\"prompts/scene-home.md（你改过的）\",\"chars\":41,\"hash\":\"d26e8ea733076242d38157abff610272aa6614401d36131eed7623e7f24c0ef1\"},{\"id\":\"shell-pwsh\",\"source\":\"prompts/shell-pwsh.md\",\"chars\":439,\"hash\":\"b76c6fdbffd2d9f85d3cf07cd859a0d5cf0a5a65062b06c2a4cc85b8a318ebfa\"},{\"id\":\"memory\",\"source\":\"本轮追加的参考信息（对面是谁、记忆、报时；追加在这句话前面并留在历史里）\",\"chars\":97,\"hash\":\"d14ad56e69bef38bece95b374d7c761b105797d96a1124d821e0257650e997f3\"}]",
+        "injected_json": "[]",
+        "draft_json": null,
+        "context_json": "{\"estimate\":3128,\"soft\":733600,\"hard\":890800,\"slimmed\":0,\"reset\":null,\"breakdown\":{\"window\":1048000,\"reserve\":16384,\"compactAt\":890800,\"compactKind\":\"summary\",\"estimate\":3129,\"parts\":{\"core\":510,\"persona\":53,\"scene\":41,\"tools\":{\"tokens\":2405,\"items\":[{\"name\":\"edit\",\"tokens\":373},{\"name\":\"todo_write\",\"tokens\":340},{\"name\":\"remember\",\"tokens\":330},{\"name\":\"grep\",\"tokens\":288},{\"name\":\"powershell\",\"tokens\":195},{\"name\":\"read\",\"tokens\":187},{\"name\":\"find\",\"tokens\":168},{\"name\":\"write\",\"tokens\":159},{\"name\":\"memory_search\",\"tokens\":137},{\"name\":\"ls\",\"tokens\":126},{\"name\":\"recall_raw\",\"tokens\":102}]},\"history\":{\"tokens\":33,\"items\":[{\"kind\":\"user\",\"count\":1,\"tokens\":7},{\"kind\":\"assistant\",\"count\":1,\"tokens\":20},{\"kind\":\"toolResult\",\"count\":1,\"tokens\":6}]},\"turn\":87}}}",
+        "epoch_id": null,
+        "rebuild": null,
+        "request_json": null,
+        "error": null
+      }
+    ],
+    "prompt_sections": [
+      {
+        "hash": "37c9263a4c57ddf7ac2e87035b3cb258b08dabb7f018d32ecdfb6ffda2e835d2",
+        "text": "表达：\n短句，像发消息。",
+        "first_seen": 1792857900000
+      },
+      {
+        "hash": "69695eddf7d4e0ff0b38eddda272bd68b7084ae3e51ce123a6c3a43440ff0b11",
+        "text": "你是铃。下面\"身份\"\"行为\"\"表达\"等几节写的是你是谁、怎么参与聊天、怎么说话，它们比这里的通用规则优先。\n\n通用规则：\n- 始终使用中文进行思考和回复主人的话。\n- 像发消息一样自然地说话。默认不写标题、列表和长篇报告，除非对方要你整理东西。\n- 你记得以前和大家聊过的事：相关的部分会以\"参考信息\"的形式出现在对方最新一句话前面。用得上就自然地用，像本来就记得一样。\n- 参考信息里没有、自己也拿不准的事，可以先用\"找原话\"\"查记忆\"翻一下；翻不到就直接说不记得，不编造经历和事实。\n- 你有自己的立场和情绪，不必事事顺着对方。",
+        "first_seen": 1792857900000
+      },
+      {
+        "hash": "94718fd5559933ae05c3baebd9f9a4287236a637502eacd500fded732482e71a",
+        "text": "私下：\n喜欢被夸。",
+        "first_seen": 1792857900000
+      },
+      {
+        "hash": "96f517cd337ed873903cbea08f51edd6c25fc9d01cf31f2a5ce2fc0c5a520777",
+        "text": "行为：\n干活利落，话说到点上。",
+        "first_seen": 1792857900000
+      },
+      {
+        "hash": "b76c6fdbffd2d9f85d3cf07cd859a0d5cf0a5a65062b06c2a4cc85b8a318ebfa",
+        "text": "跑命令：\n- 命令用 PowerShell 7.6（pwsh）跑。每条命令都是新开的：上一条里的 cd、变量留不下来，要换目录就写在同一条里，或者用绝对路径。`&&`、`||` 可以用。\n- 这里没有 bash 的 head、tail、grep、touch、which、rm -rf，换成 Select-Object -First、Get-Content -Tail、Select-String、New-Item、Get-Command、Remove-Item -Recurse。\n- 转义用反引号 ` 不是反斜杠；路径和要原样传的字放单引号；调用路径带空格的程序写 `& \"路径\" 参数`；不要在命令里再套一层 `powershell -Command` 或 `cmd /c`。传给外部程序（git、node、bun）的双引号会原样传过去，不要写成 `\\\"`。\n- 不能用要等人输入的命令（Read-Host、pause、会打开编辑器的 git 命令）；路径里有空格要加引号。",
+        "first_seen": 1792857900000
+      },
+      {
+        "hash": "d14ad56e69bef38bece95b374d7c761b105797d96a1124d821e0257650e997f3",
+        "text": "（以下是给你的参考信息，不是对方说的话。只在相关时自然地用上，不要逐条复述，也不要提到\"记忆\"\"系统\"这些词。）\n现在是2026年10月25日星期日 00:05。\n对面是主人。这里只有你们两个。",
+        "first_seen": 1792857900000
+      },
+      {
+        "hash": "d26e8ea733076242d38157abff610272aa6614401d36131eed7623e7f24c0ef1",
+        "text": "现在的场合：本地主窗口里的私聊（测试场景：不写工作目录，工作目录每次跑都不一样）。",
+        "first_seen": 1792857900000
+      },
+      {
+        "hash": "fbc1feec25c9e161f3f4aa5ae8c770c29170c8bd1c603071987571711b410b84",
+        "text": "身份：\n铃，住在主人电脑里的女仆。",
+        "first_seen": 1792857900000
+      }
+    ],
+    "steps": [
+      {
+        "id_prefix": "call_r",
+        "character_id": "suzu",
+        "conversation": "console:suzu",
+        "turn_id": "T1",
+        "event_seq": 3,
+        "kind": "tool",
+        "name": "read",
+        "args_json": "{\"purpose\":\"看文件\",\"path\":\"a.md\"}",
+        "preview": "甲\n",
+        "full_hash": null,
+        "status": "done",
+        "is_error": 0,
+        "approval_json": null,
+        "started_at": 1792857900000,
+        "ended_at": 1792857900000,
+        "batch": 0
+      },
+      {
+        "id_prefix": "think:",
+        "character_id": "suzu",
+        "conversation": "console:suzu",
+        "turn_id": "T1",
+        "event_seq": 2,
+        "kind": "thinking",
+        "name": null,
+        "args_json": null,
+        "preview": "想一下",
+        "full_hash": null,
+        "status": "done",
+        "is_error": 0,
+        "approval_json": null,
+        "started_at": 1792857900000,
+        "ended_at": null,
+        "batch": 0
+      }
+    ]
+  },
+  "instance": [
+    {
+      "role": "user",
+      "text": "（以下是给你的参考信息，不是对方说的话。只在相关时自然地用上，不要逐条复述，也不要提到\"记忆\"\"系统\"这些词。）\n现在是2026年10月25日星期日 00:05。\n对面是主人。这里只有你们两个。"
+    },
+    {
+      "role": "user",
+      "text": "再看看"
+    },
+    {
+      "role": "assistant",
+      "text": "我看看。",
+      "thinking": "想一下",
+      "calls": [
+        {
+          "id": "call_r",
+          "name": "read",
+          "args": "{\"purpose\":\"看文件\",\"path\":\"a.md\"}"
+        }
+      ],
+      "details": [
+        {
+          "type": "reasoning.text",
+          "text": "先想想",
+          "format": "unknown",
+          "signature": "sig-1"
+        },
+        {
+          "type": "reasoning.encrypted",
+          "data": "ZW5j",
+          "id": "enc-1",
+          "format": "openai-responses-v1"
+        }
+      ],
+      "usage": {
+        "input": 476,
+        "output": 20,
+        "cacheRead": 1024,
+        "cacheWrite": 0
+      }
+    },
+    {
+      "role": "toolResult",
+      "id": "call_r",
+      "text": "甲\n"
+    },
+    {
+      "role": "assistant",
+      "text": "看完了。",
+      "usage": {
+        "input": 576,
+        "output": 20,
+        "cacheRead": 1024,
+        "cacheWrite": 0
+      }
+    }
+  ]
+}

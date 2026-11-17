@@ -1,0 +1,21 @@
+{
+ "status": "ok",
+ "msg": "",
+ "version": "1.0",
+ "result": {
+  "steam_appid": 90001,
+  "publishers": [
+   {
+    "value": "编造开发组甲"
+   }
+  ],
+  "developers": [
+   {
+    "value": "编造开发组甲"
+   }
+  ],
+  "release_date": "2026年3月4日",
+  "game_type": "pc",
+  "about_the_game": "<p class=\"bb_paragraph\" >这是编造的小黑盒游戏简介，仅用于解析测试。</p><p class=\"bb_paragraph\" >第二段：编造的说明。</p>"
+ }
+}

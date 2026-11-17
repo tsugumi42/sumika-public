@@ -1,0 +1,15 @@
+services:
+  api:
+    image: example.com/harbor/api:1.4.2
+    environment:
+      HARBOR_MIN_COMPAT: "1.4.2"
+    ports:
+      - "8080:8080"
+  web:
+    image: example.com/harbor/web:1.4.2
+    ports:
+      - "8081:80"
+  worker:
+    image: example.com/harbor/worker:1.4.2
+  cache:
+    image: example.com/mirror/redis:7.2.4

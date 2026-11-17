@@ -1,0 +1,8 @@
+owner,id,amount,category,date,note
+team-red,S-201,8.00,Meal,03/03/2026,lunch
+team-blue,S-202,"$1,250.00",Software,04/03/2026,license
+team-green,S-203,32.10,Taxi,10/03/2026,
+team-red,S-204,5.5,STATIONERY,12/03/2026,pens
+team-blue,N-105,15.75,office,09/03/2026,copy of north row
+team-green,S-205,0,food,13/03/2026,free sample
+team-red,S-206,  ,travel,15/03/2026,

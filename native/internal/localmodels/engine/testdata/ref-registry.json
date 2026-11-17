@@ -1,0 +1,38 @@
+{
+ "models_toml_sha256": "2d6494477d63c167de71eec33c21e8c24172239d8d0cebd6eecea40d5ecea0ca",
+ "python": "3.12.14",
+ "models": {
+  "gte-multilingual-base": {
+   "kind": "embed",
+   "dir": "_待分类/gte-multilingual-base",
+   "onnx": "model_quantized.onnx",
+   "dimension": 768,
+   "pooling": "cls",
+   "normalize": true,
+   "max_tokens": 8192,
+   "matryoshka": true,
+   "min_dimensions": 128,
+   "allowed_dimensions": [],
+   "truncation": "longest_first",
+   "query_prefix": "",
+   "document_prefix": "",
+   "query_task": ""
+  },
+  "bge-reranker-v2-m3": {
+   "kind": "rerank",
+   "dir": "_待分类/bge-reranker-v2-m3",
+   "onnx": "model_quantized.onnx",
+   "dimension": 0,
+   "pooling": "logit",
+   "normalize": false,
+   "max_tokens": 1024,
+   "matryoshka": false,
+   "min_dimensions": 32,
+   "allowed_dimensions": [],
+   "truncation": "only_second",
+   "query_prefix": "",
+   "document_prefix": "",
+   "query_task": ""
+  }
+ }
+}

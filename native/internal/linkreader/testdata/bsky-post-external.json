@@ -1,0 +1,40 @@
+{
+  "thread": {
+    "$type": "app.bsky.feed.defs#threadViewPost",
+    "post": {
+      "uri": "at://did:plc:samplelabsamplelabsample/app.bsky.feed.post/3mxwnz4gbzk2r",
+      "author": {
+        "did": "did:plc:samplelabsamplelabsample",
+        "handle": "example-lab.bsky.social",
+        "displayName": "编造作者甲",
+        "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:samplelabsamplelabsample/bafkreieae2nwwt2y32mmqo3svtvetyzfdqy4a4zvulj7ayzbmoqzi4tfgy",
+        "labels": [
+          {
+            "uri": "at://did:plc:samplelabsamplelabsample/app.bsky.actor.profile/self",
+            "val": "bot"
+          }
+        ],
+        "createdAt": "2026-03-21T01:21:39.846Z"
+      },
+      "record": {
+        "$type": "app.bsky.feed.post",
+        "createdAt": "2026-10-15T18:12:38.103Z",
+        "text": "编造的正文第一行\nsecond line of invented text"
+      },
+      "embed": {
+        "external": {
+          "uri": "https://attie.ai",
+          "title": "编造的标题",
+          "description": "编造的简介",
+          "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:samplelabsamplelabsample/bafkreihsqdsm56gfrxcalwud3k5n36xcedul5czm4uhavovnxbrmmo345e"
+        },
+        "$type": "app.bsky.embed.external#view"
+      },
+      "replyCount": 286,
+      "repostCount": 70,
+      "likeCount": 468,
+      "quoteCount": 340,
+      "labels": []
+    }
+  }
+}

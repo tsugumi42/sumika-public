@@ -1,0 +1,605 @@
+{
+  "about": "主人又说了一遍同文：ai 写的有效事实升成 owner_said（整理以后动不了），记一条 confirm 修订；主人放行的、导入的、已经是 owner_said 的都不动；主人本人的批次（带 owner_said）同文才提成 owner，其余批次的 owner_said 不起作用；confirmed_by 的写法按批次的身份校验。",
+  "source_tests": [
+    "TestRememberSameTextNeverClaimsOwnerConfirmation",
+    "TestOwnerSaidUpgradeOnSameText",
+    "TestOwnerSaidOnlyCountsInRememberBatches",
+    "TestOwnerSaidValidate"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "我喜欢茶",
+      "ago_s": 60
+    }
+  ],
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "text": "主人喜欢茶",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000OWN001",
+        "kind": "fact",
+        "text": "主人喜欢咖啡",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner"
+      },
+      {
+        "id": "SEED0000000000000000IMP001",
+        "kind": "fact",
+        "text": "主人喜欢可可",
+        "subject": "owner",
+        "status": "active"
+      },
+      {
+        "id": "SEED0000000000000000OSD001",
+        "kind": "fact",
+        "text": "主人喜欢豆浆",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner_said"
+      },
+      {
+        "id": "SEED0000000000000000AI0002",
+        "kind": "fact",
+        "text": "主人喜欢牛奶",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000AI0003",
+        "kind": "fact",
+        "text": "主人喜欢果汁",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000AI0004",
+        "kind": "fact",
+        "text": "主人喜欢酸奶",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "主人喜欢茶"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这件事已经记着了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "主人喜欢咖啡"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这件事已经记着了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "主人喜欢可可"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这件事已经记着了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我喜欢茶",
+        "temporal": "stable",
+        "text": "主人喜欢豆浆"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这件事已经记着了。"
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢牛奶",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ],
+          "owner_said": true
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "exists",
+            "ref": "f:SEED0000000000000000AI0002",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "exists": 1,
+          "owner_confirmed": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢果汁",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "exists",
+            "ref": "f:SEED0000000000000000AI0003",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "exists": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢酸奶",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner"
+          ],
+          "owner_said": true
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:SEED0000000000000000AI0004",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "merged": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢汽水",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：owner_said 只有绑定了主人原话的 remember 能写"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢气泡水",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：模型记忆不得自报主人确认，只能标 owner_said"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢冰水",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "ai",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：模型记忆不得自报主人确认，只能标 owner_said"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢热水",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：模型记忆不得自报主人确认，只能标 owner_said"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人喜欢茶",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0002",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人喜欢牛奶",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0003",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人喜欢果汁",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0004",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人喜欢酸奶",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000IMP001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人喜欢可可",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "SEED0000000000000000OSD001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人喜欢豆浆",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OWN001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人喜欢咖啡",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "event_ago_s": 60,
+          "source_seqs": [
+            1
+          ],
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": {
+          "event_at": 0,
+          "temporal": ""
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000AI0001",
+        "op": "lifetime",
+        "reason": "更晚的本人来源更新期限，不代表完成"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "status": "active"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "confirmed_by": "ai",
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000AI0001",
+        "op": "confirm",
+        "reason": "主人本人又说了一遍，来源绑定原话，升成 owner_said"
+      },
+      {
+        "after": {
+          "event_ago_s": 60,
+          "source_seqs": [
+            1
+          ],
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": {
+          "event_at": 0,
+          "temporal": ""
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000OSD001",
+        "op": "lifetime",
+        "reason": "更晚的本人来源更新期限，不代表完成"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner",
+          "status": "active"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "confirmed_by": "ai",
+          "status": "active"
+        },
+        "by": "remember",
+        "fact_id": "SEED0000000000000000AI0002",
+        "op": "confirm",
+        "reason": "主人本人又说了一遍，放行"
+      }
+    ],
+    "evidence": []
+  }
+}

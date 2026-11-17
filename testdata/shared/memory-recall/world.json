@@ -1,0 +1,27 @@
+{
+  "about": "全部虚构的世界：一个主人、四个群友、两个角色。名字、地名、事件都是编的；qq: 后面的 u-xxx 是编的代号，不是 QQ 号。",
+  "base_time": "2031-05-14T10:00:00+08:00",
+  "owner": { "id": "owner", "name": "白梧" },
+  "people": [
+    { "id": "qq:u-qinghe", "names": ["青禾"] },
+    { "id": "qq:u-adu", "names": ["阿渡"] },
+    { "id": "qq:u-chiho", "names": ["千穗"] },
+    { "id": "qq:u-lizi", "names": ["栗子"] }
+  ],
+  "characters": [
+    { "id": "wudao", "name": "雾岛" },
+    { "id": "xiaoman", "name": "小满" }
+  ],
+  "conversations": [
+    { "id": "console:wudao:topic:t1", "place": "local_private", "character": "wudao", "about": "雾岛和主人在本地的第一个话题" },
+    { "id": "console:wudao:topic:t2", "place": "local_private", "character": "wudao", "about": "雾岛和主人在本地的第二个话题" },
+    { "id": "console:group:lg-teahouse", "place": "local_group", "character": "wudao", "about": "本地群聊「茶室」，只有主人在主窗口说话" },
+    { "id": "console:xiaoman:topic:t1", "place": "local_private", "character": "xiaoman", "about": "小满和主人在本地的话题" },
+    { "id": "qq:private:u-bai", "place": "qq_private", "about": "主人自己的 QQ 私聊" },
+    { "id": "qq:private:u-qinghe", "place": "qq_private", "about": "青禾和雾岛的 QQ 私聊" },
+    { "id": "qq:private:u-adu", "place": "qq_private", "about": "阿渡和雾岛的 QQ 私聊" },
+    { "id": "qq:private:u-lizi", "place": "qq_private", "about": "栗子和雾岛的 QQ 私聊" },
+    { "id": "qq:group:g-lantern", "place": "qq_group", "about": "QQ 群「灯笼小队」：主人、青禾、阿渡、千穗" },
+    { "id": "qq:group:g-kite", "place": "qq_group", "about": "QQ 群「风筝社」：主人、栗子、阿渡" }
+  ]
+}

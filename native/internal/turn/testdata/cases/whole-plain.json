@@ -1,0 +1,51 @@
+{
+  "about": "没有那几个标题的老卡（整篇一块、换行不动）、模型不支持思考（系统提示用 system、不发档位）、没查到命令行（没有跑命令说明）、模型没报长度（按 128K / 8K）",
+  "now": "2026-10-25T00:05:00+08:00",
+  "characterId": "suzu",
+  "files": {
+    "characters/suzu/card/character.yml": "name: 老卡\nownerName: 主人\n",
+    "characters/suzu/card/character.md": "<!-- 注释去掉 -->\r\n整篇一块的人设，\r\n不拆。\r\n### 三级标题不算\r\n"
+  },
+  "characters": {
+    "suzu": {
+      "model": "test/plain"
+    }
+  },
+  "agent": {
+    "thinking": {
+      "local": "medium",
+      "private": "low",
+      "group": "low"
+    }
+  },
+  "workdir": "D:/Work",
+  "shell": null,
+  "models": [
+    {
+      "id": "test/plain"
+    }
+  ],
+  "events": [],
+  "epochs": [],
+  "text": "在吗",
+  "reply": {
+    "reasoning": [],
+    "content": [
+      "好的​"
+    ],
+    "usage": {
+      "prompt_tokens": 1200,
+      "completion_tokens": 30,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    "headers": {
+      "x-magpie-provider": "fake-provider",
+      "x-magpie-model": "fake/think-1"
+    }
+  }
+}

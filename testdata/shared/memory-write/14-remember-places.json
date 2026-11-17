@@ -1,0 +1,273 @@
+{
+  "about": "remember 只给主人在场的私聊（本地私聊、主人自己的 QQ 私聊）：群里（不论主人是否问起、Scene 空着）、别人的私聊、主人不在场的私聊一律回同一句拒绝，什么都不写；能记的范围只有 owner。",
+  "source_tests": [
+    "TestRememberB20OnlyInTheOwnersPrivateChat"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "有一句话",
+      "ago_s": 60
+    },
+    {
+      "seq": 2,
+      "conversation": "qq:private:u1",
+      "text": "有一句话",
+      "ago_s": 60
+    }
+  ],
+  "start": {},
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002"
+  ],
+  "steps": [
+    {
+      "do": "remember",
+      "place": "local_group",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "不该记下来的"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "qq_group_owner_asked",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "不该记下来的"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "qq_group",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "不该记下来的"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "qq_group_no_scene",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "不该记下来的"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "qq_private_other",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "不该记下来的"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "local_private_no_owner",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "不该记下来的"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "qq_private_no_owner",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "不该记下来的"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "temporal": "stable",
+        "text": "本地私聊里能记"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "place": "qq_private_owner",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "temporal": "stable",
+        "text": "主人的 QQ 私聊里能记"
+      },
+      "input_seqs": [
+        2
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "本地私聊里能记",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "qq:private:u1",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000002",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[2]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人的 QQ 私聊里能记",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000002",
+        "op": "add",
+        "reason": null
+      }
+    ],
+    "evidence": []
+  }
+}

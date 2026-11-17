@@ -1,0 +1,110 @@
+{
+  "id": "group-call-failed-third",
+  "about": "第三页查询失败：此前的证明失效，已取得的两条照存，整个未知区间记 blocked/call-failed",
+  "source_tests": [
+    "TestBackfillPartialAndEmpty/failed"
+  ],
+  "scene": "group",
+  "setup": {
+    "watermark_ago_ms": 3600000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": []
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "3001",
+              "ago_ms": 60000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        },
+        {
+          "messages": [
+            {
+              "id": "3002",
+              "ago_ms": 120000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "3001",
+              "ago_ms": 60000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        },
+        {
+          "messages": [],
+          "error": "编的超时",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          },
+          {
+            "anchor": "3001",
+            "count": 100
+          },
+          {
+            "anchor": "3002",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "3002",
+            "ago_ms": 120000
+          },
+          {
+            "id": "3001",
+            "ago_ms": 60000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 3660000,
+            "to_ago_ms": 0,
+            "state": "blocked",
+            "reason": "call-failed",
+            "tries": 0,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 3660000,
+          "through_ago_ms": 3660001
+        },
+        "complete_coverage": false
+      }
+    }
+  ]
+}

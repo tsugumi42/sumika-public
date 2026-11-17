@@ -1,0 +1,228 @@
+{
+ "status": {
+  "type": "status",
+  "url": "https://x.com/ex_author02/status/1900000000000000013",
+  "id": "1900000000000000013",
+  "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示",
+  "raw_text": {
+   "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正",
+   "display_text_range": [
+    0,
+    186
+   ],
+   "facets": [
+    {
+     "type": "hashtag",
+     "indices": [
+      141,
+      158
+     ],
+     "original": "MilwaukeeBrewers"
+    },
+    {
+     "type": "hashtag",
+     "indices": [
+      159,
+      163
+     ],
+     "original": "MLB"
+    },
+    {
+     "type": "hashtag",
+     "indices": [
+      164,
+      173
+     ],
+     "original": "Baseball"
+    },
+    {
+     "type": "hashtag",
+     "indices": [
+      174,
+      186
+     ],
+     "original": "WorldSeries"
+    },
+    {
+     "type": "media",
+     "indices": [
+      187,
+      210
+     ],
+     "id": "1900000000000000008",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0017",
+     "replacement": "https://x.com/ex_author02/status/1900000000000000013/video/1"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "ex_author02",
+   "url": "https://x.com/ex_author41",
+   "id": "10001",
+   "followers": 1522726,
+   "following": 6125,
+   "likes": 4336,
+   "media_count": 18155,
+   "statuses": 394738,
+   "name": "编造作者申",
+   "description": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。",
+   "raw_description": {
+    "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。",
+    "facets": []
+   },
+   "location": "编造城市",
+   "banner_url": "https://pbs.twimg.com/media/fixture-26.jpg",
+   "avatar_url": "https://pbs.twimg.com/profile_images/fixture/27_200x200.jpg",
+   "joined": "Fri Jun 26 21:48:52 +0000 2009",
+   "protected": false,
+   "website": {
+    "url": "https://example.com/fixture/29",
+    "display_url": "example.com"
+   },
+   "verification": {
+    "verified": true,
+    "verified_at": null,
+    "type": "organization"
+   },
+   "type": "profile"
+  },
+  "replies": 6,
+  "reposts": 17,
+  "likes": 76,
+  "bookmarks": 0,
+  "quotes": 4,
+  "embed_card": "player",
+  "created_at": "Thu Oct 29 15:41:48 +0000 2026",
+  "created_timestamp": 1793288508,
+  "possibly_sensitive": false,
+  "views": 30799,
+  "is_note_tweet": false,
+  "community_note": null,
+  "lang": "en",
+  "replying_to": null,
+  "media": {
+   "all": [
+    {
+     "id": "1900000000000000008",
+     "url": "https://video.twimg.com/amplify_video/fixture-37/vid/avc1/1080x1920/fixture.mp4?tag=16",
+     "thumbnail_url": "https://pbs.twimg.com/media/fixture-38.jpg",
+     "duration": 22.633,
+     "width": 1080,
+     "height": 1920,
+     "format": "video/mp4",
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-41/vid/avc1/1280x720/fixture.mp4?tag=16&v=cfc",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-43/vid/avc1/320x568/fixture.mp4?tag=16",
+       "bitrate": 632000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-46/vid/avc1/480x852/fixture.mp4?tag=16",
+       "bitrate": 950000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-49/vid/avc1/720x1280/fixture.mp4?tag=16",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-52/vid/avc1/1080x1920/fixture.mp4?tag=16",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ],
+     "publisher": null
+    }
+   ],
+   "videos": [
+    {
+     "id": "1900000000000000008",
+     "url": "https://video.twimg.com/amplify_video/fixture-56/vid/avc1/1080x1920/fixture.mp4?tag=16",
+     "thumbnail_url": "https://pbs.twimg.com/media/fixture-57.jpg",
+     "duration": 22.633,
+     "width": 1080,
+     "height": 1920,
+     "format": "video/mp4",
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-60/vid/avc1/1280x720/fixture.mp4?tag=16&v=cfc",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-62/vid/avc1/320x568/fixture.mp4?tag=16",
+       "bitrate": 632000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-65/vid/avc1/480x852/fixture.mp4?tag=16",
+       "bitrate": 950000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-68/vid/avc1/720x1280/fixture.mp4?tag=16",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-71/vid/avc1/1080x1920/fixture.mp4?tag=16",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ],
+     "publisher": null
+    }
+   ]
+  },
+  "provider": "twitter",
+  "reposted_by": null
+ },
+ "thread": null,
+ "author": {
+  "screen_name": "ex_author02",
+  "url": "https://x.com/ex_author41",
+  "id": "10001",
+  "followers": 1522726,
+  "following": 6125,
+  "likes": 4336,
+  "media_count": 18155,
+  "statuses": 394738,
+  "name": "编造作者申",
+  "description": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。",
+  "raw_description": {
+   "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。",
+   "facets": []
+  },
+  "location": "编造城市",
+  "banner_url": "https://pbs.twimg.com/media/fixture-82.jpg",
+  "avatar_url": "https://pbs.twimg.com/profile_images/fixture/83_200x200.jpg",
+  "joined": "Fri Jun 26 21:48:52 +0000 2009",
+  "protected": false,
+  "website": {
+   "url": "https://example.com/fixture/85",
+   "display_url": "example.com"
+  },
+  "verification": {
+   "verified": true,
+   "verified_at": null,
+   "type": "organization"
+  },
+  "type": "profile"
+ },
+ "code": 200
+}

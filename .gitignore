@@ -1,0 +1,54 @@
+node_modules/
+data/
+dist/
+*.log
+.env
+sumika.yml
+vendor/
+.soak/
+
+# Bun 后台、网页、Electrobun 壳 2026-11-01 分到了 sumika-bun 仓库。主工作区里切换前留下的没进 git 的产物
+# （web/dist、字体、Twemoji、截图对比的结果、壳的编译结果）不再冒进 git status；这几个目录在主仓库里也不该再有东西
+/daemon/
+/web/
+/shell/
+
+# 本机预览配置（里面有临时目录路径）
+.claude/launch.json
+
+# 备份放在数据目录外面、旁边（规格-数据目录与备份 5.2）；开发时数据目录是项目下的 data/，备份就落在项目文件夹里
+/Sumika-备份/
+# 每周抽验的临时目录：里面是数据目录的完整副本（含明文配置和聊天库），默认布局下就在仓库根下，进程被杀时会残留
+/Sumika-抽验/
+
+# 恢复时在数据目录旁边准备的（data-恢复中-…）和换下来的（data-换下来-…）数据目录（ADR-070）
+/data-*/
+
+# 配置的旧位置改名后留的备份（里面有 QQ 号和令牌，ADR-065、规格-数据目录与备份 第六节）
+sumika.yml.*
+!sumika.example.yml
+
+# 外部资料收件箱（别的对话带进来的参考资料，不提交）
+/docs/inbox/
+
+# 原生界面原型编出来的程序和截图（规格-原生界面原型）
+native/*.exe
+# _spike/run.sh 的压测输出（运行时生成，不进 git）
+native/_spike/out/
+# 开发和对拍时放在程序旁边的 onnxruntime.dll（规格-Go本地模型 2.3；官方包由 scripts/fetch-ort.ts 取到 vendor/ort，那里本来就被忽略）
+native/*.dll
+# 文渊圆体字体文件太大（子集 15 MB），放在程序旁的 fonts/ 里，不进 git；许可证文件进 git（native/README.md「界面字体」）
+native/fonts/*.ttf
+# Twemoji（CC-BY 4.0）四千多个 SVG，放本机不进 git；正式程序从 exe 旁的 twemoji/ 读，打包时拷过去（native/README.md「界面字体」「打包」）
+native/twemoji/
+native/*.lnk
+native/shots/
+
+# 本机模型服务（tools/local-models）跑起来生成的 Python 缓存
+__pycache__/
+
+# bench-t2 题库的初始文件按原样（LF）检出，不被 autocrlf 改成 CRLF：b2-09 的"字节数"、几道题的哈希判分都按 LF 算
+!/scripts/bench-t2/tasks/**/data/
+
+# Bun 后台插件热换时的拷贝（server/src/plugins/host.ts 启动和停止时清空）
+/server/.plugins-hot/

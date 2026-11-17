@@ -1,0 +1,448 @@
+{
+  "about": "主人在本地私聊里让她记新事实：存第三人称正文、owner 范围、owner_said、来源绑定到主人的原话；不写时态时 fact 按暂时（七天）、偏好和边界和约定按长期；写了期限的照期限存。",
+  "source_tests": [
+    "TestRememberB19Records",
+    "TestLifetimeDefaultByKind",
+    "TestMemoryLifetimePersistsAndExpires"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "更早的一句",
+      "ago_s": 540
+    },
+    {
+      "seq": 2,
+      "conversation": "console:a",
+      "text": "我下个月搬到新家",
+      "ago_s": 120
+    },
+    {
+      "seq": 3,
+      "conversation": "console:a",
+      "text": "好呀，搬家顺利",
+      "ago_s": 60,
+      "from": "character"
+    },
+    {
+      "seq": 4,
+      "conversation": "console:b",
+      "text": "另一个会话里的话",
+      "ago_s": 30
+    },
+    {
+      "seq": 5,
+      "conversation": "console:a",
+      "text": "我最近在学做饭，每个周末都做一顿",
+      "ago_s": 20
+    },
+    {
+      "seq": 6,
+      "conversation": "console:a",
+      "text": "下周三前别打扰我，我要交稿",
+      "ago_s": 10
+    },
+    {
+      "seq": 7,
+      "conversation": "console:a",
+      "text": "别在睡前讲鬼故事",
+      "ago_s": 5
+    },
+    {
+      "seq": 8,
+      "conversation": "console:a",
+      "text": "周末陪我看电影",
+      "ago_s": 3
+    }
+  ],
+  "start": {},
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002",
+    "NEWF0000000000000000000003",
+    "NEWF0000000000000000000004",
+    "NEWF0000000000000000000005",
+    "NEWF0000000000000000000006"
+  ],
+  "steps": [
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我下个月搬到新家",
+        "temporal": "stable",
+        "text": "  主人下个月搬到新家。 "
+      },
+      "input_seqs": [
+        2
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "每个周末都做一顿",
+        "text": "主人最近在学做饭，每个周末做一顿"
+      },
+      "input_seqs": [
+        5
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我最近在学做饭",
+        "text": "主人喜欢周末自己做饭"
+      },
+      "input_seqs": [
+        5
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "boundary",
+        "source_quote": "别在睡前讲鬼故事",
+        "text": "主人不喜欢被人在睡前讲鬼故事"
+      },
+      "input_seqs": [
+        7
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "promise",
+        "source_quote": "下周三前别打扰我",
+        "temporal": "temporary",
+        "text": "她答应下周三前不打扰主人"
+      },
+      "input_seqs": [
+        6
+      ],
+      "valid_until_in_s": 259200,
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "promise",
+        "source_quote": "周末陪我看电影",
+        "text": "她答应周末陪主人看电影"
+      },
+      "input_seqs": [
+        8
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 120,
+        "id": "NEWF0000000000000000000001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[2]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人下个月搬到新家。",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 20,
+        "id": "NEWF0000000000000000000002",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[5]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "temporary",
+        "text": "主人最近在学做饭，每个周末做一顿",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": -604800,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 20,
+        "id": "NEWF0000000000000000000003",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[5]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人喜欢周末自己做饭",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 5,
+        "id": "NEWF0000000000000000000004",
+        "kind": "boundary",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[7]",
+        "speech_act": "boundary",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人不喜欢被人在睡前讲鬼故事",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 10,
+        "id": "NEWF0000000000000000000005",
+        "kind": "promise",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[6]",
+        "speech_act": "promise",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "temporary",
+        "text": "她答应下周三前不打扰主人",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": -259200,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 3,
+        "id": "NEWF0000000000000000000006",
+        "kind": "promise",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[8]",
+        "speech_act": "promise",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "她答应周末陪主人看电影",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "temporary",
+          "valid_to_ago_s": -604800
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000002",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000003",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000004",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "temporary",
+          "valid_to_ago_s": -259200
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000005",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000006",
+        "op": "add",
+        "reason": null
+      }
+    ],
+    "evidence": []
+  }
+}

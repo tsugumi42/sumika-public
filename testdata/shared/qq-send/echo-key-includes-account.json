@@ -1,0 +1,180 @@
+{
+  "id": "echo-key-includes-account",
+  "about": "同一个群里两个号各发一段同样的字：回声按它自己的号认，不串给另一个号那段",
+  "source_tests": [
+    "TestEchoKeyIncludesAccount"
+  ],
+  "receipt": "unknown",
+  "steps": [
+    {
+      "do": "say",
+      "label": "a",
+      "as": "ca",
+      "texts": [
+        "哈哈"
+      ],
+      "expect": {}
+    },
+    {
+      "do": "wait_plan",
+      "label": "a",
+      "state": "unknown",
+      "expect": {
+        "plan": {
+          "label": "a",
+          "state": "unknown",
+          "parts": [
+            {
+              "state": "unknown",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "advance",
+      "ms": 1000,
+      "expect": {}
+    },
+    {
+      "do": "say",
+      "label": "b",
+      "as": "cb",
+      "texts": [
+        "哈哈"
+      ],
+      "expect": {}
+    },
+    {
+      "do": "wait_plan",
+      "label": "b",
+      "state": "unknown",
+      "expect": {
+        "plan": {
+          "label": "b",
+          "state": "unknown",
+          "parts": [
+            {
+              "state": "unknown",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "claim",
+      "account": "b",
+      "platform_id": "7002",
+      "text": "哈哈",
+      "expect": {
+        "claimed": true
+      }
+    },
+    {
+      "do": "wait_plan",
+      "label": "b",
+      "state": "done",
+      "expect": {
+        "plan": {
+          "label": "b",
+          "state": "done",
+          "parts": [
+            {
+              "state": "confirmed",
+              "via": "echo",
+              "platform_id": "7002",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "wait_plan",
+      "label": "a",
+      "state": "unknown",
+      "expect": {
+        "plan": {
+          "label": "a",
+          "state": "unknown",
+          "parts": [
+            {
+              "state": "unknown",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "claim",
+      "account": "a",
+      "platform_id": "7001",
+      "text": "哈哈",
+      "expect": {
+        "claimed": true
+      }
+    },
+    {
+      "do": "wait_plan",
+      "label": "a",
+      "state": "done",
+      "expect": {
+        "plan": {
+          "label": "a",
+          "state": "done",
+          "parts": [
+            {
+              "state": "confirmed",
+              "via": "echo",
+              "platform_id": "7001",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "final": {
+    "plans": [
+      {
+        "label": "a",
+        "state": "done",
+        "parts": [
+          {
+            "state": "confirmed",
+            "via": "echo",
+            "platform_id": "7001",
+            "attempts": 1
+          }
+        ]
+      },
+      {
+        "label": "b",
+        "state": "done",
+        "parts": [
+          {
+            "state": "confirmed",
+            "via": "echo",
+            "platform_id": "7002",
+            "attempts": 1
+          }
+        ]
+      }
+    ],
+    "sends": 2,
+    "mapped": {
+      "7001": "a",
+      "7002": "b"
+    },
+    "unmapped": []
+  }
+}

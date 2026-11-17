@@ -1,0 +1,21 @@
+{
+  "code": 200,
+  "songs": [
+    {
+      "id": 90001,
+      "name": "编造的歌曲",
+      "duration": 269000,
+      "artists": [
+        {
+          "id": 90002,
+          "name": "编造歌手0"
+        }
+      ],
+      "album": {
+        "id": 18905,
+        "name": "编造专辑",
+        "picUrl": "https://p1.music.126.net/fixture/song.jpg"
+      }
+    }
+  ]
+}

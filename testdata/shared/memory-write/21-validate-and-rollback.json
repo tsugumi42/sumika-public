@@ -1,0 +1,720 @@
+{
+  "about": "写入内核的批次校验：谁写的必填且认得、kind 和 status 认得、confirmed_by 按批次身份（模型只能标 owner_said，owner_said 只有 remember 一类能写）、正文不能空、编号和短码只给一个、范围不能空、证据要有会话；证据和提升动作只有整理能给。校验不过什么都不写；校验过了写到一半失败（要取代的不是有效的）整批回滚，前面写的也不留。",
+  "source_tests": [
+    "TestApplyRejectsMalformedBatches",
+    "TestApplyRollsBackTheWholeBatch",
+    "TestOwnerSaidValidate",
+    "TestConfirmOpValidation",
+    "TestFactOpTakesACodeOrAnIDNotBoth"
+  ],
+  "options": {},
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "text": "一条有效的事实",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000CAND01",
+        "kind": "fact",
+        "text": "一条待确认的事实",
+        "subject": "owner",
+        "status": "candidate"
+      }
+    ]
+  },
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002",
+    "NEWF0000000000000000000003",
+    "NEWF0000000000000000000004",
+    "NEWF0000000000000000000005",
+    "NEWF0000000000000000000006",
+    "NEWF0000000000000000000007",
+    "NEWF0000000000000000000008",
+    "NEWF0000000000000000000009"
+  ],
+  "steps": [
+    {
+      "do": "batch",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "Batch.By 没写"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "todo",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：kind \"todo\" 不认"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "archived",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：status \"archived\" 不认（只有 active、candidate）"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "admin",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：confirmed_by \"admin\" 不认"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：模型记忆不得自报主人确认，只能标 owner_said"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "ai",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：模型记忆不得自报主人确认，只能标 owner_said"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：owner_said 只有绑定了主人原话的 remember 能写"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：owner_said 只有绑定了主人原话的 remember 能写"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "   ",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：正文是空的"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000AI0001",
+          "supersedes_code": "AI0001"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：要取代的编号和短码只能给一个"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：没有范围"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner",
+            " "
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：范围里有空的"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner"
+          ],
+          "evidence": {
+            "conversation": ""
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：证据没写会话"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：撤销没写编号"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000AI0001",
+          "code": "AI0001"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：要撤销的编号和短码只能给一个"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:a"
+          },
+          "fact_id": "SEED0000000000000000CAND01"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：证据动作只有整理能给"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "confirm",
+          "fact_id": "SEED0000000000000000CAND01"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：提升动作只有整理能给"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": "console:a"
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：证据没写事实编号"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "evidence",
+          "evidence": {
+            "conversation": ""
+          },
+          "fact_id": "SEED0000000000000000CAND01"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：证据没写会话"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "confirm"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：提升没写事实编号"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "episode",
+          "text": " ",
+          "scopes": [
+            "owner"
+          ],
+          "conversation": "console:a"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：片段的正文或会话是空的"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "episode",
+          "text": "一段话",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：片段的正文或会话是空的"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "episode",
+          "text": "一段话",
+          "conversation": "console:a"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 1 个动作不合规：没有范围"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "先写进去的",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner"
+          ]
+        },
+        {
+          "op": "fact",
+          "kind": "todo",
+          "text": "x",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "invalid",
+          "message": "第 2 个动作不合规：kind \"todo\" 不认"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "先写进去的另一条",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ]
+        },
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "改口",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes_code": "ZZZZZZ"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "replace_gone",
+          "message": "要替换的那条已经不是有效的了（被别处改过、撤销了，或编号不对），这次什么都没写：ZZZZZZ"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "先写进去的第三条",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ]
+        },
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "改口",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000NOSUCH"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "replace_gone",
+          "message": "要替换的那条已经不是有效的了（被别处改过、撤销了，或编号不对），这次什么都没写：SEED0000000000000000NOSUCH"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "先写进去的第四条",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ]
+        },
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "改口",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000CAND01"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "replace_gone",
+          "message": "要替换的那条已经不是有效的了（被别处改过、撤销了，或编号不对），这次什么都没写：SEED0000000000000000CAND01"
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "expect": {}
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "一条有效的事实",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAND01",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "一条待确认的事实",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [],
+    "evidence": []
+  }
+}

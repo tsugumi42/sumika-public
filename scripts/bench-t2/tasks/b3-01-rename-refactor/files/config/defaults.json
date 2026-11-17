@@ -1,0 +1,5 @@
+{
+  "low_stock_threshold": 5,
+  "page_size": 20,
+  "currency": "CNY"
+}

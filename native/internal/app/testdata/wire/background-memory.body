@@ -1,0 +1,1 @@
+{"model":"fiction-model","messages":[{"role":"user","content":"记住：周五看牙医"}],"stream":true,"stream_options":{"include_usage":true},"prompt_cache_key":"memory:fiction","max_completion_tokens":64,"store":false}

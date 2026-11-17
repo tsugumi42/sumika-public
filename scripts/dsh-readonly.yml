@@ -1,0 +1,9 @@
+# dsh-ask.ts 默认加的补丁：把 headless 的文件权限改成只读（写文件被沙箱拦下，审批也关了、不能提权）
+- id: permission
+  name: "@deepseek-ai/dsh-permission-presets"
+  config:
+    presets:
+      read-only:
+        sandbox: read-only
+        approval: never
+    defaultPreset: read-only

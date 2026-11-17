@@ -1,0 +1,76 @@
+{
+ "code": 200,
+ "status": {
+  "id": "1900000000000000007",
+  "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的",
+  "raw_text": {
+   "facets": [
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0005",
+     "replacement": "https://x.com/ex_author07/status/1900000000000000007/video/1"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "ex_author06",
+   "id": "1900000000000000030",
+   "name": "编造作者甿",
+   "avatar_url": "https://pbs.twimg.com/profile_images/fixture/10_200x200.jpg"
+  },
+  "replies": 182,
+  "reposts": 61,
+  "likes": 904,
+  "bookmarks": 547,
+  "quotes": 29,
+  "created_timestamp": 1792933629,
+  "possibly_sensitive": false,
+  "views": 135240,
+  "is_note_tweet": true,
+  "community_note": null,
+  "replying_to": null,
+  "media": {
+   "all": [
+    {
+     "url": "https://video.twimg.com/amplify_video/fixture-11/vid/avc1/1920x1080/fixture.mp4?tag=29",
+     "thumbnail_url": "https://pbs.twimg.com/media/fixture-12.jpg",
+     "duration": 79.87,
+     "width": 1920,
+     "height": 1080,
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-14/vid/avc1/1280x720/fixture.mp4?tag=29&v=cfc",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-16/vid/avc1/480x270/fixture.mp4?tag=29",
+       "bitrate": 256000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-19/vid/avc1/640x360/fixture.mp4?tag=29",
+       "bitrate": 832000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-22/vid/avc1/1280x720/fixture.mp4?tag=29",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-25/vid/avc1/1920x1080/fixture.mp4?tag=29",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

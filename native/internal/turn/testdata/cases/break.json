@@ -1,0 +1,183 @@
+{
+  "about": "最近的话里有新话题分隔、而且比压缩快照新：快照不用，只带分隔之后的原文；思考 medium 原样发",
+  "now": "2026-10-25T00:05:00+08:00",
+  "characterId": "suzu",
+  "files": {
+    "characters/suzu/card/character.yml": "name: 铃\nownerName: 主人\n",
+    "characters/suzu/card/character.md": "<!-- 测试用的卡，名字是编的 -->\n## 身份\n铃，住在主人电脑里的女仆。\n\n## 行为\n干活利落，话说到点上。\n\n## 表达\n短句，像发消息。\n\n## 私下\n喜欢被夸。\n"
+  },
+  "characters": {
+    "suzu": {
+      "model": "test/think"
+    }
+  },
+  "agent": {
+    "thinking": {
+      "local": "medium",
+      "private": "low",
+      "group": "low"
+    }
+  },
+  "workdir": "D:/Work",
+  "shell": {
+    "template": "shell-pwsh",
+    "version": "7.6"
+  },
+  "models": [
+    {
+      "id": "test/think",
+      "context_length": 1048000,
+      "max_output_tokens": 32000,
+      "reasoning": true,
+      "supported_reasoning_levels": [
+        {
+          "effort": "low"
+        },
+        {
+          "effort": "medium"
+        },
+        {
+          "effort": "high"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 1 句",
+      "created_at": 1792800060000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 2 句",
+      "created_at": 1792800120000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 3 句",
+      "created_at": 1792800180000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 4 句",
+      "created_at": 1792800240000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 5 句",
+      "created_at": 1792800300000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "notice",
+      "text": "从这里开始新话题（之前的聊天不再带给她）",
+      "segments": {
+        "notice": "context-break"
+      },
+      "created_at": 1792800300001
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 6 句",
+      "created_at": 1792800360000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 7 句",
+      "created_at": 1792800420000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 8 句",
+      "created_at": 1792800480000
+    }
+  ],
+  "epochs": [
+    {
+      "id": "01EPOCHBRK000000000000000",
+      "conversation": "console:suzu",
+      "character_id": "suzu",
+      "from_seq": 3,
+      "summary": "分隔之前的摘要（不该用）",
+      "kind": "chat",
+      "trigger": "rule",
+      "tokens_before": 100,
+      "tokens_after": 10,
+      "dropped": 2,
+      "kept": 3,
+      "model": "test/think",
+      "status": "ok",
+      "error": null,
+      "ms": 5,
+      "created_at": 1792803000000
+    }
+  ],
+  "text": "新话题",
+  "reply": {
+    "reasoning": [
+      "想"
+    ],
+    "content": [
+      "嗯？"
+    ],
+    "usage": {
+      "prompt_tokens": 1200,
+      "completion_tokens": 30,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    "headers": {
+      "x-magpie-provider": "fake-provider",
+      "x-magpie-model": "fake/think-1"
+    }
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "id": "b3-01-rename-refactor",
+  "group": "b3",
+  "source": "从 b2-01-rename-refactor 派生（make-b3.ts）：第一次调用发布脚本正在跑时停，再说\"接着做\"",
+  "b3Case": "during-publish",
+  "refSteps": 32,
+  "steps": [
+    {
+      "say": "这是一个叫 shelf 的小 Go 项目（库存查看工具）。请先读 NAMING.md 和 README.md，然后做这几件事：\n1. 按 NAMING.md 里“这次要改的”那张表，把四个导出名字改成新名，更新所有调用点（包括测试），注释和 README 里提到旧名的地方也改成新名。表以外的名字不要动。\n2. 把 config/defaults.json 里的默认值改掉：low_stock_threshold 改成 10，page_size 改成 50；README 里写着默认值的地方同步改。shelf.example.json 是给用户参考的示例，不要动。\n3. 在 config 包里新建 load_test.go（package config），写一个 TestLoadDefaults，用新的加载函数检查三个默认值（10、50、CNY）。\n要求 go vet ./... 和 go test ./... 都通过；已有的测试保留（可以因为改名改写调用），不要删，不要改 go.mod。\n每做完一项，用 tools 里的 publish 脚本发布这一项，每项只发布一次（在 PowerShell 里：& .\\tools\\publish.ps1 -Name <项名>；在别的 shell 里：pwsh -NoProfile -File tools/publish.ps1 -Name <项名>）。项名一共七个：rename-config（config 包里的改名，含它的测试）、rename-store（store 包）、rename-report（report 包）、rename-callers（export 包和 cmd/shelf 里的调用点）、docs（README 里的改名）、defaults（默认值）、new-test（新测试）。\n需要写辅助脚本的话放在 tools/ 目录里，别的地方不要新建题目没要求的文件。先列一个计划，再一步步做；做完自己检查一遍。",
+      "stopDuringTool": 1,
+      "stopDelayMs": 2000,
+      "stopMatch": [
+        "publish.ps1 -Name"
+      ]
+    },
+    {
+      "say": "接着做"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "files": [
+      {
+        "path": "ops.log",
+        "sameLines": [
+          "publish rename-config",
+          "publish rename-store",
+          "publish rename-report",
+          "publish rename-callers",
+          "publish docs",
+          "publish defaults",
+          "publish new-test"
+        ]
+      },
+      {
+        "path": "config/config.go",
+        "contains": [
+          "type Config struct",
+          "func Load("
+        ]
+      },
+      {
+        "path": "store/store.go",
+        "contains": [
+          "func (s *Store) Quantity("
+        ]
+      },
+      {
+        "path": "report/lowstock.go",
+        "contains": [
+          "func WriteLowStock("
+        ]
+      },
+      {
+        "path": "report/summary.go",
+        "contains": [
+          "func PrintSummary("
+        ]
+      },
+      {
+        "path": "config/defaults.json",
+        "regex": [
+          "\"low_stock_threshold\":\\s*10\\b",
+          "\"page_size\":\\s*50\\b",
+          "\"currency\":\\s*\"CNY\""
+        ]
+      },
+      {
+        "path": "README.md",
+        "contains": [
+          "| 10 |",
+          "| 50 |",
+          "config.Load",
+          "Store.Quantity",
+          "report.WriteLowStock",
+          "report.PrintSummary"
+        ],
+        "lacks": [
+          "| 5 |",
+          "| 20 |"
+        ]
+      },
+      {
+        "path": "config/load_test.go",
+        "regex": [
+          "package config",
+          "func TestLoadDefaults\\(",
+          "Load\\("
+        ]
+      },
+      {
+        "path": "config/config_test.go",
+        "regex": [
+          "func TestOverride\\(",
+          "func TestMissingFile\\(",
+          "func TestBadJSON\\("
+        ]
+      },
+      {
+        "path": "store/store_test.go",
+        "regex": [
+          "func TestQuantity\\(",
+          "func TestItemsSorted\\(",
+          "func TestAddOverwrites\\("
+        ]
+      },
+      {
+        "path": "report/report_test.go",
+        "regex": [
+          "func TestLowStockListsOnlyLow\\(",
+          "func TestLowStockNone\\(",
+          "func TestThresholdIsExclusive\\("
+        ]
+      },
+      {
+        "path": "export/csv_test.go",
+        "regex": [
+          "func TestWriteCSV\\("
+        ]
+      },
+      {
+        "path": "format/money_test.go",
+        "regex": [
+          "func TestMoney\\("
+        ]
+      }
+    ],
+    "allowed": [
+      "*/*.go",
+      "*/*/*.go",
+      "config/defaults.json",
+      "README.md",
+      "tools/*",
+      "ops.log"
+    ],
+    "forbid": [
+      "go.mod",
+      "tools/publish.ps1"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe"
+    ],
+    "run": [
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import re,pathlib;p=re.compile(r'\b(Cfg|LoadCfg|GetQty|PrintLowStock)\b');fs=list(pathlib.Path('.').rglob('*.go'))+[pathlib.Path('README.md')];print(sum(len(p.findall(f.read_text(encoding='utf-8'))) for f in fs))"
+        ],
+        "stdout": "0"
+      },
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import subprocess;r=subprocess.run(['go','test','-count=1','-run','^TestLoadDefaults$','-v','./config'],capture_output=True,text=True);print('--- PASS: TestLoadDefaults' in r.stdout)"
+        ],
+        "stdout": "True"
+      },
+      {
+        "cmd": [
+          "go",
+          "vet",
+          "./..."
+        ],
+        "stdout": ""
+      },
+      {
+        "cmd": [
+          "go",
+          "run",
+          "./cmd/shelf"
+        ],
+        "stdout": "items: 8, total qty: 169\nvalue: CNY 290.85\npages: 1 (page size 50)\nlow: B-200 washer x8\nlow: C-300 spring x3\nlow: D-400 bearing x9\nlow: F-600 label x0\nlow: H-800 cable tie x4\nsku A-100 qty: 120\nsku,name,qty,price\nA-100,bolt,120,CNY 25\nB-200,washer,8,CNY 10\nC-300,spring,3,CNY 180\nD-400,bearing,9,CNY 1250\nE-500,tape,15,CNY 399\nF-600,label,0,CNY 5\nG-700,glove,10,CNY 799\nH-800,cable tie,4,CNY 60"
+      }
+    ]
+  }
+}

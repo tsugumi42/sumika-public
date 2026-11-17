@@ -1,0 +1,138 @@
+{
+  "id": "group-seq-late-bad-page-partial-error",
+  "about": "首页序号已包住旧洞，后页出现坏证据（序号 0 / 重复 / 页出错）：不能沿用首页结论，旧洞 blocked，全部有效消息照存",
+  "source_tests": [
+    "TestReviewLateInvalidSequence/partial_error"
+  ],
+  "scene": "group",
+  "setup": {
+    "watermark_ago_ms": 3600000,
+    "peer": {
+      "latest": false,
+      "continuous": false,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": [
+      {
+        "from_ago_ms": 1200000,
+        "to_ago_ms": 600000,
+        "state": "open",
+        "reason": "outage",
+        "tries": 3,
+        "last_try_ago_ms": 0
+      }
+    ]
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "801",
+              "ago_ms": 300000,
+              "seq": 43,
+              "from": ""
+            },
+            {
+              "id": "802",
+              "ago_ms": 720000,
+              "seq": 42,
+              "from": ""
+            },
+            {
+              "id": "803",
+              "ago_ms": 1080000,
+              "seq": 41,
+              "from": ""
+            },
+            {
+              "id": "804",
+              "ago_ms": 1500000,
+              "seq": 40,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        },
+        {
+          "messages": [
+            {
+              "id": "804",
+              "ago_ms": 1500000,
+              "seq": 40,
+              "from": ""
+            },
+            {
+              "id": "805",
+              "ago_ms": 900000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "synthetic malformed page",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          },
+          {
+            "anchor": "804",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "804",
+            "ago_ms": 1500000
+          },
+          {
+            "id": "803",
+            "ago_ms": 1080000
+          },
+          {
+            "id": "805",
+            "ago_ms": 900000
+          },
+          {
+            "id": "802",
+            "ago_ms": 720000
+          },
+          {
+            "id": "801",
+            "ago_ms": 300000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 3660000,
+            "to_ago_ms": 0,
+            "state": "blocked",
+            "reason": "call-failed",
+            "tries": 3,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 3660000,
+          "through_ago_ms": 3660001
+        },
+        "complete_coverage": false
+      }
+    }
+  ]
+}

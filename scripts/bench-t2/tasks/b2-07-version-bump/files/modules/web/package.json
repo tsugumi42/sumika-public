@@ -1,0 +1,11 @@
+{
+  "name": "@harbor/web",
+  "version": "1.4.2",
+  "private": true,
+  "dependencies": {
+    "tiny-router": "1.4.2"
+  },
+  "devDependencies": {
+    "@harbor/api": "1.4.2"
+  }
+}

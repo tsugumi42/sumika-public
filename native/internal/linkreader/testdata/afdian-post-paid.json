@@ -1,0 +1,28 @@
+{
+ "ec": 200,
+ "em": "",
+ "data": {
+  "post": {
+   "post_id": "90000000000000000000000000000004",
+   "user_id": "90000000000000000000000000009498",
+   "title": "编造的付费动态",
+   "content": "",
+   "pics": [],
+   "video": "",
+   "video_thumb": "",
+   "type": 1,
+   "has_right": 0,
+   "has_right_errMsg": "这是编造的付费提示：赞助 60.00 元后可见。",
+   "min_price": "60.00",
+   "like_count": 38,
+   "comment_count": 7,
+   "user": {
+    "user_id": "90000000000000000000000000009498",
+    "name": "编造作者乙",
+    "avatar": "https://pic1.afdiancdn.com/fixture/9390.jpeg",
+    "url_slug": "example_creator",
+    "is_verified": 1
+   }
+  }
+ }
+}

@@ -1,0 +1,75 @@
+{
+  "id": "steer-unknown-run-conflicts",
+  "about": "steer 指向不存在的那一轮：报冲突，不入库",
+  "source_tests": [
+    "input.go Submit"
+  ],
+  "replies": [
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "甲句",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "s",
+      "mode": "steer",
+      "text": "插话丁",
+      "expected_run": "ghost",
+      "expect": {
+        "error": "conflict"
+      }
+    },
+    {
+      "do": "release",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "done"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "done"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      }
+    ],
+    "steers": []
+  }
+}

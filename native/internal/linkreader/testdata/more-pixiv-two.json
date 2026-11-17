@@ -1,0 +1,32 @@
+{
+ "error": false,
+ "body": {
+  "illustId": "123456789",
+  "illustTitle": "编造的画作",
+  "userId": "90002",
+  "userName": "编造画师甲",
+  "userAccount": "sample-artist",
+  "createDate": "2024-10-18T14:24:00+00:00",
+  "urls": {
+   "original": "https://i.pximg.net/img-original/img/2024/10/18/23/24/01/123456789_p0.png",
+   "regular": "https://i.pximg.net/img-master/img/2024/10/18/23/24/01/123456789_p0_master1200.jpg"
+  },
+  "width": 3496,
+  "height": 4961,
+  "pageCount": 3,
+  "xRestrict": 0,
+  "illustType": 1,
+  "bookmarkCount": 614,
+  "viewCount": 25940,
+  "tags": {
+   "tags": [
+    {
+     "tag": "编造标签甲"
+    },
+    {
+     "tag": "编造标签乙"
+    }
+   ]
+  }
+ }
+}

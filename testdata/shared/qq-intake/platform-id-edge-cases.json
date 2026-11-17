@@ -1,0 +1,201 @@
+{
+  "id": "platform-id-edge-cases",
+  "about": "没有号（空、0）的消息不去重、不进映射表，每条单独入库；超过 2^53 的号原样往返，相邻两个号不混",
+  "source_tests": [
+    "TestPlatformIDEdgeCases"
+  ],
+  "items": [
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "",
+      "from": "friend",
+      "text": "第0条",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "",
+      "from": "friend",
+      "text": "第1条",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "0",
+      "from": "friend",
+      "text": "第2条",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "0",
+      "from": "friend",
+      "text": "第3条",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "9007199254740992",
+      "from": "friend",
+      "text": "大号一",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "9007199254740993",
+      "from": "friend",
+      "text": "大号二",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    }
+  ],
+  "final": {
+    "events": [
+      {
+        "conv": "qq:group:900",
+        "platform_id": "",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "第0条",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "第1条",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "第2条",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "第3条",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "9007199254740992",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "大号一",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "9007199254740993",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "大号二",
+        "time_s": 0
+      }
+    ],
+    "observations": [
+      {
+        "character": "ca",
+        "event": 1
+      },
+      {
+        "character": "ca",
+        "event": 2
+      },
+      {
+        "character": "ca",
+        "event": 3
+      },
+      {
+        "character": "ca",
+        "event": 4
+      },
+      {
+        "character": "ca",
+        "event": 5
+      },
+      {
+        "character": "ca",
+        "event": 6
+      }
+    ]
+  }
+}

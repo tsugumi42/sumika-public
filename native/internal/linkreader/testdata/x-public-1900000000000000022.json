@@ -1,0 +1,56 @@
+{
+ "code": 200,
+ "status": {
+  "id": "1900000000000000022",
+  "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子",
+  "raw_text": {
+   "facets": [
+    {
+     "type": "hashtag",
+     "original": "编造标签甲"
+    },
+    {
+     "type": "hashtag",
+     "original": "编造标签乙"
+    },
+    {
+     "type": "hashtag",
+     "original": "fakehashtag"
+    },
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0011",
+     "replacement": "https://x.com/ex_author12/status/1900000000000000022/photo/1"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "ex_author16",
+   "id": "1900000000000000056",
+   "name": "编造作者畓",
+   "avatar_url": "https://pbs.twimg.com/profile_images/fixture/16_200x200.jpg"
+  },
+  "replies": 0,
+  "reposts": 161,
+  "likes": 1906,
+  "bookmarks": 160,
+  "quotes": 2,
+  "created_timestamp": 1793668775,
+  "possibly_sensitive": false,
+  "views": 15861,
+  "is_note_tweet": false,
+  "community_note": null,
+  "replying_to": null,
+  "media": {
+   "all": [
+    {
+     "type": "photo",
+     "url": "https://pbs.twimg.com/media/fixture-18.jpg?name=orig",
+     "width": 1024,
+     "height": 1536
+    }
+   ]
+  }
+ }
+}

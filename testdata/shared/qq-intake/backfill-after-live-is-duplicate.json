@@ -1,0 +1,113 @@
+{
+  "id": "backfill-after-live-is-duplicate",
+  "about": "实时先到、补录后到的同一条：是重复，只补看到了；反过来补录先到、实时后到也只存一条",
+  "source_tests": [
+    "TestBackfillRestartDedup"
+  ],
+  "items": [
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "600",
+      "from": "friend",
+      "text": "实时先到",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "600",
+      "from": "friend",
+      "text": "实时先到",
+      "time_s": 0,
+      "backfill": true,
+      "expect": {
+        "duplicate": true,
+        "dropped": false,
+        "character": "",
+        "origin": "",
+        "actor_kind": "",
+        "observed": false
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "601",
+      "from": "friend",
+      "text": "补录先到",
+      "time_s": 0,
+      "backfill": true,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "601",
+      "from": "friend",
+      "text": "补录先到",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": true,
+        "dropped": false,
+        "character": "",
+        "origin": "",
+        "actor_kind": "",
+        "observed": false
+      }
+    }
+  ],
+  "final": {
+    "events": [
+      {
+        "conv": "qq:group:900",
+        "platform_id": "600",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "实时先到",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:900",
+        "platform_id": "601",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "补录先到",
+        "time_s": 0
+      }
+    ],
+    "observations": [
+      {
+        "character": "ca",
+        "event": 1
+      },
+      {
+        "character": "ca",
+        "event": 2
+      }
+    ]
+  }
+}

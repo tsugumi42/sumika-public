@@ -1,0 +1,43 @@
+{
+ "id": "fakenote00000004",
+ "createdAt": "2026-11-06T15:48:27.402Z",
+ "user": {
+  "id": "fakeuser00000001",
+  "name": "编造用户",
+  "username": "example_user",
+  "host": null,
+  "avatarUrl": "https://proxy.misskeyusercontent.jp/fixture/1"
+ },
+ "text": "这是编造的联邦宇宙示例正文，仅用于解析测试。这是编造的",
+ "cw": null,
+ "renoteCount": 0,
+ "repliesCount": 0,
+ "reactionCount": 1,
+ "reactions": {
+  ":ore@.:": 1
+ },
+ "files": [],
+ "renoteId": null,
+ "poll": {
+  "multiple": false,
+  "expiresAt": "2026-11-06T16:03:27.402Z",
+  "choices": [
+   {
+    "text": "这是编造的联邦宇宙示",
+    "votes": 0
+   },
+   {
+    "text": "这是编造的联邦宇宙",
+    "votes": 1
+   },
+   {
+    "text": "这是编造的联邦宇宙示例正文，仅用于解",
+    "votes": 1
+   },
+   {
+    "text": "这是编造的联邦宇宙示例",
+    "votes": 2
+   }
+  ]
+ }
+}

@@ -1,0 +1,2006 @@
+{
+ "python": "3.12.14",
+ "fastapi": "0.136.0",
+ "pydantic": "2.14.0",
+ "starlette": "1.7.0",
+ "zoo": [
+  {
+   "cp": 0,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 0,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 0,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 1,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 1,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 1,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 2,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 2,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 2,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 3,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 3,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 3,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 4,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 4,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 4,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 5,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 5,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 5,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 6,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 6,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 6,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 7,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 7,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 7,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 9,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 9,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 9,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 10,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 10,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 10,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 11,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 11,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 11,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 12,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 12,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 12,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 13,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 13,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 13,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 14,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 14,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 14,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 15,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 15,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 15,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 16,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 16,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 16,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 17,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 17,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 17,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 18,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 18,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 18,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 19,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 19,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 19,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 20,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 20,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 20,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 21,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 21,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 21,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 22,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 22,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 22,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 23,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 23,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 23,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 24,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 24,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 24,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 25,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 25,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 25,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 26,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 26,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 26,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 27,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 27,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 27,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 28,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 28,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 28,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 29,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 29,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 29,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 30,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 30,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 30,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 31,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 31,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 31,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 32,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 32,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 32,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 49,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 49,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 49,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 97,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 97,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 97,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 127,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 127,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 127,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 128,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 128,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 128,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 129,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 129,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 129,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 130,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 130,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 130,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 131,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 131,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 131,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 132,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 132,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 132,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 133,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 133,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 133,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 134,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 134,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 134,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 135,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 135,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 135,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 136,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 136,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 136,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 137,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 137,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 137,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 138,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 138,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 138,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 139,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 139,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 139,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 140,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 140,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 140,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 141,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 141,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 141,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 142,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 142,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 142,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 143,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 143,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 143,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 144,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 144,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 144,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 145,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 145,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 145,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 146,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 146,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 146,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 147,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 147,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 147,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 148,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 148,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 148,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 149,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 149,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 149,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 150,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 150,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 150,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 151,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 151,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 151,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 152,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 152,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 152,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 153,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 153,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 153,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 154,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 154,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 154,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 155,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 155,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 155,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 156,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 156,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 156,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 157,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 157,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 157,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 158,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 158,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 158,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 159,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 159,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 159,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 160,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 160,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 160,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 173,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 173,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 173,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 1564,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 1564,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 1564,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 5760,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 5760,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 5760,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 6158,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 6158,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 6158,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8192,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8192,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8192,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8193,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8193,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8193,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8194,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8194,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8194,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8195,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8195,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8195,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8196,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8196,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8196,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8197,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8197,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8197,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8198,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8198,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8198,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8199,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8199,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8199,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8200,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8200,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8200,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8201,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8201,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8201,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8202,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8202,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8202,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8203,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8203,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8203,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8204,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8204,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8204,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8205,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8205,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8205,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8206,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8206,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8206,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8207,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8207,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8207,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8232,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8232,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8232,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8233,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8233,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8233,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8234,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8234,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8234,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8238,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8238,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8238,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8239,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8239,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8239,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8287,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 8287,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8287,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8288,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8288,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8288,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8289,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8289,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8289,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8292,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8292,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8292,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 8303,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 8303,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 8303,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 9601,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 9601,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 9601,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 12288,
+   "layout": "alone",
+   "python_status": 400
+  },
+  {
+   "cp": 12288,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 12288,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 20013,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 20013,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 20013,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 65279,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 65279,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 65279,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 65529,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 65529,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 65529,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 65531,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 65531,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 65531,
+   "layout": "spaced",
+   "python_status": 200
+  },
+  {
+   "cp": 128512,
+   "layout": "alone",
+   "python_status": 200
+  },
+  {
+   "cp": 128512,
+   "layout": "letters",
+   "python_status": 200
+  },
+  {
+   "cp": 128512,
+   "layout": "spaced",
+   "python_status": 200
+  }
+ ],
+ "shapes": [
+  {
+   "name": "嵌入 一句",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9In0=",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 一组",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0IjpbIuS9oOWlvSIsIuS4lueVjCJdfQ==",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 base64",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiZW5jb2RpbmdfZm9ybWF0IjoiYmFzZTY0In0=",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 dimensions 合法",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiZGltZW5zaW9ucyI6MjU2fQ==",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 dimensions 太小",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiZGltZW5zaW9ucyI6MH0=",
+   "note": "",
+   "python_status": 400
+  },
+  {
+   "name": "嵌入 dimensions null",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiZGltZW5zaW9ucyI6bnVsbH0=",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 dimensions 字符串",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiZGltZW5zaW9ucyI6IjI1NiJ9",
+   "note": "Pydantic 宽松模式把 \"256\" 当 256",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 dimensions 带小数点的整数",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiZGltZW5zaW9ucyI6MjU2LjB9",
+   "note": "Pydantic 宽松模式收 256.0",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 dimensions 有小数部分",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiZGltZW5zaW9ucyI6MjU2LjV9",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 dimensions 布尔",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiZGltZW5zaW9ucyI6dHJ1ZX0=",
+   "note": "",
+   "python_status": 400
+  },
+  {
+   "name": "嵌入 input_type query",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiaW5wdXRfdHlwZSI6InF1ZXJ5In0=",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 input_type 不认识",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiaW5wdXRfdHlwZSI6InBhc3NhZ2UifQ==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 input_type null",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiaW5wdXRfdHlwZSI6bnVsbH0=",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 encoding_format 不认识",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiZW5jb2RpbmdfZm9ybWF0IjoiaGV4In0=",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 encoding_format null",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiZW5jb2RpbmdfZm9ybWF0IjpudWxsfQ==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 task 是数字",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwidGFzayI6NX0=",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 task null",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwidGFzayI6bnVsbH0=",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 user 字符串",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwidXNlciI6InUxIn0=",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 user 是数字",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwidXNlciI6N30=",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 未知字段",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9IiwiYm9ndXMiOjF9",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 缺 model",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJpbnB1dCI6IuS9oOWlvSJ9",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 缺 input",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCJ9",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 model 是空串",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiIsImlucHV0Ijoi5L2g5aW9In0=",
+   "note": "",
+   "python_status": 404
+  },
+  {
+   "name": "嵌入 model 是数字",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6NSwiaW5wdXQiOiLkvaDlpb0ifQ==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 model null",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6bnVsbCwiaW5wdXQiOiLkvaDlpb0ifQ==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 input 是数字",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijo1fQ==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 input null",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0IjpudWxsfQ==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 input 数组里有数字",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0IjpbIuS9oOWlvSIsMV19",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 input 数组里有 null",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0IjpbIuS9oOWlvSIsbnVsbF19",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 input 空数组",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0IjpbXX0=",
+   "note": "",
+   "python_status": 400
+  },
+  {
+   "name": "嵌入 input 空串",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0IjoiIn0=",
+   "note": "",
+   "python_status": 400
+  },
+  {
+   "name": "嵌入 input 是对象",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijp7ImEiOjF9fQ==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 input 65 条",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0IjpbIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCIsICJ4IiwgIngiLCAieCJdfQ==",
+   "note": "",
+   "python_status": 400
+  },
+  {
+   "name": "嵌入 不是 JSON",
+   "path": "/v1/embeddings",
+   "body_b64": "6L+Z5LiN5pivIEpTT04=",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 空正文",
+   "path": "/v1/embeddings",
+   "body_b64": "",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 数组",
+   "path": "/v1/embeddings",
+   "body_b64": "WzFd",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 null",
+   "path": "/v1/embeddings",
+   "body_b64": "bnVsbA==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 数字",
+   "path": "/v1/embeddings",
+   "body_b64": "NQ==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 尾部有多余内容",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi5L2g5aW9In0geHg=",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "嵌入 同一个键写两次",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi55SyIiwiaW5wdXQiOiLkuZkifQ==",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 不是合法 UTF-8",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0Ijoi/yJ9",
+   "note": "",
+   "python_status": 400
+  },
+  {
+   "name": "嵌入 孤立代理对",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsImlucHV0IjoiXHVkODAwIn0=",
+   "note": "JSON 转义写的孤立代理对。假模型下 Python 回 200（字符串里带着代理码点）；真分词器编码时抛 TypeError，路由没接，实际是 500",
+   "python_status": 200
+  },
+  {
+   "name": "嵌入 不认识的模型",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6Im5vcGUiLCJpbnB1dCI6IuS9oOWlvSJ9",
+   "note": "",
+   "python_status": 404
+  },
+  {
+   "name": "嵌入 拿重排模型",
+   "path": "/v1/embeddings",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJpbnB1dCI6IuS9oOWlvSJ9",
+   "note": "",
+   "python_status": 404
+  },
+  {
+   "name": "重排 一对",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCIsImRvY3VtZW50cyI6WyLmmbQiLCLpm6giXX0=",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "重排 top_n 合法",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCIsImRvY3VtZW50cyI6WyLmmbQiLCLpm6giXSwidG9wX24iOjF9",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "重排 top_n 零",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCIsImRvY3VtZW50cyI6WyLmmbQiLCLpm6giXSwidG9wX24iOjB9",
+   "note": "夹成 1",
+   "python_status": 200
+  },
+  {
+   "name": "重排 top_n 负数",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCIsImRvY3VtZW50cyI6WyLmmbQiLCLpm6giXSwidG9wX24iOi0zfQ==",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "重排 top_n null",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCIsImRvY3VtZW50cyI6WyLmmbQiLCLpm6giXSwidG9wX24iOm51bGx9",
+   "note": "",
+   "python_status": 200
+  },
+  {
+   "name": "重排 top_n 字符串",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCIsImRvY3VtZW50cyI6WyLmmbQiLCLpm6giXSwidG9wX24iOiIxIn0=",
+   "note": "Pydantic 宽松模式收 \"1\"",
+   "python_status": 200
+  },
+  {
+   "name": "重排 documents 不是数组",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCIsImRvY3VtZW50cyI6IuaZtCJ9",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "重排 documents 空数组",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCIsImRvY3VtZW50cyI6W119",
+   "note": "",
+   "python_status": 400
+  },
+  {
+   "name": "重排 documents 里有 null",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCIsImRvY3VtZW50cyI6WyLmmbQiLG51bGxdfQ==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "重排 query null",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6bnVsbCwiZG9jdW1lbnRzIjpbIuaZtCJdfQ==",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "重排 query 空白",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IiAgIiwiZG9jdW1lbnRzIjpbIuaZtCJdfQ==",
+   "note": "",
+   "python_status": 400
+  },
+  {
+   "name": "重排 未知字段",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCIsImRvY3VtZW50cyI6WyLmmbQiXSwicmV0dXJuX2RvY3VtZW50cyI6dHJ1ZX0=",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "重排 缺 documents",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRSRVJBTksiLCJxdWVyeSI6IuWkqeawlCJ9",
+   "note": "",
+   "python_status": 422
+  },
+  {
+   "name": "重排 拿嵌入模型",
+   "path": "/v1/rerank",
+   "body_b64": "eyJtb2RlbCI6IiRFTUJFRCIsInF1ZXJ5Ijoi5aSp5rCUIiwiZG9jdW1lbnRzIjpbIuaZtCJdfQ==",
+   "note": "",
+   "python_status": 404
+  }
+ ]
+}

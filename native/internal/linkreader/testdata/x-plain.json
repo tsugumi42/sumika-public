@@ -1,0 +1,119 @@
+{
+ "status": {
+  "type": "status",
+  "url": "https://x.com/ex_author02/status/1900000000000000014",
+  "id": "1900000000000000014",
+  "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用",
+  "raw_text": {
+   "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。",
+   "display_text_range": [
+    0,
+    160
+   ],
+   "facets": [
+    {
+     "type": "url",
+     "indices": [
+      137,
+      160
+     ],
+     "original": "https://t.co/fixture0007",
+     "replacement": "https://example.com/fixture/8",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "ex_author02",
+   "url": "https://x.com/ex_author41",
+   "id": "10001",
+   "followers": 1522726,
+   "following": 6125,
+   "likes": 4336,
+   "media_count": 18155,
+   "statuses": 394738,
+   "name": "编造作者申",
+   "description": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。",
+   "raw_description": {
+    "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。",
+    "facets": []
+   },
+   "location": "编造城市",
+   "banner_url": "https://pbs.twimg.com/media/fixture-17.jpg",
+   "avatar_url": "https://pbs.twimg.com/profile_images/fixture/18_200x200.jpg",
+   "joined": "Fri Jun 26 21:48:52 +0000 2009",
+   "protected": false,
+   "website": {
+    "url": "https://example.com/fixture/20",
+    "display_url": "example.com"
+   },
+   "verification": {
+    "verified": true,
+    "verified_at": null,
+    "type": "organization"
+   },
+   "type": "profile"
+  },
+  "replies": 0,
+  "reposts": 1,
+  "likes": 5,
+  "bookmarks": 0,
+  "quotes": 0,
+  "embed_card": "tweet",
+  "created_at": "Thu Oct 29 16:00:23 +0000 2026",
+  "created_timestamp": 1793289623,
+  "possibly_sensitive": false,
+  "views": 22360,
+  "is_note_tweet": false,
+  "community_note": null,
+  "lang": "en",
+  "replying_to": null,
+  "media": {},
+  "card": {
+   "url": "https://example.com/fixture/27",
+   "title": "这是编造的示例帖子正文",
+   "description": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文",
+   "domain": "example.com",
+   "image": {
+    "width": 800,
+    "height": 419,
+    "url": "https://pbs.twimg.com/card_img/fixture-31.jpg?format=jpg&name=800x419"
+   }
+  },
+  "provider": "twitter",
+  "reposted_by": null
+ },
+ "thread": null,
+ "author": {
+  "screen_name": "ex_author02",
+  "url": "https://x.com/ex_author41",
+  "id": "10001",
+  "followers": 1522726,
+  "following": 6125,
+  "likes": 4336,
+  "media_count": 18155,
+  "statuses": 394738,
+  "name": "编造作者申",
+  "description": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。",
+  "raw_description": {
+   "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。",
+   "facets": []
+  },
+  "location": "编造城市",
+  "banner_url": "https://pbs.twimg.com/media/fixture-40.jpg",
+  "avatar_url": "https://pbs.twimg.com/profile_images/fixture/41_200x200.jpg",
+  "joined": "Fri Jun 26 21:48:52 +0000 2009",
+  "protected": false,
+  "website": {
+   "url": "https://example.com/fixture/43",
+   "display_url": "example.com"
+  },
+  "verification": {
+   "verified": true,
+   "verified_at": null,
+   "type": "organization"
+  },
+  "type": "profile"
+ },
+ "code": 200
+}

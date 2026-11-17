@@ -1,0 +1,17 @@
+{
+ "ec": 200,
+ "em": "",
+ "data": {
+  "user": {
+   "user_id": "90000000000000000000000000000008",
+   "name": "编造创作者",
+   "avatar": "https://pic1.afdiancdn.com/fixture/7311.jpg",
+   "cover": "https://pic1.afdiancdn.com/fixture/5041.png",
+   "url_slug": "example_creator",
+   "is_verified": 1,
+   "creator": {
+    "detail": "这是编造的爱发电示"
+   }
+  }
+ }
+}

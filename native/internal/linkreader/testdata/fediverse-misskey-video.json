@@ -1,0 +1,34 @@
+{
+ "id": "fakenote00000002",
+ "createdAt": "2026-11-03T19:07:54.739Z",
+ "user": {
+  "id": "ammyydbmu58b0bv6",
+  "name": "编造用户",
+  "username": "example_user",
+  "host": null,
+  "avatarUrl": "https://proxy.misskeyusercontent.jp/fixture/1"
+ },
+ "text": "这是编造的联邦宇宙示例正文，仅用于解",
+ "cw": null,
+ "renoteCount": 0,
+ "repliesCount": 0,
+ "reactionCount": 9,
+ "reactions": {
+  "👍": 1,
+  ":blobcat_kowaii@.:": 5,
+  ":blobcat_kowaii@neko.blue:": 1,
+  ":blobcat_toutoi@neko.blue:": 1,
+  ":nakayoshi_dane_blobcatmeow_bunhd@.:": 1
+ },
+ "files": [
+  {
+   "type": "video/mp4",
+   "size": 13777580,
+   "isSensitive": true,
+   "properties": {},
+   "url": "https://media.misskeyusercontent.jp/fixture/2",
+   "thumbnailUrl": "https://media.misskeyusercontent.jp/io/thumbnail-0577c13d-6b64-4199-b294-97f6cc41944c.webp"
+  }
+ ],
+ "renoteId": null
+}

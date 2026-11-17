@@ -1,0 +1,86 @@
+{
+  "id": "group-unknown-first-page-middle",
+  "about": "缓存首页（非最新、无连续性）只有两端：时间被包围不等于中段完整，旧洞不能 filled",
+  "source_tests": [
+    "TestBackfillUnprovenCoverage/未知首页中段"
+  ],
+  "scene": "group",
+  "setup": {
+    "watermark_ago_ms": 3600000,
+    "peer": {
+      "latest": false,
+      "continuous": false,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": [
+      {
+        "from_ago_ms": 2400000,
+        "to_ago_ms": 600000,
+        "state": "open",
+        "reason": "outage",
+        "tries": 3,
+        "last_try_ago_ms": 0
+      }
+    ]
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "71",
+              "ago_ms": 300000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "72",
+              "ago_ms": 4800000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "71",
+            "ago_ms": 300000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 3660000,
+            "to_ago_ms": 0,
+            "state": "blocked",
+            "reason": "unverified-history",
+            "tries": 3,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 3660000,
+          "through_ago_ms": 3660001
+        },
+        "complete_coverage": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+# 提交和推送前的检查（规格-提交前检查，ADR-179）。按改了哪些文件挑检查；红了改代码或补基线，不用 --no-verify 绕过。
+# 装钩子：bun install 时自动装（postinstall），也可以 bunx lefthook install；worktree 共用主仓库的 .git/hooks，装一次就行
+glob_matcher: doublestar
+min_version: 2.2.2
+
+pre-commit:
+  parallel: true
+  commands:
+    隐私扫描:
+      run: bun scripts/scan-private.ts --staged
+    文档检查:
+      # 读暂存区的版本：别的会话改了一半、没暂存的文件不拦这次提交（2026-10-26）
+      run: bun scripts/check-docs.ts --staged
+    扫描自测:
+      # 隐私扫描是检查本身，改了它就跑它的测试（2026-11-11 复核：这些测试以前没有任何检查会跑）；scripts/ 整个跑要一分半、还混着基准题库，不整个挂
+      glob: "scripts/{scan-private,friction-report}*.ts"
+      run: bun test ./scripts/scan-private.test.ts ./scripts/friction-report.test.ts
+    冲突标记:
+      # 合并时漏解决的冲突连标记一起提交过（2026-10-30，80062b2c），check:docs 不查这种标记
+      run: bun scripts/check-conflict-markers.ts
+    类型检查:
+      # 根目录的 tsconfig 只含 scripts、test；server/ 有自己的类型检查，只改 server/ 不触发这条（规格-Bun后台第1批 第八节）
+      glob: "{scripts,test}/**/*.{ts,tsx}"
+      run: bun run typecheck
+    Server类型检查:
+      root: server/
+      glob: "server/**/*.{ts,tsx}"
+      run: bun run typecheck
+    Server测试:
+      # 只跑这次暂存的 server/test 测试文件（改了 helpers 这类非测试文件才跑整套）；整套（两三分钟）在合并队列和推送钩子里跑。
+      # 只改 server/src 不改测试时提交不跑测试，只有类型检查——这是有意的取舍（scripts/precommit-fast.ts 开头，2026-11-12 复核）
+      glob: "server/test/**/*.{ts,tsx}"
+      run: bun scripts/precommit-fast.ts server-tests {staged_files}
+    Desktop检查:
+      # 主窗口（ADR-353）：类型、测试、令牌 CSS 是不是最新的。在仓库根跑（脚本自己进 desktop/）；要 HUTCH_HOME 或 PATH 里有 hutch
+      # server/src 是主窗口引的代码和类型，改了也查（推送和队列另按 server-verify 的 plan 跑）
+      glob: ["desktop/**/*.{ts,tsx,css,json,html,lock}", "native/internal/design/**", "native/cmd/tokens-css/**", "native/internal/chatui/tokens.go", "server/src/**/*.ts", "protocol/**"]
+      run: bun scripts/desktop-check.ts
+    协议生成检查:
+      # 定义、生成器或任一生成文件被暂存：生成文件过期就红（退出码 1）
+      glob: ["protocol/**", "scripts/gen-rpc.ts", "native/internal/rpcwire/wire_gen.go", "server/src/protocol/gen.ts"]
+      run: bun scripts/gen-rpc.ts --check
+    界面技能核对:
+      # 界面技能入口页里点名的包、函数和 mygo 版本要和代码对得上（2026-11-14，质检 X-13：旧入口页核对的是 v0.7.4、一次没提 winshell）。
+      # 读的是工作区的文件，不是暂存区：入口页很少和别的改动同时半改，先不做暂存区版本
+      glob: [".claude/skills/mygo-ui/SKILL.md", "native/go.mod", "native/internal/winshell/**/*.go", "scripts/check-ui-skill.ts"]
+      run: bun scripts/check-ui-skill.ts
+    Go格式:
+      # 在仓库根跑、不设 root：脚本要读暂存区（git show :<文件>），worktree 的钩子里 git 设了 GIT_DIR 却没设 GIT_WORK_TREE，
+      # 切进 native/ 以后 git 会把 native/ 当成工作区的根，路径全对不上（2026-10-26）。写成脚本是因为 Windows 上 lefthook 会拆坏 shell 引号
+      glob: "native/**/*.go"
+      run: bun scripts/check-gofmt.ts {staged_files}
+    Go检查:
+      # 只 vet 暂存的 .go 所在的包（整个模块 30 秒）；整个模块的 vet 和受影响包的测试在合并队列（go-verify）和推送钩子里跑。
+      # 改了导出接口、别的包跟着坏、纯删除文件这些，提交时看不到，推送和合并时拦（2026-11-12 复核记下的取舍）
+      # 在仓库根跑、不设 root，理由同上面 Go格式
+      glob: ["native/**/*.go", "native/go.mod", "native/go.sum"]
+      run: bun scripts/precommit-fast.ts go-vet {staged_files}
+
+commit-msg:
+  commands:
+    提交说明:
+      # 标题 40 个字以内、不带分号（上级 AGENTS「提交」第 1 条；主人 2026-10-27 嫌提交说明太长）
+      run: bun scripts/check-commit-msg.ts {1}
+
+pre-push:
+  commands:
+    推送前:
+      use_stdin: true
+      run: bun scripts/pre-push.ts

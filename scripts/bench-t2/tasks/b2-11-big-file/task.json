@@ -1,0 +1,42 @@
+{
+  "id": "b2-11-big-file",
+  "group": "b2",
+  "source": "自己出的（2026-11-09，编程额度实跑用：一次要写几百行的单个文件）",
+  "refSteps": 4,
+  "steps": [
+    {
+      "say": "工作目录里是一个 Go 包 semver（语义化版本的解析、比较、递增和范围匹配），说明在 docs/spec.md，测试 semver_test.go 已经写好，现在没有实现所以编译不过。请按说明实现它：把全部代码写在一个新文件 semver.go 里（不要拆成多个文件，不要新建别的文件），让 go test ./... 和 go vet ./... 都通过，只用标准库。不要改任何 _test.go 和 go.mod，不要改 docs/。先读说明和测试，再写；写完自己跑一遍测试，没过就改到过。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "files": [
+      {
+        "path": "semver.go",
+        "contains": [
+          "func Parse(",
+          "func ParseConstraint(",
+          "func MaxSatisfying(",
+          "func Sort("
+        ],
+        "regex": [
+          "^(?:[^\\n]*\\n){120,}"
+        ]
+      }
+    ],
+    "allowed": [
+      "semver.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod",
+      "docs/**"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  }
+}

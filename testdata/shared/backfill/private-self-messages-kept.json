@@ -1,0 +1,81 @@
+{
+  "id": "private-self-messages-kept",
+  "about": "补录里自己发出的消息（from=self）照样入库",
+  "source_tests": [
+    "TestBackfillRestartDedup"
+  ],
+  "scene": "private",
+  "setup": {
+    "watermark_ago_ms": 120000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": []
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "21",
+              "ago_ms": 10000,
+              "seq": 0,
+              "from": "self"
+            },
+            {
+              "id": "20",
+              "ago_ms": 50000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "20",
+            "ago_ms": 50000
+          },
+          {
+            "id": "21",
+            "ago_ms": 10000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 180000,
+            "to_ago_ms": 50000,
+            "state": "blocked",
+            "reason": "page-cap",
+            "tries": 0,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 180000,
+          "through_ago_ms": 180001
+        },
+        "complete_coverage": false
+      }
+    }
+  ]
+}

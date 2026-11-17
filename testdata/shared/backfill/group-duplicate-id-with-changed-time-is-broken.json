@@ -1,0 +1,109 @@
+{
+  "id": "group-duplicate-id-with-changed-time-is-broken",
+  "about": "后一页里同一个平台消息号的时间和前面不一致：页不可信，记 broken-page",
+  "source_tests": [
+    "TestAlignmentExistingCoverageContract/重复号改时间"
+  ],
+  "scene": "group",
+  "setup": {
+    "watermark_ago_ms": 120000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": []
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "101",
+              "ago_ms": 20000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "100",
+              "ago_ms": 90000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        },
+        {
+          "messages": [
+            {
+              "id": "100",
+              "ago_ms": 100000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "99",
+              "ago_ms": 180000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          },
+          {
+            "anchor": "100",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "99",
+            "ago_ms": 180000
+          },
+          {
+            "id": "100",
+            "ago_ms": 90000
+          },
+          {
+            "id": "101",
+            "ago_ms": 20000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 180000,
+            "to_ago_ms": 0,
+            "state": "blocked",
+            "reason": "broken-page",
+            "tries": 0,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 180000,
+          "through_ago_ms": 180001
+        },
+        "complete_coverage": false
+      }
+    }
+  ]
+}

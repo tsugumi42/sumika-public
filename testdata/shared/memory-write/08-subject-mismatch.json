@@ -1,0 +1,417 @@
+{
+  "about": "取代是同一个人的同一件事更新了：模型 remember 要取代的旧事实主体和新的不一样（别人的事、她自己的事对主人的话）当“没找到”；整理的候选想取代别人名下的事，不记想取代谁（supersede_subject_mismatch），候选照写。",
+  "source_tests": [
+    "TestSupersedeNeedsTheSameSubject"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "新说法",
+      "ago_s": 60
+    }
+  ],
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000PRS001",
+        "kind": "fact",
+        "text": "小红住在北京",
+        "subject": "person:u9",
+        "status": "active",
+        "confirmed_by": "ai",
+        "scopes": [
+          "person:u9"
+        ]
+      },
+      {
+        "id": "SEED0000000000000000SLF001",
+        "kind": "fact",
+        "text": "她喜欢听雷声",
+        "subject": "self",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000OWN001",
+        "kind": "fact",
+        "text": "主人住在北京",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      }
+    ]
+  },
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002",
+    "NEWF0000000000000000000003",
+    "NEWF0000000000000000000004"
+  ],
+  "steps": [
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "PRS001",
+        "source_quote": "新说法",
+        "temporal": "stable",
+        "text": "主人住在上海"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没找到编号 PRS001 的记忆（可能已经被改过、撤销了，或者编号抄错了）。这次没有记：先用 memory_search 查到现在的编号，再记一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "SLF001",
+        "source_quote": "新说法",
+        "temporal": "stable",
+        "text": "主人爱下雨天"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没找到编号 SLF001 的记忆（可能已经被改过、撤销了，或者编号抄错了）。这次没有记：先用 memory_search 查到现在的编号，再记一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "replaces": "SLF001",
+        "source_quote": "新说法",
+        "subject": "self",
+        "temporal": "stable",
+        "text": "她喜欢听雨声"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了，原来那条（\"她喜欢听雷声\"）不再用了。"
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "小红住在上海",
+          "subject": "person:u9",
+          "status": "candidate",
+          "scopes": [
+            "person:u9"
+          ],
+          "supersedes": "SEED0000000000000000OWN001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "added",
+            "ref": "f:NEWF0000000000000000000002",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "added_candidate": 1,
+          "supersede_subject_mismatch": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人搬到上海",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner"
+          ],
+          "supersedes": "SEED0000000000000000OWN001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "added",
+            "ref": "f:NEWF0000000000000000000003",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "added_candidate": 1,
+          "supersede_deferred": 1
+        }
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000001",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "self",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "她喜欢听雨声",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "NEWF0000000000000000000002",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "person:u9",
+        "scopes": [
+          "person:u9"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "person:u9",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "小红住在上海",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "person",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "NEWF0000000000000000000003",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人搬到上海",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OWN001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人住在北京",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000PRS001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "person:u9",
+        "scopes": [
+          "person:u9"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "person:u9",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "小红住在北京",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "person",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000SLF001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "self",
+        "superseded_by": "NEWF0000000000000000000001",
+        "temporal": null,
+        "text": "她喜欢听雷声",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "NEWF0000000000000000000001"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000SLF001",
+        "op": "supersede",
+        "reason": "被 NEWF0000000000000000000001 替换"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "add",
+        "reason": "替换 SEED0000000000000000SLF001"
+      },
+      {
+        "after": {
+          "scopes": [
+            "person:u9"
+          ],
+          "status": "candidate",
+          "temporal": "",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "summary",
+        "fact_id": "NEWF0000000000000000000002",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "scopes": [
+            "owner"
+          ],
+          "status": "candidate",
+          "temporal": "",
+          "valid_to": null,
+          "wants_supersede": "SEED0000000000000000OWN001"
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "summary",
+        "fact_id": "NEWF0000000000000000000003",
+        "op": "add",
+        "reason": "想替换 SEED0000000000000000OWN001，等提升时再定"
+      }
+    ],
+    "evidence": []
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "b1-a01-two-bucket",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/two-bucket（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 two_bucket.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.append.md": "c572f176421d9a7a94d55b8ea2044ac1ca00c2828bfead35d7e1babfc506a320",
+    ".docs/instructions.md": "0ef3dc245a0198782cf29ec3d0422a20049750cd7a8472f5272da2e61d726e8a",
+    "bonus_test.go": "23d59187bd9d1c3e5d9072eefcc1e79ab7fe6461a5ee6a96c4dbbb434d034f7e",
+    "cases_test.go": "ecdc948b7d72dc2ef33293f3d0e317b174d15e1d6cbe307def2868f8c0c650dc",
+    "go.mod": "3ec87bfd11d2638f29e5be4bf4331bc3c71523cc3edbd5b621654ea00d897347",
+    "two_bucket.go": "a05bcbc32de8d0fb0e299bd2ed2afbae3693c8da8f885b3dfc7aa268b18c4e3c",
+    "two_bucket_test.go": "2d32ff2c1a18abce1fdbfc9948181ede3286367be86d565e5be23807f923d59b"
+  }
+}

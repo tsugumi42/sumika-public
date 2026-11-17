@@ -1,0 +1,87 @@
+{
+ "id": 900001,
+ "name": "编造的3D商品",
+ "description": "这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅用于解析测试。这是编造的BOOTH商品说明，仅",
+ "is_adult": false,
+ "is_sold_out": false,
+ "is_end_of_sale": false,
+ "published_at": "2026-01-05T17:52:24.000+09:00",
+ "price": "¥ 500",
+ "wish_lists_count": 1038,
+ "category": {
+  "name": "编造的3D分类"
+ },
+ "tags": [
+  {
+   "name": "编造标签00"
+  },
+  {
+   "name": "编造标签01"
+  },
+  {
+   "name": "编造标签02"
+  },
+  {
+   "name": "编造标签03"
+  },
+  {
+   "name": "编造标签04"
+  },
+  {
+   "name": "编造标签05"
+  },
+  {
+   "name": "编造标签06"
+  },
+  {
+   "name": "编造标签07"
+  },
+  {
+   "name": "编造标签08"
+  },
+  {
+   "name": "编造标签09"
+  },
+  {
+   "name": "编造标签10"
+  },
+  {
+   "name": "编造标签11"
+  },
+  {
+   "name": "编造标签12"
+  },
+  {
+   "name": "编造标签13"
+  },
+  {
+   "name": "编造标签14"
+  },
+  {
+   "name": "编造标签15"
+  }
+ ],
+ "images": [
+  {
+   "original": "https://booth.pximg.net/feedface-beef-4cab-8bad-f00dcafe0001/i/900001/6bc91ded-1b35-4489-95e0-8f8807f03b34_base_resized.jpg"
+  },
+  {
+   "original": "https://booth.pximg.net/feedface-beef-4cab-8bad-f00dcafe0001/i/900001/6bb1155f-7137-49ac-84c0-5449c86c0692_base_resized.jpg"
+  },
+  {
+   "original": "https://booth.pximg.net/feedface-beef-4cab-8bad-f00dcafe0001/i/900001/c0a43893-1768-46de-8819-709d87e03418_base_resized.jpg"
+  },
+  {
+   "original": "https://booth.pximg.net/feedface-beef-4cab-8bad-f00dcafe0001/i/900001/f504af8e-9dae-4521-a2c0-050f94097ef5_base_resized.jpg"
+  },
+  {
+   "original": "https://booth.pximg.net/feedface-beef-4cab-8bad-f00dcafe0001/i/900001/1e4a1863-43eb-4646-a25a-681f1d568a11_base_resized.jpg"
+  }
+ ],
+ "shop": {
+  "uuid": "feedface-beef-4cab-8bad-f00dcafe0001",
+  "name": "编造店铺甲",
+  "subdomain": "example-shop-a",
+  "thumbnail_url": "https://booth.pximg.net/c/48x48/users/1002/icon_image/0badc0de-0000-4000-8000-000000000004_base_resized.jpg"
+ }
+}

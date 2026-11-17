@@ -1,0 +1,141 @@
+{
+ "code": 0,
+ "message": "0",
+ "ttl": 1,
+ "data": {
+  "item": {
+   "id_str": "1900000000000000100",
+   "type": "DYNAMIC_TYPE_FORWARD",
+   "visible": true,
+   "basic": {
+    "comment_id_str": "1900000000000000100",
+    "comment_type": 17,
+    "rid_str": "1900000000000000100"
+   },
+   "modules": {
+    "module_author": {
+     "face": "https://i0.hdslb.com/bfs/fixture/1.jpg",
+     "mid": 900000000012285945,
+     "name": "编造作者",
+     "pub_action": "",
+     "pub_time": "2026年11月13日 13:50",
+     "pub_ts": 1794549009,
+     "type": "AUTHOR_TYPE_NORMAL",
+     "jump_url": "//space.bilibili.com/90007/dynamic"
+    },
+    "module_dynamic": {
+     "additional": null,
+     "desc": {
+      "rich_text_nodes": [
+       {
+        "emoji": {
+         "icon_url": "https://i0.hdslb.com/bfs/fixture/3.png",
+         "id": 5936,
+         "package_id": 1,
+         "size": 1,
+         "text": "这是编造",
+         "type": 1
+        },
+        "orig_text": "编造的B站示例文本",
+        "text": "这是编造",
+        "type": "RICH_TEXT_NODE_TYPE_EMOJI"
+       }
+      ],
+      "text": "这是编造"
+     },
+     "major": null,
+     "topic": null
+    },
+    "module_stat": {
+     "comment": {
+      "count": 3,
+      "forbidden": false
+     },
+     "forward": {
+      "count": 0,
+      "forbidden": false
+     },
+     "like": {
+      "count": 10,
+      "forbidden": false,
+      "status": false
+     }
+    }
+   },
+   "orig": {
+    "id_str": "190000000000071665",
+    "type": "DYNAMIC_TYPE_DRAW",
+    "visible": true,
+    "basic": {
+     "comment_id_str": "",
+     "comment_type": 0,
+     "jump_url": "//example.com/fixture/4",
+     "rid_str": ""
+    },
+    "modules": {
+     "module_author": {
+      "face": "https://i1.hdslb.com/bfs/fixture/5.jpg",
+      "mid": 900000000002109052,
+      "name": "编造作者",
+      "pub_action": "",
+      "pub_time": "",
+      "pub_ts": 1794548599,
+      "type": "AUTHOR_TYPE_NORMAL",
+      "jump_url": "//space.bilibili.com/90007/dynamic"
+     },
+     "module_dynamic": {
+      "additional": null,
+      "desc": null,
+      "major": {
+       "opus": {
+        "fold_action": [
+         "展开",
+         "收起"
+        ],
+        "jump_url": "//example.com/fixture/7",
+        "pics": [
+         {
+          "aigc": null,
+          "height": 1350,
+          "live_url": null,
+          "size": 3391.5244140625,
+          "url": "http://i0.hdslb.com/bfs/fixture/8.jpg",
+          "width": 2400
+         }
+        ],
+        "summary": {
+         "rich_text_nodes": [
+          {
+           "orig_text": "编造的B站示例文本",
+           "text": "这是编造的B",
+           "type": "RICH_TEXT_NODE_TYPE_TEXT"
+          },
+          {
+           "orig_text": "编造的B站示例文本",
+           "rid": "12285945",
+           "style": {
+            "font_level": "regular",
+            "font_size": 17
+           },
+           "text": "这是编造的B站",
+           "type": "RICH_TEXT_NODE_TYPE_AT"
+          },
+          {
+           "orig_text": "编造的B站示例文本",
+           "text": "这是编造的B站",
+           "type": "RICH_TEXT_NODE_TYPE_TEXT"
+          }
+         ],
+         "text": "这是编造的B站示例正文，仅用于解析测试。"
+        },
+        "title": "编造的B站标题"
+       },
+       "type": "MAJOR_TYPE_OPUS"
+      },
+      "topic": null
+     }
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,101 @@
+# Changelog
+
+## Unreleased
+
+- Preserve replacement icon proportions with one path scale and the existing output pen rule; constrain original ink aspect error, center the complete raster viewport within the unchanged layout canvas, and scale host rail artwork uniformly.
+- Add rendered aspect, layout-canvas and contained-fit regressions for filled, stroked, host and edited-theme artwork; replace obsolete two-axis ink snapshots. Open every gallery entry in light and dark; record per-artwork ratio and Telegram-bound differences with native DPI 120 contour and side-by-side comparisons.
+- Integrate retained paragraphs with the media API branch while preserving calibrated glyph bounds; regenerate metric accessors and source records reproducibly and verify library and host consumers against the combined contract.
+- Add independent viewer intrinsic dimensions, image double-click fit/actual-size toggling, and a 500 ms opening click guard while retaining immediate Escape dismissal.
+- Add a persistent-Handle standard editing menu bridge through mygo's ui.Menu objects, preserving CopyData, paragraph focus and cross-paragraph selection.
+- Move media progress/status text into Media; add per-album-item download/cancel/retry actions and measured tile-size notifications keyed by stable media ID.
+- Add explicit hover/keyboard tooltip triggers, Escape suppression and focus retention, plus retained-content exit fades and interruption reversal.
+- Make video playback markers explicit through VideoOptions.ShowPlay independently of badge text; retain video cropping for unknown durations.
+- Keep gallery event feedback accessible as its actual text. Give host media status text a bounded opaque capsule, retained full accessibility description, and a centered control/caption group so bright images and narrow album tiles preserve readable feedback.
+
+- Measure replacement glyphs against Telegram's actual bitmap ink bounds; keep layout canvases and hit areas while calibrating glyph extents and pen widths across rail, header, compose, message, media, menus, settings and controls.
+- Generate 74 glyph metrics and JSON v9 (806 metrics); preserve the existing colors, typography and motion contract. Record the complete inventory, clean-room paint formula and host/parallel-file limitations; add the native icons/glyphs acceptance page.
+- Fix oversized reaction artwork: distinguish unpadded static images (16 DIP), complete center frames (32 DIP with host transparency) and custom emoji frames (20 DIP) inside the 18 DIP slot; fit Unicode fallback without changing capsule/count geometry. Add an isolated sizing gallery and visible-pixel regression across source resolutions and fractional scales.
+- Add host-owned retained chat paragraphs with one shaped layout for drawing, inline objects, hit testing, accessible text and links, and selection; invalidate on content/font/width/direction/tail changes and let virtual-history hosts release offscreen state.
+- Add cross-paragraph copy callbacks with original rune ranges, grapheme and word/line selection, link keyboard activation and separate tooltip fragments; keep mixed-media actions outside text gestures and expose text/link semantics without an extra focus group.
+- Merge main controls with fidelity and chat identity; regenerate JSON v8 with 614 colors, 732 metrics, 34 text styles and 74 motion roles, rejecting both incompatible v7 contracts and all earlier versions.
+- Add host-prepared chat initials, full accessible avatar names and optional per-message avatar backgrounds; paint fallbacks inside the existing 33 DIP group-end/viewport rectangle for missing, loading and failed images.
+- Add per-message sender name color overrides shared by Bubble and Row, preserve theme defaults and private/group name suppression, and register the identity state gallery page.
+- Add independent messageAvatar typography and cut complete theme snapshots over to JSON v7: 649 metrics, 32 text styles and 65 motion roles; reject v1–v6 snapshots.
+- Verify 19 individually inverted identity assertions, three implementation faults, software resource states and eleven native interaction stages at DPI 120; record process resources, complete frame cohorts, the startup present wait and slow automation/readback samples without claiming all performance targets passed.
+- Add local reference selection and GPU alpha/difference overlays to the native gallery, with page-local offsets, zoom, opacity and explicit reference pixels per DIP.
+- Register fourteen invented fidelity scenes and a local measurement command with real native menu capture, calibrated regions, connected fill/ink measurements, numeric CSV/JSON, before/after comparison and a ranked first-round report. Keep private reference pixels and diagnostic images outside the repository; record missing component and paint coverage without changing component behavior.
+- Implement fifteen clean-room controls specifications across `control`, `content.ForwardSummary`, `compose` generation/stop state and the host-owned `sound.Dispatch` interface; register fifteen interactive gallery pages.
+- Add natural-size buttons and animated numbers, native editable fields, stable-ID dropdowns, label segments and profile/underline tabs, categories, flowing/snapshot page titles, independent status/count badges, collapsible content and explicit approval actions.
+- Generate JSON v7 with 614 colors, 732 metrics, 33 text styles and 74 motion roles from repository records; reject v1–v6 snapshots and document ownership, source values and mapping exceptions.
+- Preserve IME key ownership, release closing dialogs from modal input before visual fade completes, and retain host drafts and action-slot geometry through generation and stop transitions.
+- Cancel pending segmented selections when their ID disappears or becomes disabled; preserve IDs through reordering. Apply disabled opacity at one hierarchy level and keep wheel callbacks free of captured Elements.
+- Withdraw open dropdown choices when the host disables or empties the entry; invalidate Profile Tabs geometry when editable padding changes and honor the theme's segment strict-skip token.
+- Keep settled compose actions on the direct vector path to preserve fractional-scale centering; key dropdown choice layers by their entry IDs so sibling controls retain independent state.
+- Verify 114 assertion faults and 15 production faults, full tests and both analyzers, 180 gallery matrix captures, native radio flyouts, 200 input observations, 30 cached launches, three animation runs and ten idle minutes; retain startup/CPU spikes and the documented Collapse accessibility limit.
+- Implement the six clean-room settings paint specifications: sections, description dividers, value/icon/arrow buttons, toggles, radio/check views and rows, searchable grouped choice dialogs, integer fields and discrete sliders, with host-owned values and stable item IDs.
+- Extend overlay.Box with an unpadded fixed body for stationary search and independently scrolling rows; use sourced 4 DIP action corners and 7 DIP action text top. Add nine settings gallery pages and a working five-provider, 40-model settings example.
+- Generate 130 settings metrics from the recorded table without reading upstream sources; add two text styles and six linear motion roles. Combined with the 25 message-bottom metrics, JSON v6 snapshots contain 649 metrics, 31 text styles and 65 motion roles; v1–v5 snapshots are rejected.
+- Preserve native numeric submission before the next bound-value rebuild by consuming the editor-supplied text; retain inline-description, model-ID acceptance, explicit-zero saving and theme-state regressions.
+- Share the bottom-information reservation across plain text, Markdown and the final reaction row; remove the forced Footer timestamp line and negotiate natural reaction width with the bubble. Add fixed 22 DIP capsules, localized/zero counts, dedicated avatar geometry with transparent overlap, outside service colors and outgoing mirroring.
+- Render independently measured date/signature, view/reply slots and 24 DIP receipts; use sending clocks for failures, media-owned image information with hover/preview visibility, and caption-aware information ownership. Register 25 clean-room metrics with a metrics-only generator and cut complete theme snapshots over to JSON v6. Expand both bubble and complete-chat galleries with the message-bottom state matrix.
+- Verify message-bottom exact-fit/one-DIP overflow, baseline offset, all requested message heights, avatar/zero-count geometry, receipt transitions and image hover ownership with 31 individually faulted assertion statements, four implementation faults, full checks and native light/dark sending; retain startup-frame and model-review limitations in the paint reference.
+- Document the official message-bottom painting contract: reaction geometry and wrapping, shared last-row timestamp reservation, receipt/view slots, media overlays and state ownership; record current chat/content mismatches without changing Go behavior.
+- Merge details-b with native overlays and details-a without dropping either token set; regenerate 494 metrics, retain 29 text styles and 59 motion roles, and assign JSON v5 to the combined snapshot contract (max parent version + 1). Preserve host window/editor-capture state alongside per-folder models and list state; retain all validation cases with current-version fixtures and rejection of v1–v4.
+- Verify the merged CGO_ENABLED=0 full suite, Go vet, mygo v0.7.4 vet, native gallery build, both-theme snapshot round trips and all 59 motion accessors; open folders and complete-chat pages in both themes using own-window PrintWindow captures at 96 DPI.
+- Replace third-column width reveals with cached main-pane navigation, source-based underlay displacement and scrim; add host width negotiation and restoration with an in-window fallback.
+- Add accepted-editor snapshot flights with live destination geometry and focus restoration, including cached-parent coordinates; scroll accepted messages after layout, move avatars to group ends/visible group bottoms, and correct and measure the independent 6×10 DIP tail contour.
+- Generate source-parameter text/image spoiler particles with whitespace-preserving shaped placeholders, implement caption-aware photo/GIF/video crop growth and nonlinear transfer pursuit; expand complete theme snapshots to JSON v3.
+- Add the theme package with 612 typed color roles, all 586 palette entries, 436 metrics, 28 text styles, 53 motion roles, light/night presets and surface material settings.
+- Compile sparse definitions and color aliases with keyed validation errors; import/export standalone JSON v3 snapshots using the standard library.
+- Center circular artwork in a shared floating-point coordinate system across fractional pixel ratios; replace media polylines with cached trimmed circle paths and keep voice icons positioned independently of callback availability.
+- Add the centering/antialiasing gallery page, pixel regressions at 100%/125%/150%, before/after measurements, upstream coordinate references, and measured software-rendering cost.
+- Merge aa-center while retaining nonlinear transfer pursuit and localized compose actions; migrate obsolete embedded-viewer fixtures to the native renderer and shared radial painter. Preserve pixel tolerances and verify both migrated x/y assertions fail when inverted; pass full CGO_ENABLED=0 tests, Go/mygo vet and native light/dark centering, folders and complete-chat launch checks.
+- Cache compiled definitions and per-window mygo mappings, keeping raw typography separate from system text scale.
+- Record all palette/metric sources, night inheritance, and explicit mapping exceptions in docs/reference.
+- Add an adaptive window shell with single/double/triple layouts, folder rail/tabs, avatar-list collapse, proportion-preserving resize handles, third-pane transitions, and native title-control clearance.
+- Add 15 sourced layout metrics, circular easing and layout motion roles; record active upstream behavior and explicit 540 DIP / third-pane animation differences.
+- Add the native gallery command, stable page IDs, light/night switching, layout state previews, a complete-chat composition, and host-supplied screenshot comparison.
+- Apply native gallery defaults to content dimensions and include the platform frame when setting minimum tracking dimensions.
+- Keep the native gallery hidden until its minimum tracking size is configured and its first frame is ready.
+- Add Telegram-style conversation rows, compact avatars, keyed virtual lists, search, folder rails, group headings and six gallery pages.
+- Source dialogs geometry, typography, typing cycles and press ripples; add circular/quint easing and record icon substitutions in the reference tables.
+- Add chat headers, incoming/outgoing grouped message rows and bubble shells, inline timestamps and delivery receipts, selection palettes and content/footer insertion points.
+- Add connected service/date surfaces, unread separators, floating scroll dates, jump-to-latest buttons and explicit 150 ms circular/quintic message reveals.
+- Implement source-verified circular/quintic/sine easing and record chat behavior sources and explicit differences.
+- Register eight independent chat gallery pages; attribute the redistributed Lucide icon subset under ISC/MIT.
+- Keep avatar positioning independent of the bubble width budget, preserve insertion-slot identity across regrouping, continue equal-width service contours and limit floating-date hover to its capsule.
+- Rasterize bubble tails at their theme DIP extent and reuse cached path storage; verify exact clock frames, clipped date movement and hover ink without antialiased-edge assumptions.
+- Add `content` reply/forward/reaction/link/Markdown components and host-owned media, album, sticker, GIF/video, file and voice surfaces; register 13 interactive gallery pages.
+- Match current reply and reaction paint roles, cache aspect-ratio album geometry, and retain explicit quote/Markdown/voice state across view rebuilds.
+- Add content typography, reaction selection colors, file hover timing and rotating transfer rings; expand the complete theme token contract.
+- Record content API, Telegram runtime behavior, Lucide licensing, and rendering/platform differences in the content and reference documentation.
+- Preserve spoiler line ascent/descent across reveal and quote collapse; verify 13 content tests, 83 assertion inversions, seven implementation mutations and 26 native light/dark captures.
+- Add themed context/popup menus with nested submenus, tooltips, modal boxes, toasts and a persistent image viewer, plus five interactive gallery pages.
+- Add sourced overlay typography, menu reveal timing, toast lifetimes, viewer control motion and radial loading; record host contracts and platform exceptions.
+- Use attributed Lucide icons without Telegram assets; retain all visual values in theme tokens.
+- Verify natural zoom with checker pixels instead of viewport-clipped element extents; complete 93 assertion inversions and seven native interaction captures.
+- Add compose.Field, Editor, ActionButton, ReferenceBar, Picker and Attachments with host-owned drafts/media, IME-aware submission, reply/edit states, three media tabs, category navigation, search, attachment actions and stable-ID dragging.
+- Register six interactive compose gallery pages and record style sources, the actual 224 DIP chat input cap, and explicit vertical-rule/preview-strip/icon choices in docs/reference/compose.md and exceptions.md.
+- Verify all 13 compose tests, 81 assertion inversions, Go/mygo vet, 24 gallery renders and native Enter submission/draft clearing/theme switching; reuse one image snapshot per pixel scan.
+- Compose the six packages in the complete chat gallery with live search, reactions, message selection/replies, media viewing, third-pane navigation and accepted editor submissions; expose message rows as accessible groups so nested controls remain available.
+- Keep complete-chat demo receipts on outgoing messages; complete six integration merges, 555 assertion inversions and 42 native gallery pages in both themes at DPI 120.
+- Move context/popup menus, every submenu and tooltips into owned native flyout windows, with screen work-area placement, keyboard navigation, outside dismissal and source-timed reveal/fade.
+- Add overlay.Native for explicit window ownership, theme/data synchronization, one active menu tree, and cleanup on owner minimization/hiding or component removal; migrate gallery navigation and complete-chat overlays.
+- Open the media viewer in an independent fullscreen window on the owner's monitor; use physical Win32 monitor bounds across DPI changes and retain prepared-media navigation, zoom, loading and retry behavior.
+- Add the native-edge/long-menu gallery page and opt-in e2e automation; document the requested tooltip fade and system-shadow limits.
+- Handle menu navigation and Enter directly from native input so rapid keys and scrolling cannot activate a stale focused row; retain a failing-before/passing-after panel-focus regression.
+- Preserve keyboard selection while scrolling/revealing rows beneath a stationary pointer; return selection to hover only after the pointer moves in window coordinates.
+- Reuse each native menu frame's measured dimensions for window resizing and cache the native-edge gallery's prepared menu data.
+- Complete dialogs stories/live rings, group-call spectra, subscription/TTL/community badge precedence, promoted and verification-code rows, search scopes/sender controls, and recording/uploading/sticker activity timelines.
+- Replace compose preview strips with source send-confirmation media/file layouts and ten-item albums; replace reply/edit rules with action icons and independent 49 DIP cancel areas.
+- Add DockedPicker with source edge anchoring, Escape/outside dismissal, 300 ms leave delay and host overrides; register stories/scopes and IME gallery pages.
+- Extend theme snapshots to JSON v3 with 477 metrics, 29 text styles and 48 motion roles; record fixed-source geometry, timings, assets and native IME ownership.
+- Preserve mygo's Windows preedit underline, committed text and candidate caret path; add Tester coverage for preedit confirmation, scrolling, commit and independent submission.
+- Verify normal and CGO_ENABLED=0 full suites, Go vet and the pinned mygo analyzer; kill 64 assertion inversions and five consumer-visible implementation faults, including invisible subscription ink and stale TTL crops.
+- Exercise six affected native pages in both themes at 380/800 DIP, with committed Chinese input, reply activation, album edit/open and default picker dismissal; preserve 58 captures and three 200-update measurements outside the repository.
+- Replace the outlined folder with original filled SVG artwork; verify physical-size SVG caches at 100/125/200% and capture only the gallery's own native windows with PrintWindow.
+- Add clipped folder-page parallax using the upstream 240 ms easeOutCirc transition and 100 DIP shift; wire rail/tab selection into filtered gallery lists and preserve separate host list states.
+- Correct picker tab compositing with upstream entering/departing alpha, replace gallery pseudo-emoji with four attributed Twemoji SVGs plus a system glyph, and use sourced 30/28 DIP footer icon slots with 3 DIP edge padding.
+- Add mygo English/Simplified Chinese library catalogs for compose defaults and standard picker states; expose Unicode emoji separately from accessible labels and allow gallery locale selection. Theme JSON v4 adds sidebar.slideShift.
+- Pass the full CGO_ENABLED=0 suite, Go/mygo analyzers, 24 individual assertion inversions and six production fault overlays. Capture 28 PNGs across old/new, light/dark, English/Chinese and wide/narrow scenes; record 2400 measured search frames with P95 1.6–1.7 ms and max 5.8 ms outside the repository.
+- Keep verification limits explicit: this tool desktop is 1920×1080 at 100%; requested native 2560×1440 at 125% remains unverified. Tester covers 125%; physical input presentation, DXGI missed periods and GPU memory were not measured.

@@ -1,0 +1,40 @@
+# 公开导出排除表：一行一个 gitignore 风格的模式，`#` 后面写原因。
+# 只影响 scripts/export-public.ts 的导出副本；仓库里的文件不动。
+
+# 冻结的 Bun 后台和主窗口：ADR-359 后不再开发，公开仓库不收
+/server/
+/desktop/
+# 旧 Flutter 原型：ADR-359 前的对照线，不再维护
+/native-flutter/
+
+# 旧笔记、旧规格、旧进度：本机路径和历史细节最多，私有存档里留
+/docs/archive/
+# 压测输出：运行时生成，没有代码引用
+/native/_spike/out/
+# 一次性修补脚本：文件头写着验收后删，本来就不该长期存在
+/scripts/fix-*.ts
+
+# 整批转载的 Codex 桌面版界面文案：第三方内容，体量大，不是本项目代码
+/docs/notes/拆解-Codex桌面版-界面.md
+# 主人私有布局标注板的整理稿：含 claude.ai 私有分享链接
+/docs/notes/原型-主人标注-2026-11-05.md
+# 对照图是 claude.ai 私有分享链接
+/docs/notes/方案-设计令牌分层-2026-11-10.md
+# 含主人私有 ChatGPT 对话链接
+/docs/notes/方案-会话结构-角色话题群聊-2026-11-11.md
+
+# Bun 时代已经移出的目录：仓库里没有跟踪文件，但旧文档还链接它们
+/daemon/
+/web/
+/shell/
+# 本机数据目录、资料收件箱和外部源码克隆：不进 git，也不进公开仓库
+/data/
+/docs/inbox/
+/_external/
+
+# Bun 时代删掉的看门脚本和测试：docs/subsystems 还引用，导出时链接改成“私有存档”
+/scripts/supervise.ts
+/test/qq*.test.ts
+/test/outbound-audit.test.ts
+/test/tool-policy.test.ts
+/test/helpers/qq-setup.ts

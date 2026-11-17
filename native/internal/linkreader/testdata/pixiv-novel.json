@@ -1,0 +1,15 @@
+{
+  "error": false,
+  "body": {
+    "id": "90010", "title": "编造的清晨散步", "userId": "90011", "userName": "编造作者乙",
+    "createDate": "2026-11-01T12:00:00+09:00", "xRestrict": 0, "aiType": 1,
+    "characterCount": 1580,
+    "description": "第一行<br />第二行 &amp; 说明<a href=\"https://example.org/\">链接</a>",
+    "content": "清晨，街道还很安静。\n[uploadedimage:90013]\n我们穿过公园。\n[uploadedimage:90012]",
+    "tags": {"tags": [{"tag": "编造日常"}, {"tag": "全年龄"}]},
+    "textEmbeddedImages": {
+      "90012": {"urls": {"original": "https://i.pximg.net/novel-original/second.jpg", "1200x1200": "https://i.pximg.net/novel-master/second.jpg"}, "width": 900, "height": 1200},
+      "90013": {"urls": {"original": "https://i.pximg.net/novel-original/first.png", "1200x1200": "https://i.pximg.net/novel-master/first.png"}, "width": 1200, "height": 900}
+    }
+  }
+}

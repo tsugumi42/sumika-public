@@ -1,0 +1,9 @@
+{
+  "theme": "light",
+  "fontSize": 14,
+  "plugins": ["git", "markdown"],
+  "editor": {
+    "tabSize": 2,
+    "wordWrap": true
+  }
+}

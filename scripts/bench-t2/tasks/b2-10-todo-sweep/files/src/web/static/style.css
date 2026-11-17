@@ -1,0 +1,11 @@
+/* 页面样式 */
+body {
+  font-family: sans-serif;
+  margin: 0 auto;
+  max-width: 40em;
+}
+
+/* TODO [P3] - 深色模式的配色 */
+#search {
+  width: 100%;
+}

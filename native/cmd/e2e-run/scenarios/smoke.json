@@ -1,0 +1,7 @@
+{
+  "name": "主人记忆写入与问回（两轮）",
+  "steps": [
+    {"id":"remember","kind":"message","scene":"private","actor":"owner","text":"记一下：我把备用钥匙放在青色收纳盒的第二层。这是我编的测试私事，请用记忆工具保存。简短回答。","expect_reply":true},
+    {"id":"recall","kind":"message","scene":"private","actor":"owner","text":"刚才让你记下的备用钥匙放在哪里？用一句话回答。","expect_reply":true}
+  ]
+}

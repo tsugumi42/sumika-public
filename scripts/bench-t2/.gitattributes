@@ -1,0 +1,2 @@
+# 题目里给 bash 跑的脚本保持 LF（仓库开着 autocrlf，签出成 CRLF 时 bash 会把行尾的 \r 当成命令的一部分）
+*.sh text eol=lf

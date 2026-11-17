@@ -1,0 +1,22 @@
+{
+ "ec": 200,
+ "em": "ok",
+ "data": {
+  "album": {
+   "album_id": "90000000000000000000000000000006",
+   "user_id": "90000000000000000000000000006587",
+   "title": "编造的更新记录",
+   "content": "这是编造的爱发电示例正文，仅用于解析测试。这是编造的",
+   "cover": "https://pic1.afdiancdn.com/fixture/7038.png",
+   "post_count": 49,
+   "order_by": "rank desc",
+   "user": {
+    "user_id": "90000000000000000000000000006587",
+    "name": "编造作者丙",
+    "avatar": "https://pic1.afdiancdn.com/fixture/3365.png",
+    "url_slug": "example_creator",
+    "is_verified": 1
+   }
+  }
+ }
+}

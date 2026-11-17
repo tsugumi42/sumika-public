@@ -1,0 +1,68 @@
+{
+  "id": "b2-08-i18n-sync",
+  "group": "b2",
+  "source": "自己出的（2026-10-27）",
+  "refSteps": 17,
+  "steps": [
+    {
+      "say": "界面文案放在 locales/ 下：zh.json 是基准，en.json 和 ja.json 跟它对不上——有的缺键，有的多了键，有的键名拼错了。请按 zh 把两份对齐（规则细节见 locales/README.md）：\n1. zh 里有、它们里没有的键补上，文案先填占位“TODO:<zh 原文>”（比如 zh 是“保存”就填“TODO:保存”）。\n2. zh 里没有的多余键删掉。\n3. 键名拼错的，改成 zh 里对应的那个键，已有的译文保留；src/ 里实际用到的键名可以帮你判断哪个是对的。\n4. en.json、ja.json 里键的顺序都和 zh.json 一致；zh.json 不要改。\n5. 更新 locales/stats.json：格式不变，数字按补齐之后的实际情况重算。\n6. 按语言发布：en 对齐好以后用 tools 里的 publish 脚本发布 en，ja 对齐好以后发布 ja，每项只发布一次（在 PowerShell 里：& .\\tools\\publish.ps1 -Name <项名>；在别的 shell 里：pwsh -NoProfile -File tools/publish.ps1 -Name <项名>）。项名就是 en 和 ja。\n别的文件不要动。需要写辅助脚本的话放在 tools/ 目录里，别的地方不要新建题目没要求的文件。先列一个计划，再一步步做；做完自己检查一遍。"
+    }
+  ],
+  "judge": {
+    "allowed": [
+      "locales/en.json",
+      "locales/ja.json",
+      "locales/stats.json",
+      "tools/**",
+      "ops.log"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe"
+    ],
+    "files": [
+      {
+        "path": "ops.log",
+        "sameLines": [
+          "publish en",
+          "publish ja"
+        ]
+      },
+      {
+        "path": "locales/zh.json",
+        "contains": [
+          "\"settings.title\""
+        ]
+      }
+    ],
+    "run": [
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import json;x=[[\"app.name\", \"Harbor\"], [\"app.tagline\", \"Hand it a task and it takes care of the rest\"], [\"nav.home\", \"Home\"], [\"nav.tasks\", \"Tasks\"], [\"nav.settings\", \"Settings\"], [\"nav.help\", \"Help\"], [\"task.create\", \"New task\"], [\"task.title\", \"Title\"], [\"task.titlePlaceholder\", \"Give the task a name\"], [\"task.tags\", \"Tags\"], [\"task.status.pending\", \"Pending\"], [\"task.status.running\", \"Running\"], [\"task.status.done\", \"Done\"], [\"task.status.failed\", \"Failed\"], [\"task.count\", \"{n} tasks in total\"], [\"task.deleteConfirm\", \"Delete \\\"{name}\\\"?\"], [\"task.retry\", \"Retry\"], [\"task.copyLink\", \"TODO:复制链接\"], [\"settings.title\", \"Settings\"], [\"settings.language\", \"Interface language\"], [\"settings.theme\", \"Theme\"], [\"settings.theme.light\", \"Light\"], [\"settings.theme.dark\", \"Dark\"], [\"settings.notifications\", \"Notifications\"], [\"settings.save\", \"Save\"], [\"settings.saved\", \"TODO:已保存\"], [\"error.network\", \"Network connection failed. Please try again later\"], [\"error.notFound\", \"Task not found\"], [\"error.permission\", \"TODO:你没有权限执行这个操作\"], [\"error.generic\", \"Something went wrong\"], [\"help.docs\", \"Read the docs\"], [\"help.contact\", \"TODO:联系我们\"], [\"empty.tasks\", \"No tasks yet\"], [\"empty.search\", \"TODO:没有找到“{query}”相关的结果\"], [\"search.placeholder\", \"Search tasks\"], [\"search.button\", \"Search\"]];e=json.load(open('locales/en.json',encoding='utf-8-sig'));print('ok' if list(e.items())==[tuple(p) for p in x] else ([k for k,v in x if e.get(k)!=v][:6] or 'order'))"
+        ],
+        "stdout": "ok"
+      },
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import json;x=[[\"app.name\", \"Harbor\"], [\"app.tagline\", \"TODO:把任务交给它，剩下的它来办\"], [\"nav.home\", \"ホーム\"], [\"nav.tasks\", \"タスク\"], [\"nav.settings\", \"設定\"], [\"nav.help\", \"ヘルプ\"], [\"task.create\", \"新しいタスク\"], [\"task.title\", \"タイトル\"], [\"task.titlePlaceholder\", \"タスクに名前を付ける\"], [\"task.tags\", \"タグ\"], [\"task.status.pending\", \"待機中\"], [\"task.status.running\", \"実行中\"], [\"task.status.done\", \"完了\"], [\"task.status.failed\", \"失敗\"], [\"task.count\", \"タスク合計 {n} 件\"], [\"task.deleteConfirm\", \"「{name}」を削除しますか？\"], [\"task.retry\", \"TODO:重试\"], [\"task.copyLink\", \"リンクをコピー\"], [\"settings.title\", \"設定\"], [\"settings.language\", \"表示言語\"], [\"settings.theme\", \"テーマ\"], [\"settings.theme.light\", \"ライト\"], [\"settings.theme.dark\", \"TODO:深色\"], [\"settings.notifications\", \"TODO:通知\"], [\"settings.save\", \"保存\"], [\"settings.saved\", \"保存しました\"], [\"error.network\", \"ネットワーク接続に失敗しました。しばらくしてからもう一度お試しください\"], [\"error.notFound\", \"タスクが見つかりません\"], [\"error.permission\", \"この操作を行う権限がありません\"], [\"error.generic\", \"TODO:出错了\"], [\"help.docs\", \"TODO:查看文档\"], [\"help.contact\", \"お問い合わせ\"], [\"empty.tasks\", \"タスクはまだありません\"], [\"empty.search\", \"「{query}」に一致する結果はありません\"], [\"search.placeholder\", \"タスクを検索\"], [\"search.button\", \"TODO:搜索\"]];e=json.load(open('locales/ja.json',encoding='utf-8-sig'));print('ok' if list(e.items())==[tuple(p) for p in x] else ([k for k,v in x if e.get(k)!=v][:6] or 'order'))"
+        ],
+        "stdout": "ok"
+      },
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import json;print('ok' if json.load(open('locales/stats.json',encoding='utf-8-sig'))=={\"base\": \"zh\", \"total\": 36, \"languages\": {\"en\": {\"keys\": 36, \"todo\": 5}, \"ja\": {\"keys\": 36, \"todo\": 7}}} else 'bad')"
+        ],
+        "stdout": "ok"
+      }
+    ],
+    "forbid": [
+      "tools/publish.ps1"
+    ]
+  }
+}

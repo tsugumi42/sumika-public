@@ -1,0 +1,249 @@
+{
+  "about": "有压缩快照（快照之后的原文全带）、用户改过的 core（CRLF，原样读）、这个会话选了自定义场合预设、本地私聊默认选了自定义风格、角色卡是 CRLF 并带重复的标题和别的二级标题；思考 off（不发档位，但系统提示仍是 developer）",
+  "now": "2026-10-25T00:05:00+08:00",
+  "characterId": "suzu",
+  "files": {
+    "characters/suzu/card/character.yml": "name: 铃\r\nownerName: 主人\r\n",
+    "characters/suzu/card/character.md": "开头没标题的一句。\r\n## 身份\r\n铃。\r\n## 杂项\r\n不认识的标题留在当前块里。\r\n## 行为\r\n利落。\r\n## 身份\r\n重复的标题接着往身份里加。\r\n## 表达\r\n  短句。  \r\n",
+    "config/prompts/core.md": "你是{{name}}（用户改过的 core）。\r\n{{unknown}}没有这个变量就是空的。\r\n\r\n",
+    "config/prompts/presets/index.json": "{\"style\": [{\"id\": \"ustyle01\", \"name\": \"我的风格\", \"description\": \"\", \"createdAt\": 1, \"updatedAt\": 1}], \"scene\": [{\"id\": \"uscene01\", \"name\": \"我的场合\", \"description\": \"\", \"createdAt\": 1, \"updatedAt\": 1}]}",
+    "config/prompts/presets/style/ustyle01.md": "说话再软一点。\r\n工作目录 {{workdir}}\n",
+    "config/prompts/presets/scene/uscene01.md": "  自定义的场合：在主窗口，工作目录是 {{workdir}}。  \n",
+    "config/prompts/selection.json": "{\"defaults\": {\"local:private\": {\"style\": \"ustyle01\", \"scene\": \"scene-home\"}}, \"conversations\": {\"console:suzu\": {\"scene\": \"uscene01\"}}}"
+  },
+  "characters": {
+    "suzu": {
+      "model": "test/think"
+    }
+  },
+  "agent": {
+    "thinking": {
+      "local": "off",
+      "private": "low",
+      "group": "low"
+    }
+  },
+  "workdir": "D:/Work",
+  "shell": {
+    "template": "shell-pwsh",
+    "version": "7.6"
+  },
+  "models": [
+    {
+      "id": "test/think",
+      "context_length": 1048000,
+      "max_output_tokens": 32000,
+      "reasoning": true,
+      "supported_reasoning_levels": [
+        {
+          "effort": "low"
+        },
+        {
+          "effort": "medium"
+        },
+        {
+          "effort": "high"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 1 句",
+      "created_at": 1792800060000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 2 句",
+      "created_at": 1792800120000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 3 句",
+      "created_at": 1792800180000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 4 句",
+      "created_at": 1792800240000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 5 句",
+      "created_at": 1792800300000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 6 句",
+      "created_at": 1792800360000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 7 句",
+      "created_at": 1792800420000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 8 句",
+      "created_at": 1792800480000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 9 句",
+      "created_at": 1792800540000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 10 句",
+      "created_at": 1792800600000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "owner",
+      "actor_id": "owner",
+      "origin": "owner",
+      "kind": "message",
+      "text": "主人第 11 句",
+      "created_at": 1792800660000
+    },
+    {
+      "channel": "console",
+      "conversation": "console:suzu",
+      "actor_kind": "character",
+      "actor_id": "suzu",
+      "origin": "character",
+      "kind": "message",
+      "text": "她第 12 句",
+      "created_at": 1792800720000
+    }
+  ],
+  "epochs": [
+    {
+      "id": "01EPOCHOLD000000000000000",
+      "conversation": "console:suzu",
+      "character_id": "suzu",
+      "from_seq": 3,
+      "summary": "更早的一份摘要（被新的盖过）",
+      "kind": "chat",
+      "trigger": "rule",
+      "tokens_before": 100,
+      "tokens_after": 10,
+      "dropped": 2,
+      "kept": 1,
+      "model": "test/think",
+      "status": "ok",
+      "error": null,
+      "ms": 5,
+      "created_at": 1792806000000
+    },
+    {
+      "id": "01EPOCHNEW000000000000000",
+      "conversation": "console:suzu",
+      "character_id": "suzu",
+      "from_seq": 7,
+      "summary": "  主人前面说了 1～6 句，她回了几句。  \n",
+      "kind": "chat",
+      "trigger": "rule",
+      "tokens_before": 200,
+      "tokens_after": 20,
+      "dropped": 6,
+      "kept": 6,
+      "model": "test/think",
+      "status": "ok",
+      "error": null,
+      "ms": 5,
+      "created_at": 1792812000000
+    },
+    {
+      "id": "01EPOCHBAD000000000000000",
+      "conversation": "console:suzu",
+      "character_id": "suzu",
+      "from_seq": 9,
+      "summary": "没通过自检的（不用）",
+      "kind": "chat",
+      "trigger": "rule",
+      "tokens_before": 200,
+      "tokens_after": 20,
+      "dropped": 8,
+      "kept": 4,
+      "model": "test/think",
+      "status": "failed",
+      "error": "不过",
+      "ms": 5,
+      "created_at": 1792818000000
+    }
+  ],
+  "text": "还记得吗",
+  "reply": {
+    "reasoning": [],
+    "content": [
+      "记得。"
+    ],
+    "usage": {
+      "prompt_tokens": 1200,
+      "completion_tokens": 30,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    "headers": {
+      "x-magpie-provider": "fake-provider",
+      "x-magpie-model": "fake/think-1"
+    }
+  }
+}

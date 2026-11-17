@@ -1,0 +1,21 @@
+{
+  "webapp.user-detail": {
+    "userInfo": {
+      "user": {
+        "id": "7000000000000000006",
+        "uniqueId": "tiktok",
+        "nickname": "TikTok",
+        "signature": "Your next discovery is waiting on TikTok.",
+        "avatarLarger": "https://p19-common-sign.tiktokcdn-us.com/fixture/avatar.jpeg",
+        "verified": true
+      },
+      "statsV2": {
+        "followerCount": "10001",
+        "followingCount": "2",
+        "heartCount": "123456789",
+        "videoCount": "1515"
+      }
+    },
+    "statusCode": 0
+  }
+}

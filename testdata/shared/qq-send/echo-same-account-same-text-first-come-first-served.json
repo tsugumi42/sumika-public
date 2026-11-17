@@ -1,0 +1,188 @@
+{
+  "id": "echo-same-account-same-text-first-come-first-served",
+  "about": "同一个号两段同样的字：回声按发得先后依次认；第三个回声没有可认的",
+  "source_tests": [
+    "TestEchoSameAccountSameTextFirstComeFirstServed"
+  ],
+  "receipt": "unknown",
+  "steps": [
+    {
+      "do": "say",
+      "label": "first",
+      "as": "ca",
+      "texts": [
+        "嗯"
+      ],
+      "expect": {}
+    },
+    {
+      "do": "wait_plan",
+      "label": "first",
+      "state": "unknown",
+      "expect": {
+        "plan": {
+          "label": "first",
+          "state": "unknown",
+          "parts": [
+            {
+              "state": "unknown",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "advance",
+      "ms": 1000,
+      "expect": {}
+    },
+    {
+      "do": "say",
+      "label": "second",
+      "as": "ca",
+      "texts": [
+        "嗯"
+      ],
+      "expect": {}
+    },
+    {
+      "do": "wait_plan",
+      "label": "second",
+      "state": "unknown",
+      "expect": {
+        "plan": {
+          "label": "second",
+          "state": "unknown",
+          "parts": [
+            {
+              "state": "unknown",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "7001",
+      "text": "嗯",
+      "expect": {
+        "claimed": true
+      }
+    },
+    {
+      "do": "wait_plan",
+      "label": "first",
+      "state": "done",
+      "expect": {
+        "plan": {
+          "label": "first",
+          "state": "done",
+          "parts": [
+            {
+              "state": "confirmed",
+              "via": "echo",
+              "platform_id": "7001",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "wait_plan",
+      "label": "second",
+      "state": "unknown",
+      "expect": {
+        "plan": {
+          "label": "second",
+          "state": "unknown",
+          "parts": [
+            {
+              "state": "unknown",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "7002",
+      "text": "嗯",
+      "expect": {
+        "claimed": true
+      }
+    },
+    {
+      "do": "wait_plan",
+      "label": "second",
+      "state": "done",
+      "expect": {
+        "plan": {
+          "label": "second",
+          "state": "done",
+          "parts": [
+            {
+              "state": "confirmed",
+              "via": "echo",
+              "platform_id": "7002",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "7003",
+      "text": "嗯",
+      "expect": {
+        "claimed": false
+      }
+    }
+  ],
+  "final": {
+    "plans": [
+      {
+        "label": "first",
+        "state": "done",
+        "parts": [
+          {
+            "state": "confirmed",
+            "via": "echo",
+            "platform_id": "7001",
+            "attempts": 1
+          }
+        ]
+      },
+      {
+        "label": "second",
+        "state": "done",
+        "parts": [
+          {
+            "state": "confirmed",
+            "via": "echo",
+            "platform_id": "7002",
+            "attempts": 1
+          }
+        ]
+      }
+    ],
+    "sends": 2,
+    "mapped": {
+      "7001": "first",
+      "7002": "second"
+    },
+    "unmapped": [
+      "7003"
+    ]
+  }
+}

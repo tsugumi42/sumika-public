@@ -1,0 +1,189 @@
+{
+  "about": "计划清单：第一步一批里 todo_write + ls（有 todo_write 就整批串行），清单里一项两头带空格（去掉再数）；第二步五个不对的清单（两项进行中、去掉空白以后重复、超过 200 字、表情占第 19、20 个码元（切到 20 个码元正好带上它）、只有 JS 认的空白、51 项），各自报错；第三步说话",
+  "now": "2026-10-25T00:05:00+08:00",
+  "characterId": "suzu",
+  "files": {
+    "characters/suzu/card/character.yml": "name: 铃\nownerName: 主人\n",
+    "characters/suzu/card/character.md": "<!-- 测试用的卡，名字是编的 -->\n## 身份\n铃，住在主人电脑里的女仆。\n\n## 行为\n干活利落，话说到点上。\n\n## 表达\n短句，像发消息。\n\n## 私下\n喜欢被夸。\n",
+    "config/prompts/scene-home.md": "现在的场合：本地主窗口里的私聊（测试场景：不写工作目录，工作目录每次跑都不一样）。"
+  },
+  "characters": {
+    "suzu": {
+      "model": "test/think"
+    }
+  },
+  "agent": {
+    "thinking": {
+      "local": "minimal",
+      "private": "low",
+      "group": "low"
+    }
+  },
+  "workdir": "D:/Work",
+  "shell": {
+    "template": "shell-pwsh",
+    "version": "7.6"
+  },
+  "models": [
+    {
+      "id": "test/think",
+      "context_length": 1048000,
+      "max_output_tokens": 32000,
+      "reasoning": true,
+      "supported_reasoning_levels": [
+        {
+          "effort": "low"
+        },
+        {
+          "effort": "medium"
+        },
+        {
+          "effort": "high"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "epochs": [],
+  "text": "再看看",
+  "reply": {
+    "reasoning": [
+      "主人叫我，",
+      "回一句。"
+    ],
+    "content": [
+      "在呢在呢，",
+      "怎么啦～】【"
+    ],
+    "usage": {
+      "prompt_tokens": 1200,
+      "completion_tokens": 30,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    "headers": {
+      "x-magpie-provider": "fake-provider",
+      "x-magpie-model": "fake/think-1"
+    }
+  },
+  "workdirFiles": {
+    "a.md": "甲\n"
+  },
+  "replies": [
+    {
+      "reasoning": [],
+      "content": [],
+      "usage": {
+        "prompt_tokens": 1500,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      },
+      "toolCalls": [
+        {
+          "id": "call_todo_1",
+          "name": "todo_write",
+          "args": [
+            "{\"todos\": [{\"content\": \"  看目录 \", \"status\": \"completed\"}, {\"content\": \"读文件\", \"status\": \"in_progress\"}, {\"content\": \"汇报\", \"status\": \"pending\"}, {\"content\": \"再汇报一次\", \"status\": \"pending\"}]}"
+          ]
+        },
+        {
+          "id": "call_ls_1",
+          "name": "ls",
+          "args": [
+            "{}"
+          ]
+        }
+      ]
+    },
+    {
+      "reasoning": [],
+      "content": [
+        "清单写错了，改一下。"
+      ],
+      "usage": {
+        "prompt_tokens": 1600,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      },
+      "toolCalls": [
+        {
+          "id": "call_todo_2",
+          "name": "todo_write",
+          "args": [
+            "{\"todos\": [{\"content\": \"甲\", \"status\": \"in_progress\"}, {\"content\": \"乙\", \"status\": \"in_progress\"}]}"
+          ]
+        },
+        {
+          "id": "call_todo_3",
+          "name": "todo_write",
+          "args": [
+            "{\"todos\": [{\"content\": \"甲\", \"status\": \"pending\"}, {\"content\": \" 甲　\", \"status\": \"completed\"}]}"
+          ]
+        },
+        {
+          "id": "call_todo_4",
+          "name": "todo_write",
+          "args": [
+            "{\"todos\": [{\"content\": \"长长长长长长长长长长长长长长长长长长😀长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长\", \"status\": \"pending\"}]}"
+          ]
+        },
+        {
+          "id": "call_todo_5",
+          "name": "todo_write",
+          "args": [
+            "{\"todos\": [{\"content\": \"﻿  \", \"status\": \"pending\"}]}"
+          ]
+        },
+        {
+          "id": "call_todo_6",
+          "name": "todo_write",
+          "args": [
+            "{\"todos\": [{\"content\": \"第0项\", \"status\": \"pending\"}, {\"content\": \"第1项\", \"status\": \"pending\"}, {\"content\": \"第2项\", \"status\": \"pending\"}, {\"content\": \"第3项\", \"status\": \"pending\"}, {\"content\": \"第4项\", \"status\": \"pending\"}, {\"content\": \"第5项\", \"status\": \"pending\"}, {\"content\": \"第6项\", \"status\": \"pending\"}, {\"content\": \"第7项\", \"status\": \"pending\"}, {\"content\": \"第8项\", \"status\": \"pending\"}, {\"content\": \"第9项\", \"status\": \"pending\"}, {\"content\": \"第10项\", \"status\": \"pending\"}, {\"content\": \"第11项\", \"status\": \"pending\"}, {\"content\": \"第12项\", \"status\": \"pending\"}, {\"content\": \"第13项\", \"status\": \"pending\"}, {\"content\": \"第14项\", \"status\": \"pending\"}, {\"content\": \"第15项\", \"status\": \"pending\"}, {\"content\": \"第16项\", \"status\": \"pending\"}, {\"content\": \"第17项\", \"status\": \"pending\"}, {\"content\": \"第18项\", \"status\": \"pending\"}, {\"content\": \"第19项\", \"status\": \"pending\"}, {\"content\": \"第20项\", \"status\": \"pending\"}, {\"content\": \"第21项\", \"status\": \"pending\"}, {\"content\": \"第22项\", \"status\": \"pending\"}, {\"content\": \"第23项\", \"status\": \"pending\"}, {\"content\": \"第24项\", \"status\": \"pending\"}, {\"content\": \"第25项\", \"status\": \"pending\"}, {\"content\": \"第26项\", \"status\": \"pending\"}, {\"content\": \"第27项\", \"status\": \"pending\"}, {\"content\": \"第28项\", \"status\": \"pending\"}, {\"content\": \"第29项\", \"status\": \"pending\"}, {\"content\": \"第30项\", \"status\": \"pending\"}, {\"content\": \"第31项\", \"status\": \"pending\"}, {\"content\": \"第32项\", \"status\": \"pending\"}, {\"content\": \"第33项\", \"status\": \"pending\"}, {\"content\": \"第34项\", \"status\": \"pending\"}, {\"content\": \"第35项\", \"status\": \"pending\"}, {\"content\": \"第36项\", \"status\": \"pending\"}, {\"content\": \"第37项\", \"status\": \"pending\"}, {\"content\": \"第38项\", \"status\": \"pending\"}, {\"content\": \"第39项\", \"status\": \"pending\"}, {\"content\": \"第40项\", \"status\": \"pending\"}, {\"content\": \"第41项\", \"status\": \"pending\"}, {\"content\": \"第42项\", \"status\": \"pending\"}, {\"content\": \"第43项\", \"status\": \"pending\"}, {\"content\": \"第44项\", \"status\": \"pending\"}, {\"content\": \"第45项\", \"status\": \"pending\"}, {\"content\": \"第46项\", \"status\": \"pending\"}, {\"content\": \"第47项\", \"status\": \"pending\"}, {\"content\": \"第48项\", \"status\": \"pending\"}, {\"content\": \"第49项\", \"status\": \"pending\"}, {\"content\": \"第50项\", \"status\": \"pending\"}]}"
+          ]
+        }
+      ]
+    },
+    {
+      "reasoning": [],
+      "content": [
+        "好了。"
+      ],
+      "usage": {
+        "prompt_tokens": 1700,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      }
+    }
+  ]
+}

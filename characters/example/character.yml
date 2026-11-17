@@ -1,0 +1,5 @@
+# 示例角色卡（ADR-065 第 4 条）：真正的角色卡在数据目录的 characters/<id>/card/，不进 git。
+# 一个角色都没有时（全新安装），Sumika 会把这一份复制成 data/characters/example/card/。
+# 怎么写见 docs/角色卡结构.md。卡里只放角色设定；用哪个模型在设置 · 模型里选（ADR-084）
+name: 示例角色
+color: "#8a7cff"

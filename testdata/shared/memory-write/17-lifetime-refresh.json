@@ -1,0 +1,363 @@
+{
+  "about": "同文再记只接受更晚的本人来源来刷新期限（记一条 lifetime 修订、不改 learned_at）；更早的来源不刷新；主人放行的事实不刷新；同文仍已过期、来源又不更新，回“仍已过期”，也不能借 replaces 去换掉一条有效的。",
+  "source_tests": [
+    "TestLifetimeRefreshOnSameText",
+    "TestExpiredDuplicateCannotReplaceLiveFact",
+    "TestOwnerSaidRefreshLifetimeOnlyForRemember"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "我这周在出差",
+      "ago_s": 259200
+    },
+    {
+      "seq": 2,
+      "conversation": "console:a",
+      "text": "出差延到下周了",
+      "ago_s": 86400
+    }
+  ],
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000LIVE01",
+        "kind": "fact",
+        "text": "主人喜欢出差",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner",
+        "temporal": "stable"
+      }
+    ]
+  },
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002",
+    "NEWF0000000000000000000003"
+  ],
+  "steps": [
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "这周在出差",
+        "temporal": "temporary",
+        "text": "主人这周在出差"
+      },
+      "input_seqs": [
+        1
+      ],
+      "valid_until_in_s": 86400,
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "出差延到下周",
+        "temporal": "temporary",
+        "text": "主人这周在出差"
+      },
+      "input_seqs": [
+        2
+      ],
+      "valid_until_in_s": 172800,
+      "expect": {
+        "text": "这件事已经记着了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "这周在出差",
+        "temporal": "temporary",
+        "text": "主人这周在出差"
+      },
+      "input_seqs": [
+        1
+      ],
+      "valid_until_in_s": 432000,
+      "expect": {
+        "text": "这件事已经记着了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "出差延到下周",
+        "temporal": "temporary",
+        "text": "主人在写周报"
+      },
+      "input_seqs": [
+        2
+      ],
+      "valid_until_in_s": 345600,
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人在写周报",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner"
+          ],
+          "temporal": "temporary",
+          "valid_to_in_s": 777600,
+          "event_ago_s": 0,
+          "evidence": {
+            "conversation": "console:a",
+            "by_subject": true
+          }
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:NEWF0000000000000000000002",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "evidence_added": 1,
+          "evidence_by_subject": 1,
+          "merged": 1
+        }
+      }
+    },
+    {
+      "do": "advance",
+      "s": 259200,
+      "expect": {}
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "出差延到下周",
+        "temporal": "temporary",
+        "text": "主人这周在出差"
+      },
+      "input_seqs": [
+        2
+      ],
+      "valid_until_in_s": 86400,
+      "expect": {
+        "text": "相同的记忆仍已过期，当前原话不能更新它；没有恢复，也没有替换其他记忆。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "LIVE01",
+        "source_quote": "出差延到下周",
+        "temporal": "temporary",
+        "text": "主人这周在出差"
+      },
+      "input_seqs": [
+        2
+      ],
+      "valid_until_in_s": 86400,
+      "expect": {
+        "text": "相同的记忆仍已过期，当前原话不能更新它；没有恢复，也没有替换其他记忆。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "出差延到下周",
+        "temporal": "temporary",
+        "text": "主人喜欢出差"
+      },
+      "input_seqs": [
+        2
+      ],
+      "valid_until_in_s": 86400,
+      "expect": {
+        "text": "这件事已经记着了。"
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 259200,
+        "event_ago_s": 345600,
+        "id": "NEWF0000000000000000000001",
+        "kind": "fact",
+        "learned_ago_s": 259200,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "temporary",
+        "text": "主人这周在出差",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": 86400,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 259200,
+        "event_ago_s": 345600,
+        "id": "NEWF0000000000000000000002",
+        "kind": "fact",
+        "learned_ago_s": 259200,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[2]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "temporary",
+        "text": "主人在写周报",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": -86400,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner",
+        "conversation": null,
+        "created_ago_s": 259200,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000LIVE01",
+        "kind": "fact",
+        "learned_ago_s": 259200,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人喜欢出差",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "temporary",
+          "valid_to_ago_s": 172800
+        },
+        "at_ago_s": 259200,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "event_ago_s": 345600,
+          "source_seqs": [
+            2
+          ],
+          "temporal": "temporary",
+          "valid_to_ago_s": 86400
+        },
+        "at_ago_s": 259200,
+        "before": {
+          "event_ago_s": 518400,
+          "temporal": "temporary",
+          "valid_to_ago_s": 172800
+        },
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "lifetime",
+        "reason": "更晚的本人来源更新期限，不代表完成"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "temporary",
+          "valid_to_ago_s": -86400
+        },
+        "at_ago_s": 259200,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000002",
+        "op": "add",
+        "reason": null
+      }
+    ],
+    "evidence": [
+      {
+        "at_ago_s": 259200,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 3,
+        "fact_id": "NEWF0000000000000000000002",
+        "seq": null,
+        "speaker": null,
+        "verdict": null
+      }
+    ]
+  }
+}

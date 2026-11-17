@@ -1,0 +1,7 @@
+# 编程额度实跑固定题集（2026-11-09）：bench-t2 -set coding；笔记 docs/notes/排查-编程额度实跑-2026-11-09.md
+# 都是要读、改、跑测试的多步编程任务；b2-11 是一次要写几百行的单个文件。改这份清单等于换了尺子，前后两次实跑才能对比
+b2-01-rename-refactor
+b2-02-multi-bug
+b2-09-go-cli
+b1-a08-react
+b2-11-big-file

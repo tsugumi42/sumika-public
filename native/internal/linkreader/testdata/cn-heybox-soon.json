@@ -1,0 +1,24 @@
+{
+ "status": "ok",
+ "msg": "",
+ "version": "1.0",
+ "result": {
+  "steam_appid": 90002,
+  "publishers": [
+   {
+    "value": "编造开发组乙"
+   }
+  ],
+  "developers": [
+   {
+    "value": "编造开发组乙"
+   },
+   {
+    "value": "编造开发组丙"
+   }
+  ],
+  "release_date": "即将推出",
+  "game_type": "pc",
+  "about_the_game": "<p class=\"bb_paragraph\" >这是编造的小黑盒游戏简介，仅用于解析测试。</p><p class=\"bb_paragraph\" >第二段：编造的说明。</p>"
+ }
+}

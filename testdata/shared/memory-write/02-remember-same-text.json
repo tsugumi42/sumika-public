@@ -1,0 +1,370 @@
+{
+  "about": "同文（去掉空白标点后一样、主体一样）再记：回“已经记着了”不写；主体不同算新条；撤销过的同文模型不能复活；待确认的同文被主人明说放行成有效，之后再记回到“已经记着了”。",
+  "source_tests": [
+    "TestRememberSameTextIsAlreadyRemembered",
+    "TestDupRevokedNotRevived"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "我的生日在三月，阿福怕狗，我在做饭",
+      "ago_s": 60
+    }
+  ],
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "text": "主人在做饭",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000CAND01",
+        "kind": "fact",
+        "text": "阿福怕狗",
+        "subject": "owner",
+        "status": "candidate"
+      }
+    ]
+  },
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002"
+  ],
+  "steps": [
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我的生日在三月",
+        "temporal": "stable",
+        "text": "主人的生日在三月"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我的生日在三月",
+        "temporal": "stable",
+        "text": "  主人的生日，在三月。"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这件事已经记着了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我的生日在三月",
+        "subject": "self",
+        "temporal": "stable",
+        "text": "主人的生日在三月"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "code": "AI0001",
+          "reason": "测试撤销"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "revoked",
+            "ref": "f:SEED0000000000000000AI0001",
+            "status": "revoked"
+          }
+        ],
+        "counts": {
+          "revoked": 1
+        }
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我在做饭",
+        "temporal": "stable",
+        "text": "主人在做饭"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这条记忆曾被撤销或拒绝，模型不能自行恢复，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "阿福怕狗",
+        "temporal": "stable",
+        "text": "阿福怕狗"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "阿福怕狗",
+        "temporal": "stable",
+        "text": "阿福怕狗"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这件事已经记着了。"
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人的生日在三月",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000002",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "self",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人的生日在三月",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "revoked",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人在做饭",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "SEED0000000000000000CAND01",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "阿福怕狗",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000002",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "status": "revoked"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000AI0001",
+        "op": "revoke",
+        "reason": "测试撤销"
+      },
+      {
+        "after": {
+          "event_ago_s": 60,
+          "source_seqs": [
+            1
+          ],
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": {
+          "event_at": 0,
+          "temporal": ""
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000CAND01",
+        "op": "lifetime",
+        "reason": "更晚的本人来源更新期限，不代表完成"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "scopes": [
+            "owner"
+          ],
+          "status": "candidate"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000CAND01",
+        "op": "confirm",
+        "reason": "按写入来源更新确认状态"
+      }
+    ],
+    "evidence": []
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "b1-a02-dnd-character",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/dnd-character（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 dnd_character.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.md": "4896e12fe6318df6f1137c3d07b0920ce22db10789396cd15c9269d20a83e302",
+    ".docs/introduction.md": "f9bcddf678fb2532c79a356aeb9daeaea67fe136ff12e94e377843c3407d89ba",
+    "cases_test.go": "76ecf314dcedadd524920a31e64b7f4a00be159cdd79c612453af4b5f16d8206",
+    "dnd_character.go": "95c520ec88136e594d7c4dbb42e6b32edf80f37ce4ab1de96a55389612726280",
+    "dnd_character_test.go": "220d061573974829b647b1bb7c43ebf1ec2820545d3983f90e1c64437a3e9e10",
+    "go.mod": "dd8143627e3d39184344fd49c52a2137addec0525a5b6ac4ea854d0e59145ee3"
+  }
+}

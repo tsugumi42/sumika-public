@@ -1,0 +1,111 @@
+{
+  "id": "stop-without-bound-keeps-later-queue",
+  "about": "停止不带上界：只停当前这一轮，排在后面的话照常接着跑",
+  "source_tests": [
+    "TestStopThroughSequence"
+  ],
+  "replies": [
+    "text",
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "旧任务甲",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "q1",
+      "mode": "queue",
+      "text": "排队乙",
+      "expect": {
+        "state": "accepted",
+        "run": "q1",
+        "seq_rank": 2
+      }
+    },
+    {
+      "do": "stop",
+      "run": "a",
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "stopped"
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "release",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "q1",
+      "expect": {
+        "outcome": "done"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      },
+      {
+        "label": "q1",
+        "state": "admitted",
+        "run": "q1"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "stopped"
+      },
+      {
+        "label": "q1",
+        "state": "settled",
+        "outcome": "done"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      },
+      {
+        "n": 2,
+        "contains": [
+          "a",
+          "q1"
+        ]
+      }
+    ],
+    "steers": []
+  }
+}

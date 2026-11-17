@@ -1,0 +1,88 @@
+{
+  "id": "echo-skips-failed-and-aborted-parts",
+  "about": "明确失败的段、因前面失败而中止的段，收到同文字的回声也不认领，状态不变",
+  "source_tests": [
+    "TestEchoDoesNotTouchFinishedParts"
+  ],
+  "receipt": "rejected",
+  "steps": [
+    {
+      "do": "say",
+      "label": "p",
+      "as": "ca",
+      "texts": [
+        "甲",
+        "乙"
+      ],
+      "expect": {}
+    },
+    {
+      "do": "pump",
+      "label": "p",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "failed",
+          "parts": [
+            {
+              "state": "failed",
+              "via": "",
+              "platform_id": "",
+              "attempts": 3
+            },
+            {
+              "state": "aborted",
+              "via": "",
+              "platform_id": "",
+              "attempts": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "7001",
+      "text": "甲",
+      "expect": {
+        "claimed": false
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "7002",
+      "text": "乙",
+      "expect": {
+        "claimed": false
+      }
+    }
+  ],
+  "final": {
+    "plans": [
+      {
+        "label": "p",
+        "state": "failed",
+        "parts": [
+          {
+            "state": "failed",
+            "via": "",
+            "platform_id": "",
+            "attempts": 3
+          },
+          {
+            "state": "aborted",
+            "via": "",
+            "platform_id": "",
+            "attempts": 0
+          }
+        ]
+      }
+    ],
+    "sends": 3,
+    "mapped": {},
+    "unmapped": [
+      "7001",
+      "7002"
+    ]
+  }
+}

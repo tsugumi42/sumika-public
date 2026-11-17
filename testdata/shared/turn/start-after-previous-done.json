@@ -1,0 +1,111 @@
+{
+  "id": "start-after-previous-done",
+  "about": "上一轮已经结束后 start 正常开新一轮；两轮的请求里后一轮带着前一轮的话",
+  "source_tests": [
+    "input.go Submit"
+  ],
+  "replies": [
+    "text",
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "甲句",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "release",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "done"
+      }
+    },
+    {
+      "do": "submit",
+      "label": "b",
+      "mode": "start",
+      "text": "乙句",
+      "expect": {
+        "state": "accepted",
+        "run": "b",
+        "seq_rank": 2
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "release",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "b",
+      "expect": {
+        "outcome": "done"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      },
+      {
+        "label": "b",
+        "state": "admitted",
+        "run": "b"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "done"
+      },
+      {
+        "label": "b",
+        "state": "settled",
+        "outcome": "done"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      },
+      {
+        "n": 2,
+        "contains": [
+          "a",
+          "b"
+        ]
+      }
+    ],
+    "steers": []
+  }
+}

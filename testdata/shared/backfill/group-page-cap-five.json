@@ -1,0 +1,183 @@
+{
+  "id": "group-page-cap-five",
+  "about": "群每页都有新消息但始终不到起点：最多五页，记 page-cap 缺口，已取得的五条照存",
+  "source_tests": [
+    "TestBackfillPartialAndEmpty/cap"
+  ],
+  "scene": "group",
+  "setup": {
+    "watermark_ago_ms": 3600000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": []
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "3001",
+              "ago_ms": 60000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        },
+        {
+          "messages": [
+            {
+              "id": "3002",
+              "ago_ms": 120000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "3001",
+              "ago_ms": 60000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        },
+        {
+          "messages": [
+            {
+              "id": "3003",
+              "ago_ms": 180000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "3002",
+              "ago_ms": 120000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        },
+        {
+          "messages": [
+            {
+              "id": "3004",
+              "ago_ms": 240000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "3003",
+              "ago_ms": 180000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        },
+        {
+          "messages": [
+            {
+              "id": "3005",
+              "ago_ms": 300000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "3004",
+              "ago_ms": 240000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          },
+          {
+            "anchor": "3001",
+            "count": 100
+          },
+          {
+            "anchor": "3002",
+            "count": 100
+          },
+          {
+            "anchor": "3003",
+            "count": 100
+          },
+          {
+            "anchor": "3004",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "3005",
+            "ago_ms": 300000
+          },
+          {
+            "id": "3004",
+            "ago_ms": 240000
+          },
+          {
+            "id": "3003",
+            "ago_ms": 180000
+          },
+          {
+            "id": "3002",
+            "ago_ms": 120000
+          },
+          {
+            "id": "3001",
+            "ago_ms": 60000
+          }
+        ],
+        "gaps": [
+          {
+            "from_ago_ms": 3660000,
+            "to_ago_ms": 300000,
+            "state": "blocked",
+            "reason": "page-cap",
+            "tries": 0,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 3660000,
+          "through_ago_ms": 3660001
+        },
+        "complete_coverage": false
+      }
+    }
+  ]
+}

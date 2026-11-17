@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun scripts/report-notice.ts",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "$description": "没有壁纸：聊天区用内容层底色，她的气泡用凹块（Bun chat.css:116-120）",
+  "ramp": {
+    "$type": "color",
+    "chat-bg": { "$value": "{ramp.surface}" },
+    "bubble": { "$value": "{ramp.sunken}" }
+  }
+}

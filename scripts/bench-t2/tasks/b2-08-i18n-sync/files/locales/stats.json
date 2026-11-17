@@ -1,0 +1,14 @@
+{
+  "base": "zh",
+  "total": 34,
+  "languages": {
+    "en": {
+      "keys": 35,
+      "todo": 0
+    },
+    "ja": {
+      "keys": 33,
+      "todo": 1
+    }
+  }
+}

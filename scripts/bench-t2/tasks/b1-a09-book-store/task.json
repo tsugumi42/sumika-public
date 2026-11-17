@@ -1,0 +1,34 @@
+{
+  "id": "b1-a09-book-store",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/book-store（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 book_store.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.append.md": "f59a3eeadbc1fff3e25db5f2ca71568dc619a46f65145a13fa3fa762b0e7f722",
+    ".docs/instructions.md": "da6c12fa73d23c1324385070a1d7fba008f2ddd0cf26a16616e6ee1cc392eedd",
+    "book_store.go": "9e7fb0b96921df20ccaea8bac1e2d40ce75f2a28e16d1c6eb36aee704389472c",
+    "book_store_test.go": "442ac2832862c264bb74054592365c55a37dbe0a98a6124eb2b98e647fae944a",
+    "cases_test.go": "87292c1c695f622ecd66215c826b898ff962ff381a949971eb2ffd4d1e35b5fb",
+    "go.mod": "1a18ea2ff8b3be941e8e2f1383a7e32005c97f70153d55891ae8142fd08cc6c4"
+  }
+}

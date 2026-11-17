@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="920" viewBox="0 0 1200 920" role="img" aria-labelledby="title desc">
+  <title id="title">Sumika 架构积木图</title>
+  <desc id="desc">从底向上：运行时宿主；本地、QQ、未来平台并排；入站与出站中间件并排；会话调度、回合、模型调用、记忆、工具与审批并排；链接解析、表达学习、识图、定时任务并排；界面。虚线框表示通过注册装卸的插件，热插拔以收尾实现为前提。上层只通过下层公开的契约使用它；具体有哪些契约见架构总纲正文。</desc>
+  <style>
+    :root { color-scheme: light dark; --bg:#ffffff; --ink:#172033; --muted:#475569; --fixed:#e8edf3; --line:#475569; --plug:#e0f2fe; --plug-line:#0369a1; --base:#d3deec; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#111827; --ink:#f1f5f9; --muted:#cbd5e1; --fixed:#253348; --line:#b4c5d8; --plug:#123b52; --plug-line:#7dd3fc; --base:#304763; }
+    }
+    text { fill:var(--ink); font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif; text-anchor:middle; font-size:18px; }
+    .heading { font-size:25px; font-weight:700; }
+    .note { fill:var(--muted); font-size:15px; }
+    .row { fill:var(--muted); font-size:15px; text-anchor:start; }
+    .fixed { fill:var(--fixed); stroke:var(--line); stroke-width:2; }
+    .plug { fill:var(--plug); stroke:var(--plug-line); stroke-width:2; stroke-dasharray:6 4; }
+    .base { fill:var(--base); stroke:var(--line); stroke-width:3; }
+  </style>
+  <rect width="1200" height="920" fill="var(--bg)"/>
+  <text x="600" y="35" class="heading">Sumika：在同一套契约上搭积木</text>
+  <text x="600" y="61" class="note">上层叠在下层上＝只用下层公开的契约　并排＝职责独立　虚线框＝可注册装卸</text>
+
+
+  <text x="48" y="84" class="row">界面</text>
+  <rect class="fixed" x="48" y="92" width="1104" height="60" rx="8"/>
+  <text x="600" y="129">界面：输入 / 展示 / 审批</text>
+
+  <text x="48" y="199" class="row">功能插件</text>
+  <rect class="plug" x="48" y="212" width="360" height="64" rx="8"/>
+  <text x="228" y="251">链接解析</text>
+  <rect class="plug" x="420" y="212" width="360" height="64" rx="8"/>
+  <text x="600" y="251">表达学习</text>
+  <rect class="plug" x="792" y="212" width="174" height="64" rx="8"/>
+  <text x="879" y="251">识图</text>
+  <rect class="plug" x="978" y="212" width="174" height="64" rx="8"/>
+  <text x="1065" y="251">定时任务</text>
+
+  <text x="48" y="330" class="row">核心插件</text>
+  <rect class="fixed" x="48" y="336" width="360" height="80" rx="8"/>
+  <text x="228" y="371">会话调度</text><text x="228" y="398">多会话并行</text>
+  <rect class="fixed" x="420" y="336" width="174" height="80" rx="8"/>
+  <text x="507" y="383">回合</text>
+  <rect class="fixed" x="606" y="336" width="174" height="80" rx="8"/>
+  <text x="693" y="383">模型调用</text>
+  <rect class="plug" x="792" y="336" width="174" height="80" rx="8"/>
+  <text x="879" y="383">记忆</text>
+  <rect class="fixed" x="978" y="336" width="174" height="80" rx="8"/>
+  <text x="1065" y="383">工具与审批</text>
+
+  <text x="48" y="465" class="row">平台中间件链</text>
+  <rect class="fixed" x="48" y="478" width="546" height="84" rx="8"/>
+  <text x="321" y="511">入站中间件</text><text x="321" y="541">准入 / 去重 / 记录 / 观察 / 闸门</text>
+  <rect class="fixed" x="606" y="478" width="546" height="84" rx="8"/>
+  <text x="879" y="511">出站中间件</text><text x="879" y="541">记录 / 检查 / 渲染 / 限流 / 投递</text>
+
+  <text x="48" y="619" class="row">平等的平台插件</text>
+  <rect class="plug" x="48" y="626" width="360" height="72" rx="8"/>
+  <text x="228" y="655">本地平台</text><text x="228" y="683">私聊 / 群聊</text>
+  <rect class="plug" x="420" y="626" width="360" height="72" rx="8"/>
+  <text x="600" y="655">QQ 平台</text><text x="600" y="683">私聊 / 群聊</text>
+  <rect class="plug" x="792" y="626" width="360" height="72" rx="8"/>
+  <text x="972" y="655">未来平台</text><text x="972" y="683">Telegram 等（尚未实现）</text>
+
+  <text x="48" y="746" class="row">最大的基座：为上方所有块提供资源和寿命，不是逐层调用链</text>
+  <rect class="base" x="28" y="758" width="1144" height="96" rx="10"/>
+  <text x="600" y="794" class="heading">运行时宿主</text>
+  <text x="600" y="829">生命周期 / 配置 / 存储入口 / 服务与事件 / 资源</text>
+  <text x="600" y="890" class="note">目标结构，不代表各线已全部落地；关闭平台不删除历史，停用插件不放宽权限。</text>
+</svg>

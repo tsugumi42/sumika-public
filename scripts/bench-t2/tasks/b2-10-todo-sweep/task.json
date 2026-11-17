@@ -1,0 +1,130 @@
+{
+  "id": "b2-10-todo-sweep",
+  "group": "b2",
+  "source": "自己出的（2026-10-27）",
+  "refSteps": 24,
+  "steps": [
+    {
+      "say": "这是一个小项目 shelfkeeper。请做两件事。\n第一件：把 src/ 和 scripts/ 下所有源文件里的 TODO 注释收集起来，写进项目根目录的 TODO.md。vendor/、docs/、README 里出现的不收；字符串里、变量名里的 todo，还有 FIXME，都不算 TODO 注释。TODO 的大小写不限，各个文件里的写法略有不同；每条都有一个优先级标记 P1、P2 或 P3（大小写不限，可能放在括号或方括号里，也可能写在冒号后面）；有的还带 [easy] 标记。TODO.md 的格式是固定的：第一行是 `# TODO`，空一行，然后是一个表格，表头是 `| 优先级 | 文件 | 类型 | 内容 |`，第二行是 `|---|---|---|---|`，之后每条 TODO 一行，例如 `| P1 | scripts/x.sh | normal | 说明文字 |`。其中：优先级写成大写的 P1、P2、P3；文件是相对项目根目录的路径，用正斜杠；类型带 [easy] 标记的写 easy，其余写 normal；内容是标记（连同后面的冒号或短横线）之后的说明文字，去掉首尾空格，块注释末尾的 */ 不算，[easy] 也不算在内。排序：P1 在前、P3 在后；同一优先级内按文件路径的字典序；同一个文件里按出现的先后。TODO.md 收的是这一刻的全部条目（包括 easy 的），写好后不用再改它。写好后发布 collect 这一项。\n第二件：把类型是 easy 的那 3 条，按注释里说的改掉，并把那条 TODO 注释本身删掉；其他的 TODO 和别的内容不要动，vendor/ 和 docs/ 也不要动。每改完一条就发布一次，项名依次是 easy-timeout（默认超时）、easy-rename（改名）、easy-keep（备份份数）。\n发布要用 tools 里的 publish 脚本，每项只发布一次（在 PowerShell 里：& .\\tools\\publish.ps1 -Name <项名>；在别的 shell 里：pwsh -NoProfile -File tools/publish.ps1 -Name <项名>）。四项的项名依次是 collect、easy-timeout、easy-rename、easy-keep。\n需要写辅助脚本的话放在 tools/ 目录里，别的地方不要新建题目没要求的文件。先列一个计划，再一步步做；做完自己检查一遍。"
+    }
+  ],
+  "judge": {
+    "files": [
+      {
+        "path": "TODO.md",
+        "regex": [
+          "\\A\\s*#\\s*TODO\\s+\\|\\s*优先级\\s*\\|\\s*文件\\s*\\|\\s*类型\\s*\\|\\s*内容\\s*\\|\\s*\\|\\s*:?-+:?\\s*\\|\\s*:?-+:?\\s*\\|\\s*:?-+:?\\s*\\|\\s*:?-+:?\\s*\\|\\s*\\|\\s*P1\\s*\\|\\s*scripts/backup\\.sh\\s*\\|\\s*normal\\s*\\|\\s*备份前先检查磁盘空间\\s*\\|\\s*\\|\\s*P1\\s*\\|\\s*scripts/migrate\\.sql\\s*\\|\\s*normal\\s*\\|\\s*迁移前先备份数据库\\s*\\|\\s*\\|\\s*P1\\s*\\|\\s*src/config\\.py\\s*\\|\\s*normal\\s*\\|\\s*支持从配置文件读取，不要只靠环境变量\\s*\\|\\s*\\|\\s*P1\\s*\\|\\s*src/inventory\\.py\\s*\\|\\s*normal\\s*\\|\\s*并发修改时要加锁\\s*\\|\\s*\\|\\s*P1\\s*\\|\\s*src/web/server\\.js\\s*\\|\\s*normal\\s*\\|\\s*上线前必须换掉硬编码的端口\\s*\\|\\s*\\|\\s*P2\\s*\\|\\s*scripts/backup\\.sh\\s*\\|\\s*easy\\s*\\|\\s*保留份数从 3 改成 7\\s*\\|\\s*\\|\\s*P2\\s*\\|\\s*src/app\\.py\\s*\\|\\s*normal\\s*\\|\\s*命令行参数改用 argparse\\s*\\|\\s*\\|\\s*P2\\s*\\|\\s*src/config\\.py\\s*\\|\\s*easy\\s*\\|\\s*默认超时改成 60 秒\\s*\\|\\s*\\|\\s*P2\\s*\\|\\s*src/report\\.py\\s*\\|\\s*normal\\s*\\|\\s*报表支持导出 CSV\\s*\\|\\s*\\|\\s*P2\\s*\\|\\s*src/web/server\\.js\\s*\\|\\s*normal\\s*\\|\\s*加上请求日志\\s*\\|\\s*\\|\\s*P2\\s*\\|\\s*src/web/static/app\\.js\\s*\\|\\s*normal\\s*\\|\\s*搜索框加防抖\\s*\\|\\s*\\|\\s*P3\\s*\\|\\s*scripts/lint\\.sh\\s*\\|\\s*normal\\s*\\|\\s*也检查 \\.js 文件\\s*\\|\\s*\\|\\s*P3\\s*\\|\\s*scripts/migrate\\.sql\\s*\\|\\s*normal\\s*\\|\\s*给 shelf_items\\.isbn 加索引\\s*\\|\\s*\\|\\s*P3\\s*\\|\\s*scripts/seed\\.py\\s*\\|\\s*normal\\s*\\|\\s*示例数据再多一点\\s*\\|\\s*\\|\\s*P3\\s*\\|\\s*src/util\\.py\\s*\\|\\s*easy\\s*\\|\\s*把 fmt_name 改名成 format_name，所有调用的地方一起改\\s*\\|\\s*\\|\\s*P3\\s*\\|\\s*src/util\\.py\\s*\\|\\s*normal\\s*\\|\\s*负数的情况还没处理\\s*\\|\\s*\\|\\s*P3\\s*\\|\\s*src/web/static/style\\.css\\s*\\|\\s*normal\\s*\\|\\s*深色模式的配色\\s*\\|\\s*\\z"
+        ]
+      },
+      {
+        "path": "ops.log",
+        "sameLines": [
+          "publish collect",
+          "publish easy-timeout",
+          "publish easy-rename",
+          "publish easy-keep"
+        ],
+        "regex": [
+          "(?s)publish collect.*publish easy-"
+        ]
+      },
+      {
+        "path": "src/config.py",
+        "contains": [
+          "DEFAULT_TIMEOUT = 60",
+          "TODO [P1] - 支持从配置文件读取，不要只靠环境变量"
+        ],
+        "lacks": [
+          "DEFAULT_TIMEOUT = 30",
+          "默认超时改成 60 秒",
+          "[easy]"
+        ]
+      },
+      {
+        "path": "src/util.py",
+        "contains": [
+          "def format_name(",
+          "todo: p3 负数的情况还没处理",
+          "def clamp("
+        ],
+        "lacks": [
+          "fmt_name",
+          "[easy]"
+        ]
+      },
+      {
+        "path": "src/inventory.py",
+        "contains": [
+          "format_name",
+          "TODO(p1): 并发修改时要加锁",
+          "FIXME(p1): 库存为负时显示不对",
+          "todo_items = []"
+        ],
+        "lacks": [
+          "fmt_name"
+        ]
+      },
+      {
+        "path": "src/report.py",
+        "contains": [
+          "format_name",
+          "TODO [P2] - 报表支持导出 CSV",
+          "TODO 列表为空"
+        ],
+        "lacks": [
+          "fmt_name"
+        ]
+      },
+      {
+        "path": "src/app.py",
+        "contains": [
+          "format_name",
+          "TODO(p2): 命令行参数改用 argparse"
+        ],
+        "lacks": [
+          "fmt_name"
+        ]
+      },
+      {
+        "path": "scripts/backup.sh",
+        "contains": [
+          "KEEP=7",
+          "TODO p1: 备份前先检查磁盘空间"
+        ],
+        "lacks": [
+          "KEEP=3",
+          "[easy]",
+          "保留份数从 3 改成 7"
+        ]
+      }
+    ],
+    "run": [
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import sys; sys.path.insert(0, 'src'); import config, inventory, report; b = inventory.add([], 'Tide Atlas', 'Ann', 'Lee', 3); print(inventory.describe(b[0])); print(report.summary(b)); print(config.load()['timeout']); print(report.summary([]))"
+        ],
+        "stdout": "Tide Atlas / Lee, Ann x3\nTide Atlas / Lee, Ann x3\n作者：Lee, Ann\n60\nTODO 列表为空"
+      }
+    ],
+    "allowed": [
+      "TODO.md",
+      "ops.log",
+      "tools/*",
+      "src/config.py",
+      "src/util.py",
+      "src/inventory.py",
+      "src/report.py",
+      "src/app.py",
+      "scripts/backup.sh"
+    ],
+    "ignore": [
+      "src/__pycache__/**",
+      "__pycache__/**"
+    ],
+    "forbid": [
+      "tools/publish.ps1"
+    ]
+  }
+}

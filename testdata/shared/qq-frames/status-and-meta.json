@@ -1,0 +1,174 @@
+{
+  "id": "status-and-meta",
+  "about": "生命周期、心跳、被踢下线：状态怎么翻、被踢没有会话且只给固定类别（不带协议端的自由文本）",
+  "source_tests": [
+    "TestTranslateKickedAndLifecycle",
+    "TestHeartbeatIntervalBounds"
+  ],
+  "cases": [
+    {
+      "name": "bot-offline",
+      "frame": "{\"post_type\":\"notice\",\"notice_type\":\"bot_offline\",\"time\":100,\"self_id\":100,\"tag\":\"编的标签\",\"message\":\"编的原因\"}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "kicked",
+          "account": "100",
+          "conv": "",
+          "time_unix": 100,
+          "actor": "",
+          "target": "",
+          "msg_id": "",
+          "ref": "",
+          "raw": ""
+        },
+        "status": {
+          "kind": "kicked",
+          "account": "100",
+          "time_unix": 100,
+          "interval_ms": 0,
+          "reason": "",
+          "conv": ""
+        }
+      }
+    },
+    {
+      "name": "kicked-offline",
+      "frame": "{\"post_type\":\"notice\",\"notice_type\":\"kicked_offline\",\"time\":100,\"self_id\":100,\"tag\":\"编的标签\"}",
+      "expect": {
+        "dropped": false,
+        "notice": {
+          "kind": "kicked",
+          "account": "100",
+          "conv": "",
+          "time_unix": 100,
+          "actor": "",
+          "target": "",
+          "msg_id": "",
+          "ref": "",
+          "raw": ""
+        },
+        "status": {
+          "kind": "kicked",
+          "account": "100",
+          "time_unix": 100,
+          "interval_ms": 0,
+          "reason": "",
+          "conv": ""
+        }
+      }
+    },
+    {
+      "name": "lifecycle-connect",
+      "frame": "{\"post_type\":\"meta_event\",\"meta_event_type\":\"lifecycle\",\"time\":100,\"self_id\":100,\"sub_type\":\"connect\"}",
+      "expect": {
+        "dropped": false,
+        "status": {
+          "kind": "connected",
+          "account": "100",
+          "time_unix": 100,
+          "interval_ms": 0,
+          "reason": "",
+          "conv": ""
+        }
+      }
+    },
+    {
+      "name": "lifecycle-enable",
+      "frame": "{\"post_type\":\"meta_event\",\"meta_event_type\":\"lifecycle\",\"time\":100,\"self_id\":100,\"sub_type\":\"enable\"}",
+      "expect": {
+        "dropped": false,
+        "status": {
+          "kind": "connected",
+          "account": "100",
+          "time_unix": 100,
+          "interval_ms": 0,
+          "reason": "",
+          "conv": ""
+        }
+      }
+    },
+    {
+      "name": "lifecycle-disable",
+      "frame": "{\"post_type\":\"meta_event\",\"meta_event_type\":\"lifecycle\",\"time\":100,\"self_id\":100,\"sub_type\":\"disable\"}",
+      "expect": {
+        "dropped": true
+      }
+    },
+    {
+      "name": "heartbeat-interval-5000",
+      "frame": "{\"post_type\":\"meta_event\",\"meta_event_type\":\"heartbeat\",\"time\":100,\"self_id\":100,\"interval\":5000}",
+      "expect": {
+        "dropped": false,
+        "status": {
+          "kind": "heartbeat",
+          "account": "100",
+          "time_unix": 100,
+          "interval_ms": 5000,
+          "reason": "",
+          "conv": ""
+        }
+      }
+    },
+    {
+      "name": "heartbeat-interval-missing",
+      "frame": "{\"post_type\":\"meta_event\",\"meta_event_type\":\"heartbeat\",\"time\":100,\"self_id\":100}",
+      "expect": {
+        "dropped": false,
+        "status": {
+          "kind": "heartbeat",
+          "account": "100",
+          "time_unix": 100,
+          "interval_ms": 0,
+          "reason": "",
+          "conv": ""
+        }
+      }
+    },
+    {
+      "name": "heartbeat-interval-zero",
+      "frame": "{\"post_type\":\"meta_event\",\"meta_event_type\":\"heartbeat\",\"time\":100,\"self_id\":100,\"interval\":0}",
+      "expect": {
+        "dropped": false,
+        "status": {
+          "kind": "heartbeat",
+          "account": "100",
+          "time_unix": 100,
+          "interval_ms": 0,
+          "reason": "",
+          "conv": ""
+        }
+      }
+    },
+    {
+      "name": "heartbeat-interval-negative",
+      "frame": "{\"post_type\":\"meta_event\",\"meta_event_type\":\"heartbeat\",\"time\":100,\"self_id\":100,\"interval\":-1}",
+      "expect": {
+        "dropped": false,
+        "status": {
+          "kind": "heartbeat",
+          "account": "100",
+          "time_unix": 100,
+          "interval_ms": 0,
+          "reason": "",
+          "conv": ""
+        }
+      }
+    },
+    {
+      "name": "heartbeat-interval-huge",
+      "frame": "{\"post_type\":\"meta_event\",\"meta_event_type\":\"heartbeat\",\"time\":100,\"self_id\":100,\"interval\":99999999999}",
+      "expect": {
+        "dropped": false,
+        "status": {
+          "kind": "heartbeat",
+          "account": "100",
+          "time_unix": 100,
+          "interval_ms": 0,
+          "reason": "",
+          "conv": ""
+        }
+      }
+    }
+  ]
+}

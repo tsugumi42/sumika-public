@@ -1,0 +1,356 @@
+{
+  "about": "写入没打开的角色：位置对的（本地私聊、主人的 QQ 私聊）回固定的只读的话，参数有毛病、带 replaces 也先回只读的话；位置不对的仍是原来的拒绝；什么都不写。",
+  "source_tests": [
+    "TestRememberReadOnlyText",
+    "TestForgetReadOnly"
+  ],
+  "writable": false,
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "有一句话",
+      "ago_s": 60
+    },
+    {
+      "seq": 2,
+      "conversation": "qq:private:u1",
+      "text": "有一句话",
+      "ago_s": 60
+    }
+  ],
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "text": "一条普通的事实",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "temporal": "stable",
+        "text": "主人养了一只猫"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "现在记忆是只读的，这句话没有存下来。如实告诉对方这次没记上，别说成已经存好了；等记忆写入打开以后，再请对方说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "idea",
+        "source_quote": "有一句话",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "现在记忆是只读的，这句话没有存下来。如实告诉对方这次没记上，别说成已经存好了；等记忆写入打开以后，再请对方说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "  "
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "现在记忆是只读的，这句话没有存下来。如实告诉对方这次没记上，别说成已经存好了；等记忆写入打开以后，再请对方说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "subject": "friend",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "现在记忆是只读的，这句话没有存下来。如实告诉对方这次没记上，别说成已经存好了；等记忆写入打开以后，再请对方说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "#ABC123",
+        "source_quote": "有一句话",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "现在记忆是只读的，这句话没有存下来。如实告诉对方这次没记上，别说成已经存好了；等记忆写入打开以后，再请对方说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "temporal": 5,
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆参数类型不正确，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "AI0001",
+        "reason": "想忘掉",
+        "source_quote": "有一句话"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "现在记忆是只读的，这条没有忘掉。如实告诉对方这次没忘成，别说成已经忘掉了；等记忆写入打开以后，再请对方说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "",
+        "reason": ""
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "现在记忆是只读的，这条没有忘掉。如实告诉对方这次没忘成，别说成已经忘掉了；等记忆写入打开以后，再请对方说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "qq_private_owner",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "主人养了一只猫"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "现在记忆是只读的，这句话没有存下来。如实告诉对方这次没记上，别说成已经存好了；等记忆写入打开以后，再请对方说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "place": "qq_private_owner",
+      "args": {
+        "id": "AI0001",
+        "reason": "想忘掉",
+        "source_quote": "有一句话"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "现在记忆是只读的，这条没有忘掉。如实告诉对方这次没忘成，别说成已经忘掉了；等记忆写入打开以后，再请对方说一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "qq_group",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "主人养了一只猫"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "place": "qq_group",
+      "args": {
+        "id": "AI0001",
+        "reason": "想忘掉",
+        "source_quote": "有一句话"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "忘掉记忆只能在所有者的私聊里做。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "local_group",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "主人养了一只猫"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "place": "local_group",
+      "args": {
+        "id": "AI0001",
+        "reason": "想忘掉",
+        "source_quote": "有一句话"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "忘掉记忆只能在所有者的私聊里做。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "qq_private_other",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "主人养了一只猫"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "place": "qq_private_other",
+      "args": {
+        "id": "AI0001",
+        "reason": "想忘掉",
+        "source_quote": "有一句话"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "忘掉记忆只能在所有者的私聊里做。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "place": "local_private_no_owner",
+      "args": {
+        "kind": "fact",
+        "source_quote": "有一句话",
+        "text": "主人养了一只猫"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话只能在所有者的私聊里记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "place": "local_private_no_owner",
+      "args": {
+        "id": "AI0001",
+        "reason": "想忘掉",
+        "source_quote": "有一句话"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "忘掉记忆只能在所有者的私聊里做。",
+        "is_error": true
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "一条普通的事实",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [],
+    "evidence": []
+  }
+}

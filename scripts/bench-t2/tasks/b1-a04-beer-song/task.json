@@ -1,0 +1,32 @@
+{
+  "id": "b1-a04-beer-song",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/beer-song（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 beer_song.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.md": "217de08a36e24f0cd41657ce9a46b01fe8aacefd9e48ab8b47d66f4b3dcb4299",
+    "beer_song.go": "cedc401bf03b9fa1a6e21bf80d31c0f907ccb17dd0a71ad85e78848e9f458fcd",
+    "beer_song_test.go": "ca6fbea24c19edd58cfb64686fdb180336e8264fe7d34b45fd1eb9392819eb61",
+    "go.mod": "1be25f046b29ed04cc9bf2139c8a162c0cee7a893a31582de6018a628fb0163e"
+  }
+}

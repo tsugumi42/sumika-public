@@ -1,0 +1,865 @@
+{
+  "about": "写入内核的同文查重：整理再说起已有的待确认或有效的同文，合并进去并记一次证据（同一天同一会话还是一次，本人说的才把范围并上，转述的范围不动，转述的证据说话的会话看不见这条就不记）；撤销过的同文不新建不复活（同一批里先撤再说同一句也一样）；主人本人的批次同文只回“已经有了”，撤销过的同文主人明说就写新的。",
+  "source_tests": [
+    "TestDupMergesSameText",
+    "TestDupEvidenceCountsOncePerDayAndConversation",
+    "TestDupScopeUnionOnlyWhenSubjectSpoke",
+    "TestDupRevokedNotRevived",
+    "TestDupReportWritesNothing",
+    "TestRevokeThenSameTextInOneBatchDoesNotRevive",
+    "TestTransferredEvidenceNeedsASceneThatSeesTheCandidate",
+    "TestRestatementFromAnInvisibleGroupIsNotAVote"
+  ],
+  "options": {},
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000CAND01",
+        "kind": "fact",
+        "text": "阿福怕狗",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "text": "主人喜欢跑步",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000AI0002",
+        "kind": "fact",
+        "text": "主人喜欢爬山",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000AI0003",
+        "kind": "fact",
+        "text": "主人喜欢下棋",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      }
+    ]
+  },
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002",
+    "NEWF0000000000000000000003",
+    "NEWF0000000000000000000004",
+    "NEWF0000000000000000000005",
+    "NEWF0000000000000000000006",
+    "NEWF0000000000000000000007"
+  ],
+  "steps": [
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "阿福怕狗",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner"
+          ],
+          "evidence": {
+            "conversation": "console:a",
+            "by_subject": true
+          }
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:SEED0000000000000000CAND01",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "evidence_added": 1,
+          "evidence_by_subject": 1,
+          "merged": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "阿福怕狗",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner"
+          ],
+          "evidence": {
+            "conversation": "console:a",
+            "by_subject": true
+          }
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:SEED0000000000000000CAND01",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "evidence_repeat": 1,
+          "merged": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "阿福怕狗",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner"
+          ],
+          "evidence": {
+            "conversation": "console:b",
+            "by_subject": true
+          }
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:SEED0000000000000000CAND01",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "evidence_added": 1,
+          "evidence_by_subject": 1,
+          "merged": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "阿福怕狗",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner"
+          ],
+          "evidence": {
+            "conversation": "qq:group:ga",
+            "speaker": "小明"
+          }
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:SEED0000000000000000CAND01",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "evidence_hidden": 1,
+          "merged": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "阿福怕狗",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner",
+            "conv:console:b"
+          ],
+          "evidence": {
+            "conversation": "console:b",
+            "ago_s": 86400,
+            "by_subject": true
+          }
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:SEED0000000000000000CAND01",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "evidence_added": 1,
+          "evidence_by_subject": 1,
+          "merged": 1,
+          "scopes_widened": 1,
+          "would_confirm": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "阿福怕狗",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner",
+            "conv:console:c"
+          ],
+          "evidence": {
+            "conversation": "console:c",
+            "speaker": "小红"
+          }
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:SEED0000000000000000CAND01",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "evidence_added": 1,
+          "merged": 1,
+          "scopes_kept": 1,
+          "would_confirm": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "place": "local_private",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢跑步",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "ai",
+          "scopes": [
+            "owner"
+          ],
+          "evidence": {
+            "conversation": "console:d",
+            "by_subject": true
+          }
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:SEED0000000000000000AI0001",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "evidence_added": 1,
+          "evidence_by_subject": 1,
+          "merged": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢游泳",
+          "subject": "owner",
+          "status": "candidate",
+          "scopes": [
+            "owner"
+          ],
+          "evidence": {
+            "conversation": "console:a",
+            "by_subject": true
+          }
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "added",
+            "ref": "f:NEWF0000000000000000000001",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "added_candidate": 1,
+          "evidence_added": 1,
+          "evidence_by_subject": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢爬山",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "ai",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:SEED0000000000000000AI0002",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "merged": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000AI0002",
+          "reason": "撤销"
+        },
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢爬山",
+          "subject": "owner",
+          "status": "active",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "revoked",
+            "ref": "f:SEED0000000000000000AI0002",
+            "status": "revoked"
+          },
+          {
+            "result": "refused_revoked",
+            "ref": "f:SEED0000000000000000AI0002",
+            "status": "revoked"
+          }
+        ],
+        "counts": {
+          "dup_revoked": 1,
+          "revoked": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢跑步",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "exists",
+            "ref": "f:SEED0000000000000000AI0001",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "exists": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢爬山",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "added",
+            "ref": "f:NEWF0000000000000000000002",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "added_active": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢下棋",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "ai",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "merged",
+            "ref": "f:SEED0000000000000000AI0003",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "merged": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000AI0003",
+          "reason": "撤了"
+        },
+        {
+          "op": "fact",
+          "kind": "fact",
+          "text": "主人喜欢下棋，  ",
+          "subject": "owner",
+          "status": "active",
+          "confirmed_by": "ai",
+          "scopes": [
+            "owner"
+          ]
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "revoked",
+            "ref": "f:SEED0000000000000000AI0003",
+            "status": "revoked"
+          },
+          {
+            "result": "refused_revoked",
+            "ref": "f:SEED0000000000000000AI0003",
+            "status": "revoked"
+          }
+        ],
+        "counts": {
+          "dup_revoked": 1,
+          "revoked": 1
+        }
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "NEWF0000000000000000000001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人喜欢游泳",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "NEWF0000000000000000000002",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人喜欢爬山",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人喜欢跑步",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0002",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "revoked",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人喜欢爬山",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0003",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "revoked",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人喜欢下棋",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAND01",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "conv:console:b",
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "阿福怕狗",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "scopes": [
+            "owner",
+            "conv:console:b"
+          ]
+        },
+        "at_ago_s": 0,
+        "before": {
+          "scopes": [
+            "owner"
+          ]
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000CAND01",
+        "op": "scopes",
+        "reason": "本人又说了一遍，范围并上"
+      },
+      {
+        "after": {
+          "scopes": [
+            "owner"
+          ],
+          "status": "candidate",
+          "temporal": "",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "summary",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "status": "revoked"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000AI0002",
+        "op": "revoke",
+        "reason": "撤销"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember",
+        "fact_id": "NEWF0000000000000000000002",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "status": "revoked"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000AI0003",
+        "op": "revoke",
+        "reason": "撤了"
+      }
+    ],
+    "evidence": [
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 0,
+        "fact_id": "NEWF0000000000000000000001",
+        "seq": null,
+        "speaker": null,
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:d",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000AI0001",
+        "seq": null,
+        "speaker": null,
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:b",
+        "days_ago": 1,
+        "fact_id": "SEED0000000000000000CAND01",
+        "seq": null,
+        "speaker": null,
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:a",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND01",
+        "seq": null,
+        "speaker": null,
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 1,
+        "conversation": "console:b",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND01",
+        "seq": null,
+        "speaker": null,
+        "verdict": null
+      },
+      {
+        "at_ago_s": 0,
+        "by_subject": 0,
+        "conversation": "console:c",
+        "days_ago": 0,
+        "fact_id": "SEED0000000000000000CAND01",
+        "seq": null,
+        "speaker": "小红",
+        "verdict": null
+      }
+    ]
+  }
+}

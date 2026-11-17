@@ -1,0 +1,56 @@
+{
+ "code": 0,
+ "data": {
+  "item": {
+   "id_str": "1900000000000000112",
+   "type": 0,
+   "modules": [
+    {
+     "module_type": "MODULE_TYPE_AUTHOR",
+     "module_author": {
+      "name": "编造作者",
+      "mid": 900000000296909317,
+      "face": "https://i1.hdslb.com/bfs/fixture/1.jpg",
+      "pub_ts": "1793714163",
+      "pub_time": "2026年11月03日 21:56"
+     }
+    },
+    {
+     "module_type": "MODULE_TYPE_CONTENT",
+     "module_content": {
+      "paragraphs": [
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "module_type": "MODULE_TYPE_STAT",
+     "module_stat": {
+      "like": {
+       "count": 108
+      },
+      "comment": {
+       "count": 0
+      },
+      "forward": {
+       "count": 0
+      }
+     }
+    }
+   ],
+   "basic": {}
+  }
+ }
+}

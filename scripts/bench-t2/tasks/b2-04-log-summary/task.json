@@ -1,0 +1,69 @@
+{
+  "id": "b2-04-log-summary",
+  "group": "b2",
+  "source": "自己出的（2026-10-27）",
+  "refSteps": 19,
+  "steps": [
+    {
+      "say": "工作目录里是五个服务的日志（logs/ 下），要按规则统计每个服务每类错误的次数。请先读 README.md、config/services.json、config/rules.json、docs/formats.md（四种日志格式各自怎么找级别和消息）、docs/fixes.md（每类错误的修复建议），再逐个看 logs/ 下的日志。logs/、config/、docs/ 里的文件是原始资料，不要改。\n要生成两个文件，都写在工作目录根上：\n1. report.json，结构固定：{\"services\": {\"<服务名>\": {\"total\": 错误记录总数, \"categories\": {\"timeout\": 次数, \"database\": 次数, \"auth\": 次数, \"disk\": 次数, \"other\": 次数}, \"top\": \"次数最多的那一类的名字\"}}}。五个服务都要有，五个类别键都要写（次数为 0 也写 0）；total 等于五个类别次数之和；top 的算法见 rules.json 的 top_note。\n2. report.md：每个服务一节，标题写成“## <服务名>”；节里写一行“最多的错误：<类别名>”，再把那一类在 docs/fixes.md 里的修复建议原文抄进这一节。\n两个文件都写好以后，按 config/services.json 里的顺序，给每个服务发布一次，用 tools 里的 publish 脚本，每项只发布一次（在 PowerShell 里：& .\\tools\\publish.ps1 -Name <项名>；在别的 shell 里：pwsh -NoProfile -File tools/publish.ps1 -Name <项名>）。五项的项名依次是：service-auth、service-billing、service-search、service-gateway、service-notify。\n需要写辅助脚本的话放在 tools/ 目录里，别的地方不要新建题目没要求的文件。先列一个计划，再一步步做；做完自己检查一遍。"
+    }
+  ],
+  "judge": {
+    "files": [
+      {
+        "path": "report.json",
+        "regex": [
+          "\"services\""
+        ]
+      },
+      {
+        "path": "report.md",
+        "regex": [
+          "(?m)^##\\s+auth\\s*$",
+          "##\\s+auth\\s*\\n[^#]*最多的错误[:：]\\s*auth[^#]*令牌刷新",
+          "(?m)^##\\s+billing\\s*$",
+          "##\\s+billing\\s*\\n[^#]*最多的错误[:：]\\s*database[^#]*连接池",
+          "(?m)^##\\s+search\\s*$",
+          "##\\s+search\\s*\\n[^#]*最多的错误[:：]\\s*timeout[^#]*指数退避",
+          "(?m)^##\\s+gateway\\s*$",
+          "##\\s+gateway\\s*\\n[^#]*最多的错误[:：]\\s*auth[^#]*令牌刷新",
+          "(?m)^##\\s+notify\\s*$",
+          "##\\s+notify\\s*\\n[^#]*最多的错误[:：]\\s*timeout[^#]*指数退避"
+        ],
+        "lacks": [
+          "日志轮转",
+          "容量告警"
+        ]
+      },
+      {
+        "path": "ops.log",
+        "sameLines": [
+          "publish service-auth",
+          "publish service-billing",
+          "publish service-search",
+          "publish service-gateway",
+          "publish service-notify"
+        ]
+      }
+    ],
+    "run": [
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import json\nd=json.load(open('report.json',encoding='utf-8-sig'))['services']\nfor n in sorted(d):\n    s=d[n];c=s['categories'];print(n,s['total'],*[c[k] for k in ('timeout','database','auth','disk','other')],s['top'])"
+        ],
+        "stdout": "auth 8 1 1 5 0 1 auth\nbilling 8 2 4 0 1 1 database\ngateway 10 3 1 4 1 1 auth\nnotify 5 2 0 0 2 1 timeout\nsearch 8 4 1 1 1 1 timeout"
+      }
+    ],
+    "allowed": [
+      "report.json",
+      "report.md",
+      "tools/*",
+      "ops.log"
+    ],
+    "forbid": [
+      "tools/publish.ps1"
+    ]
+  }
+}

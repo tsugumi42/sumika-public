@@ -1,0 +1,190 @@
+# 本地模型服务登记表。规格见 docs/archive/规格/规格-本地模型服务.md 第四节。
+#
+# 池化、归一化、前缀按模型卡；2026-10-28 现场探过每个 ONNX 图的输入输出
+# （探到的证据写在规格第四节表格里）。改这里的池化等于改向量，别拿它当"调参"。
+#
+# 字段：
+#   dir            模型目录（相对 root）
+#   onnx           相对 dir 的 ONNX 文件（外部数据的 .onnx_data 会自动算进内存估计）
+#                  分词器不用登记：每个模型的目录下都有一份 tokenizer.json，代码按 dir 拼
+#   dimension      向量维度；重排写 0
+#   pooling        last | cls | mean | model（model = 直接用图里算好的池化输出）；重排写 logit
+#   normalize      是否 L2 归一化
+#   max_tokens     每条输入的上限，超出按 token 截断
+#   matryoshka     是否支持 dimensions 截断（模型卡写明可以截的才写 true）
+#   min_dimensions matryoshka 的下限（默认 32；gte 卡上从 128 起，所以写 128）
+#   allowed_dimensions  只许这几个维度（写了就等于忽略 min_dimensions；bekko 卡上只写 256/128/64）
+#   truncation     longest_first（单条）/ only_second（重排的一对，只截文档）
+#   query_prefix   查询侧前缀，{task} 换成任务句；空串 = 不加
+#   document_prefix 库存侧前缀；空串 = 不加
+#   query_task     默认任务句，请求里的 task 覆盖它
+
+# 模型根目录：直接填在这里，或者启动时用 --config/环境变量 LOCAL_MODELS_ROOT 指定；空 = 必须从命令行或环境变量给
+# 原来 7 个模型还放在 _待分类/ 里，dir 照旧带前缀（文件挪进正式目录以后再改前缀，一次改一处）。
+root = ""
+
+# Qwen3-Embedding-0.6B：最后一 token 池化，末尾 token 是 <|endoftext|>（和旧服务一致）。
+# 图要喂 56 个空的 past_key_values.*；只有当查询需要指令前缀，库存原文不加（卡上写差 1%～5%）。
+[models."qwen3-embedding-0.6b"]
+kind = "embed"
+dir = "_待分类/Qwen3-Embedding-0.6B"
+onnx = "model_quantized.onnx"
+dimension = 1024
+pooling = "last"
+normalize = true
+max_tokens = 8192
+matryoshka = true
+truncation = "longest_first"
+query_prefix = "Instruct: {task}\nQuery:"
+query_task = "Given a web search query, retrieve relevant passages that answer the query"
+document_prefix = ""
+
+# gte-multilingual-base：CLS 池化 + 归一化（图里的 sentence_embedding 和这个余弦 1.000000）。
+# 卡上写稠密向量可以截到 128～768，所以下限写 128（不是默认的 32）。
+[models."gte-multilingual-base"]
+kind = "embed"
+dir = "_待分类/gte-multilingual-base"
+onnx = "model_quantized.onnx"
+dimension = 768
+pooling = "cls"
+normalize = true
+max_tokens = 8192
+matryoshka = true
+min_dimensions = 128
+truncation = "longest_first"
+query_prefix = ""
+query_task = ""
+document_prefix = ""
+
+# pplx-embed-v1-0.6B：双向 Qwen3，mean 池化（图的 pooler_output 和按 mask 求均值余弦 1.000000，
+# 但范数 4.4，没归一化）。卡上写明故意不用指令前缀。int8 / binary 输出不用。
+# 卡上有 MRL，所以 matryoshka = true（截断在 Python 里做、截完重新归一化，check.py 验过顺序没坏）。
+[models."pplx-embed-v1-0.6b"]
+kind = "embed"
+dir = "_待分类/pplx-embed-v1-0.6B"
+onnx = "model_quantized.onnx"
+dimension = 1024
+pooling = "mean"
+normalize = true
+max_tokens = 8192
+matryoshka = true
+truncation = "longest_first"
+query_prefix = ""
+query_task = ""
+document_prefix = ""
+
+# harrier-270m：图只吐 sentence_embedding（最后一 token，已经归一化），拿不到 hidden state，
+# 所以用 pooling = "model"。只有查询要指令前缀，库存原文不加。
+[models."harrier-270m"]
+kind = "embed"
+dir = "_待分类/harrier-270m"
+onnx = "model_quantized.onnx"
+dimension = 640
+pooling = "model"
+normalize = true
+max_tokens = 8192
+matryoshka = false
+truncation = "longest_first"
+query_prefix = "Instruct: {task}\nQuery: "
+query_task = "Given a web search query, retrieve relevant passages that answer the query"
+document_prefix = ""
+
+# granite-97m-r2：ModernBERT，CLS 池化，不加前缀。用 avx2 量化那份（目录里只有这一份权重）。
+[models."granite-97m-r2"]
+kind = "embed"
+dir = "_待分类/granite-97m-r2"
+onnx = "model_quint8_avx2.onnx"
+dimension = 384
+pooling = "cls"
+normalize = true
+max_tokens = 8192
+matryoshka = false
+truncation = "longest_first"
+query_prefix = ""
+query_task = ""
+document_prefix = ""
+
+# bekko-a25m：ModernBERT，mean 池化，不加前缀。用 onnx/model.onnx，
+# 不用文件名写着 not_recommended 的那份 quint8。卡上只写 256/128/64 三档，所以用白名单。
+[models."bekko-a25m"]
+kind = "embed"
+dir = "_待分类/bekko-a25m"
+onnx = "onnx/model.onnx"
+dimension = 384
+pooling = "mean"
+normalize = true
+max_tokens = 8192
+matryoshka = true
+allowed_dimensions = [64, 128, 256]
+truncation = "longest_first"
+query_prefix = ""
+query_task = ""
+document_prefix = ""
+
+# horizon-embedding-small：mmBERT-small + mean 池化 + 384→1024 的线性层，蒸馏 bge-m3 的稠密向量。
+# 图只吐 sentence_embedding（1024 维，范数 1.000000）：池化、Dense、归一化都已经在导出里
+# （384 的 hidden 变 1024 只可能是图里含 Dense；modules.json 是 Pooling(mean) → Dense → Normalize），
+# 所以用 pooling = "model"，normalize 再归一化一次是幂等的。不加前缀（卡上写明不用）。
+# 卡上 max length 512（训练用 256，超过就切段），sentence_bert_config 也是 512，所以不照别的模型写 8192。
+[models."horizon-embedding-small"]
+kind = "embed"
+dir = "Embedding/horizon-embedding-small"
+onnx = "onnx/model_quantized.onnx"
+dimension = 1024
+pooling = "model"
+normalize = true
+max_tokens = 512
+matryoshka = false
+truncation = "longest_first"
+query_prefix = ""
+query_task = ""
+document_prefix = ""
+
+# bge-reranker-v2-m3：XLM-R 序列分类，(query, document) 一对进、logit 出，sigmoid 后 0～1，
+# 越大越相关。卡上的示例把一对截到 512；这里给 1024，只截文档、不截查询。
+[models."bge-reranker-v2-m3"]
+kind = "rerank"
+dir = "_待分类/bge-reranker-v2-m3"
+onnx = "model_quantized.onnx"
+dimension = 0
+pooling = "logit"
+normalize = false
+max_tokens = 1024
+matryoshka = false
+truncation = "only_second"
+query_prefix = ""
+query_task = ""
+document_prefix = ""
+
+# horizon-reranker-small：mmBERT-small 交叉编码器（141M），蒸馏 Qwen3-Reranker-4B。
+# 图输入 input_ids / attention_mask（int64），输出 logits [batch, 1]，sigmoid 后 0～1，越大越相关。
+# 卡上训练用 384 token 一对、示例把一对截到 512；这里给 512，只截文档、不截查询。
+[models."horizon-reranker-small"]
+kind = "rerank"
+dir = "Reranker/horizon-reranker-small"
+onnx = "onnx/model_quantized.onnx"
+dimension = 0
+pooling = "logit"
+normalize = false
+max_tokens = 512
+matryoshka = false
+truncation = "only_second"
+query_prefix = ""
+query_task = ""
+document_prefix = ""
+
+# sno-lab-reranker-small-int8：同一个模型的社区 int8（只用 8 位存 token embedding、注意力投影和
+# 第一层 MLP，文件小三分之一）。图输入输出和上面那份一样（logits [batch, 1]），卡上写分数差异很小。
+[models."sno-lab-reranker-small-int8"]
+kind = "rerank"
+dir = "Reranker/sno-lab-reranker-small-int8"
+onnx = "onnx/model_quantized.onnx"
+dimension = 0
+pooling = "logit"
+normalize = false
+max_tokens = 512
+matryoshka = false
+truncation = "only_second"
+query_prefix = ""
+query_task = ""
+document_prefix = ""

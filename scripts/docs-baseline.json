@@ -1,0 +1,43 @@
+{
+  "names": {
+    "memory.confirmOccasions": {
+      "docs/subsystems/memory.md": 1,
+      "docs/规格-记忆-v2.md": 2,
+      "docs/规格-记忆写入上线.md": 3
+    },
+    "bilibiliFormat": {
+      "docs/subsystems/runtime.md": 1,
+      "docs/规格-链接自动展开.md": 1,
+      "docs/规格-链接解析模板.md": 8
+    },
+    "家里": {
+      "docs/信息架构.md": 1,
+      "docs/规格-语言.md": 2,
+      "docs/角色卡结构.md": 3,
+      "docs/路线图-1.0.md": 2
+    },
+    "数据中心": {
+      "docs/信息架构.md": 5,
+      "docs/archive/规格/界面缺口盘点.md": 1,
+      "docs/路线图-1.0.md": 2
+    },
+    "出门": {
+      "docs/信息架构.md": 2,
+      "scripts/bench-t2/tasks/b2-05-notes-archive/files/notes/budget-notes.md": 1,
+      "scripts/bench-t2/tasks/b2-05-notes-archive/files/notes/packing-list.md": 1,
+      "scripts/bench-t2/tasks/b3-05-notes-archive/files/notes/budget-notes.md": 1,
+      "scripts/bench-t2/tasks/b3-05-notes-archive/files/notes/packing-list.md": 1
+    },
+    "控制台": {
+      "docs/archive/规格/规格-交互原型.md": 36
+    },
+    "在家": {
+      "docs/规格-语言.md": 1,
+      "docs/角色卡结构.md": 2,
+      "docs/路线图-1.0.md": 1
+    },
+    "心声": {
+      "docs/词汇表.md": 1
+    }
+  }
+}

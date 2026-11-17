@@ -1,0 +1,572 @@
+# Sumika 配置。复制成 sumika.yml 再改；没有 sumika.yml 时全部用这里的默认值。
+# 默认值以 native/internal/config 为准（check:docs 不再对账，见待办"示例配置和 Go 的默认值对账"）；Go 专用的 projectContext 照 native/internal/config/。
+
+console:
+  host: 127.0.0.1   # 只能是本机地址（127.0.0.0/8、::1、localhost）；改成别的地址后台会拒绝启动（ADR-106，没有令牌前不开放到局域网 / 公网）
+  port: 7720
+
+magpie:
+  baseUrl: http://127.0.0.1:3425/v1
+
+dataDir: data
+charactersDir: characters
+
+# 每个角色用哪个模型（ADR-084：角色卡只放角色设定）。在设置 · 模型里选，会写到这里
+# model 说话用的；topic 话题里干活用的（不写跟着 model）；background 她自己的后台活（不写用下面的 defaults.backgroundModel）
+characters: {}
+#  a:
+#    model: <Magpie 里的模型名>
+#    topic: <Magpie 里的模型名>
+#    background: <Magpie 里的后台模型名>  # 不写用 defaults.backgroundModel；发送前守卫确认也用它
+#    fallbackModels: []    # 省略或 null 继承 defaults；明确写 [] 禁用；角色对话与后台共用
+#    groupReminder: true   # 群聊每一轮这一批消息后面追加一条提醒（prompts/reminder-group.md，ADR-121）；不写就是关。开着 / 关着要和群聊注入测试考的时候一致，改了要重考
+#    aliases: []           # 主人填写的叫名表；空 = 不启用叫名。至少两字，短英文数字（如 DS）按词边界匹配
+
+defaults:
+  # 角色没有单独指定时，后台的活（总结记忆、学说法、审说法、起话题标题、发送前守卫确认）用的模型。不替你选（ADR-098）：在设置 · 模型里选，会写到这里；没选则后台活先不做，守卫能力不可用
+  # backgroundModel: <Magpie 里的模型名>
+  # 后台的活的思考档位：off / minimal / low / medium / high / xhigh / max；实际用模型报告的可用档位
+  backgroundThinking: low
+  # 有序备选模型 ID；只填自己测试过适合该用途的模型。空表关闭故障切换
+  fallbackModels: []
+
+embed:
+  enabled: true
+  # 嵌入只走 Sumika 自带的 sumika-models.exe（纯 Go 的分词和推理，规格-Go本地模型；只在 receive 模式启动，archive 不启动，
+  # 使用随机空闲端口）。backend 现在只有 go-models，空也当它；旧的 legacy（借外部的 Python 嵌入服务）已删，
+  # 配置里还写着 legacy 时启动不失败、嵌入不启动，日志和自检各报一条。
+  backend: go-models
+  # 嵌入模型：sumika-models 登记的 id。守卫的 0.70 门槛是在 gte-multilingual-base 上标定的，别的嵌入模型不报"守卫完整"。
+  # model 没有代码默认值（ADR-098）：没写就是没配，嵌入不启动，检索只用全文，守卫在其余依赖齐全时报告 literal-pending 并提醒。
+  # 换模型会让已有向量需要整表重算，期间发送前检查退到只比原文
+  model: gte-multilingual-base
+  # --- 三个本机路径；空和相对路径都有默认 ---
+  # modelsRoot: 模型目录的根                 # 空 = <数据目录>/models；写相对路径时相对数据目录
+  # modelsExe: sumika-models.exe 的路径      # 空 = 程序所在目录里的 sumika-models.exe，只认这一处，不搜索不回退；相对数据目录
+  # ortLibrary: onnxruntime.dll 的路径       # 空 = sumika-models.exe 所在目录里的 onnxruntime.dll；只认编进程序的哈希表里的版本；相对数据目录
+  # 模型文件按登记表的目录放，例如 <模型根>/_待分类/gte-multilingual-base/{model_quantized.onnx,tokenizer.json}；
+  # 缺文件时嵌入不启动、退回全文检索，自检报一条带完整路径
+
+linkReader:
+  # 链接解析（规格-链接解析）。给她看：她看到的 QQ 消息里有 X、B 站链接，后台取来，回合开头附一句 40 字以内的摘要，细看用 read_link_detail；只在 Go 的 receive 模式开
+  context:
+    enabled: true
+  # proxy: http://127.0.0.1:<端口>   # 取 X 要走代理时写；空 = 直连
+  # fake-ip：Clash / mihomo 的 fake-ip 模式会把域名解析成假地址（默认落在 198.18.0.0/15），真地址只有代理知道。
+  # 解析到这些段时：取数 / 下载名单里的主机经上面的 proxy（或环境变量 HTTPS_PROXY / HTTP_PROXY）按主机名连，让代理去解析；
+  # 名单外的主机一律拒绝；名单内但没有代理可走也拒绝。改了要重启接收。写 [] = 没有假地址段（保留段地址一律拒绝）。段不能盖住本机 / 内网地址（127.0.0.0/8、10.0.0.0/8、192.168.0.0/16 等），写成那样加载会报错
+  fakeIPRanges: ["198.18.0.0/15"]
+  # 取数节奏：每个平台每分钟最多发几次请求。用满了排队等空位（最多 maxWaitSeconds 秒），不算失败；
+  # 只有平台自己回了限流（429、B 站 412 风控）才冷却、才失败。B 站默认放慢：它按 IP 风控，连发会连累同一个网络里刷 B 站的人
+  rate:
+    perMinute: 60
+    platforms:
+      bilibili: 10
+    maxWaitSeconds: 45 # 0 = 不等，额度满直接失败
+  x:
+    # 推特取数：fx_v2、vx 两条同时取，先到的成功结果为准；都失败再试 X 官方嵌入接口（备用路线）。按最近成功率排先后，重启清零。这一块改了要重启才生效
+    fxTimeoutSeconds: 4 # fx_v2 单独的时限（1～10 秒）
+    syndication: true   # 备用路线开关
+  expand:
+    enabled: false
+    mode: whitelist
+    conversations: [] # 仅选择本机已知QQ会话，默认哪里都不发
+    # 群里谁发的链接能触发展开：all 谁都行（默认）/ whitelist 只有名单里的人 / blacklist 名单里的人除外。
+    # 名单写 QQ 号；主人永远能触发；只管群聊，私聊照旧。groups 按群号单独设，写了的群整份用自己的。
+    # 只在这里改：改完重启接收生效（或在链接设置页保存任意一项时一并读入）；键拼错会拒绝加载
+    senders:
+      mode: all
+      users: []
+      groups: {}
+      # groups:
+      #   "123456789": {mode: whitelist, users: ["111111", "222222"]}
+    maxLinks: 3
+    bareBiliID: false
+    rotateOnReject: true # 图发不出去（被拒，或没回执并核实没进群）后，依次试直接发转 180°、合并转发里转 180°，都不行才补文字说明（查不了的不换形式）
+    panoramaOriginals: false # 推特把一张横幅拆成几张发时，拼回一张发；开了就再用合并转发附上原图（默认只发拼好的一张）
+    imageMaxMB: 20       # 发送前单张图的体积上限（1～20 MB）；超过的不发，写明原因。20 是保守值，查不到 QQ 的权威上限
+    privateStatus: 开始解析链接……
+    startEmoji: "289" # 群里开始解析时贴的表情（QQ 表情 289 睁眼）；留空不贴。私聊不支持表情回应
+    doneEmoji: "124" # 结果发出后换成它（124 OK）；留空不贴
+    failEmoji: "9"   # 解析或发送失败时换成它（9 大哭）；失败时不发任何文字，只靠它提示；留空就完全没有提示
+    # 各站点的消息模板（通配符写法见 docs/规格-链接解析模板.md）；不写就用内置默认。键：站点 或 站点-forward，值可写 @预设名
+    # templates:
+    #   bilibili-video: "@封面文字"   # 封面 + 文字（默认 @卡片）
+    # sites:
+    #   x: {forward: auto, forwardOver: 600}   # forwardOver：x、telegram 按推特官方加权字数（中日韩一字算 2、字母算 1、链接算 23，默认 600，约 300 个汉字或 600 个字母）；B 站按字数； forward: auto / always / never（never：图多于 directImageMax 时只发前几张，文字末尾标（发出/总数）；没有合并转发形态的站点只能写 auto / never）
+    #   github: {showDesc: true, descLimit: 200}   # showDesc：内置默认模板多一行简介（默认关）；只有默认去掉过简介的站点能开（B 站视频、直播、番剧、课程、音频、合集、小店，pixiv 小说、系列，GitHub，小黑盒，BOOTH，Steam，爱发电）；descLimit 截字，截在最近的标点后补“……”和“完整内容见原文”
+    #   bilibili-article: {forwardOver: 100}   # B 站专栏正文不超过这么多字、图不超过 directImageMax 张就直接发；0 不按字数（一律转发用 forward: always）
+    # 合并转发的节点名和卡片外面的文字（docs/规格-链接解析模板.md 第十四节）。全不写就是 QQ 默认：节点名用她自己的 QQ 昵称，头像永远是她自己的号。
+    # 后四项是模板，占位符：$标题 $字数 $图片数 $UP主（同 $作者） $站点；超过显示长度自动用省略号截断，字段取不到整项退回 QQ 默认。
+    # forward:
+    #   nodeName: ""          # 节点显示名，留空用她的 QQ 昵称（最多 40 个字）
+    #   source: "$标题"        # 卡片标题
+    #   news: ["$字数", "$图片数"]   # 卡片预览，最多两行
+    #   summary: "$UP主"       # 卡片底部摘要
+    #   prompt: "$标题"        # 外显（聊天列表里看到的那行）
+    # 各网站和页面类型的展开开关（默认全开；只管自动展开，不影响给她看）。网站 ID 和页面类型见 docs/规格-链接页面类型和样式.md
+    # platforms:
+    #   bilibili: {enabled: true, kinds: {live: false}}   # B 站整站开着，只关直播间
+    #   x: {imageMode: rotate}   # 发图方式：auto 普通发优先（默认）/ rotate 转 180° 直接发优先 / forward 合并转发里转 180° 优先；不成再往后试
+    # 帖子正文不是目标语言时，默认用后台模型（defaults.backgroundModel）翻译，可用 translate.model 另选，译文跟在原文后面；只在已开展开的会话里生效。没配后台模型、超时、出错都只发原文
+    translate:
+      enabled: true
+      target: 简体中文    # 目标语言名，原样写进提示词
+      timeoutSeconds: 15  # 单次调用的时限，1～60
+      retries: 1          # 超时后再试几次（每次重新计时），都超时只发原文；0～3
+      model: ""           # 翻译用的模型 ID；留空跟后台模型，填了就用它（翻译固定关思考）
+    # 单个网站关翻译：platforms 里写 x: {translate: false}
+    directImageMax: 3   # X、pixiv 作品、Telegram、B 站动态的图不超过这么多张就和文字同一条消息直发（图在文字下面），超过走合并转发；1～9
+    text:
+      stripTrailingHashtags: true   # 去掉帖子正文结尾连续的 #标签 块（推文和其他平台都去；正文中间的不动，整条只有标签时不去）；翻译拿到的也是去过的
+    video:
+      enabled: false
+      timeoutSeconds: 60
+      maxMB: 100 # 十进制MB；音轨、画轨和分片共用
+    tweetCard:
+      # 推特卡片：x 的模板里用到 $卡片 时画（@卡片，以及排版改版登记的 @推特卡片）；默认模板仍是文字版。配色：auto 按北京时间 06:00～18:00 浅色、其余深色；light / dark 固定；改了下一张卡就生效
+      theme: auto
+      # 卡片高度封顶（图上像素）：默认 0 不封顶，长推文整张画出来（正文不截断、长文里的配图按段落位置排，硬上限 8000，再长按截断规则截）；要封顶写 480～8000（原来的封顶是 960）；改了下一张卡就生效
+      maxHeight: 0
+    artist:
+      # 画师的推文发原图（docs/规格-画师原图.md）：作者是“画师表”里确认过的账号（按 X 数字 ID 认，sumika-ctl artist import 导入）时：
+      # cardAndOriginals 卡片、链接、再发每张原图（默认，待确认）；originalsOnly 只发链接和原图；off 不特殊处理。命中时自定义模板和 forward: auto/always 不生效，拆图不拼回；改了下一条链接就生效
+      mode: cardAndOriginals
+      # 展开时遇到不在表里的带图原创推文作者，用已取到的资料判断，像画师的记进待确认表（sumika-ctl artist list），不自动生效，不多发请求
+      autoDetect: true
+    # 发送流程（docs/规格-链接发送改版.md A 节）：发出去没拿到确认时等回声，到点没回声就当没送到、把图转 180° 重发
+    send:
+      echoWaitMS: 2000         # 等回声的毫秒数（500～10000）；大图再加按体积算的上传时间（前 256 KiB 不加，每 MiB 多等 2 秒），等满没回声的大图算结果不明、不转图重发（规格 B12）
+      historyCheck: false      # 没等到回声后再翻一次历史核实
+      forwardVideo: true       # 实验：合并转发里放视频，不支持自动退回成视频单独一条
+      forwardQuoteReply: true  # 实验：合并转发里引用推文用 reply 指向被引的节点，不支持自动退回
+
+memory:
+  idleMinutes: 10   # 会话安静多久做一次总结
+  batchEvents: 40   # 或者新增多少条就总结
+  topK: 8           # 每轮最多注入几条记忆
+  maxChars: 1200    # 注入记忆的总字数上限
+  rerank:           # 她主动搜记忆（memory_search）时，把合并出的前几条再用重排模型换一次顺序；每轮自动想起不用
+    model: ""       # 空 = 不重排；填服务里的重排模型 id（如 bge-reranker-v2-m3）。只有 embed.backend 是 go-models 才有重排接口，legacy 的旧桥没有，填了也不生效、启动时提醒一次
+    k: 40           # 看前多少条（1～64）
+    timeoutSeconds: 5   # 重排自己的时限；超了这一轮按原来的顺序
+  # 记忆写入（规格-记忆写入上线、ADR-377）：remember 默认对所有角色开（characters 是 `*`）；后台整理仍默认关。
+  # 开写入前后台会自己检查前提（库是不是 Go 的副本、迁移过没有、备份做了没有），不满足就保持只读并在日志里写原因。
+  # 分两档：characters 管你在私聊里让她记的 remember；summarize 管后台自己整理。
+  write:
+    characters: ["*"]           # `*` = 所有角色（主人在私聊里让她记的 remember）；写名字 = 只开这些；留空或写 `[]` 都是全部只读；不写这个键 = 默认 `*`
+    summarize: []               # 其中再允许后台整理的角色，必须也写在 characters 里；`*` 也认（所有角色整理，前提是每个角色都有后台模型、选了 catchUp、places 对得上）；空 = 不整理
+    places: [owner-private]     # 后台整理哪些场合：owner-private 你自己的 QQ 私聊 / local-private / local-group / platform-private 所有人的 QQ 私聊 / platform-group QQ 群
+    catchUp: ""                 # 开后台整理前必须自己选：latest（接管后落下的聊天不补，游标推到最新，推荐）| cursor（接着旧游标整理，会花钱）；没有默认
+    autoConfirm: false          # 待确认的事实攒够证据后真的变有效；false 只在日志里数"会提升几条"
+    confirmOccasions: 3         # 攒几次不同场合的证据才算数（至少 2）
+    confirmKinds: [fact, preference]   # 哪几种事实可以自动变有效；promise、boundary 会塑造她的行为，默认要你亲口放行
+    quarantineSince: ""         # 出了事的止血：填启动日志"写入已开"那一行里 summarize_enabled_at= 的数字（只开过 remember 就填 write_enabled_at=），那之后整理写的、整理提升的东西不再被她想起，你亲口记的还在；空 = 不隔离
+
+# 群聊闸门：她在群里话多还是安静（规格-群聊闸门；某个群、某个时段在设置里另外调）
+group:
+  frequency: 0.3    # 0 只有主人 @ 才回，1 不设门槛
+  jitter: 0.03      # 门槛加的抖动，0 就是一样的情况永远一样的结果
+  mode: dry         # 群的默认档位：off 不说 / dry 试运行（想好的话只在主窗口显示，不发）/ speak 说话（所有群都开口，别这么设；说话在主窗口逐个群切）
+
+# 所在地和日历（规格-主动联系 第十九节，ADR-332）：给天气、日历两个工具用。
+# location 是你所在的地方，默认空；天气工具没指定地点时才用它。你本人在的场合（本地私聊、QQ 私聊、主动联系）用完整的，你开放的群只知道城市，别人的私聊当不知道。
+# 查天气时坐标会发给 Open-Meteo；没设就不发（她可以翻记忆或开口问）。在设置 → 插件 → 日历和天气里搜索选择，或让她提议、你确认；不用手写。手写要整个对象一起写，改了不用重启：
+# location:
+#   name: <规范显示名>
+#   city: <城市；空表示只知道到省，群里当不知道>
+#   region: <省或州>
+#   country: <国家>
+#   countryCode: CN        # 两位国家代码，选所在地时自动带；免费接口按它排先后，腾讯天气只给国内。手写时国家写中国也按 CN
+#   latitude: <纬度>
+#   longitude: <经度>
+#   cityLatitude: <城市本身的纬度；群里查天气只用这一组，没有就当群里不知道>
+#   cityLongitude: <城市本身的经度>
+#   timezone: Asia/Shanghai
+calendar:
+  # 法定假日和调休数据（NateScarlet/holiday-cn，每年一个 JSON），{year} 换成年份；缓存在数据目录 go/calendar，隔三天在后台更新，断网用旧的。走 linkReader.proxy 同一条代理
+  # 默认值（或不写）走免费接口注册表：jsDelivr 不通换 GitHub raw，再换 timor.tech；写成别的地址就只用你的地址
+  holidayUrl: https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/{year}.json
+
+# 免费接口（规格-免费接口，落实 ADR-082 第 3、4 条）：天气、节假日、汇率每类有几家，挂了自动换，后台低频检测可用性。
+# 次数是本地计数，0 表示不限，主人本人不计；改了不用重启。设置 → 插件 → 免费接口里能看每家的状态、置顶、关闭、立即检测，也能改下面这些数。
+# 查天气时：国内地点发给腾讯新闻天气的只有省、市两级（它不是公开接口，风险你知道）；其余发坐标给 Open-Meteo、MET Norway。检测只带写死的北京、奥斯陆，不带你的地点。
+freeApi:
+  networkRegion: cn           # 这台机器所在的网络区域（cn 或 global），节假日、汇率按它排先后；天气看查询的地点
+  probe:
+    enabled: true             # 定期检测接口能不能用
+    intervalHours: 12         # 多久一次，1～48；最近有成功调用的接口会跳过
+  limits:                     # 每个工具各自的次数：每人每天、每群每小时
+    weather:      {perActorDaily: 20, perConversationHourly: 15}
+    exchangeRate: {perActorDaily: 20, perConversationHourly: 15}
+    calendar:     {perActorDaily: 0,  perConversationHourly: 0}   # 日历本地算加缓存，默认不限
+  # providers:                # 想改某个接口自己的上限时手写（页面不提供），0 用注册表里的
+  #   open-meteo: {dailyCap: 5000, perMinute: 300}
+
+# 主动联系（规格-主动联系，ADR-329）：她自己醒来想想要不要找主人。默认关；打开由主人在真实配置里做。
+# 现在做到第 2 步：到点醒来想一想，要开口只发本地窗口；QQ 和群还没接。看 sumika-ctl proactive log。
+# 下面的数字全是暂定值，看几天日志再调。改了要重启才生效。
+proactive:
+  enabled: false           # 总开关
+  characters: []           # 对哪些角色开，写角色 id
+  send: live               # live 真发 / think 只想不说（走完整流程、日志写"本想对谁说什么"，不发）；第 2 步起才有用
+  baseMinMinutes: 120      # 两次醒之间的基准间隔，在这两个数之间随机
+  baseMaxMinutes: 180
+  minGapMinutes: 45        # 乘过系数以后的间隔下限
+  maxGapHours: 12          # 上限
+  heatFactor: 0.7          # 主人回得热：系数乘它（缩短间隔）
+  coldFactor: 1.5          # 主人没理：系数乘它（拉长间隔）；连续冷 3 次当天不再找
+  factorMin: 0.5
+  factorMax: 3
+  followUpMinutes: 20      # 发话后主人没回，多久再醒一次
+  maxFollowUps: 2
+  sleep:                   # 默认睡觉时段（本机时区，可跨午夜）。只是软信号：这段时间里主人实际在活跃就照常放行
+    start: "01:00"
+    end: "09:00"
+  activeWithinMinutes: 30  # 这么久内有活跃迹象，算"在活跃"
+  chattingWithinMinutes: 10 # 这么久内发过言，算"正在聊"，先不打扰
+  deferMinutes: 15         # 被拦下以后顺延多久再看
+  maxThreadsPerDay: 4      # 每天最多开几条线
+  maxSendsPerThread: 3     # 每条线最多发几条
+  maxOpenThreads: 1
+  claimWindowMinutes: 10   # 第 2 步起：主人回复多久内算回这条线
+  claimGraceMinutes: 2
+  chatIdleMinutes: 10
+  closeAfterHours: 6       # 线最长开着
+  presenceWindowHours: 24  # 主人在哪活跃：只看这段时间内他说过话的地方
+  snoozeDefaultHours: 24   # 主人说别烦以后默认多久不找
+  snoozeMaxDays: 7
+  decisionLogDays: 90      # 导演日志保留多少天
+  notify: true             # 第 2 步起：本地窗口不在前台时弹系统通知
+
+# 桌面系统通知按类的开关（规格-目标和循环“提醒”）：后台说有件事要你看时，先看这一类开着没有；
+# 窗口在前台且你正看着那个会话不弹，其余情况（窗口在后台、最小化、或在前台但看的是别的会话）弹。设置页“通知”里能改，立即生效。
+# 主动联系的通知另在 proactive.notify。
+notifications:
+  goal: true               # 目标达成，或暂停了要你看一眼
+  loop: true               # 定期任务有内容要看或出错（每个任务自己的通知档仍有效）
+  approval: true           # 有操作等你批准
+  question: true           # 她有问题想问你
+  reminder: true           # 提醒到点
+
+# 提醒（规格-提醒，ADR-330 第 1 条）：她能自己建提醒，只在听众是主人的场合（本地私聊、主人 QQ 私聊、主动联系的线）。
+# 到点她用自己的话说一句，模型出错退回原文；程序没开着错过的，下次启动补上并说明晚了多久。改了要重启才生效。
+reminders:
+  enabled: true            # 关了她看不到工具，已有的不响，设置页还能看
+  maxActive: 20            # 每个角色同时存在的条数，她建新的时数；你自己在设置页建不受限
+  minIntervalMinutes: 60   # 她建或改周期提醒的最短间隔；线里建的一次性最早也是这么久以后。不让提醒绕过主动联系的节奏
+  threadMaxActive: 3       # 她在主动联系的线里建的、没结束的最多几条
+  qq: false                # 能不能发到你的 QQ 私聊；还要 qq.reply 开着、发送条件齐
+  defaultTargets: [local]  # 没写 targets 的提醒发到哪：local 本地窗口、qq QQ 私聊（要先开上面那个）
+
+# 内置拦截插件：只读设置会展示现状，改文件后重启接收生效。群默认关，能接的 QQ 私聊戳回去默认开（ADR-189）
+plugins:
+  sessions: {}             # 完整会话 ID → 开关；未设的沿用默认
+  # sessions:
+  #   "qq:group:12345": {repeater: true, poke: true}
+  #   "qq:private:23456:34567": {poke: false}
+  # 每个插件一节 plugins.<id>（规格-插件两层）。Go 内置插件读两样：enabled（开关，没写就用插件自己的默认，清单里的默认开关）
+  # 和清单 Settings 声明的设置字段（plugins.<id>.<字段>，设置页的表单画法还没接，先改这个文件）；开关由宿主 Reconcile 接收，不用重启整个后台。插件 id 不能叫 sessions。
+  # 下面 example-echo、life-tools、link-reader 这几段是 Bun 后台（server/plugins/<id>/）的写法；ADR-359 起 Bun 后台冻结，Go 不认这些键里 Bun 专有的部分，只留作参考。
+  # 数据目录里 plugins/ 下她自己写的插件不会被装载。
+  # example-echo:                  # 示例插件，默认关
+  #   enabled: true
+  #   settings: {note: "每轮往参考信息末尾加的一行备注"}
+  # life-tools:                    # 生活工具（日历 calendar、天气 weather、汇率 exchange_rate），默认开；设置键名照 Go 的 location、calendar、freeApi
+  #   settings:
+  #     location:                  # 主人的所在地（不写 = 没设，不传地点时 weather 回"不知道在哪"）；Bun 后台读不到顶层的 location，要在这里再写一遍
+  #       name: 某区，某市，中国    #   规范显示名
+  #       city: 某市               #   群场合只说到这一级
+  #       region: 某省
+  #       country: 中国
+  #       countryCode: CN          #   两位大写；省略时国家写中国或时区是 Asia/Shanghai 按 CN
+  #       latitude: 31.26
+  #       longitude: 121.48
+  #       cityLatitude: 31.23      #   城市本身的坐标；没有就当群里不知道所在地
+  #       cityLongitude: 121.47
+  #       timezone: Asia/Shanghai
+  #     calendar: {holidayUrl: "https://example.com/{year}.json"}   # 法定假日数据地址（{year} 换成年份）；不写走注册表（jsDelivr → raw → timor.tech）
+  #     freeApi:                   # 免费接口注册表（同 Go 的 freeApi）；统计和次数只放内存，重启和热换后清零
+  #       networkRegion: cn        #   cn / global：节假日、汇率这类看网络线路的类别用
+  #       probe: {enabled: true, intervalHours: 12}
+  #       limits:                  #   每人每天 / 每群每小时（0 = 不限）；主人本人不计
+  #         weather: {perActorDaily: 20, perConversationHourly: 15}
+  #         exchangeRate: {perActorDaily: 20, perConversationHourly: 15}
+  #         calendar: {perActorDaily: 0, perConversationHourly: 0}
+  #       providers: {open-meteo: {dailyCap: 5000, perMinute: 300}}   # 覆盖注册表里某家的上限
+  #     endpoints: {open-meteo: "https://my-mirror.example/v1/forecast"}   # 把某个提供方换成自建镜像（Bun 新增；联网仍走出网检查）
+  # link-reader:                   # 链接读取（规格-Bun后台第5批 5.2），默认开：主人在本地私聊发的链接，她后台取来，下一轮参考信息里附 40 字摘要，细看用 read_link_detail。
+  #   settings:                    #   需要 Go 后台建好链接表（平台库迁移 chat/0004、0005，trace 库 0006），缺表时这个插件装不上；取数走宿主的出网检查和代理环境变量
+  #     context: {enabled: true}   #   总开关（同 Go 的 linkReader.context.enabled）；关了不取数、不拼参考信息、read_link_detail 回"没开"
+  #     maxLinks: 3                #   每条消息最多处理几个链接（1～10）
+  #     workers: 2                 #   同时取几条消息（1～4；改了要热换或重启）
+  #     queue: 256                 #   排着等的消息数上限，满了丢并记日志（1～4096；改了要热换或重启）
+  #     jobTimeoutSeconds: 45      #   一条消息的所有链接最多取多久（1～300）
+  #     waitSeconds: 2             #   拼参考信息时最多等还在取的多久（0～2.5；宿主给参考信息钩子 3 秒）
+  #     ttlHours: 24               #   共享缓存有效小时数（1～87600；改了要热换或重启）
+  #     requestTimeoutSeconds: 10  #   单个请求超时（1～30；改了要热换或重启）
+  #     recentNotes: 20            #   拼参考信息时看最近多少条带链接的消息（1～100）
+  #     noteAgeHours: 24           #   多久以前的消息不再补（0.1～8760）
+
+# 不接话名单（ADR-116）：主人确认后自己填，默认空；按平台号认，不按昵称。原文仍可作上下文
+reply:
+  deny: {}                 # "qq:12345": ai（AI号）/ bot（纯机器人）/ blocked（主人拉黑的）
+
+# 识图：QQ 收到的图和表情包在后台看一遍，她看到的是"[图片：一句话]"（规格-识图）
+vision:
+  enabled: true
+  # model: <能看图的模型>   # 经 Magpie。不替你选（ADR-098）：在设置 · 模型里选；没选图都不看
+  concurrency: 2                 # 同时看几张
+  backfillLanes: 2               # 主人点"把没看过的都看一遍"时同时看几张（单独一条队列，新来的图优先）
+  direct: true                   # 私聊发来的图不多、模型能看图时，直接给她看真图、不等识图描述（规格-真图直给）；关了就等描述
+  directMax: 4                   # 一条消息最多直接给几张；超过的、带合并转发里的图的走描述
+
+# 表达学习：从真人聊天里学"什么情境怎么说"，所有角色共用（ADR-054）
+expression:
+  learnGroups: true
+  learnPrivate: true
+  learnHome: false     # 本地默认不学；开了也只学主人的话
+  autoApprove: false   # 默认进"等审核"，主人点通过才用
+  # AI 号改由 reply.deny 标 ai；Go 的表达学习尚未启用，旧 expression.aiAccounts 不再使用
+  minLines: 8
+  maxPerBatch: 10
+  batchEvents: 40
+  idleMinutes: 10
+  sweepSeconds: 60
+  reviewHours: 3      # 每隔几小时把候选交给 AI 审一批，过了的进"等审核"（ADR-097）；0 = 不自动审
+  reviewBatches: 10   # 自动审一次最多几批（一批 10 条）
+
+tools:
+  # workdir: D:\Work   # 读写文件、跑命令的默认工作目录；不写就是用户目录
+  approvalMinutes: 10
+  approvalMode: manual   # manual 每次问 / auto 低风险自动放行 / yolo 全部放行（极危险的仍然问，ADR-021）；设置里改了当场生效，输入框能按会话单独切
+  autoApproveDirs: []    # 自动模式下写文件也能直接放行的目录（工作目录本身总是算在内）
+  checkpoints:
+    enabled: true  # write/edit/PowerShell 执行前留本地检查点；仅主人主窗口私聊能单次审批回退
+  # find 在范围大（驱动器根、用户目录，或工作目录之外又不在 git 仓库里）时用 Everything 的命令行 es.exe 加速，用不了就静默退回 fd（规格-Bun本地工具补齐）。
+  # 只有 Bun 后台读这一段，Go 后台不认；起点照旧过审批，结果里受保护目录和起点之外的会被丢掉。
+  everything:
+    enabled: true     # false = find 一律用 fd
+    path: ""          # es.exe 的路径；不写就自动找（PATH，再看 Program Files\Everything、D:\Programs\Everything）。写了但文件不存在 = 不用，不悄悄换成别的 es
+    timeoutMs: 3000   # es 最多等多久（100～60000），到点杀掉、退回 fd
+
+# 本地私聊由哪个后台管（规格-本地私聊切到Bun）。只在启动时读，改了要重启 sumika.exe。QQ 始终由 Go 管。
+backend:
+  local: go    # go（默认）：Go 管本地私聊、本地群聊、悄悄话、提醒；bun：sumika.exe 拉起 Bun 子进程管这些，Go 只读 local.db。退回就改回 go 再重启，数据不迁移
+  bun: ""      # Bun 的路径；不写就自动找（PATH 里的 bun，再看 %USERPROFILE%\.bun\bin\bun.exe）。只在 local: bun 时用
+  server: ""   # server/ 目录；不写就用资源根下的 server/。只在 local: bun 时用
+
+# 用户钩子（规格-用户钩子）：工具改完文件后跑 gofmt、回合要结束时跑 go vet 之类，把结果告诉她。
+# 钩子本身写在数据目录的 config/hooks.json（全局）和工作区的 .sumika/hooks.json（项目级，工作区要在下面 projectContext 的可信目录里才跑），
+# 格式和 Claude Code 的 hooks 一样，只认 PostToolUse、Stop；没写文件时什么也不跑。只在本地私聊、本地群聊生效，QQ 不跑。这里只放参数。
+hooks:
+  enabled: true
+  timeoutSeconds: 60     # 命令没写 timeout 时的时限，1～600
+  maxOutputBytes: 8192   # 每条命令的输出最多给她多少字节
+  maxParallel: 4         # 同时跑几条
+  stopMaxContinues: 3    # 结束前钩子没通过时，一轮最多让她接着修几次；0 只跑不续
+
+# Go 后台的项目说明（AGENTS.md 等）；默认开着，但不信任的目录一个都不读：本地聊天里发现说明文件时问一次，答“记住”就不再问（设置 · 工具与审批里能撤）。
+# trustedRoots 是手写预先信任的目录，须为本机存在的绝对真实路径，可以不写。
+projectContext:
+  enabled: true
+  trustedRoots: []
+  userContext: false  # 用户说明根单独启用；受保护路径目前仍按审批未通过处理
+
+# 备份（ADR-069，规格-数据目录与备份第十节）：库、角色卡、配置、草稿、回放样本；放在 dir 下，一份一个文件夹（带 manifest.json）。
+# 每天自动备份启动 2 分钟后、之后每小时看一次：最近 20 小时没有校验通过的每天备份、并且没有角色在回复，就做一份；
+# 保留最近 7 天每天一份加 4 个日历周每周一份，改动前的 30 天，手动的不删。sumika-ctl backup now|list 手动做、看总览
+# 备份目录不能在数据目录里面（会拒绝）；SUMIKA_DATA_DIR 指向临时目录时一律放在它旁边
+backup:
+  # dir: <备份目录>   # 不写就是数据目录旁边的 Sumika-备份/；建议放另一块硬盘
+  daily: true            # 每天自动备份一份（挑没有角色在回复的时候）；关了启动日志里记一行，手动备份照常
+  dailyMedia: stickers   # 每天那份带哪些媒体：none / stickers（表情包和头像）/ all
+  alertGB: 10            # 备份位置总共超过多少 GB（硬链接共用的只算一次）时在日志里提醒（不自动删手动的）
+  minFreeGB: 5           # 备份前目标盘至少要剩多少 GB（还要至少是预计大小的 2 倍，取大的；带全部媒体时可以复用上一份的不算）；0 = 不查
+  runMaxHours: 6         # 一份备份最多做几小时，超过就取消并记失败（0.5～72）
+  closeWaitSeconds: 30   # 退出时最多等正在做的备份收尾几秒，不无限等（1～600）
+
+# 看门狗（规格-看门狗）：开机自启和 sumika.exe -watch 启动的守护进程，盯着桌面程序有没有无声退出
+logs:
+  level: info                # 日志最低级别：debug | info | warn | error；调试细节默认不写（规格-日志分级）
+  modules: {}                # 按模块覆盖，比如 {turn: debug, snowluma: warn}；模块名见 internal/applog 的名单，写错的模块名读配置时报错
+watchdog:
+  heartbeatSeconds: 60       # 桌面程序每隔多少秒写一次心跳（<数据目录>/run/heartbeat.json）（5～600）
+  stuckMinutes: 5            # 心跳这么久没更新、sumika-ctl status 也没人回话，才当卡死、杀掉重开（2～120；至少是心跳间隔的三倍）
+  startGraceMinutes: 3       # 刚拉起来还没写出第一次心跳的宽限（1～60）
+  crashLimit: 3              # crashWindowMinutes 分钟里异常退出这么多次，就不再拉起，只发通知（1～20）
+  crashWindowMinutes: 10     # 数连续崩溃的时间窗口（1～240）
+  restartDelaySeconds: 3     # 异常退出以后等几秒再拉起（0～60）
+  notify: true               # 异常退出、停止拉起时弹 Windows 桌面通知
+
+# 运行自检（规格-运行时自检）：桌面程序自己数几条守恒和卡住的不变量，每天写一个 <数据目录>/selfcheck/<日期>.json；只读、只记，不修、不补录、不发消息。阈值是暂定值，等在真实库的只读副本上量过再定
+selfcheck:
+  enabled: true                # 关掉就不数、不写文件
+  intervalSeconds: 300         # 每隔多少秒评估并刷新文件（30～600）；启动后固定等 2 分钟才开始第一次
+  receiptUnknownPerDay: 3      # 当天发送无回执达到几次算异常（1～1000）
+  stuckTurnMinutes: 30         # 回合开始后这么久没结局、不在跑、不在等审批，算卡住（5～1440）
+  reconnectCount: 6            # reconnectWindowMinutes 分钟里协议端断开这么多次，算重连风暴（2～100）
+  reconnectWindowMinutes: 10   # 数断开次数的窗口（1～60）
+  compactFailStreak: 3         # 同一个角色在同一个会话里压缩连续失败几次算异常（2～20）
+  stageFailStreak: 5           # 同一个后台模型阶段最近几次全部失败算异常（2～50）
+
+trace:
+  debug: false   # 打开后每次模型调用都存完整的请求和回复（排查问题用，很占地方）；平时只在出错时存，后台的活的回复一直存
+
+agent:
+  lifecycle:
+    maxPendingPerConversation: 32 # 待准入插话和下一工作，1～256
+    maxPendingGlobal: 256         # 全局待处理上限，1～2048
+    drainTimeoutMs: 10000         # 到期报告 draining，保留库和锁
+    stopGraceMs: 5000             # 已派发工具的宽限期；0 为立即取消，须小于 drainTimeoutMs
+    snapshotIntervalMs: 50        # 累计草稿唤醒间隔，终态立即通知
+    recoverInputs: hold          # 重启不自动续跑或补发
+  # 独立审阅只用于显式工作；关闭时普通聊天不增加模型请求。开启须先接齐 K1/K2/K3 端口。
+  advisor:
+    enabled: false
+    model: ""              # 开启时必填当前模型列表里的路由，不自动换贵模型
+    mode: checkpoint
+    maxActive: 2            # 全局最多 2，同根同时 1；另合并一份未开始检查点
+    timeoutMs: 30000        # 包括等槽，仍受原根 deadline 限制
+    maxInputTokens: 12000   # 包含固定提示；UTF-8 字节保守计数，整组装入
+    maxOutputTokens: 1024
+    maxFindings: 4          # blocker 也计入
+    maxReviewsPerRoot: 3
+  verify:
+    enabled: false
+    model: ""
+    timeoutMs: 30000
+    maxOutputTokens: 2048
+    maxContinuations: 1     # 停止/失权/预算不足不续；证据未变不重复核验
+  maxLive: 8          # 同时保留的对话实例上限
+  idleMinutes: 45     # 闲置多久释放（ADR-109：跟缓存寿命对齐，释放后缓存从头算）
+  recentMessages: 30  # 重建上下文时至少带最近多少条聊天消息、最多不到两倍：起点锚定在这个数的整数倍上，攒够才整体往后跳，重建前后缓存前缀接得上（通知、她没说出口的不算数，也不进历史）。本地私聊和主人 QQ 私聊不看这个值，从上下文起点读（新话题分隔或会话第一条）
+  firstContentSeconds: 180  # 模型调用发出后最久等多久第一段内容（正文、思考、工具参数；网关心跳不算），超了断开重试；0 不管。先想很久不流式返回思考的模型调大
+  contentIdleSeconds: 180   # 两段内容之间最久等多久，同上
+  scheduler:
+    maxToolsPerRun: 4
+    maxToolsGlobal: 8
+    maxModelsGlobal: 4
+  budget:
+    # 这一组是 QQ、群聊、本地群聊、后台任务（目标续轮、定期任务）的额度：没有人逐次看着，所以默认硬停（Hermes 的无人值守做法）
+    maxRequests: 24
+    maxTools: 60
+    maxTokens: 524288
+    maxOutputTokens: 524288   # 累计输出，默认和累计令牌一样（不另设更小的数，免得一次长回复就把后面的请求全挤掉）
+    maxDurationMs: 900000
+    maxCostMicros: null  # 暂不支持设金额：供应商没有可证明的价格上界，设了会让所有请求被拒，加载配置时就会报错
+    requestOutputTokens: 0  # 单次输出：0 = 跟模型自己报的输出上限走；写正数只是可选的封顶
+    # 下面是你在本地主窗口私聊里干活的额度。别家的主窗口（Codex、opencode、omp、pi）都没有请求次数、累计令牌、时限上限，
+    # 防跑飞靠重复调用检测（同工具同参数连续出现会提醒）和你随时打断，所以这里默认全关：每一项 0 = 不设。要设就写正数
+    local:
+      maxRequests: 0
+      maxTools: 0
+      maxTokens: 0
+      maxOutputTokens: 0
+      maxDurationMs: 0
+      requestOutputTokens: 0   # 0 = 跟模型；写正数是可选封顶，到了会被截断，主窗口会提示
+  context:
+    # window: 200000  # 上下文封顶；不写就跟着模型自己报的长度（ADR-062）
+    reserve: 16384    # 留给回复和工具往返
+    softRatio: 0.7    # 超过这一比例，本轮之前的工具结果换成短占位；不能大于 hardRatio
+    hardRatio: 0.85   # 超过这一比例：话题压缩，闲聊只带最近的话重建
+    keepTokens: 20000 # 压完（或只带最近的话时）保留最近多少原文
+    topicCompactAt: 200000  # 话题到这么大就压（ADR-074），闲聊不看这个
+    autoCompactChat: true   # 本地闲聊每整理完一批记忆就把整理过的压掉、快满了也压缩；关掉的话满了只带最近的话
+  idleCompact:
+    enabled: true           # 本地私聊闲下来时在后台把之前的聊天整理成摘要（ADR-388）；主人 QQ 私聊、群聊不做
+    after: 50               # 最后一轮结束后安静多少分钟才整理；赶在一小时缓存过期之前
+    minTokens: 200000       # 实例小于这么多 token 不整理，省一次模型费用；必须大于 context.keepTokens 的 2 倍
+  thinking:           # 思考档位，按场合；模型没有这一档时 pi 先往上找、上面没有才往下
+    local: medium
+    private: low
+    group: low
+
+# 模型的窗口和单次输出从哪来（ADR-334）。每个字段按这个顺序取：你写的覆盖 > 服务商或网关（Magpie）返回的 > models.dev 本地缓存（只补空，不盖服务商报的）> 保守默认（窗口 128000、单次输出 32000，模型页标"未知"）。
+# 在模型页里改覆盖最方便；这里写也行
+modelMeta:
+  modelsDev:
+    enabled: true                         # 联网取 models.dev 的模型资料，缓存在数据目录的 cache/models-dev.json；离线用缓存，取不到不影响启动。只发 GET，不带你的任何信息
+    url: https://models.dev/api.json
+    proxy: ""                             # 空 = 沿用 linkReader.proxy，再没有按系统环境变量
+    refreshHours: 4                       # 缓存过了这么久才刷新（带 ETag，没变化几乎不花流量）；模型页可以手动刷新
+  overrides: {}                           # 例：{"auto/deepseek-flash": {contextWindow: 200000, maxOutputTokens: 64000}}；0 = 这一项不覆盖
+
+# QQ 渠道（规格-QQ渠道）：没配 accounts 就什么都不连。下面的号都是占位，真实号码只写在自己的 sumika.yml 里
+qq:
+  # owner: 10000             # 主人的 QQ 号
+  accounts: []
+  #  - id: 10001             # 她的号
+  #    character: a          # 绑给哪个角色
+  #    url: ws://127.0.0.1:3001   # Go receive 模式选中的账号必须填写；不自动查找协议端地址
+  #    token: ${SNOWLUMA_TOKEN}   # 访问令牌：一般不写，存在加密的密钥里（ADR-071，直接写的明文启动时会挪过去）；设置 · 平台账号里可以"从 SnowLuma 读取"（ADR-100）；也能写成 ${环境变量名}
+  groups: []                 # 群白名单
+  privateAllow: []           # 私聊白名单
+  reply: false               # QQ 私聊自动回复，默认关（ADR-037）
+  goSend: false              # Go 小号发送开关；还要意图交给 Go、持发送锁、核验健康、完整守卫及暂停检查齐全
+  media:
+    download: true           # 收到的图片、表情和视频下载进本地媒体库；关掉只是不下载，消息照常存
+    # 视频 ≤100 MiB 自动下载；超限等手动请求，图片仍为 20 MiB（ADR-255）。
+    ffmpeg: ""              # 视频抽封面：先找配置路径，再找 PATH；缺工具仍能下载和播放
+    ffprobe: ""             # 视频时长和宽高：先找配置路径，再找 PATH
+  forward:
+    fetch: true              # 收到的合并转发自动取回（含陌生人），只读查询；她的上下文仍只写占位
+  remoteApproval:            # 主人 QQ 私聊审批（规格-主人QQ私聊审批）；QQ 账号被盗就能执行，默认关；群里不开放
+    enabled: false           # 打开后：本地审批主人离开时发到私聊、回复“同意”就批；主人私聊发起的这一轮能申请执行和写文件
+    awayAfterSeconds: 60     # 本地审批等多少秒、主人又不在才发 QQ（0～600，0 是一出单就发）
+  # qqDir、qqDataDir、protocolDir、protocolLogDir：Go 版不读这四项（尚未生效），不用写；旧版“启动时自己找、找到了写回”的做法已经没有
+  backfill:
+    enabled: true            # 重连后补录空档，只存历史、不触发回复
+    groups: true             # 白名单群和私聊一起补（ADR-239）；起点取 qq_sync 水位减 60 秒
+
+# 内核生态来源（均默认关；启用还须宿主身份、来源授权和审批端口）
+skills:
+  enabled: false
+  indexBytes: 8192
+  pageItems: 20
+  readBytes: 32768
+  fileMaxBytes: 1048576
+  contextMaxBytes: 131072
+  scanTimeoutMs: 5000
+  roots: []                  # 宿主绑定稳定 id、path、scope；不自动加载候选产物
+web:
+  enabled: false
+  search_provider: auto      # auto：按下面的 searchOrder 选第一个可用的（有 key 且没用完；searxng 要配地址；duckduckgo 免 key）；也可直接写其中一家
+  fetch_provider: auto       # auto：按下面的 fetchOrder 依次试，前一家失败（报错、内容为空、人机校验页）就换下一家；也可直接写 http、deepseek、tavily、firecrawl 之一
+  searchOrder: [deepseek, tavily, exa, brave, firecrawl, searxng, duckduckgo]   # auto 搜索的先后；设置页里可以拖动排序，改了立即生效
+  fetchOrder: [http, deepseek, tavily, firecrawl]                              # auto 抓网页的先后；http 是本机直接读，免费，排第一
+  timeoutMs: 30000
+  responseMaxBytes: 5242880
+  maxInflight: 4
+  maxInflightPerTask: 2
+  maxQueriesPerTask: 4
+  maxFetchesPerTask: 8
+  maxDispatchesPerTask: 12
+  searchCacheSeconds: 300
+  fetchCacheSeconds: 600
+  cacheBytes: 0x1000000       # 16 MiB
+  cacheEntries: 256
+  keyRef: ""                 # Tavily 的 key 引用，写密钥库或环境变量的引用（名字建议 web.tavily.apiKey）；不写明文 key
+  exaKeyRef: ""              # Exa 的 key 引用，名字建议 web.exa.apiKey
+  braveKeyRef: ""            # Brave Search 的 key 引用，名字建议 web.brave.apiKey
+  firecrawlKeyRef: ""        # Firecrawl 的 key 引用（搜索和读取共用），名字建议 web.firecrawl.apiKey
+  deepseekKeyRef: ""         # DeepSeek 的 key 引用（搜索和抓网页共用，按成功请求计费），名字建议 web.deepseek.apiKey
+  wiki:
+    moegirlHosts: [zh.moegirl.org.cn, moegirl.uk]   # 查百科工具里萌娘百科的来源，依次试；主站不让用接口或出校验页就换下一个（镜像）。只写主机名
+  searxng:
+    url: ""                  # 自己的 SearXNG 实例地址（实例要启用 json 格式）；不填就不用 searxng
+  timezone: Asia/Shanghai
+  # dailySearch、dailyFetch、monthlyMicroCredits：本地额度，可选；不写就不限（搜索服务能查到余额时按服务商的真实余额），写了照办，0 表示禁止
+subagents:
+  enabled: false
+  model: ""                  # 必须显式选模型，不隐式使用更贵的模型
+  maxDepth: 1
+  maxActivePerRoot: 4
+  maxActiveGlobal: 8
+  maxActivePerRequester: 2
+  researchTimeoutMs: 120000
+  localTimeoutMs: 900000
+  softRequestBudget: 200      # 一个子代理请求到这个次数时给它一句收尾提示，到 1.5 倍强停（照 omp 的 task.softRequestBudget）；0 = 不设
+  createTimeoutMs: 5000
+  resultTimeoutMs: 5000
+# MCP 另读 config/mcp.json：可以直接贴 Claude Desktop、Claude Code 的 mcpServers 片段（总开关、服务开关、include 不写就是开、全部工具；写了 false 或名单照旧生效）。

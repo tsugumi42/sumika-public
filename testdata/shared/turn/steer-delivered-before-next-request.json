@@ -1,0 +1,107 @@
+{
+  "id": "steer-delivered-before-next-request",
+  "about": "steer 插进正在跑的这一轮：这一步（含工具）做完、下一次请求之前送到，同一轮，不新开",
+  "source_tests": [
+    "steer.go",
+    "turn/testdata/cases/steer-tool.json"
+  ],
+  "replies": [
+    "tool",
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "甲句",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "s",
+      "mode": "steer",
+      "text": "插话丁",
+      "expected_run": "a",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 2
+      }
+    },
+    {
+      "do": "release",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "wait_request",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "release",
+      "n": 2,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "done"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      },
+      {
+        "label": "s",
+        "state": "admitted",
+        "run": "a"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "done"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      },
+      {
+        "n": 2,
+        "contains": [
+          "a",
+          "s"
+        ]
+      }
+    ],
+    "steers": [
+      {
+        "phase": "delivered",
+        "input": "s",
+        "requeue": false
+      }
+    ]
+  }
+}

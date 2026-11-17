@@ -1,0 +1,362 @@
+{
+  "name": "hidden-and-recall",
+  "doc": "定期任务没分类、回了[无事]的行不显示；撤回通知让被撤回那条 recalled，通知本身照常在聊天记录里；会话列表的预览只看普通消息和系统行",
+  "source_tests": [
+    "store/display_notices_test.go",
+    "store/display_preview_test.go"
+  ],
+  "characters": [
+    {
+      "id": "a",
+      "name": "编造甲"
+    },
+    {
+      "id": "b",
+      "name": "编造乙"
+    }
+  ],
+  "rows": {
+    "qq": [
+      {
+        "table": "events",
+        "values": {
+          "seq": 1,
+          "id": "E01",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "会被撤回",
+          "created_at": 1000
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 1
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 2,
+          "id": "E02",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "character",
+          "actor_id": "80001",
+          "kind": "message",
+          "text": "定期任务没分类",
+          "created_at": 1001,
+          "origin": "automation:loop-pending"
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 2
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 3,
+          "id": "E03",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "character",
+          "actor_id": "80001",
+          "kind": "message",
+          "text": "无事",
+          "created_at": 1002,
+          "origin": "automation:loop-quiet"
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 3
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 4,
+          "id": "E04",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70002",
+          "kind": "message",
+          "text": "正常一条",
+          "created_at": 1003
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 4
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 5,
+          "id": "E05",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "notice",
+          "text": "撤回了一条消息",
+          "created_at": 1004,
+          "segments_json": "{\"notice\":\"recall\"}",
+          "reply_to": "E01"
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 5
+        }
+      }
+    ]
+  },
+  "calls": [
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 200
+        }
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "high_water": 5,
+            "items": [
+              {
+                "actor_id": "70001",
+                "actor_kind": "human",
+                "actor_uid": "70001",
+                "created_at": 1000,
+                "display_name": "70001",
+                "kind": "message",
+                "recalled": true,
+                "ref": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E01",
+                    "platform": "qq"
+                  }
+                },
+                "seq": 1,
+                "text": "会被撤回",
+                "version": 1
+              },
+              {
+                "actor_id": "70002",
+                "actor_kind": "human",
+                "actor_uid": "70002",
+                "created_at": 1003,
+                "display_name": "70002",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E04",
+                    "platform": "qq"
+                  }
+                },
+                "seq": 4,
+                "text": "正常一条",
+                "version": 1
+              },
+              {
+                "actor_id": "70001",
+                "actor_kind": "human",
+                "actor_uid": "70001",
+                "created_at": 1004,
+                "display_name": "70001",
+                "kind": "notice",
+                "ref": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E05",
+                    "platform": "qq"
+                  }
+                },
+                "reply": {
+                  "state": "ready",
+                  "value": {
+                    "actor_kind": "human",
+                    "display_name": "70001",
+                    "recalled": true,
+                    "ref": {
+                      "conversation": {
+                        "channel": "qq",
+                        "conversation": "qq:group:90002",
+                        "platform": "qq",
+                        "scene": "group"
+                      },
+                      "event": {
+                        "event_id": "E01",
+                        "platform": "qq"
+                      }
+                    },
+                    "text": "会被撤回"
+                  }
+                },
+                "reply_to": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E01",
+                    "platform": "qq"
+                  }
+                },
+                "seq": 5,
+                "text": "撤回了一条消息",
+                "version": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "overview.read",
+      "params": {
+        "limit": 50
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "capabilities": [
+              {
+                "name": "local-group",
+                "reason": "当前数据源只看历史，不能建群或发消息",
+                "state": "unsupported"
+              },
+              {
+                "name": "runtime",
+                "reason": "宿主状态尚未接入",
+                "state": "unsupported"
+              }
+            ],
+            "characters": {
+              "items": [
+                {
+                  "state": "ready",
+                  "value": {
+                    "id": "a",
+                    "name": "编造甲"
+                  }
+                },
+                {
+                  "state": "ready",
+                  "value": {
+                    "id": "b",
+                    "name": "编造乙"
+                  }
+                }
+              ]
+            },
+            "conversations": {
+              "items": [
+                {
+                  "key": {
+                    "channel": "console",
+                    "conversation": "console:a",
+                    "platform": "local",
+                    "scene": "private"
+                  }
+                },
+                {
+                  "key": {
+                    "channel": "console",
+                    "conversation": "console:b",
+                    "platform": "local",
+                    "scene": "private"
+                  }
+                },
+                {
+                  "has_unread": true,
+                  "key": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "last": {
+                    "actor_id": "70002",
+                    "actor_kind": "human",
+                    "actor_uid": "70002",
+                    "created_at": 1003,
+                    "display_name": "70002",
+                    "kind": "message",
+                    "ref": {
+                      "conversation": {
+                        "channel": "qq",
+                        "conversation": "qq:group:90002",
+                        "platform": "qq",
+                        "scene": "group"
+                      },
+                      "event": {
+                        "event_id": "E04",
+                        "platform": "qq"
+                      }
+                    },
+                    "seq": 4,
+                    "text": "正常一条"
+                  },
+                  "observers": [
+                    "a"
+                  ]
+                }
+              ]
+            },
+            "runtime": {
+              "alerts": {},
+              "reason": "宿主状态尚未接入",
+              "reason_code": "runtime_not_attached"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

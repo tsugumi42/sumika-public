@@ -1,0 +1,97 @@
+{
+ "code": 200,
+ "status": {
+  "id": "1900000000000000023",
+  "text": "这是编造",
+  "raw_text": {
+   "facets": [
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0005",
+     "replacement": "https://x.com/ex_author13/status/1900000000000000023/photo/1"
+    },
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0009",
+     "replacement": "https://x.com/ex_author13/status/1900000000000000023/photo/1"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "ex_author17",
+   "id": "1900000000000000057",
+   "name": "编造作者畕",
+   "avatar_url": "https://pbs.twimg.com/profile_images/fixture/14_200x200.jpg"
+  },
+  "replies": 0,
+  "reposts": 31,
+  "likes": 409,
+  "bookmarks": 75,
+  "quotes": 3,
+  "created_timestamp": 1793707740,
+  "possibly_sensitive": false,
+  "views": 7272,
+  "is_note_tweet": false,
+  "community_note": null,
+  "replying_to": null,
+  "media": {
+   "all": [
+    {
+     "type": "photo",
+     "url": "https://pbs.twimg.com/media/fixture-16.jpg?name=orig",
+     "width": 1920,
+     "height": 1440
+    },
+    {
+     "type": "photo",
+     "url": "https://pbs.twimg.com/media/fixture-18.jpg?name=orig",
+     "width": 1920,
+     "height": 1440
+    }
+   ]
+  },
+  "quote": {
+   "id": "1900000000000000058",
+   "text": "这",
+   "raw_text": {
+    "facets": [
+     {
+      "type": "media",
+      "display": "这是编造的示例帖子正文，仅用于解析测试。",
+      "original": "https://t.co/fixture0023",
+      "replacement": "https://x.com/ex_author13/status/1900000000000000003/photo/1"
+     }
+    ]
+   },
+   "author": {
+    "screen_name": "ex_author17",
+    "id": "1900000000000000057",
+    "name": "编造作者畕",
+    "avatar_url": "https://pbs.twimg.com/profile_images/fixture/28_200x200.jpg"
+   },
+   "replies": 1,
+   "reposts": 5,
+   "likes": 161,
+   "bookmarks": 16,
+   "quotes": 1,
+   "created_timestamp": 1792929840,
+   "possibly_sensitive": false,
+   "views": 10147,
+   "is_note_tweet": false,
+   "community_note": null,
+   "replying_to": null,
+   "media": {
+    "all": [
+     {
+      "type": "photo",
+      "url": "https://pbs.twimg.com/media/fixture-30.jpg?name=orig",
+      "width": 1200,
+      "height": 900
+     }
+    ]
+   }
+  }
+ }
+}

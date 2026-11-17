@@ -1,0 +1,1258 @@
+[
+ {
+  "name": "write-new",
+  "about": "新文件；带 purpose（包装时去掉）",
+  "tool": "write",
+  "args": {
+   "purpose": "写个文件",
+   "path": "a.txt",
+   "content": "甲\n乙"
+  }
+ },
+ {
+  "name": "write-nested",
+  "about": "上级目录不存在：自动建",
+  "tool": "write",
+  "args": {
+   "purpose": "写",
+   "path": "sub/deep/b.md",
+   "content": "# 标题\r\n正文\r\n"
+  }
+ },
+ {
+  "name": "write-overwrite",
+  "about": "覆盖已有的文件",
+  "tool": "write",
+  "args": {
+   "purpose": "写",
+   "path": "old.txt",
+   "content": "新的"
+  },
+  "files": {
+   "old.txt": "旧的内容，比新的长\n"
+  }
+ },
+ {
+  "name": "write-empty",
+  "about": "空内容",
+  "tool": "write",
+  "args": {
+   "purpose": "写",
+   "path": "empty.txt",
+   "content": ""
+  }
+ },
+ {
+  "name": "write-backslash",
+  "about": "反斜杠的相对路径；结果里照原样写参数里的路径",
+  "tool": "write",
+  "args": {
+   "purpose": "写",
+   "path": "sub\\c.txt",
+   "content": "丙"
+  },
+  "dirs": [
+   "sub"
+  ]
+ },
+ {
+  "name": "write-dot",
+  "about": "./ 开头",
+  "tool": "write",
+  "args": {
+   "purpose": "写",
+   "path": "./d.txt",
+   "content": "丁"
+  }
+ },
+ {
+  "name": "write-at",
+  "about": "@ 开头（pi 去掉 @）",
+  "tool": "write",
+  "args": {
+   "purpose": "写",
+   "path": "@e.txt",
+   "content": "戊"
+  }
+ },
+ {
+  "name": "write-nbsp",
+  "about": "路径里有不换行空格（pi 换成普通空格）",
+  "tool": "write",
+  "args": {
+   "purpose": "写",
+   "path": "f g.txt",
+   "content": "己"
+  }
+ },
+ {
+  "name": "write-dir",
+  "about": "路径是已有的目录：报错",
+  "tool": "write",
+  "args": {
+   "purpose": "写",
+   "path": "sub",
+   "content": "x"
+  },
+  "dirs": [
+   "sub"
+  ]
+ },
+ {
+  "name": "write-under-file",
+  "about": "上级是个文件：建目录报错",
+  "tool": "write",
+  "args": {
+   "purpose": "写",
+   "path": "a.txt/b.txt",
+   "content": "x"
+  },
+  "files": {
+   "a.txt": "甲\n"
+  }
+ },
+ {
+  "name": "write-under-file-deep",
+  "about": "上级的上级是个文件",
+  "tool": "write",
+  "args": {
+   "purpose": "写",
+   "path": "a.txt/x/y/z.txt",
+   "content": "x"
+  },
+  "files": {
+   "a.txt": "甲\n"
+  }
+ },
+ {
+  "name": "edit-one",
+  "about": "换一处",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "第二行",
+     "newText": "第 2 行"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-two",
+  "about": "两处，给的顺序和文件里的先后相反",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "第三行",
+     "newText": "三"
+    },
+    {
+     "oldText": "第一行",
+     "newText": "一"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-crlf",
+  "about": "CRLF 的文件：按 LF 找、写回 CRLF；oldText 里带 CRLF 也能找到",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "w.txt",
+   "edits": [
+    {
+     "oldText": "甲\r\n乙",
+     "newText": "甲\n乙乙"
+    }
+   ]
+  },
+  "files": {
+   "w.txt": "甲\r\n乙\r\n丙\r\n"
+  }
+ },
+ {
+  "name": "edit-mixed-ending",
+  "about": "第一个换行是 LF、后面有 CRLF：按 LF 写回",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "m.txt",
+   "edits": [
+    {
+     "oldText": "乙",
+     "newText": "二"
+    }
+   ]
+  },
+  "files": {
+   "m.txt": "甲\n乙\r\n丙\r\n"
+  }
+ },
+ {
+  "name": "edit-bom",
+  "about": "带 BOM：匹配时去掉、写回时加上",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "b.txt",
+   "edits": [
+    {
+     "oldText": "开头",
+     "newText": "开始"
+    }
+   ]
+  },
+  "files": {
+   "b.txt": "﻿开头\n"
+  }
+ },
+ {
+  "name": "edit-not-found",
+  "about": "找不到（一处）",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "第四行",
+     "newText": "x"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-not-found-multi",
+  "about": "找不到（几处里的第二处）",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "第一行",
+     "newText": "x"
+    },
+    {
+     "oldText": "第四行",
+     "newText": "y"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-dup",
+  "about": "出现两次（一处）",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "d.txt",
+   "edits": [
+    {
+     "oldText": "同",
+     "newText": "异"
+    }
+   ]
+  },
+  "files": {
+   "d.txt": "同\n同\n"
+  }
+ },
+ {
+  "name": "edit-dup-multi",
+  "about": "出现三次（几处里的第一处）",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "d.txt",
+   "edits": [
+    {
+     "oldText": "同",
+     "newText": "异"
+    },
+    {
+     "oldText": "尾",
+     "newText": "末"
+    }
+   ]
+  },
+  "files": {
+   "d.txt": "同\n同\n同\n尾\n"
+  }
+ },
+ {
+  "name": "edit-empty-old",
+  "about": "oldText 是空的（一处）",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "",
+     "newText": "x"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-empty-old-multi",
+  "about": "oldText 是空的（几处里的第二处）",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "第一行",
+     "newText": "x"
+    },
+    {
+     "oldText": "",
+     "newText": "y"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-overlap",
+  "about": "两处重叠",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "第一行\n第二",
+     "newText": "x"
+    },
+    {
+     "oldText": "二行\n第三",
+     "newText": "y"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-no-change",
+  "about": "换完和原来一样（一处）",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "第二行",
+     "newText": "第二行"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-no-change-multi",
+  "about": "换完和原来一样（两处）",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "第一行",
+     "newText": "第一行"
+    },
+    {
+     "oldText": "第三行",
+     "newText": "第三行"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-missing",
+  "about": "文件不存在",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "nope.txt",
+   "edits": [
+    {
+     "oldText": "a",
+     "newText": "b"
+    }
+   ]
+  }
+ },
+ {
+  "name": "edit-under-file",
+  "about": "上级是个文件",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt/b.txt",
+   "edits": [
+    {
+     "oldText": "a",
+     "newText": "b"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-dir",
+  "about": "路径是目录",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "sub",
+   "edits": [
+    {
+     "oldText": "a",
+     "newText": "b"
+    }
+   ]
+  },
+  "dirs": [
+   "sub"
+  ]
+ },
+ {
+  "name": "edit-no-edits",
+  "about": "edits 是空列表",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": []
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-fuzzy-trailing",
+  "about": "模糊：文件里行尾有空格，oldText 没有；没动到的行（第一行的行尾空格）保持原样",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "f.txt",
+   "edits": [
+    {
+     "oldText": "乙\n丙",
+     "newText": "乙乙\n丙"
+    }
+   ]
+  },
+  "files": {
+   "f.txt": "甲  \n乙 \n丙\t\n丁\n"
+  }
+ },
+ {
+  "name": "edit-fuzzy-quotes",
+  "about": "模糊：文件里是弯引号、破折号、不换行空格，oldText 是直的",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "q.txt",
+   "edits": [
+    {
+     "oldText": "say 'hi' - \"ok\" a b",
+     "newText": "换了"
+    }
+   ]
+  },
+  "files": {
+   "q.txt": "头\nsay ‘hi’ — “ok” a b\n尾 ‘x’\n"
+  }
+ },
+ {
+  "name": "edit-fuzzy-nfkc",
+  "about": "模糊：全角字母和全角空格（NFKC 换成半角）",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "n.txt",
+   "edits": [
+    {
+     "oldText": "A B",
+     "newText": "AB"
+    }
+   ]
+  },
+  "files": {
+   "n.txt": "Ａ　B\n"
+  }
+ },
+ {
+  "name": "edit-fuzzy-mixed",
+  "about": "一处精确、一处模糊：整个在模糊空间里换，精确那处所在的行也换成归一后的",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "x.txt",
+   "edits": [
+    {
+     "oldText": "精确",
+     "newText": "准"
+    },
+    {
+     "oldText": "it's",
+     "newText": "it is"
+    }
+   ]
+  },
+  "files": {
+   "x.txt": "精确 ‘\n中间’  \nit’s\n"
+  }
+ },
+ {
+  "name": "edit-fuzzy-dup",
+  "about": "模糊空间里才出现两次",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "y.txt",
+   "edits": [
+    {
+     "oldText": "'a'",
+     "newText": "b"
+    }
+   ]
+  },
+  "files": {
+   "y.txt": "‘a’\n'a' \n"
+  }
+ },
+ {
+  "name": "edit-string-edits",
+  "about": "edits 写成了 JSON 字符串（整理时解开）",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": "[{\"oldText\": \"第一行\", \"newText\": \"一\"}]"
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-single-object",
+  "about": "edits 是单个对象",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": {
+    "oldText": "第二行",
+    "newText": "二"
+   }
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-legacy",
+  "about": "老写法：顶层的 oldText / newText",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "oldText": "第三行",
+   "newText": "三"
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-legacy-plus",
+  "about": "老写法加 edits：接在 edits 末尾",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "第一行",
+     "newText": "一"
+    }
+   ],
+   "oldText": "第三行",
+   "newText": "三"
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "edit-new-has-crlf",
+  "about": "newText 里的 CRLF 先换成 LF，再按文件的换行写回",
+  "tool": "edit",
+  "args": {
+   "purpose": "改",
+   "path": "a.txt",
+   "edits": [
+    {
+     "oldText": "第二行",
+     "newText": "二\r\n二点五"
+    }
+   ]
+  },
+  "files": {
+   "a.txt": "第一行\n第二行\n第三行\n"
+  }
+ },
+ {
+  "name": "ps-hello",
+  "about": "中文输出（命令前面接了 UTF-8 输出的前缀）",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "Write-Output '你好'"
+  }
+ },
+ {
+  "name": "ps-no-output",
+  "about": "没有输出：(no output)",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "$null"
+  }
+ },
+ {
+  "name": "ps-exit",
+  "about": "有输出、非零退出",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "Write-Output 'a'; exit 3"
+  }
+ },
+ {
+  "name": "ps-exit-silent",
+  "about": "没输出、非零退出",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "exit 2"
+  }
+ },
+ {
+  "name": "ps-stderr",
+  "about": "只写 stderr、退出码 0",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "[Console]::Error.WriteLine('err')"
+  }
+ },
+ {
+  "name": "ps-cwd",
+  "about": "在工作目录里跑",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "(Get-Location).Path"
+  }
+ },
+ {
+  "name": "ps-path-bin",
+  "about": "PATH 里加了 pi 的 bin 目录（<HOME>/.pi/agent/bin；商店版 pwsh 自己又往最前面加了一段，所以不看第一个）",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "@($env:Path -split ';' | Where-Object { $_ -like '*\\.pi\\agent\\bin' }).Count"
+  }
+ },
+ {
+  "name": "ps-pi-env",
+  "about": "pi 会话的变量（外面设了也）不传给命令",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "\"[$env:PI_SESSION_ID][$env:PI_MODEL]\""
+  },
+  "env": {
+   "PI_SESSION_ID": "外面的会话",
+   "PI_MODEL": "外面的模型"
+  }
+ },
+ {
+  "name": "ps-lines",
+  "about": "超过 2000 行：留最后 2000 行、完整输出存文件",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "1..2500 | ForEach-Object { \"line $_\" }"
+  }
+ },
+ {
+  "name": "ps-bytes",
+  "about": "超过 50KB：按字节留尾巴",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "1..1000 | ForEach-Object { 'x' * 100 }"
+  }
+ },
+ {
+  "name": "ps-long-line",
+  "about": "一行就超过 50KB、没有换行：留这一行的最后 50KB",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "[Console]::Out.Write('y' * 60000)"
+  }
+ },
+ {
+  "name": "ps-long-line-nl",
+  "about": "一行超过 50KB、末尾有换行：pi 写的\"这一行多大\"是 0B（换行后面那一行）",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "[Console]::Out.Write(('z' * 60000) + \"`n\")"
+  }
+ },
+ {
+  "name": "ps-bad-utf8",
+  "about": "不是合法 UTF-8 的字节：按 WHATWG 的规则换成 U+FFFD",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "$o = [Console]::OpenStandardOutput(); $o.Write([byte[]](0xE4,0xB8,0x41,0xFF,0xF0,0x9F,0x98,0x0A), 0, 8); $o.Flush()"
+  }
+ },
+ {
+  "name": "ps-cmd-gbk",
+  "about": "cmd 按系统代码页输出中文",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "cmd /c echo 中文"
+  }
+ },
+ {
+  "name": "ps-trash",
+  "about": "Remove-Item 换成挪进回收站（测试时挪进测试目录）",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "Remove-Item a.txt; Test-Path a.txt"
+  },
+  "files": {
+   "a.txt": "甲\n"
+  }
+ },
+ {
+  "name": "ps-trash-not-empty",
+  "about": "目录不是空的又没写 -Recurse：报错、不删。结果里有\"Line | 42\"（回收站前缀占了前面的行）。Bun 录的带 pwsh 的 ANSI 颜色码（设了 NO_COLOR 就没有），Go 输出纯文本，比的是 intended.json 里登记的那份（ADR-182）；改了 trash.ts、换了 pwsh 版本都会让它变，先重新生成 golden、改登记再看是不是 Go 的问题",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "Remove-Item sub"
+  },
+  "files": {
+   "sub/x.txt": "x"
+  }
+ },
+ {
+  "name": "ps-timeout",
+  "about": "超时：杀掉、已有的输出后面接\"Command timed out after 4 seconds\"",
+  "tool": "powershell",
+  "args": {
+   "purpose": "跑一下",
+   "command": "Write-Output 'start'; Start-Sleep 30",
+   "timeout": 4
+  }
+ },
+ {
+  "name": "grep-basic",
+  "about": "一个文件里一处",
+  "tool": "grep",
+  "args": {
+   "pattern": "match"
+  },
+  "files": {
+   "a.txt": "甲\n乙 match\n丙\n",
+   "b.txt": "没有\n"
+  }
+ },
+ {
+  "name": "grep-none",
+  "about": "找不到",
+  "tool": "grep",
+  "args": {
+   "pattern": "zzz"
+  },
+  "files": {
+   "a.txt": "甲\n乙 match\n丙\n",
+   "b.txt": "没有\n"
+  }
+ },
+ {
+  "name": "grep-ignorecase",
+  "about": "不分大小写",
+  "tool": "grep",
+  "args": {
+   "pattern": "MATCH",
+   "ignoreCase": true
+  },
+  "files": {
+   "a.txt": "甲\n乙 match\n丙\n",
+   "b.txt": "没有\n"
+  }
+ },
+ {
+  "name": "grep-regex",
+  "about": "正则：同一个文件里两处（行号先后）",
+  "tool": "grep",
+  "args": {
+   "pattern": "a.b"
+  },
+  "files": {
+   "r.txt": "a.b\naxb\n"
+  }
+ },
+ {
+  "name": "grep-literal",
+  "about": "按字面找：只有 a.b",
+  "tool": "grep",
+  "args": {
+   "pattern": "a.b",
+   "literal": true
+  },
+  "files": {
+   "r.txt": "a.b\naxb\n"
+  }
+ },
+ {
+  "name": "grep-context",
+  "about": "带上下各一行",
+  "tool": "grep",
+  "args": {
+   "pattern": "match",
+   "context": 1
+  },
+  "files": {
+   "a.txt": "甲\n乙 match\n丙\n",
+   "b.txt": "没有\n"
+  }
+ },
+ {
+  "name": "grep-context-edge",
+  "about": "命中在第一行、上下文超出文件",
+  "tool": "grep",
+  "args": {
+   "pattern": "甲",
+   "context": 3
+  },
+  "files": {
+   "a.txt": "甲\n乙 match\n丙\n",
+   "b.txt": "没有\n"
+  }
+ },
+ {
+  "name": "grep-file",
+  "about": "path 是一个文件：只写文件名",
+  "tool": "grep",
+  "args": {
+   "pattern": "match",
+   "path": "a.txt"
+  },
+  "files": {
+   "a.txt": "甲\n乙 match\n丙\n",
+   "b.txt": "没有\n"
+  }
+ },
+ {
+  "name": "grep-subdir",
+  "about": "子目录里的：相对路径、正斜杠",
+  "tool": "grep",
+  "args": {
+   "pattern": "deep"
+  },
+  "files": {
+   "sub/x/deep.txt": "deep here\n",
+   "b.txt": "没有\n"
+  }
+ },
+ {
+  "name": "grep-glob",
+  "about": "glob 只看 .md",
+  "tool": "grep",
+  "args": {
+   "pattern": "match",
+   "glob": "*.md"
+  },
+  "files": {
+   "a.md": "match md\n",
+   "a.txt": "match txt\n"
+  }
+ },
+ {
+  "name": "grep-limit",
+  "about": "超过 limit：停下、写提示",
+  "tool": "grep",
+  "args": {
+   "pattern": "x",
+   "limit": 2
+  },
+  "files": {
+   "m.txt": "x1\nx2\nx3\nx4\n"
+  }
+ },
+ {
+  "name": "grep-long-line",
+  "about": "一行超过 500 个码元：截断、写提示",
+  "tool": "grep",
+  "args": {
+   "pattern": "needle"
+  },
+  "files": {
+   "l.txt": "needle长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长\n"
+  }
+ },
+ {
+  "name": "grep-gitignore-nogit",
+  "about": "不在 git 仓库里：rg 不认 .gitignore（pi 没加 --no-require-git）",
+  "tool": "grep",
+  "args": {
+   "pattern": "secret"
+  },
+  "files": {
+   ".gitignore": "ignored.txt\n",
+   "ignored.txt": "secret\n"
+  }
+ },
+ {
+  "name": "grep-ignore-file",
+  "about": ".ignore 不管在不在 git 仓库里都认",
+  "tool": "grep",
+  "args": {
+   "pattern": "secret"
+  },
+  "files": {
+   ".ignore": "hidden.txt\n",
+   "hidden.txt": "secret\n",
+   "shown.txt": "secret too\n"
+  }
+ },
+ {
+  "name": "grep-hidden",
+  "about": "点开头的目录也搜（--hidden）",
+  "tool": "grep",
+  "args": {
+   "pattern": "dot"
+  },
+  "files": {
+   ".cfg/x.txt": "dot file\n"
+  }
+ },
+ {
+  "name": "grep-missing-path",
+  "about": "路径不存在",
+  "tool": "grep",
+  "args": {
+   "pattern": "x",
+   "path": "nope"
+  },
+  "files": {
+   "a.txt": "甲\n乙 match\n丙\n",
+   "b.txt": "没有\n"
+  }
+ },
+ {
+  "name": "grep-bad-regex",
+  "about": "正则写错了：rg 的报错原文",
+  "tool": "grep",
+  "args": {
+   "pattern": "("
+  },
+  "files": {
+   "a.txt": "甲\n乙 match\n丙\n",
+   "b.txt": "没有\n"
+  }
+ },
+ {
+  "name": "grep-crlf",
+  "about": "CRLF 的文件：去掉 \\r",
+  "tool": "grep",
+  "args": {
+   "pattern": "乙"
+  },
+  "files": {
+   "w.txt": "甲\r\n乙\r\n"
+  }
+ },
+ {
+  "name": "grep-crlf-context",
+  "about": "CRLF 带上下文（从文件读的那条路）",
+  "tool": "grep",
+  "args": {
+   "pattern": "乙",
+   "context": 1
+  },
+  "files": {
+   "w.txt": "甲\r\n乙\r\n丙\r\n"
+  }
+ },
+ {
+  "name": "grep-unicode-digit",
+  "about": "Rust 正则的 \\d 认全角 / 阿拉伯数字",
+  "tool": "grep",
+  "args": {
+   "pattern": "\\d\\d"
+  },
+  "files": {
+   "d.txt": "１２\n٣٤\nab\n"
+  }
+ },
+ {
+  "name": "find-basic",
+  "about": "按文件名匹配（任何一层）",
+  "tool": "find",
+  "args": {
+   "pattern": "*.txt"
+  },
+  "files": {
+   "a.txt": "",
+   "b.md": "",
+   "sub/c.txt": ""
+  }
+ },
+ {
+  "name": "find-none",
+  "about": "找不到",
+  "tool": "find",
+  "args": {
+   "pattern": "*.zzz"
+  },
+  "files": {
+   "a.txt": "",
+   "b.md": "",
+   "sub/c.txt": ""
+  }
+ },
+ {
+  "name": "find-full-path",
+  "about": "带 / 的按整个路径匹配（前面补 **/）",
+  "tool": "find",
+  "args": {
+   "pattern": "sub/*.txt"
+  },
+  "files": {
+   "a.txt": "",
+   "b.md": "",
+   "sub/c.txt": ""
+  }
+ },
+ {
+  "name": "find-dir",
+  "about": "匹配到目录：结尾带 /",
+  "tool": "find",
+  "args": {
+   "pattern": "sub"
+  },
+  "files": {
+   "a.txt": "",
+   "b.md": "",
+   "sub/c.txt": ""
+  }
+ },
+ {
+  "name": "find-subpath",
+  "about": "在子目录里找",
+  "tool": "find",
+  "args": {
+   "pattern": "*.txt",
+   "path": "sub"
+  },
+  "files": {
+   "a.txt": "",
+   "b.md": "",
+   "sub/c.txt": ""
+  }
+ },
+ {
+  "name": "find-gitignore-nogit",
+  "about": "不在 git 仓库里也认 .gitignore（--no-require-git）",
+  "tool": "find",
+  "args": {
+   "pattern": "*.txt"
+  },
+  "files": {
+   ".gitignore": "ignored.txt\n",
+   "ignored.txt": "",
+   "kept.txt": ""
+  }
+ },
+ {
+  "name": "find-gitignore-git",
+  "about": "在 git 仓库里（有 .git 目录）认 .gitignore",
+  "tool": "find",
+  "args": {
+   "pattern": "*.txt"
+  },
+  "files": {
+   ".gitignore": "ignored.txt\n",
+   "ignored.txt": "",
+   "kept.txt": ""
+  },
+  "dirs": [
+   ".git"
+  ]
+ },
+ {
+  "name": "find-hidden",
+  "about": "点开头的也找",
+  "tool": "find",
+  "args": {
+   "pattern": "*.txt"
+  },
+  "files": {
+   ".cfg/x.txt": "",
+   "y.txt": ""
+  }
+ },
+ {
+  "name": "find-limit",
+  "about": "到 limit：写提示",
+  "tool": "find",
+  "args": {
+   "pattern": "*.txt",
+   "limit": 1
+  },
+  "files": {
+   "only.txt": "",
+   "other.md": ""
+  }
+ },
+ {
+  "name": "find-missing-path",
+  "about": "路径不存在：fd 的报错原文",
+  "tool": "find",
+  "args": {
+   "pattern": "*.txt",
+   "path": "nope"
+  },
+  "files": {
+   "a.txt": "",
+   "b.md": "",
+   "sub/c.txt": ""
+  }
+ },
+ {
+  "name": "read-limit-negative",
+  "about": "limit 是负数、结尾在开头前面：JS 的 slice 给空，再提示还有几行（以前 Go 切片越界崩掉）",
+  "tool": "read",
+  "args": {
+   "path": "a.txt",
+   "offset": 3,
+   "limit": -1
+  },
+  "files": {
+   "a.txt": "a\nb\nc"
+  }
+ },
+{
+  "name": "read-limit-negative-from-start",
+  "about": "没给 offset、limit 是 -1：slice(0, -1) 从尾巴倒着数，少最后一行",
+  "tool": "read",
+  "args": {
+   "path": "a.txt",
+   "limit": -1
+  },
+  "files": {
+   "a.txt": "a\nb\nc"
+  }
+ },
+{
+  "name": "read-fraction",
+  "about": "offset、limit 是小数：先按数算再取整切，提示里的行号照 JS 写成小数",
+  "tool": "read",
+  "args": {
+   "path": "a.txt",
+   "offset": 1.5,
+   "limit": 1.5
+  },
+  "files": {
+   "a.txt": "a\nb\nc"
+  }
+ },
+{
+  "name": "read-offset-negative",
+  "about": "offset 是负数：当成从第一行开始",
+  "tool": "read",
+  "args": {
+   "path": "a.txt",
+   "offset": -4,
+   "limit": 2
+  },
+  "files": {
+   "a.txt": "a\nb\nc"
+  }
+ },
+{
+  "name": "ls-limit-fraction",
+  "about": "limit 是小数：数到 2 条还不够 2.5，取到第 3 条才停；提示照 JS 写 2.5 和 5",
+  "tool": "ls",
+  "args": {
+   "limit": 2.5
+  },
+  "files": {
+   "a.txt": "",
+   "b.txt": "",
+   "c.txt": "",
+   "d.txt": ""
+  }
+ },
+ {
+  "name": "read-file-url",
+  "about": "路径写成工作目录的 file:// 地址：照 Node 的 fileURLToPath 换成路径再读（以前 Go 当成普通路径去拼）",
+  "tool": "read",
+  "args": {
+   "path": "<WORKDIR_URL>/sub/a%20b.md"
+  },
+  "files": {
+   "sub/a b.md": "甲\n"
+  }
+ }
+]

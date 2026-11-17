@@ -1,0 +1,747 @@
+{
+  "id": "segments",
+  "about": "消息段怎么翻：文字、at、引用、图片 / 表情包（sub_type 与 summary 规则）、表情、转发、卡片、认不出的；媒体地址和文件名的过滤",
+  "source_tests": [
+    "TestTranslate segmentCases"
+  ],
+  "cases": [
+    {
+      "name": "text",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"text\",\"data\":{\"text\":\"你好\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "text",
+              "text": "你好"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "at",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"at\",\"data\":{\"qq\":200}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "at",
+              "target": "200"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "at-all",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"at\",\"data\":{\"qq\":\"all\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "at",
+              "target": "all"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "reply",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"reply\",\"data\":{\"id\":300}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "reply",
+              "target": "300"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"fake\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image",
+              "file": "fake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-sub0-summary-image",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"fake\",\"sub_type\":0,\"summary\":\"[图片]\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image",
+              "file": "fake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-sub4",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"fake\",\"sub_type\":\"4\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image",
+              "file": "fake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-sub9-blank-summary",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"fake\",\"sub_type\":9,\"summary\":\" \"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image",
+              "file": "fake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "sticker-sub1",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"fake\",\"sub_type\":1,\"summary\":\"[动画表情]\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "emoji",
+              "file": "fake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "sticker-sub7",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"fake\",\"sub_type\":7}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "emoji",
+              "file": "fake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "sticker-by-summary",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"fake\",\"summary\":\"[动画表情]\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "emoji",
+              "file": "fake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "sticker-market-url",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"url\":\"https://gxh.vip.qq.com/club/item/parcel/0/fake\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "emoji",
+              "url": "https://gxh.vip.qq.com/club/item/parcel/0/fake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "sticker-market-file-name",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"ab-0123456789ABCDEF0123456789abcdef.gif\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "emoji",
+              "file": "ab-0123456789ABCDEF0123456789abcdef.gif"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-real-shape-keeps-url-and-file",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"url\":\"https://multimedia.example.invalid/download?appid=1&fileid=编的&rkey=编的\",\"file\":\"0123ABCD.jpg\",\"sub_type\":0,\"summary\":\"\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image",
+              "url": "https://multimedia.example.invalid/download?appid=1&fileid=编的&rkey=编的",
+              "file": "0123ABCD.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-url-file-scheme-dropped",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"url\":\"file:///C:/Users/x/a.jpg\",\"file\":\"a.jpg\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image",
+              "file": "a.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-url-base64-dropped",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"url\":\"base64://aGVsbG8=\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-url-local-path-dropped",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"url\":\"C:\\\\Users\\\\x\\\\a.jpg\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-url-with-newline-dropped",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"url\":\"https://example.invalid/a\\nb\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-url-and-file-as-numbers",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"url\":12345,\"file\":12345}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image",
+              "file": "12345"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-file-dotdot-dropped",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"../../a.jpg\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-file-backslash-dropped",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"..\\\\a.jpg\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-file-drive-dropped",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"C:a.jpg\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-file-control-char-dropped",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":{\"file\":\"a\\u0000.jpg\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "image-data-not-object",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"image\",\"data\":\"https://example.invalid/a\"}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "image"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "face",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"face\",\"data\":{\"id\":14}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "face",
+              "ref": "14"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "superface-sub3",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"face\",\"data\":{\"id\":14,\"sub_type\":3}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "superface",
+              "ref": "14"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "superface-result-id",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"face\",\"data\":{\"id\":14,\"resultId\":\"1\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "superface",
+              "ref": "14"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "mface",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"mface\",\"data\":{\"emojiId\":\"fake\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "emoji",
+              "ref": "fake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "forward",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"forward\",\"data\":{\"id\":\"fake\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "forward",
+              "ref": "fake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "xml-card",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"xml\",\"data\":{\"data\":\"<msg brief=\\\"fake\\\"/>\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "card",
+              "raw": "<msg brief=\"fake\"/>",
+              "card_type": "xml"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "unknown-type-kept-raw",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"mystery\",\"data\":{\"x\":1}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "other",
+              "raw": "{\"type\":\"mystery\",\"data\":{\"x\":1}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "several-segments-in-order",
+      "frame": "{\"post_type\":\"message\",\"time\":100,\"self_id\":100,\"user_id\":200,\"message_id\":300,\"sender\":{\"nickname\":\"虚构甲\",\"card\":\"虚构乙\"},\"message\":[{\"type\":\"reply\",\"data\":{\"id\":299}},{\"type\":\"at\",\"data\":{\"qq\":100}},{\"type\":\"text\",\"data\":{\"text\":\" 在吗\"}}]}",
+      "expect": {
+        "dropped": false,
+        "inbound": {
+          "kind": "message",
+          "account": "100",
+          "conv": "qq:private:100:200",
+          "platform_id": "300",
+          "from_id": "200",
+          "from_nick": "虚构甲",
+          "from_card": "虚构乙",
+          "time_unix": 100,
+          "segs": [
+            {
+              "kind": "reply",
+              "target": "299"
+            },
+            {
+              "kind": "at",
+              "target": "100"
+            },
+            {
+              "kind": "text",
+              "text": " 在吗"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

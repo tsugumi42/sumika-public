@@ -1,0 +1,73 @@
+{
+  "$description": "组件层：只放某个组件自己的量，默认是语义层的别名（规格-设计令牌 3.1）。第 4 步起按组件族补。",
+  "bubble": {
+    "$type": "dimension",
+    "radius": {
+      "$value": "{radius.1}",
+      "$extensions": {
+        "sumika": {
+          "owner": "chatui"
+        }
+      }
+    },
+    "join": {
+      "$value": "{radius.join}",
+      "$extensions": {
+        "sumika": {
+          "owner": "chatui"
+        }
+      }
+    }
+  },
+  "panel": {
+    "$type": "dimension",
+    "radius": {
+      "$value": {
+        "value": 28,
+        "unit": "px"
+      },
+      "$extensions": {
+        "sumika": {
+          "concentric": {
+            "wrap": ["{radius.ctl}", "{space.s4}"]
+          },
+          "owner": "winshell"
+        }
+      }
+    }
+  },
+  "segment": {
+    "$type": "dimension",
+    "indicator-radius": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      },
+      "$extensions": {
+        "sumika": {
+          "concentric": {
+            "inner": ["{radius.ctl}", "{space.s1}"]
+          },
+          "owner": "winshell"
+        }
+      }
+    }
+  },
+  "send": {
+    "$type": "dimension",
+    "radius": {
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$extensions": {
+        "sumika": {
+          "concentric": {
+            "half": ["{size.ctl.sm}"]
+          },
+          "owner": "chatui"
+        }
+      }
+    }
+  }
+}

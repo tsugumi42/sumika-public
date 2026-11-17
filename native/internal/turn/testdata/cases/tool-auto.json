@@ -1,0 +1,149 @@
+{
+  "about": "自动模式：一批里新建文件、改文件（整批串行）、跑一条只读命令，都放行，各自在 approval_json 里记\"自动批准\"和理由；读文件不记",
+  "now": "2026-10-25T00:05:00+08:00",
+  "characterId": "suzu",
+  "files": {
+    "characters/suzu/card/character.yml": "name: 铃\nownerName: 主人\n",
+    "characters/suzu/card/character.md": "<!-- 测试用的卡，名字是编的 -->\n## 身份\n铃，住在主人电脑里的女仆。\n\n## 行为\n干活利落，话说到点上。\n\n## 表达\n短句，像发消息。\n\n## 私下\n喜欢被夸。\n",
+    "config/prompts/scene-home.md": "现在的场合：本地主窗口里的私聊（测试场景：不写工作目录，工作目录每次跑都不一样）。"
+  },
+  "characters": {
+    "suzu": {
+      "model": "test/think"
+    }
+  },
+  "agent": {
+    "thinking": {
+      "local": "minimal",
+      "private": "low",
+      "group": "low"
+    }
+  },
+  "workdir": "D:/Work",
+  "shell": {
+    "template": "shell-pwsh",
+    "version": "7.6"
+  },
+  "models": [
+    {
+      "id": "test/think",
+      "context_length": 1048000,
+      "max_output_tokens": 32000,
+      "reasoning": true,
+      "supported_reasoning_levels": [
+        {
+          "effort": "low"
+        },
+        {
+          "effort": "medium"
+        },
+        {
+          "effort": "high"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "epochs": [],
+  "text": "再看看",
+  "reply": {
+    "reasoning": [
+      "主人叫我，",
+      "回一句。"
+    ],
+    "content": [
+      "在呢在呢，",
+      "怎么啦～】【"
+    ],
+    "usage": {
+      "prompt_tokens": 1200,
+      "completion_tokens": 30,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    "headers": {
+      "x-magpie-provider": "fake-provider",
+      "x-magpie-model": "fake/think-1"
+    }
+  },
+  "workdirFiles": {
+    "a.md": "甲\n乙\n"
+  },
+  "replies": [
+    {
+      "reasoning": [],
+      "content": [],
+      "usage": {
+        "prompt_tokens": 1500,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      },
+      "toolCalls": [
+        {
+          "id": "call_w",
+          "name": "write",
+          "args": [
+            "{\"purpose\": \"写一个新文件\", \"path\": \"new.txt\", \"content\": \"新的\\n\"}"
+          ]
+        },
+        {
+          "id": "call_e",
+          "name": "edit",
+          "args": [
+            "{\"purpose\": \"改一行\", \"path\": \"a.md\", \"edits\": [{\"oldText\": \"乙\", \"newText\": \"乙乙\"}]}"
+          ]
+        },
+        {
+          "id": "call_p",
+          "name": "powershell",
+          "args": [
+            "{\"purpose\": \"看看目录\", \"command\": \"Get-ChildItem -Name\"}"
+          ]
+        },
+        {
+          "id": "call_r",
+          "name": "read",
+          "args": [
+            "{\"path\": \"new.txt\"}"
+          ]
+        }
+      ]
+    },
+    {
+      "reasoning": [],
+      "content": [
+        "都弄好了。"
+      ],
+      "usage": {
+        "prompt_tokens": 1600,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      }
+    }
+  ],
+  "tools": {
+    "approvalMode": "auto"
+  }
+}

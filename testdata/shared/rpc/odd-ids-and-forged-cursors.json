@@ -1,0 +1,459 @@
+{
+  "name": "odd-ids-and-forged-cursors",
+  "doc": "独立复核找到的边界（2026-11-10）：群号尾巴是 U+0085 / U+FEFF 时按 Go 的 unicode.IsSpace 判；伪造游标里字段类型不对、seq 为 0、换了角色或会话都报错，合法的伪造游标只翻本会话；原型链上的渠道名不认",
+  "source_tests": [
+    "store/local_groups.go LocalGroupID",
+    "store/display.go ReadDisplay"
+  ],
+  "characters": [
+    {
+      "id": "a",
+      "name": "编造甲"
+    }
+  ],
+  "rows": {
+    "local": [
+      {
+        "table": "local_groups",
+        "values": {
+          "id": "x",
+          "name": "尾巴是 U+0085",
+          "created_at": 800
+        }
+      },
+      {
+        "table": "local_group_members",
+        "values": {
+          "group_id": "x",
+          "character_id": "a",
+          "position": 0
+        }
+      },
+      {
+        "table": "local_groups",
+        "values": {
+          "id": "y﻿",
+          "name": "尾巴是 U+FEFF",
+          "created_at": 801
+        }
+      },
+      {
+        "table": "local_group_members",
+        "values": {
+          "group_id": "y﻿",
+          "character_id": "a",
+          "position": 0
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 1,
+          "id": "L01",
+          "channel": "console",
+          "conversation": "console:group:x",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "x 群",
+          "created_at": 1000
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 2,
+          "id": "L02",
+          "channel": "console",
+          "conversation": "console:group:y﻿",
+          "actor_kind": "owner",
+          "actor_id": "owner",
+          "kind": "message",
+          "text": "y 群",
+          "created_at": 1001
+        }
+      }
+    ],
+    "qq": [
+      {
+        "table": "events",
+        "values": {
+          "seq": 1,
+          "id": "E01",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "一",
+          "created_at": 1000
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 1
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 2,
+          "id": "E02",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "二",
+          "created_at": 1001
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 2
+        }
+      },
+      {
+        "table": "events",
+        "values": {
+          "seq": 3,
+          "id": "E03",
+          "channel": "qq",
+          "conversation": "qq:group:90002",
+          "actor_kind": "human",
+          "actor_id": "70001",
+          "kind": "message",
+          "text": "三",
+          "created_at": 1002
+        }
+      },
+      {
+        "table": "observations",
+        "values": {
+          "character_id": "a",
+          "event_seq": 3
+        }
+      }
+    ]
+  },
+  "calls": [
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "local",
+            "channel": "console",
+            "scene": "group",
+            "conversation": "console:group:x"
+          },
+          "limit": 10
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "local",
+            "channel": "console",
+            "scene": "group",
+            "conversation": "console:group:y﻿"
+          },
+          "limit": 10
+        }
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "high_water": 2,
+            "items": [
+              {
+                "actor_id": "owner",
+                "actor_kind": "owner",
+                "created_at": 1001,
+                "display_name": "主人",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "console",
+                    "conversation": "console:group:y﻿",
+                    "platform": "local",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "L02",
+                    "platform": "local"
+                  }
+                },
+                "seq": 2,
+                "text": "y 群",
+                "version": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1
+        },
+        "cursor": "eyJQbGF0Zm9ybSI6InFxIiwiQ29udmVyc2F0aW9uIjoicXE6Z3JvdXA6OTAwMDIiLCJDaGFyYWN0ZXIiOiIiLCJBdCI6IjEwMDIiLCJTZXEiOjN9"
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1
+        },
+        "cursor": "eyJQbGF0Zm9ybSI6InFxIiwiQ29udmVyc2F0aW9uIjoicXE6Z3JvdXA6OTAwMDIiLCJDaGFyYWN0ZXIiOiIiLCJBdCI6MTAwMiwiU2VxIjoyLjV9"
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1
+        },
+        "cursor": "eyJQbGF0Zm9ybSI6InFxIiwiQ29udmVyc2F0aW9uIjoicXE6Z3JvdXA6OTAwMDIiLCJDaGFyYWN0ZXIiOiIiLCJBdCI6MTAwMiwiU2VxIjoiMyJ9"
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1
+        },
+        "cursor": "eyJQbGF0Zm9ybSI6MSwiQ29udmVyc2F0aW9uIjoicXE6Z3JvdXA6OTAwMDIiLCJDaGFyYWN0ZXIiOiIiLCJBdCI6MTAwMiwiU2VxIjozfQ"
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1
+        },
+        "cursor": "eyJQbGF0Zm9ybSI6InFxIiwiQ29udmVyc2F0aW9uIjoicXE6Z3JvdXA6OTAwMDIiLCJDaGFyYWN0ZXIiOiIiLCJBdCI6MTAwMiwiU2VxIjowfQ"
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1
+        },
+        "cursor": "eyJQbGF0Zm9ybSI6InFxIiwiQ29udmVyc2F0aW9uIjoicXE6Z3JvdXA6OTAwMDIiLCJDaGFyYWN0ZXIiOiJhIiwiQXQiOjEwMDIsIlNlcSI6M30"
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1
+        },
+        "cursor": "eyJQbGF0Zm9ybSI6InFxIiwiQ29udmVyc2F0aW9uIjoicXE6Z3JvdXA6OTAwMDMiLCJDaGFyYWN0ZXIiOiIiLCJBdCI6MTAwMiwiU2VxIjozfQ"
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "qq:group:90002"
+          },
+          "limit": 1
+        },
+        "cursor": "eyJQbGF0Zm9ybSI6InFxIiwiQ29udmVyc2F0aW9uIjoicXE6Z3JvdXA6OTAwMDIiLCJDaGFyYWN0ZXIiOiIiLCJBdCI6MTAwMiwiU2VxIjozfQ"
+      },
+      "expect": {
+        "result": {
+          "state": "ready",
+          "value": {
+            "before": {
+              "actor_id": "70001",
+              "actor_kind": "human",
+              "created_at": 1000,
+              "display_name": "70001",
+              "kind": "message",
+              "ref": {
+                "conversation": {
+                  "channel": "qq",
+                  "conversation": "qq:group:90002",
+                  "platform": "qq",
+                  "scene": "group"
+                },
+                "event": {
+                  "event_id": "E01",
+                  "platform": "qq"
+                }
+              },
+              "seq": 1,
+              "text": "一"
+            },
+            "has_more": true,
+            "high_water": 3,
+            "items": [
+              {
+                "actor_id": "70001",
+                "actor_kind": "human",
+                "actor_uid": "70001",
+                "created_at": 1001,
+                "display_name": "70001",
+                "kind": "message",
+                "ref": {
+                  "conversation": {
+                    "channel": "qq",
+                    "conversation": "qq:group:90002",
+                    "platform": "qq",
+                    "scene": "group"
+                  },
+                  "event": {
+                    "event_id": "E02",
+                    "platform": "qq"
+                  }
+                },
+                "seq": 2,
+                "text": "二",
+                "version": 2
+              }
+            ],
+            "next_cursor": "（游标）"
+          }
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "qq",
+            "channel": "qq",
+            "scene": "group",
+            "conversation": "constructor:x"
+          },
+          "limit": 1
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    },
+    {
+      "method": "messages.read",
+      "params": {
+        "request": {
+          "key": {
+            "platform": "",
+            "channel": "",
+            "scene": "private",
+            "conversation": "__proto__:x"
+          },
+          "limit": 1
+        }
+      },
+      "expect": {
+        "error": {
+          "code": 1002
+        }
+      }
+    }
+  ]
+}

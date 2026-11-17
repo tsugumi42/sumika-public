@@ -1,0 +1,2500 @@
+{
+ "selfPorts": [
+  7720,
+  7721
+ ],
+ "commands": [
+  {
+   "cmd": "Get-ChildItem",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem -Recurse | Select-Object Name",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "gci; ls; dir",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "cat a.txt | sls foo",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git status",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git log --oneline -5",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git push",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git commit -m x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-Content a.txt | Measure-Object -Line",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rg foo",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "echo hi",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Write-Output 1 && Get-Date",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-Process || ps",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem\nGet-Date",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem\r\nGet-Location",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "   ",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": ";;",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem > out.txt",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem 2>$null",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item a.txt",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "remove-item a.txt",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "REMOVE-ITEM a.txt",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Set-Content a.txt x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "New-Item -ItemType Directory x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Copy-Item a b",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Start-Process notepad",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Invoke-WebRequest https://x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "import-module foo",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Out-File a.txt",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem | Tee-Object a.txt",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "& ./run.ps1",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "&\"C:\\x\\tool.exe\"",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "& $cmd",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem | ForEach-Object { rm $_ }",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem | % { del $_ }",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "(npm install)",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem | Where-Object { $_.Name -like \"*md*\" }",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem notes.md",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-Item md",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "gci {md}",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-Content x | Select-String rm",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "notepad a.txt",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem -Recurse",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem　x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem﻿",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "ſet-Content x y",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem | ſort",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Kill 1",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Set x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-childitem | sort",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Format-Volume -DriveLetter D",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "format d:",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "format  C:",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "diskpart",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "bcdedit /set x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "vssadmin delete shadows /all",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "cipher /w:c:",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Clear-Disk 1",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Initialize-Disk 2",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Partition -DiskNumber 1",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "reg delete HKLM\\Software\\x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "reg delete hkey_local_machine\\x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "reg delete HKCU\\x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Set-MpPreference -DisableRealtimeMonitoring $true",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "takeown /f C:\\x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item C:\\",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item -Recurse -Force D:\\",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rm C:",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rm -rf /",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rm -rf / ",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rm -rf /tmp",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "del D:\\ | Out-Null",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rd /s /q E:\\",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rmdir C:\\; echo",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item C:\\x\\y",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ./c:",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "del c:-x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item D:\\-Force",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~\\",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~/.bashrc",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~\\Desktop",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~\\Documents\\proj\\build",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~\\Documents\\proj\\.ssh\\x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rm -r ~/.ssh",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "del %USERPROFILE%\\x.txt",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rd %USERPROFILE%\\Desktop",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rd %UserProfile%",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item $env:USERPROFILE\\Documents\\a\\b",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item $HOME\\.aws",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item $home\\a\\b",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item $HOMEPATH\\a",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item \"C:\\Users\\bob\"",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item C:\\Users\\bob\\Desktop",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item C:\\Users\\bob\\Desktop\\x\\y",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item C:/Users/bob/AppData/Roaming/Microsoft/Credentials/x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item temp~1",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item a~",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item x.~",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item \"~\"",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item '~'",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~;",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~|x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~&x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~ ",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~　x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem ~",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "cmd /c rd /s /q %USERPROFILE%\\Downloads",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "erase ~\\.gitconfig",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "ri ~\\.config\\gh\\hosts.yml",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "ri ~\\.config\\other\\x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rm ~/.kube/config",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item xC:\\Users\\bob",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item .C:\\Users\\bob",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item %userprofile%%homepath%",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~/a ~/b/c",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~/a/b ~/c/d",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Remove-Item ~\\\\x",
+   "readOnly": false,
+   "catastrophic": true,
+   "deletesUserDir": true,
+   "deleteVerb": true,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl http://127.0.0.1:7720/api/settings",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": true
+  },
+  {
+   "cmd": "Invoke-RestMethod http://localhost:7721/x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": true
+  },
+  {
+   "cmd": "curl http://127.0.0.1:3425/v1",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl http://127.0.0.1:77200",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl http://127.0.0.1:17720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl ('http://127.0.0.1:' + '7720')",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": true
+  },
+  {
+   "cmd": "curl 'http://localhost:' +  \"7720\"",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": true
+  },
+  {
+   "cmd": "curl http://[::1]:7720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": true
+  },
+  {
+   "cmd": "curl http://0.0.0.0:7720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": true
+  },
+  {
+   "cmd": "curl http://example.com:7720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl http://127.0.0.1; echo 7720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl http://127.0.0.1 && echo 7720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl http://127.0.0.1 & echo 7720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl http://LOCALHOST:7720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": true
+  },
+  {
+   "cmd": "curl http://127.0.0.1:7720 ",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": true
+  },
+  {
+   "cmd": "echo 7720 127.1.2.3",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": true
+  },
+  {
+   "cmd": "curl http://1127.0.0.1:7720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl http://127.0.0.1000:7720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl http://localhosts:7720",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "diſkpart",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "taKeown /f x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem | Where-Object { $_.Name -eq \"ſtart-x\" }",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem | Where-Object { $_.Name -eq \"reſtart-x\" }",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "Get-ChildItem;﻿",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "curl ('http://127.0.0.1:772' + '0/x')",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": true
+  },
+  {
+   "cmd": "get-childitem x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-CHILDITEM x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "gci x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GCI x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "ls x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "LS x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "dir x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "DIR x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-content x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-CONTENT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "gc x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GC x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "cat x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "CAT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "type x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "TYPE x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "select-string x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "SELECT-STRING x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "sls x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "SLS x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-item x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-ITEM x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "gi x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GI x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-itemproperty x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-ITEMPROPERTY x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "gp x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GP x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "test-path x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "TEST-PATH x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "resolve-path x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "RESOLVE-PATH x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rvpa x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "RVPA x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-location x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-LOCATION x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "gl x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GL x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "pwd x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "PWD x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "measure-object x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "MEASURE-OBJECT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "measure x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "MEASURE x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "select-object x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "SELECT-OBJECT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "select x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "SELECT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "where-object x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "WHERE-OBJECT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "where x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "WHERE x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "? x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "? x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "sort-object x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "SORT-OBJECT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "sort x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "SORT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "group-object x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GROUP-OBJECT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "group x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GROUP x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "format-table x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "FORMAT-TABLE x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "ft x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "FT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "format-list x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "FORMAT-LIST x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "fl x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "FL x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "format-wide x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "FORMAT-WIDE x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "fw x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "FW x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "out-string x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "OUT-STRING x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-date x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-DATE x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-process x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-PROCESS x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "ps x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "PS x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-command x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-COMMAND x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "gcm x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GCM x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-help x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-HELP x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "help x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "HELP x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "echo x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "ECHO x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "write-output x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "WRITE-OUTPUT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "write x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "WRITE x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-filehash x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-FILEHASH x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "split-path x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "SPLIT-PATH x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "join-path x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "JOIN-PATH x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "convertfrom-json x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "CONVERTFROM-JSON x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "convertto-json x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "CONVERTTO-JSON x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "convertfrom-csv x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "CONVERTFROM-CSV x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "import-csv x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "IMPORT-CSV x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "foreach-object x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "FOREACH-OBJECT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "foreach x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "FOREACH x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "% x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "% x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "get-unique x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GET-UNIQUE x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "compare-object x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "COMPARE-OBJECT x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "rg x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "RG x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "fd x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "FD x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "findstr x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "FINDSTR x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "where.exe x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "WHERE.EXE x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "hostname x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "HOSTNAME x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "whoami x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "WHOAMI x",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "GIT x",
+   "readOnly": false,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git status --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git log --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git diff --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git show --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git branch --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git rev-parse --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git ls-files --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git blame --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git remote --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git describe --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  },
+  {
+   "cmd": "git shortlog --stat",
+   "readOnly": true,
+   "catastrophic": false,
+   "deletesUserDir": false,
+   "deleteVerb": false,
+   "selfEndpoint": false
+  }
+ ],
+ "inside": [
+  {
+   "target": "a.txt",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "sub\\b",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "..\\x",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": false
+  },
+  {
+   "target": "..\\..\\Windows",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": false
+  },
+  {
+   "target": "C:\\work\\proj\\..\\..\\Windows",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": false
+  },
+  {
+   "target": "C:\\WORK\\PROJ\\x",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "C:\\work\\projx",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": false
+  },
+  {
+   "target": "C:\\work\\proj",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "C:/work/proj/y",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "\\work\\proj\\z",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "D:\\other",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": false
+  },
+  {
+   "target": ".",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "sub/./c",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "sub/../../proj/d",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "\\Windows",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": false
+  },
+  {
+   "target": "/work/proj/w",
+   "dirs": [
+    "C:\\work\\proj"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "x",
+   "dirs": [
+    "C:\\"
+   ],
+   "workdir": "C:\\",
+   "inside": true
+  },
+  {
+   "target": "D:\\data\\y",
+   "dirs": [
+    "C:\\work\\proj",
+    "D:\\data"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": true
+  },
+  {
+   "target": "D:\\datax",
+   "dirs": [
+    "C:\\work\\proj",
+    "D:\\data\\"
+   ],
+   "workdir": "C:\\work\\proj",
+   "inside": false
+  }
+ ]
+}

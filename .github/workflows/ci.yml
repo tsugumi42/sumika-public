@@ -1,0 +1,79 @@
+# 公开仓库的 CI（第一版）：Linux 和 Windows 各跑一遍 go vet、go test -short、检查脚本的 bun 测试，Linux 再跑一次文档检查。
+#
+# 为什么两个系统：主开发机是 Windows，本机合并队列测的是 Windows；Linux 换一个系统和调度跑同一套 Go 测试，
+# 抓平台分支、路径大小写、换行这类只在一边出现的问题（.github/workflows/race.yml 只管 -race 的几组契约测试，和这里不重叠）。
+#
+# 和本机合并队列的关系：现在合 main 前跑的是本机 scripts/go-verify.ts 挑出来的受影响包；以后（ADR-386）合并队列改为等
+# 这个工作流在 PR 上的结论，本机只留一条兜底。工作流里不经过 scripts/slot.ts / scripts/run-low.ps1——那是本机的名额和
+# 低优先级机制，CI 机器独占整台 runner，直接用普通的 go / bun 命令。
+#
+# 第一版先全量跑，不写 -skip 名单：已知在某个系统上会红的测试（缺字体、Windows 专用）由第一次真实运行暴露，再单独处理。
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一个 ref 上新的提交取消还在跑的旧运行（官方推荐写法，docs.github.com 的 concurrency 一节）
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # checkout；setup-go 官方建议的最小权限
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false # 一个系统红了，另一个照跑完，一次看到两边结果
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      # 各 action 固定到当前官方文档推荐的大版本：checkout v7、setup-go v7、setup-bun v2
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: native/go.mod # 和 native/go.mod 的 go 指令走，不另写一份版本号
+          cache-dependency-path: native/go.sum # 模块缓存按 go.sum 的哈希存
+
+      # 版本和本机 `bun --version`（1.4.4）一致；package.json 没有 packageManager 字段，不显式给会用 latest
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      # 根目录依赖（scripts/ 用的）；--frozen-lockfile 保证按 bun.lock 装，lock 和 package.json 对不上就红
+      - name: 安装 Bun 依赖
+        run: bun install --frozen-lockfile
+
+      # 只在 Linux 跑一次：不依赖系统，Win 上再跑一遍只是多花时间
+      - name: 文档检查
+        if: runner.os == 'Linux'
+        run: bun run check:docs
+
+      - name: go vet
+        working-directory: native
+        run: go vet ./...
+
+      # -short：慢的对拍、压力、规模测试跳过（ADR-225），和本机合并队列同一个口径。
+      # -timeout 30m：Go 默认 10 分钟，CI 只有 2~4 核，几路包并行会拖过线而误红；只放宽墙钟上限，测试一条不少。
+      - name: go test -short（全部包）
+        working-directory: native
+        run: go test -short -count=1 -timeout 30m ./...
+
+      # 点名跑 scripts/ 下的检查脚本测试，名单不在工作流里抄一份：直接用 scripts/server-verify.ts 的 SCRIPT_TESTS
+      # （go-verify、合并队列挑 scripts 测试的同一份来源）。冻结的 server/ 测试不在这里。
+      # shell 固定 bash：Windows runner 上是 Git Bash，单引号里的多行 JS 不会被拆开。
+      - name: 检查脚本的 bun 测试
+        shell: bash
+        run: |
+          bun -e '
+            const { SCRIPT_TESTS } = await import("./scripts/server-verify.ts")
+            const p = Bun.spawnSync([process.execPath, "test", ...SCRIPT_TESTS], { stdout: "inherit", stderr: "inherit" })
+            process.exit(p.exitCode ?? 1)
+          '

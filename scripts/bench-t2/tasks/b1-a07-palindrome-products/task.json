@@ -1,0 +1,32 @@
+{
+  "id": "b1-a07-palindrome-products",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/palindrome-products（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 palindrome_products.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.md": "e74fdcd0edf34150c4bb548ebd90c28de6612fdeded8fe4acbdd73d2e95a7acf",
+    "go.mod": "f9ac4a65149a789fe054a9d46ada2ed1ab2489080a3b9f8809a9a1ab7f9db91e",
+    "palindrome_products.go": "272c5225a14f41ab69149b0395a1ecd5ec3fbd762a54b1405e2191cce33788cb",
+    "palindrome_products_test.go": "ada708d77d75b18673acc687c74d568dbb2b1d72cf9c6ceccf033479e9404581"
+  }
+}

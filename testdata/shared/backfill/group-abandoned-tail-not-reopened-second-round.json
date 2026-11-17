@@ -1,0 +1,121 @@
+{
+  "id": "group-abandoned-tail-not-reopened-second-round",
+  "about": "整段已放弃的缺口（含当前时刻）遇到未知首页：不重新登记旧区间；下一轮只给新增尾段单独记洞",
+  "source_tests": [
+    "TestBackfillAbandonedTailNotReopened"
+  ],
+  "scene": "group",
+  "setup": {
+    "watermark_ago_ms": 3600000,
+    "peer": {
+      "latest": false,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": [
+      {
+        "from_ago_ms": 93600000,
+        "to_ago_ms": 0,
+        "state": "abandoned",
+        "reason": "page-cap",
+        "tries": 3,
+        "last_try_ago_ms": 0
+      }
+    ]
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "9600",
+              "ago_ms": 7200000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [],
+        "stored": [],
+        "gaps": [
+          {
+            "from_ago_ms": 93600000,
+            "to_ago_ms": 0,
+            "state": "abandoned",
+            "reason": "page-cap",
+            "tries": 3,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": null,
+        "complete_coverage": false
+      }
+    },
+    {
+      "advance_ms": 600000,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "9600",
+              "ago_ms": 7800000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [],
+        "gaps": [
+          {
+            "from_ago_ms": 94200000,
+            "to_ago_ms": 600000,
+            "state": "abandoned",
+            "reason": "page-cap",
+            "tries": 3,
+            "last_try_ago_ms": 600000
+          },
+          {
+            "from_ago_ms": 599999,
+            "to_ago_ms": 0,
+            "state": "blocked",
+            "reason": "unverified-history",
+            "tries": 0,
+            "last_try_ago_ms": 0
+          }
+        ],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 94200000,
+          "through_ago_ms": 94200001
+        },
+        "complete_coverage": false
+      }
+    }
+  ]
+}

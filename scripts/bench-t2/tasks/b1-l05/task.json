@@ -1,0 +1,32 @@
+{
+  "id": "b1-l05",
+  "group": "b1",
+  "source": "自己出的（2026-10-27）",
+  "steps": [
+    {
+      "say": "src/greet.py 的 greet 函数，名字是空字符串的时候改成返回“你好，陌生人”，其他情况不变。farewell 别动。"
+    }
+  ],
+  "judge": {
+    "files": [
+      {
+        "path": "src/greet.py",
+        "contains": [
+          "def farewell(name):\n    return f\"再见, {name}\""
+        ]
+      }
+    ],
+    "run": [
+      {
+        "cmd": ["python", "-c", "import sys; sys.path.insert(0, 'src'); from greet import greet, farewell; print(greet('')); print(greet('铃')); print(farewell('铃'))"],
+        "stdout": "你好，陌生人\n你好, 铃\n再见, 铃"
+      }
+    ],
+    "allowed": [
+      "src/greet.py"
+    ],
+    "ignore": [
+      "src/__pycache__/**"
+    ]
+  }
+}

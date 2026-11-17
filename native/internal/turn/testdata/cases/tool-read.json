@@ -1,0 +1,141 @@
+{
+  "about": "一步里同时调 read 和 ls（两个调用的参数分块交替着吐），工作目录里读文件、列目录，都不用审批；下一次请求带上调用和结果，她再说一句",
+  "now": "2026-10-25T00:05:00+08:00",
+  "characterId": "suzu",
+  "files": {
+    "characters/suzu/card/character.yml": "name: 铃\nownerName: 主人\n",
+    "characters/suzu/card/character.md": "<!-- 测试用的卡，名字是编的 -->\n## 身份\n铃，住在主人电脑里的女仆。\n\n## 行为\n干活利落，话说到点上。\n\n## 表达\n短句，像发消息。\n\n## 私下\n喜欢被夸。\n",
+    "config/prompts/scene-home.md": "现在的场合：本地主窗口里的私聊（测试场景：不写工作目录，工作目录每次跑都不一样）。"
+  },
+  "characters": {
+    "suzu": {
+      "model": "test/think"
+    }
+  },
+  "agent": {
+    "thinking": {
+      "local": "minimal",
+      "private": "low",
+      "group": "low"
+    }
+  },
+  "workdir": "D:/Work",
+  "shell": {
+    "template": "shell-pwsh",
+    "version": "7.6"
+  },
+  "models": [
+    {
+      "id": "test/think",
+      "context_length": 1048000,
+      "max_output_tokens": 32000,
+      "reasoning": true,
+      "supported_reasoning_levels": [
+        {
+          "effort": "low"
+        },
+        {
+          "effort": "medium"
+        },
+        {
+          "effort": "high"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "epochs": [],
+  "text": "看看工作目录里有什么",
+  "reply": {
+    "reasoning": [
+      "主人叫我，",
+      "回一句。"
+    ],
+    "content": [
+      "在呢在呢，",
+      "怎么啦～】【"
+    ],
+    "usage": {
+      "prompt_tokens": 1200,
+      "completion_tokens": 30,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    "headers": {
+      "x-magpie-provider": "fake-provider",
+      "x-magpie-model": "fake/think-1"
+    }
+  },
+  "workdirFiles": {
+    "note.txt": "第一行\n第二行\n",
+    "sub/a.md": "# 标题\n"
+  },
+  "replies": [
+    {
+      "reasoning": [
+        "先看看文件。"
+      ],
+      "content": [
+        "我看一下。"
+      ],
+      "usage": {
+        "prompt_tokens": 1500,
+        "completion_tokens": 40,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 10
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      },
+      "toolCalls": [
+        {
+          "id": "call_read_1",
+          "name": "read",
+          "args": [
+            "{\"pa",
+            "th\":\"note",
+            ".txt\"}"
+          ]
+        },
+        {
+          "id": "call_ls_1",
+          "name": "ls",
+          "args": [
+            "{}"
+          ]
+        }
+      ]
+    },
+    {
+      "reasoning": [
+        "看完了。"
+      ],
+      "content": [
+        "文件里写着两行。"
+      ],
+      "usage": {
+        "prompt_tokens": 1700,
+        "completion_tokens": 12,
+        "prompt_tokens_details": {
+          "cached_tokens": 1536
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 4
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "b1-a11-protein-translation",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/protein-translation（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 protein_translation.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.md": "cd2c3891ecbeed24aa2608b8796831382c3cd6af9350425d0d2338b4a4b1c0a2",
+    "go.mod": "b2253f08d4efaf863071d322af40dcf7902187b837062a9aaba81fb70b4e0c55",
+    "protein_translation.go": "54a2cba540a60c369aa235c2c72214b09a560aa15c42715ee0470cc50629e945",
+    "protein_translation_test.go": "4d6c1043111947778a3c0dcac1b90d500936c7aa22a1dad22e8eab026a24f5ac"
+  }
+}

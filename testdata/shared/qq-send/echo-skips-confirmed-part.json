@@ -1,0 +1,69 @@
+{
+  "id": "echo-skips-confirmed-part",
+  "about": "已确认的段（回执本来就带着号）不被同文字的回声重复认领",
+  "source_tests": [
+    "TestEchoDoesNotTouchFinishedParts"
+  ],
+  "receipt": "confirmed",
+  "steps": [
+    {
+      "do": "say",
+      "label": "p",
+      "as": "ca",
+      "texts": [
+        "丙"
+      ],
+      "expect": {}
+    },
+    {
+      "do": "wait_plan",
+      "label": "p",
+      "state": "done",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "done",
+          "parts": [
+            {
+              "state": "confirmed",
+              "via": "reply",
+              "platform_id": "8001",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "5002",
+      "text": "丙",
+      "expect": {
+        "claimed": false
+      }
+    }
+  ],
+  "final": {
+    "plans": [
+      {
+        "label": "p",
+        "state": "done",
+        "parts": [
+          {
+            "state": "confirmed",
+            "via": "reply",
+            "platform_id": "8001",
+            "attempts": 1
+          }
+        ]
+      }
+    ],
+    "sends": 1,
+    "mapped": {
+      "8001": "p"
+    },
+    "unmapped": [
+      "5002"
+    ]
+  }
+}

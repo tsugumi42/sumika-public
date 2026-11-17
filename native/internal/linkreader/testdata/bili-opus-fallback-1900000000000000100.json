@@ -1,0 +1,12 @@
+{
+ "code": 0,
+ "message": "0",
+ "data": {
+  "item": null,
+  "fallback": {
+   "type": 1,
+   "id": "1900000000000000100"
+  }
+ },
+ "ttl": 1
+}

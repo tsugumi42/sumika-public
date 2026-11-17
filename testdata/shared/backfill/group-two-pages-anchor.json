@@ -1,0 +1,106 @@
+{
+  "id": "group-two-pages-anchor",
+  "about": "群翻两页：第二页锚点取本页最旧一条（第一页的末条）；越过起点即停；按时间从早到晚入库",
+  "source_tests": [
+    "TestBackfillGroupPagination"
+  ],
+  "scene": "group",
+  "setup": {
+    "watermark_ago_ms": 120000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": []
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "-10",
+              "ago_ms": 20000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "-2",
+              "ago_ms": 90000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        },
+        {
+          "messages": [
+            {
+              "id": "-2",
+              "ago_ms": 90000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "-1",
+              "ago_ms": 180000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "-4",
+              "ago_ms": 240000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          },
+          {
+            "anchor": "-2",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "-1",
+            "ago_ms": 180000
+          },
+          {
+            "id": "-2",
+            "ago_ms": 90000
+          },
+          {
+            "id": "-10",
+            "ago_ms": 20000
+          }
+        ],
+        "gaps": [],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 180000,
+          "through_ago_ms": 0
+        },
+        "complete_coverage": true
+      }
+    }
+  ]
+}

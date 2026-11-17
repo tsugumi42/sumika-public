@@ -1,0 +1,776 @@
+{
+  "about": "memory_forget 的门槛只比 remember 窄：受保护的（owner、导入的）、别人的事、待确认的、被取代的、已忘掉的、没有的编号、对上两条的、格式不对的编号都忘不掉；原因要有（1～100 字）；要有绑定的主人原话；群里和陌生人私聊一律不行。一律什么都不写。",
+  "source_tests": [
+    "TestForgetHostileInputs",
+    "TestForgetNeedsReasonAndOwnerQuote",
+    "TestForgetPlaces"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "请忘掉它",
+      "ago_s": 60
+    }
+  ],
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000OWN001",
+        "kind": "fact",
+        "text": "主人放行的",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner"
+      },
+      {
+        "id": "SEED0000000000000000IMP001",
+        "kind": "fact",
+        "text": "导入的",
+        "subject": "owner",
+        "status": "active"
+      },
+      {
+        "id": "SEED0000000000000000PRS001",
+        "kind": "fact",
+        "text": "别人的事",
+        "subject": "person:u9",
+        "status": "active",
+        "confirmed_by": "ai",
+        "scopes": [
+          "person:u9"
+        ]
+      },
+      {
+        "id": "SEED0000000000000000CAN001",
+        "kind": "fact",
+        "text": "待确认的",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000SUP001",
+        "kind": "fact",
+        "text": "被取代的",
+        "subject": "owner",
+        "status": "superseded",
+        "confirmed_by": "ai",
+        "superseded_by": "SEED0000000000000000AI0001"
+      },
+      {
+        "id": "SEED0000000000000000GON001",
+        "kind": "fact",
+        "text": "已经忘掉的",
+        "subject": "owner",
+        "status": "revoked",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "text": "一条普通的",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEEDFACT0000000000AAAB12CD",
+        "kind": "fact",
+        "text": "同尾一",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEEDFACT0000000000BBAB12CD",
+        "kind": "fact",
+        "text": "同尾二",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      }
+    ],
+    "episodes": [
+      {
+        "id": "EPI001",
+        "conversation": "console:a",
+        "text": "一段经历"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "do": "forget",
+      "args": {
+        "id": "OWN001",
+        "reason": "受主人确认的",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这条记忆受所有者确认或历史导入保护，模型不能自行忘掉，这次没有忘。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "IMP001",
+        "reason": "导入的",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这条记忆受所有者确认或历史导入保护，模型不能自行忘掉，这次没有忘。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "PRS001",
+        "reason": "别人的事",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "只能忘掉关于所有者或你自己的记忆，这条不是，这次没有忘。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "CAN001",
+        "reason": "待确认的",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没找到编号 CAN001 的有效记忆（可能已经忘掉了、被改过，或者编号抄错了）。这次没有忘：先用 memory_search 查到现在的编号。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "SUP001",
+        "reason": "被取代的",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没找到编号 SUP001 的有效记忆（可能已经忘掉了、被改过，或者编号抄错了）。这次没有忘：先用 memory_search 查到现在的编号。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "GON001",
+        "reason": "已经忘掉的",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没找到编号 GON001 的有效记忆（可能已经忘掉了、被改过，或者编号抄错了）。这次没有忘：先用 memory_search 查到现在的编号。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "NOSUCH",
+        "reason": "没有这个编号",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没找到编号 NOSUCH 的有效记忆（可能已经忘掉了、被改过，或者编号抄错了）。这次没有忘：先用 memory_search 查到现在的编号。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "SEED0000000000000000OWN001",
+        "reason": "全长编号不是短码",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没找到编号 SEED0000000000000000OWN001 的有效记忆（可能已经忘掉了、被改过，或者编号抄错了）。这次没有忘：先用 memory_search 查到现在的编号。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "AB12CD",
+        "reason": "对上两条",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "编号 AB12CD 对上了不止一条记忆，这次没有忘：先用 memory_search 看清是哪一条。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "",
+        "reason": "没写编号",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没写要忘掉哪一条，这次没有忘：先用 memory_search 查到那条的编号（# 开头的 6 位），填在 id 里。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "   ",
+        "reason": "只有空白",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没写要忘掉哪一条，这次没有忘：先用 memory_search 查到那条的编号（# 开头的 6 位），填在 id 里。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "12345",
+        "reason": "五位",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没找到编号 12345 的有效记忆（可能已经忘掉了、被改过，或者编号抄错了）。这次没有忘：先用 memory_search 查到现在的编号。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "AI0001",
+        "reason": "",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没写原因，这次没有忘：用一句话写清楚为什么要忘掉它。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "AI0001",
+        "reason": " \n ",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没写原因，这次没有忘：用一句话写清楚为什么要忘掉它。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "AI0001",
+        "reason": "字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "原因太长了（超过 100 字），这次没有忘：一句话说清楚就行。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "AI0001",
+        "reason": "没有来源"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有忘：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "AI0001",
+        "reason": "伪造的引用",
+        "source_quote": "主人从没说过这句"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有忘：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "AI0001",
+        "reason": "没有绑定输入",
+        "source_quote": "忘掉它"
+      },
+      "expect": {
+        "text": "没有找到对应的所有者原话，这次没有忘：source_quote 必须完整引用本轮已接纳的所有者消息，不能有歧义，不要编造来源。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": "AI0001",
+        "reason": "类型错了",
+        "source_quote": 5
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆参数类型不正确，这次没有忘。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "args": {
+        "id": 123,
+        "reason": "类型错了",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆参数类型不正确，这次没有忘。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "place": "local_group",
+      "args": {
+        "id": "AI0001",
+        "reason": "不该在这里忘",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "忘掉记忆只能在所有者的私聊里做。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "place": "qq_group",
+      "args": {
+        "id": "AI0001",
+        "reason": "不该在这里忘",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "忘掉记忆只能在所有者的私聊里做。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "place": "qq_group_owner_asked",
+      "args": {
+        "id": "AI0001",
+        "reason": "不该在这里忘",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "忘掉记忆只能在所有者的私聊里做。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "place": "qq_private_other",
+      "args": {
+        "id": "AI0001",
+        "reason": "不该在这里忘",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "忘掉记忆只能在所有者的私聊里做。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "forget",
+      "place": "local_private_no_owner",
+      "args": {
+        "id": "AI0001",
+        "reason": "不该在这里忘",
+        "source_quote": "忘掉它"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "忘掉记忆只能在所有者的私聊里做。",
+        "is_error": true
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "一条普通的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAN001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "待确认的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000GON001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "revoked",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "已经忘掉的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000IMP001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "导入的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OWN001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人放行的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000PRS001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "person:u9",
+        "scopes": [
+          "person:u9"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "person:u9",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "别人的事",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "person",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000SUP001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "SEED0000000000000000AI0001",
+        "temporal": null,
+        "text": "被取代的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEEDFACT0000000000AAAB12CD",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "同尾一",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEEDFACT0000000000BBAB12CD",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "同尾二",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [
+      {
+        "audience_at_origin": null,
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "from_seq": 0,
+        "id": "EPI001",
+        "learned_ago_s": 0,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "status": "active",
+        "text": "一段经历",
+        "to_seq": 0,
+        "visibility": "private"
+      }
+    ],
+    "revisions": [],
+    "evidence": []
+  }
+}

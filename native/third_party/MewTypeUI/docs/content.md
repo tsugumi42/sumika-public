@@ -1,0 +1,44 @@
+# Message content
+
+`content` composes inside a host bubble. It exports `Quote`, `Reactions`, `Forward`, `LinkPreview`, `Markdown`, `Photo`, `Album`, `Sticker`, `GIF`, `Video`, `File` and `Voice`. All constructors take a window context first, prepared data and explicit state next, options last, and return their root `ui.Element`.
+
+Apply a compiled theme before constructing the message. Give every repeated message and album item a stable ID. Keep state and handles, never returned elements, between builds.
+
+```go
+c.Key(message.ID)
+content.Quote(c, message.Reply, &message.QuoteState, content.QuoteOptions{
+    Appearance: content.Appearance{Outgoing: message.Outgoing, Selected: message.Selected},
+    Label: "Reply", OnActivate: func() { host.JumpTo(message.ReplyID) },
+})
+content.Reactions(c, message.Reactions, content.ReactionOptions{
+    OnActivate: func(id string) { host.RequestReaction(message.ID, id) },
+})
+```
+
+`Reaction.ID` keys identity independently of emoji, count or ordering. Clicking only reports an intent; the component never edits `Count` or `Own`. `Image` is unpadded host artwork, contained in a 16 DIP frame by default. Set `ImageKind: ReactionCenterFrame` only for a prepared 32 DIP center-icon canvas with the intended transparent border, or `ReactionCustomEmoji` for a prepared 20 DIP custom frame (including mask/tint). Source pixel resolution never determines display size. With no image, the system Unicode line frame is fitted inside the 18 DIP slot. `Userpics` replaces the count with prepared responder avatars. `OnContextMenu` lets the host supply its actions. See [resource sizes and source formulas](reference/paint/reaction-size.md).
+
+`CountLabel` supplies the host's localized short count; zero `Count` without a label leaves only the emoji. The host supplies stable official ordering and decides when the recent responder list is complete enough to replace counts with avatars. `ReactionOptions.InBubble` applies the −3 DIP start; `Outside` uses service colors and mirrors outgoing positions. `Trailing` receives the `ui.Span` supplied by `BubbleOptions.Footer`; it reserves time only after the last reaction row. Capsules remain 22 DIP high, including avatars and larger fonts.
+
+`BubbleOptions.Body func(ui.Span)` passes its reservation to `MarkdownOptions.Trailing`. It is zero when reactions or bottom media own the information. Keep quote/forward/header content in the leading callback; put the actual trailing custom text in Body. A terminal quote or code block reserves a separate K-high region. `MediaOptions.BottomInfo` and `AlbumOptions.BottomInfo` render one `chat.ImageInfo` inside bottom media. Hover, transfer/failure, Preview, LastOutgoing and SavedMessages control visibility; caption-below-media paths leave that callback empty and use the message shell's information.
+
+`QuoteData.Status` supplies a localized loading/deleted-original summary. `Multiline` replies show at most five lines until `QuoteState.Expanded`; the first activation expands and a later activation navigates. `Preview` is already decoded. The host supplies a localized forward prefix, source name, optional via text and hidden-author state.
+
+`LinkPreview` accepts no image, a right-side article image (`SmallImage`) or a large attachment after the text. `PreviewOptions.Width` is the current bubble content width; zero uses `message.maxWidth` less horizontal bubble padding. Pass the updated width in a narrow/resizable host so line budgets and article-thumbnail measurement match the final width. Site, title and description share five lines; titles use at most two. `OnOpen` reports the destination without opening it.
+
+`Markdown` supports CommonMark bold/italic/strikethrough, inline and fenced code, blockquotes and links. `>^` marks a collapsed quote (three visible lines), and `||…||` marks spoilers. Keep one `MarkdownState` per message; its expansion map and spoiler flag survive removal from the view. Supply localized expand/collapse/reveal/copy labels. Links and code copies report through `OnLink` and `OnCopyCode`; the host can use captured `c.Services()` for clipboard/URL actions. Concealed text is represented by measured inline objects rather than accessible plaintext. Inline formatting and source parsing are retained when only palette colors change. Code scrolls sideways and copies the exact code body, including its terminal newline.
+
+Text selection uses the direction's selected bubble color and supports native selection/copy commands. Text and image spoilers generate independent periodic particle masks from the source descriptor; masks are shared across messages, tinted at paint time, and static under ReduceMotion. Loading media rotates with `motion.mediaTransferRotate` and follows new host progress through `motion.mediaTransferCatchup` (350 ms): after one duration it has closed half the remaining difference. New targets continue from the displayed value. `FileData.Progress`, `VoiceData.Progress` and `Media.Progress` share the normalized [0,1] contract. ReduceMotion/Instant reaches that target immediately.
+
+`Media` contains a stable `ID`, accessible `Label`, a prepared `Bitmap`, an explicit ready/remote/loading/failed status, `StatusText` and normalized `Progress`. Supply positive `Width` and `Height` while the bitmap is absent; otherwise its dimensions are used. `MediaOptions` routes open/download/cancel/retry actions. `Media.StatusText` is host-localized; progress and status text have moved out of MediaOptions so single images and album tiles use one model. The optional `Spoiler` points to explicit host state and reveals on the first click. `Corners` supplies the containing bubble's four exterior radii; nil uses the theme's large radius and zero values create sharp joins. Stickers use no bubble background or padding. Hosts update animated bitmaps on the UI thread and control playback/visibility themselves.
+
+Set `MediaOptions.InBubble` for media inside a message, and pass prepared body text as `Caption` when it negotiates media width. The component measures that string itself; the host renders it in the usual content slot. `Width` limits available width. Photo growth follows the source visibility-ratio decision rather than a blanket height cap; GIF/video growth is bounded to four thirds of the current height. The caption and source dimensions therefore suffice without host-computed crop geometry.
+
+`Video(c *ui.Context, m Media, duration string, o VideoOptions) ui.Element` accepts `VideoOptions{MediaOptions: ..., ShowPlay: true}`. Set ShowPlay explicitly to show the ready cover's playback marker, including when duration is unknown/empty; false hides it even with a nonempty badge. Transfer status controls still take precedence. An empty duration adds no fabricated `0:00`; the host may supply a localized category instead. Video caption cropping follows the video kind independently of that text. See [the video paint contract](reference/paint/video.md).
+
+Albums accept 1–10 items with unique IDs and positive intrinsic dimensions. Geometry is cached until the aspect ratios or theme geometry change. Layout follows aspect ratios rather than a fixed square grid. `AlbumOptions.Width` scales the group and its gaps together. Only the outside perimeter gets the supplied bubble corners; internal joins are sharp. The host callback receives the item's ID even after reordering.
+
+Each album tile consumes its own `Media.Status`, `StatusText` and `Progress`. `AlbumOptions.OnOpen/OnDownload/OnCancel/OnRetry func(id string)` route the appropriate intent by stable ID. `OnTileSize func(id string, width, height float32)` reports the full actual tile dimensions in DIP on the next build after layout first paints or changes; unchanged dimensions and position-only reorder emit nothing. The callback receives values, not mutable layout storage. Record dimensions and request prepared thumbnails through the host. See [the clean-room state/size contract](reference/paint/album-state.md); `content/album-state` demonstrates mixed states and transitions.
+
+`FileData` supplies the localized size/transfer status and optional decoded thumbnail. `VoiceData.Samples` contains normalized amplitudes in [0,1]; nil draws the minimum-height placeholder. `VoiceState.Position` is normalized playback/seek position. The play/pause intent and seek callback leave decoding, media clocks and audio output with the host; seeking supports pointer dragging, arrows, Home and End.
+
+`gallery/content.go` registers one page per component plus a composed message, with additional particle, caption-crop and transfer-catchup pages. Art is generated from invented color ramps and a transparent geometric sticker. Source values and runtime rules are in [reference/content.md](reference/content.md); platform/rendering exceptions are in [reference/exceptions.md](reference/exceptions.md).

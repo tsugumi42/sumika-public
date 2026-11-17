@@ -1,0 +1,4 @@
+# bench-t2 题库的文件是判分的一部分，换行不能随检出环境变
+scripts/bench-t2/tasks/** -text
+scripts/bench-t2/ref/** -text
+**/testdata/wire/*.body -text

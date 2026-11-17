@@ -1,0 +1,4973 @@
+{
+ "bili-dynamic": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "动态标题\n动态正文\nUP主：纸灯实验室\n点赞 3 | 评论 2 | 转发 1\n11-01 18:30\nhttps://example.invalid/bilibili/70001",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/70001"
+ },
+ "bili-opus-notitle": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "只有正文\nUP主：纸灯实验室\n11-01 18:30\nhttps://example.invalid/bilibili/70002",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/70002"
+ },
+ "card/bili-mall": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "card",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.hdslb.com/bfs/mall/fictional-first.png"
+       },
+       "thumbnail": {
+        "state": "not_returned",
+        "value": "",
+        "reason": "not_applicable"
+       },
+       "width": {
+        "state": "not_returned",
+        "value": 0,
+        "reason": "interface_omitted"
+       },
+       "height": {
+        "state": "not_returned",
+        "value": 0,
+        "reason": "interface_omitted"
+       },
+       "duration_seconds": {
+        "state": "not_returned",
+        "value": 0,
+        "reason": "not_applicable"
+       },
+       "declared_bytes": {
+        "state": "not_returned",
+        "value": 0,
+        "reason": "interface_omitted"
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": {
+       "Title": "纸舟工房 星灯摆件",
+       "Author": "店铺：纸舟商店",
+       "DateDuration": "价格：¥325.50～499.90\n状态：预售",
+       "Stats": [
+        "定金：¥48.75～74.98",
+        "预售开始：10-22 19:55",
+        "预售结束：11-25 23:59",
+        "预计到货补款：2027-05"
+       ],
+       "Cover": null,
+       "CoverIssue": ""
+      },
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "https://mall.bilibili.com/neul-next/detailuniversal/detail.html?itemsId=70001",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "发过 2 次",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://mall.bilibili.com/neul-next/detailuniversal/detail.html?itemsId=70001"
+ },
+ "card/bili-video": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "card",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/cover.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": {
+       "Title": "纸船试航",
+       "Author": "UP主：纸灯实验室",
+       "DateDuration": "上传：11-01 18:30｜时长：02:15",
+       "Stats": [
+        "播放 1200｜收藏 31｜转发 4｜评论 8",
+        "弹幕 6｜点赞 52｜投币 10"
+       ],
+       "Cover": null,
+       "CoverIssue": ""
+      },
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "https://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "card/bili-video-multipart": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "card",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/cover.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": {
+       "Title": "纸船试航\nP2/3：折纸步骤",
+       "Author": "UP主：纸灯实验室",
+       "DateDuration": "上传：11-01 18:30｜总长：06:00",
+       "Stats": [
+        "播放 1200｜收藏 31｜转发 4｜评论 8",
+        "弹幕 6｜点赞 52｜投币 10"
+       ],
+       "Cover": null,
+       "CoverIssue": ""
+      },
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "https://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "card/bili-video-nocover": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "card",
+      "Text": "",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": {
+       "Title": "纸船试航",
+       "Author": "UP主：纸灯实验室",
+       "DateDuration": "上传：11-01 18:30｜时长：02:15",
+       "Stats": [
+        "播放 1200｜收藏 31｜转发 4｜评论 8",
+        "弹幕 6｜点赞 52｜投币 10"
+       ],
+       "Cover": null,
+       "CoverIssue": ""
+      },
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "https://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "card/bili-video-nostats": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "card",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/cover.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": {
+       "Title": "纸船试航",
+       "Author": "UP主：纸灯实验室",
+       "DateDuration": "上传：11-01 18:30｜时长：02:15",
+       "Stats": [
+        "播放 0"
+       ],
+       "Cover": null,
+       "CoverIssue": ""
+      },
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "https://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "card/bili-video-previous": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "card",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/cover.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": {
+       "Title": "纸船试航",
+       "Author": "UP主：纸灯实验室",
+       "DateDuration": "上传：11-01 18:30｜时长：02:15",
+       "Stats": [
+        "播放 1200｜收藏 31｜转发 4｜评论 8",
+        "弹幕 6｜点赞 52｜投币 10"
+       ],
+       "Cover": null,
+       "CoverIssue": ""
+      },
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "https://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "发过 2 次",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "card/bili-video-with-video": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "card",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/cover.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": {
+       "Title": "纸船试航",
+       "Author": "UP主：纸灯实验室",
+       "DateDuration": "上传：11-01 18:30｜时长：02:15",
+       "Stats": [
+        "播放 1200｜收藏 31｜转发 4｜评论 8",
+        "弹幕 6｜点赞 52｜投币 10"
+       ],
+       "Cover": null,
+       "CoverIssue": ""
+      },
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "https://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "video",
+      "Text": "",
+      "Media": {
+       "type": "video",
+       "url": {
+        "state": "available",
+        "value": "https://v.example.invalid/clip.mp4"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/thumb.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "available",
+        "value": 135
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": true
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "cover-text/bili-mall": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "纸舟工房 星灯摆件\n价格：¥325.50～499.90\n状态：预售\n店铺：纸舟商店\n定金：¥48.75～74.98\n预售开始：10-22 19:55\n预售结束：11-25 23:59\n预计到货补款：2027-05",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.hdslb.com/bfs/mall/fictional-first.png"
+       },
+       "thumbnail": {
+        "state": "not_returned",
+        "value": "",
+        "reason": "not_applicable"
+       },
+       "width": {
+        "state": "not_returned",
+        "value": 0,
+        "reason": "interface_omitted"
+       },
+       "height": {
+        "state": "not_returned",
+        "value": 0,
+        "reason": "interface_omitted"
+       },
+       "duration_seconds": {
+        "state": "not_returned",
+        "value": 0,
+        "reason": "not_applicable"
+       },
+       "declared_bytes": {
+        "state": "not_returned",
+        "value": 0,
+        "reason": "interface_omitted"
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "https://mall.bilibili.com/neul-next/detailuniversal/detail.html?itemsId=70001",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "发过 2 次",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://mall.bilibili.com/neul-next/detailuniversal/detail.html?itemsId=70001"
+ },
+ "cover-text/bili-video": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/cover.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "纸船试航\n纸灯实验室 | 02:15\n播放 1200 | 点赞 52\n11-01 18:30\nhttps://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "cover-text/bili-video-multipart": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/cover.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "纸船试航\nP1 第1段（01:00）\nP2 第2段（02:00）\nP3 第3段（03:00）\n纸灯实验室 | 共 3P | 总长 06:00\n播放 1200 | 点赞 52\n11-01 18:30\nhttps://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "cover-text/bili-video-nocover": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "纸船试航\n纸灯实验室 | 02:15\n播放 1200 | 点赞 52\n11-01 18:30\nhttps://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "cover-text/bili-video-nostats": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/cover.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "纸船试航\n纸灯实验室 | 02:15\n播放 0\n11-01 18:30\nhttps://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "cover-text/bili-video-previous": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/cover.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "纸船试航\n纸灯实验室 | 02:15\n播放 1200 | 点赞 52\n11-01 18:30\nhttps://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "发过 2 次",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "cover-text/bili-video-with-video": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/cover.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "纸船试航\n纸灯实验室 | 02:15\n播放 1200 | 点赞 52\n11-01 18:30\nhttps://example.invalid/bilibili/BV1xx411c7mD",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "video",
+      "Text": "",
+      "Media": {
+       "type": "video",
+       "url": {
+        "state": "available",
+        "value": "https://v.example.invalid/clip.mp4"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/thumb.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "available",
+        "value": 135
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": true
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/bilibili/BV1xx411c7mD"
+ },
+ "douyin-note": {
+  "Parts": [
+   {
+    "Kind": "forward",
+    "Quote": "-71",
+    "Body": null,
+    "Nodes": [
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "图集文案\n作者：纸灯实验室\n发布：11-01 18:30\n点赞 32 | 评论 4 | 收藏 5 | 转发 6\nhttps://example.invalid/douyin/d2",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "图集文案",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       },
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-1.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       },
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-2.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "CleanURL": "https://example.invalid/douyin/d2"
+ },
+ "douyin-video": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "抖音文案\n纸灯实验室 | 02:15\n点赞 32\n11-01 18:30\nhttps://example.invalid/douyin/d1",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "video",
+      "Text": "",
+      "Media": {
+       "type": "video",
+       "url": {
+        "state": "available",
+        "value": "https://v.example.invalid/clip.mp4"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/thumb.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "available",
+        "value": 135
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": true
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/douyin/d1"
+ },
+ "github": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "paper/boat\n语言：Go | 许可证：MIT\nStar 12 | Fork 3 | 未关闭Issue 1\n更新：10-01 08:00\nhttps://example.invalid/github/paper/boat",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/github/paper/boat"
+ },
+ "github-bare": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "paper/boat\nhttps://example.invalid/github/paper/boat",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/github/paper/boat"
+ },
+ "netease": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "纸船\n歌手：河岸合奏团\n专辑：折纸集\n时长：03:20\nhttps://example.invalid/netease/n1",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/netease/n1"
+ },
+ "no-title-no-text": {
+  "Parts": null,
+  "CleanURL": "https://example.invalid/x/80009",
+  "NoContent": true
+ },
+ "pixiv-1": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "纸船试航 | 纸灯实验室\nhttps://example.invalid/pixiv/90001",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-0.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/pixiv/90001"
+ },
+ "pixiv-11": {
+  "Parts": [
+   {
+    "Kind": "forward",
+    "Quote": "-71",
+    "Body": null,
+    "Nodes": [
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "纸船试航 | 纸灯实验室\nhttps://example.invalid/pixiv/90001",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-0.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-1.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-2.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-3.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-4.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-5.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-6.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-7.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-8.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-9.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "只发前10张，另有1张，请看原文。",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "CleanURL": "https://example.invalid/pixiv/90001"
+ },
+ "pixiv-2": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "纸船试航 | 纸灯实验室\nhttps://example.invalid/pixiv/90001",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-0.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/pixiv/90001"
+ },
+ "pixiv-3": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "纸船试航 | 纸灯实验室\nhttps://example.invalid/pixiv/90001",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-0.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-2.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/pixiv/90001"
+ },
+ "pixiv-norating": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "纸船试航 | 纸灯实验室\nhttps://example.invalid/pixiv/90001",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-0.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/pixiv/90001"
+ },
+ "pixiv-novel": {
+  "Parts": [
+   {
+    "Kind": "forward",
+    "Quote": "-71",
+    "Body": null,
+    "Nodes": [
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "纸船试航 | 纸灯实验室\nhttps://example.invalid/pixiv/90001\n标签：原创、纸船、长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长……\n字数：12345",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "正文节选：\n甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲……\n完整内容见原文",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "CleanURL": "https://example.invalid/pixiv/90001"
+ },
+ "pixiv-novel-bare": {
+  "Parts": [
+   {
+    "Kind": "forward",
+    "Quote": "-71",
+    "Body": null,
+    "Nodes": [
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "纸船试航 | 纸灯实验室\nhttps://example.invalid/pixiv/90001",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "正文节选：\n短小说",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "CleanURL": "https://example.invalid/pixiv/90001"
+ },
+ "pixiv-r18": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "🔞 | 纸船试航 | 纸灯实验室\nhttps://example.invalid/pixiv/90001",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-0.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/pixiv/90001"
+ },
+ "pixiv-ugoira": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "纸船试航 | 纸灯实验室\nhttps://example.invalid/pixiv/90001",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "ugoira",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-0.png"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-0.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": {
+       "zip": {
+        "state": "",
+        "value": ""
+       },
+       "frames": {
+        "state": "",
+        "value": null
+       },
+       "mime_type": {
+        "state": "",
+        "value": ""
+       },
+       "referer": ""
+      },
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/pixiv/90001"
+ },
+ "unknown-platform": {
+  "Parts": null,
+  "CleanURL": "https://example.invalid/nowhere/1"
+ },
+ "unsupported-kind": {
+  "Parts": null,
+  "CleanURL": "https://example.invalid/github/1"
+ },
+ "x-article": {
+  "Parts": [
+   {
+    "Kind": "forward",
+    "Quote": "-71",
+    "Body": null,
+    "Nodes": [
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "https://example.invalid/x/80001\n纸灯实验室[@paper_lab]：\n短帖正文",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       },
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-1.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "CleanURL": "https://example.invalid/x/80001"
+ },
+ "x-long": {
+  "Parts": [
+   {
+    "Kind": "forward",
+    "Quote": "-71",
+    "Body": null,
+    "Nodes": [
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "https://example.invalid/x/80001\n纸灯实验室[@paper_lab]：\n「甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲\n段尾丙」\n11-01 18:30",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-1.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "CleanURL": "https://example.invalid/x/80001"
+ },
+ "x-over300": {
+  "Parts": [
+   {
+    "Kind": "forward",
+    "Quote": "-71",
+    "Body": null,
+    "Nodes": [
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "https://example.invalid/x/80001\n纸灯实验室[@paper_lab]：\n「短帖正文」\n11-01 18:30",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-1.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "CleanURL": "https://example.invalid/x/80001"
+ },
+ "x-quote": {
+  "Parts": [
+   {
+    "Kind": "forward",
+    "Quote": "-71",
+    "Body": null,
+    "Nodes": [
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "https://example.invalid/x/80002\n纸灯实验室[@paper_lab]：\n「被引用的话」\n11-01 18:30",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "https://example.invalid/x/80001\n纸灯实验室[@paper_lab]：\n「短帖正文」\n11-01 18:30",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ],
+      "QuoteOf": 1
+     }
+    ]
+   }
+  ],
+  "CleanURL": "https://example.invalid/x/80001"
+ },
+ "x-short-image": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "https://example.invalid/x/80001\n纸灯实验室[@paper_lab]：\n「短帖正文」\n11-01 18:30",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/x/80001"
+ },
+ "x-short-nostats": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "https://example.invalid/x/80001\n纸灯实验室[@paper_lab]：\n「短帖正文」\n11-01 18:30",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/x/80001"
+ },
+ "x-short-sensitive": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "https://example.invalid/x/80001\n纸灯实验室[@paper_lab]：\n「短帖正文」\n11-01 18:30",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/x/80001"
+ },
+ "x-short-video": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "text",
+      "Text": "https://example.invalid/x/80001\n纸灯实验室[@paper_lab]：\n「短帖正文」\n11-01 18:30",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "video",
+      "Text": "",
+      "Media": {
+       "type": "video",
+       "url": {
+        "state": "available",
+        "value": "https://v.example.invalid/clip.mp4"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/thumb.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "available",
+        "value": 135
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": true
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/x/80001"
+ },
+ "x-truncated": {
+  "Parts": [
+   {
+    "Kind": "forward",
+    "Quote": "-71",
+    "Body": null,
+    "Nodes": [
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "text",
+        "Text": "https://example.invalid/x/80001\n纸灯实验室[@paper_lab]：\n「短帖正文」\n11-01 18:30",
+        "Media": {
+         "type": "",
+         "url": {
+          "state": "",
+          "value": ""
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     },
+     {
+      "Name": "link-reader（外部内容）",
+      "Body": [
+       {
+        "Kind": "image",
+        "Text": "",
+        "Media": {
+         "type": "image",
+         "url": {
+          "state": "available",
+          "value": "https://i0.example.invalid/pic-1.png"
+         },
+         "thumbnail": {
+          "state": "",
+          "value": ""
+         },
+         "width": {
+          "state": "",
+          "value": 0
+         },
+         "height": {
+          "state": "",
+          "value": 0
+         },
+         "duration_seconds": {
+          "state": "",
+          "value": 0
+         },
+         "declared_bytes": {
+          "state": "",
+          "value": 0
+         },
+         "variants": {
+          "state": "",
+          "value": null
+         },
+         "sensitive": {
+          "state": "",
+          "value": false
+         }
+        },
+        "Card": null,
+        "Ugoira": null,
+        "Standalone": false
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "CleanURL": "https://example.invalid/x/80001"
+ },
+ "youtube": {
+  "Parts": [
+   {
+    "Kind": "message",
+    "Quote": "-71",
+    "Body": [
+     {
+      "Kind": "image",
+      "Text": "",
+      "Media": {
+       "type": "image",
+       "url": {
+        "state": "available",
+        "value": "https://i0.example.invalid/pic-1.png"
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "text",
+      "Text": "Paper Boat Test\n纸灯实验室 | 02:15\n播放 1000 | 点赞 50\n11-01 18:30\nhttps://example.invalid/youtube/abc123",
+      "Media": {
+       "type": "",
+       "url": {
+        "state": "",
+        "value": ""
+       },
+       "thumbnail": {
+        "state": "",
+        "value": ""
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "",
+        "value": 0
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": false
+     },
+     {
+      "Kind": "video",
+      "Text": "",
+      "Media": {
+       "type": "video",
+       "url": {
+        "state": "available",
+        "value": "https://v.example.invalid/clip.mp4"
+       },
+       "thumbnail": {
+        "state": "available",
+        "value": "https://i0.example.invalid/thumb.png"
+       },
+       "width": {
+        "state": "",
+        "value": 0
+       },
+       "height": {
+        "state": "",
+        "value": 0
+       },
+       "duration_seconds": {
+        "state": "available",
+        "value": 135
+       },
+       "declared_bytes": {
+        "state": "",
+        "value": 0
+       },
+       "variants": {
+        "state": "",
+        "value": null
+       },
+       "sensitive": {
+        "state": "",
+        "value": false
+       }
+      },
+      "Card": null,
+      "Ugoira": null,
+      "Standalone": true
+     }
+    ],
+    "Nodes": null
+   }
+  ],
+  "CleanURL": "https://example.invalid/youtube/abc123"
+ }
+}

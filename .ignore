@@ -1,0 +1,3 @@
+# 搜索默认跳过的目录（rg、fd 和 Claude Code 的 Grep / Glob 都认这个文件；不影响 git）。
+# docs/archive/ 是历史层：被取代的规格、做完的调研、过程记录。要查来由时指名这个目录搜（rg 词 docs/archive）。
+docs/archive/

@@ -1,0 +1,194 @@
+[
+  {
+    "name": "supersede-revision-only-when-changed",
+    "bun": "替换（supersedes）的旧事实不是有效的了（别的会话先换过、被撤销），仍然无条件写一条 supersede 修订（拆解 12.1、坑 11）",
+    "go": "事务里重新查状态，只有真的改到了才写修订；没改到：remember 整批回滚、什么都不写（ErrReplaceGone）；提升候选时取代没成（旧的已不是有效的）不计保护、不写修订。整理的 supersedes 在写入时根本不取代（见 summary-supersede-deferred-whitelist）",
+    "source": "规格-记忆-v2 13.2.4 第 8 步、13.2.13 ⑤；W2"
+  },
+  {
+    "name": "candidates-enter-index",
+    "bun": "待确认的事实不进全文索引（memory.ts apply 里只有 active 才写 memory_fts）",
+    "go": "待确认的也进全文索引、参与召回，给她时标「听说」，每轮最多 1 条",
+    "source": "规格-记忆-v2 13.2.4 第 8 步、13.2.11 取舍 8；ADR-159 第 5 条"
+  },
+  {
+    "name": "dup-text-merges",
+    "bun": "没有同文查重：同一句话说几遍就写几条",
+    "go": "去掉空白标点后一样、主体一样的有效或待确认事实合并成一条，证据按（日期，会话）记一次；remember 遇到同文返回「已经记着了」",
+    "source": "规格-记忆-v2 13.2.3、13.2.4 第 8 步、13.2.11 取舍 16、19；W2"
+  },
+  {
+    "name": "dup-merge-scope-by-subject",
+    "bun": "没有同文合并，也就没有合并时的范围规则",
+    "go": "合并时范围只在本人说的那一次并上去；别人转述的范围不动，只记证据（偏离对照笔记 14.5 第 2 条的交集建议）；待确认的那条，转述的证据还要说话的会话看得见它才记，看不见的不记、数 evidence_hidden（W3b）",
+    "source": "规格-记忆-v2 13.2.4 第 8(a) 步、13.2.11 取舍 20；17.7(d) 请主人定"
+  },
+  {
+    "name": "remember-confirms-same-text-candidate",
+    "bun": "没有同文查重：主人让她记的话，和待确认的一样，会再写一条有效的，待确认的那条留着",
+    "go": "有可信主人原话的 remember 可提候选为 ai，不能标为 owner；替换遵守同主体及受保护规则。",
+    "source": "ADR-314；规格-记忆质量"
+  },
+  {
+    "name": "dup-revoked-not-revived",
+    "bun": "没有同文查重：撤销过的事实被再次提取，会新写一条有效的",
+    "go": "整理里撞上同文的撤销或 AI 没通过的事实：不新建、不复活，计数 dup_revoked；remember（主人明说）不受这条限制",
+    "source": "规格-记忆-v2 13.2.4 第 8(b) 步；17.7(a) 请主人定"
+  },
+  {
+    "name": "remember-input-validated",
+    "bun": "remember 的 text 没有长度上限，subject 任意字符串都收，kind 只靠工具参数的枚举",
+    "go": "kind 四选一；text 去掉首尾空白后 1～300 个码点；subject 空当 owner、只认 owner 和 self；不合规的返回出错的文字，什么都不写",
+    "source": "规格-记忆-v2 13.2.3；W3"
+  },
+  {
+    "name": "remember-code-ambiguous-own-text",
+    "bun": "remember 的短码找不到和对上不止一条都说「没找到编号……」（factByCode 两种情况都返回 null，拆解 8.1）",
+    "go": "对上不止一条有效事实时单独一句「编号 X 对上了不止一条记忆，这次没有记……」，什么都不写；0 条或格式不对仍是 B19 原文",
+    "source": "规格-记忆-v2 13.2.3；W3"
+  },
+  {
+    "name": "remember-correction-same-text-retires-old",
+    "bun": "没有同文查重：改正的话和已有的一条一样，会再写一条一样的，旧的错话被取代",
+    "go": "改正的话和已有的有效事实同文：不新写，错的那条退成被已有的那条取代；同文的是待确认的：主人明说要记就是放行，提成有效（confirmed_by = owner），旧的同样被取代，回「记住了」",
+    "source": "规格-记忆-v2 13.2.3；W3（规格原来没写 replaces 和同文的组合）"
+  },
+  {
+    "name": "recall-raw-like-escaped",
+    "bun": "recall_raw 的 LIKE 不转义：搜「100%」会匹配任意以 100 开头的字（memory.ts:894–897）",
+    "go": "词里的 % _ 和反斜杠转义成字面（模式带 ESCAPE），按字面找",
+    "source": "规格-记忆-v2 13.2.3；拆解 8.3；清单 ②；W3"
+  },
+  {
+    "name": "recall-raw-names-not-account-numbers",
+    "bun": "recall_raw 给模型看群友的 actor_id（qq:<号码>），名字不出现（拆解坑 15）",
+    "go": "用发言时的名字（ActorName），没有写「某位群友」；同一次结果里不同的人同名加 #2；别人的行一律「名字（群友）」，另一个角色「名字（角色）」，不拿名字去比像不像主人；不给号码",
+    "source": "规格-记忆-v2 13.2.3；拆解坑 15；边界 ㉑；W3"
+  },
+  {
+    "name": "recall-raw-skips-revoked-and-unsent",
+    "bun": "recall_raw 的 SQL 不排除撤回的消息和没发出去的回复，原样给她",
+    "go": "撤回了的、没发出去的不给；store 没滤干净的（没看见的、别的会话的）记忆包自己再丢一遍",
+    "source": "规格-记忆-v2 13.2.3 的「W3 补的几条」；13.2.2；W3"
+  },
+  {
+    "name": "recall-raw-text-escaped-and-clipped",
+    "bun": "recall_raw 原样给 events.text，不转义、不限长",
+    "go": "原话里的方括号换全角、换行后缩进、↪ 换掉（伪造不出别人的一行），名字里的括号冒号换掉；每条最多 500 个码点，多的截掉加省略号",
+    "source": "规格-记忆-v2 13.2.3 的「W3 补的几条」；规格-群聊闸门 10.2；清单 ⑦；W3"
+  },
+  {
+    "name": "recall-raw-her-account-not-you",
+    "bun": "recall_raw 里她的号发出的话一律写成「你」（actor_id 等于角色 id）",
+    "go": "origin 是 human、external 的（她的号上别人发的，不是她说的）写「你的号上别人发的」",
+    "source": "规格-记忆-v2 13.2.14 禁止清单（不把 human 当成她自己的话）；W3"
+  },
+  {
+    "name": "parse-one-bad-op-drops-one",
+    "bun": "整理的输出里任何一条动作不合规（op 或 kind 写了新词、text 超过 300 字、revoke 没有 id……），整个输出读不出来，整批 200 条都不记，还退避（拆解 6、坑 7；zod 的行为是读码推断）",
+    "go": "丢那一条，按原因计数，其余照记；格式完全不对（不是 JSON 对象、既没有 episode_record 也没有 ops、ops 不是数组）才整批失败",
+    "source": "规格-记忆-v2 13.2.6、13.2.11 取舍 3；清单第 3 节表；W4"
+  },
+  {
+    "name": "parse-empty-ops-is-legit",
+    "bun": "修复出来的 ops 是空数组算失败（extractJson 的 accept 要求 ops 非空），整批退避（拆解坑 8）",
+    "go": "ops 是空数组、没有 ops 这一栏、修复出来是空数组都合法，\"这批什么都不记\"是正常结果；被截断到只剩 episode 的半句话才算失败",
+    "source": "规格-记忆-v2 13.2.6、13.2.11 取舍 4；拆解坑 8；W4"
+  },
+  {
+    "name": "parse-overlong-truncated",
+    "bun": "ops 超过 20 条、episode 超过 800 字、src 超过 10 个，整批失败（zod 的 max）",
+    "go": "截断而不丢：ops 取前 20 条（其余计数）、episode 截到 800 个码点（优先停在句末）、src 取前 10 个；全按码点，不按字节",
+    "source": "规格-记忆-v2 13.2.6、13.2.13 ⑦；拆解坑 7；W4"
+  },
+  {
+    "name": "episode-record-bool-and-unknown",
+    "bun": "episode_record 写成布尔或别的值，当没写，有 episode 文字就存（只有严格等于 \"no\" 才不存）；不计数",
+    "go": "只接受字符串 yes 保存经历；缺失、布尔、未知值不存，合法事实动作继续。",
+    "source": "ADR-314；规格-记忆质量"
+  },
+  {
+    "name": "summary-new-conversation-not-backfilled",
+    "bun": "没有游标行的会话从 seq 0 开始整理：把整段历史一批一批全跑一遍（Bun 的 lastSeq 缺省 0）；启动只扫主窗口",
+    "go": "没有游标行（新会话）不读事件、不调模型，返回「新会话还没立起点」；起点由调用方用 InitCursor 立（启动时的最新 seq），只整理起点之后的；回填历史要主人确认后另走",
+    "source": "规格-记忆-v2 13.2.4 第 1 步、13.2.5 启动、第十七节 17.4；W4"
+  },
+  {
+    "name": "summary-skips-revoked-and-unsent",
+    "bun": "整理读事件的 SQL 不排除撤回的消息，也不排除没发出去的回复（只排除 automation、补录、自检、没人看见的）",
+    "go": "撤回的原消息、没发出去的回复、kind 不是 message 的都不进聊天记录；被丢的行也算读过，游标越过它们",
+    "source": "规格-记忆-v2 13.2.4 第 2 步、13.2.11 表「撤回的原消息」；W4"
+  },
+  {
+    "name": "summary-revoke-needs-owner-words",
+    "bun": "模型给的 revoke 只要编号在这一批给它看过的已知事实里就撤销，不看是谁说的",
+    "go": "撤销还要 src 恰好一个序号、那一行是主人自己说的话（我定的，默认收紧）；该事实本人说的「不对」不撤销；src 里夹别的行（哪怕其中有主人的话）也不撤销；不带 src 的撤销被拒（计数 revoke_refused）。summarize-v2.md 的 revoke 有 src 栏（W3a），再过写入层的白名单才撤得动",
+    "source": "规格-记忆-v2 13.2.6「revoke」；第十七节 17.1；W4；规格-记忆写入上线 W3a"
+  },
+  {
+    "name": "summary-ai-facts-are-candidates",
+    "bun": "upsert_fact 一律写成有效；只有「记到主人头上、src 里没有一句是主人说的」才降成待确认（B11，checkOwnerSubject）",
+    "go": "整理写进去的事实一律是待确认：有效要攒够次数或主人放行（ADR-160），晋升归第 3 步；她自己的事（self）也先待确认；src 里有主人的话也不直接有效",
+    "source": "规格-记忆-v2 13.2.6、第十七节 17.7(c)；拆解 B11；W4"
+  },
+  {
+    "name": "summary-src-out-of-batch-is-none",
+    "bun": "src 写错、编号不在这一批：退回整批原话当来源（own.length ? own : sourceSeqs），原话的归属扩大到整批",
+    "go": "src 里只要有一个编号不是这一批给模型看过的（或写坏了、没写），整个按没有 src 算，计数；不退回整批原话；没有 src 的事实没有证据、没有来源、没有归属",
+    "source": "规格-记忆-v2 13.2.6「引用编号越界」、17.7(b)；W4"
+  },
+  {
+    "name": "summary-scope-set-by-program",
+    "bun": "scopeForNew：平台群里不是主人的事（她的、群友的）一律 conv:<群>，不看模型填的 visibility；主人自己的事和其余场合由 visibility 换算（scopeOf：private → owner，public → conv:<会话>）",
+    "go": "范围由程序按来源场合定（4.2 那张表：五种场合 × 主人的事 / 她的事 / 别人的事）；visibility 只许收紧（private 去掉 conv:*，没写也按 private；去光了就保持表里的范围，不退到 owner 或 person:），不能放宽；平台群里主人自己的事是 owner + 这个群",
+    "source": "规格-记忆-v2 4.2、13.2.6、十四 #4；拆解 B10、B13；W4"
+  },
+  {
+    "name": "summary-her-account-not-a-speaker",
+    "bun": "summaryAudience 把 origin 为 human（她的号上别人发的）的行当说话的人算进 personIds",
+    "go": "她的号上别人发的（human、external）留在聊天记录里并标明「你的号上别人发的」，但不是说话的人、不进说话人表、不是证据，也判不出这是谁的私聊",
+    "source": "规格-记忆-v2 13.2.4 第 2 步、13.2.14；qq.ts:300-306；W4"
+  },
+  {
+    "name": "summary-batch-char-cap",
+    "bun": "一批最多 200 条，不限字数：200 条长消息会把整理的提示词撑得很大（清单 ⑦）",
+    "go": "一批最多 200 条，并且给模型的聊天记录不超过 6000 个码点（起步值）：超过的留给下一批，不丢、不跳，游标只挪到实际读完的那条；一条就超过上限的截到 6000 字，不卡住",
+    "source": "规格-记忆-v2 13.2.4 第 1 步、13.2.13 ⑦；W4"
+  },
+  {
+    "name": "summary-waits-for-vision",
+    "bun": "整理用收消息时存好的那一行（segments.line / seen）；图还没识完就按没有描述整理，一次定终身（清单 ⑧ 的 050f5d73 一类）",
+    "go": "第一条没识完的图前面截断，游标不越过它，图到了再整理；等满 10 分钟（起步值）还没好的按占位整理、标「未看清」，不再卡住这个会话；识完的描述放回占位",
+    "source": "规格-记忆-v2 13.2.4 第 2 步、13.2.13 ⑧、13.2.12 W0(e)；W4"
+  },
+  {
+    "name": "summary-supersede-deferred-whitelist",
+    "bun": "整理的 supersedes 写入时就取代旧的有效事实（只要编号在已知事实里）；revoke 同样；只有主人放行过的（owner）拦得住，导入来的旧事实 AI 想顶就顶",
+    "go": "整理（AI）只能取代、撤销 confirmed_by = ai 的有效事实：NULL（导入的）、空串、owner、不认识的值一律受保护，取代的那一刻现场判断，不加列、不回填；整理写的候选带 supersedes 时写入时不取代任何有效事实，想取代谁记在新候选 add 修订的 wants_supersede，计 supersede_deferred，真正的取代在提升这条候选的事务里（W3b）并再过白名单；被挡下的计 supersede_protected / revoke_protected，各日志一行（短码和原因码，不带正文）；主人自己（remember）可以动任何有效事实",
+    "source": "规格-记忆写入上线 W2；规格-记忆-v2 13.2.4 第 8 步、4.4"
+  },
+  {
+    "name": "remember-same-text-confirms-active",
+    "bun": "没有同文查重，也没有 confirmed_by：主人让她记的话和已有的有效事实一样，会再写一条",
+    "go": "同文有效事实不再被模型调用升级成 owner，原确认身份与范围保持。",
+    "source": "ADR-314；规格-记忆质量"
+  },
+  {
+    "name": "summary-evidence-op",
+    "bun": "整理没有 evidence 动作（提示词只有 upsert_fact、candidate、revoke），也不给模型看待确认的事实：同一件事换个说法再说一遍，就新写一条待确认，攒不成证据",
+    "go": "summarize-v2.md 给模型看这个场合看得见的最近 20 条待确认候选（编号｜种类｜内容，不带已有几次），模型可以对其中的编号写 evidence（src 恰好一个序号）；程序查编号在候选块里、那一行在批里且是真人的话，BySubject 按说话人身份算，会话和时间取那一行本身，写入层只记 fact_evidence 一行，不改状态和范围；已知事实和候选块的正文都过 escapeUserText",
+    "source": "规格-记忆写入上线 W3a；规格-记忆-v2 4.2、4.4"
+  },
+  {
+    "name": "summary-evidence-confirm",
+    "bun": "待确认的事实没有变有效的路：只有主人 remember 同文才放行（confirmed_by = owner），证据表只写不读",
+    "go": "待确认的事实在写事务里、证据刚记完的那一刻数：不同的（天，会话）里本人说的每行一次，转述的按说话人去重各算一次（没记说话人的不算），算数的次数 >= 3（Options.ConfirmOccasions，配成 1 也按 2）并且至少 1 次本人说的，种类在 ConfirmKinds 里（默认 fact、preference，promise、boundary 不自动提升），才提成有效（confirmed_by = ai，范围不动，记 confirm 修订）；想取代的旧事实（wants_supersede）还是 ai 放行的就同事务取代，受保护就不提升（confirm_blocked_protected）；AutoConfirm 为假（默认）只数 would_confirm，不改库",
+    "source": "规格-记忆写入上线 W3b；规格-记忆-v2 4.4；ADR-160"
+  },
+  {
+    "name": "summary-by-subject-exactly-one-line",
+    "bun": "没有「本人说的」这一层判断：整理的事实只看 src 里有没有一句是主人说的（B11 checkOwnerSubject），src 写几行不管，也不记 by_subject 证据",
+    "go": "整理写事实（upsert_fact、candidate）时，只有 src 恰好引用一行、并且那一行是当事人说的，才算本人说的（BySubject）；两行以上一律不算，哪怕每一行都是当事人说的；同一个序号写两遍也是两行，不去重。当事人按 ActorKind、ActorID 认。不算本人说的时事实照写，记成转述、attributed_to 写证据那一句的说话人；多行时证据取第一句人话，不再本人说的优先。revoke、evidence 本来就只认恰好一个序号（它们的 [5,5] 去重后算一个）",
+    "source": "ADR-231；规格-记忆写入上线 W3 实现记录"
+  }
+]

@@ -1,0 +1,21 @@
+{
+ "id": "fakenote00000001",
+ "createdAt": "2026-11-06T18:48:27.167Z",
+ "user": {
+  "id": "fakeuser00000001",
+  "name": "编造用户",
+  "username": "example_user",
+  "host": null,
+  "avatarUrl": "https://proxy.misskeyusercontent.jp/fixture/1"
+ },
+ "text": "这是编造的联邦宇宙示例正文，仅用于解析测试。这是编",
+ "cw": null,
+ "renoteCount": 0,
+ "repliesCount": 0,
+ "reactionCount": 4,
+ "reactions": {
+  ":apude_ha_igyo@.:": 4
+ },
+ "files": [],
+ "renoteId": null
+}

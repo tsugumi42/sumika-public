@@ -1,0 +1,334 @@
+[
+  {
+    "name": "lf",
+    "before": "one\ntwo\nthree\n",
+    "edits": [
+      {
+        "oldText": "two",
+        "newText": "第二行 🙂"
+      }
+    ],
+    "path": "example.txt",
+    "after": "one\n第二行 🙂\nthree\n",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": " 1 one\n-2 two\n+2 第二行 🙂\n 3 three",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,3 +1,3 @@\n one\n-two\n+第二行 🙂\n three\n",
+      "firstChangedLine": 2
+    }
+  },
+  {
+    "name": "crlf",
+    "before": "one\r\ntwo\r\nthree\r\n",
+    "edits": [
+      {
+        "oldText": "two\r\nthree",
+        "newText": "第二行\n末行"
+      }
+    ],
+    "path": "example.txt",
+    "after": "one\r\n第二行\r\n末行\r\n",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": " 1 one\n-2 two\n-3 three\n+2 第二行\n+3 末行",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,3 +1,3 @@\n one\n-two\n-three\n+第二行\n+末行\n",
+      "firstChangedLine": 2
+    }
+  },
+  {
+    "name": "bom",
+    "before": "﻿one\ntwo\n",
+    "edits": [
+      {
+        "oldText": "one",
+        "newText": "首行"
+      }
+    ],
+    "path": "example.txt",
+    "after": "﻿首行\ntwo\n",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": "-1 one\n+1 首行\n 2 two",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,2 +1,2 @@\n-one\n+首行\n two\n",
+      "firstChangedLine": 1
+    }
+  },
+  {
+    "name": "bom-crlf",
+    "before": "﻿one\r\ntwo\r\n",
+    "edits": [
+      {
+        "oldText": "one",
+        "newText": "首行"
+      }
+    ],
+    "path": "example.txt",
+    "after": "﻿首行\r\ntwo\r\n",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": "-1 one\n+1 首行\n 2 two",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,2 +1,2 @@\n-one\n+首行\n two\n",
+      "firstChangedLine": 1
+    }
+  },
+  {
+    "name": "without-final-newline",
+    "before": "one\ntwo",
+    "edits": [
+      {
+        "oldText": "two",
+        "newText": "末行"
+      }
+    ],
+    "path": "example.txt",
+    "after": "one\n末行",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": " 1 one\n-2 two\n+2 末行",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,2 +1,2 @@\n one\n-two\n\\ No newline at end of file\n+末行\n\\ No newline at end of file\n",
+      "firstChangedLine": 2
+    }
+  },
+  {
+    "name": "add-final-newline",
+    "before": "one\ntwo",
+    "edits": [
+      {
+        "oldText": "two",
+        "newText": "two\n"
+      }
+    ],
+    "path": "example.txt",
+    "after": "one\ntwo\n",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": " 1 one\n-2 two\n+2 two",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,2 +1,2 @@\n one\n-two\n\\ No newline at end of file\n+two\n",
+      "firstChangedLine": 2
+    }
+  },
+  {
+    "name": "remove-final-newline",
+    "before": "one\ntwo\n",
+    "edits": [
+      {
+        "oldText": "two\n",
+        "newText": "two"
+      }
+    ],
+    "path": "example.txt",
+    "after": "one\ntwo",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": " 1 one\n-2 two\n+2 two",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,2 +1,2 @@\n one\n-two\n+two\n\\ No newline at end of file\n",
+      "firstChangedLine": 2
+    }
+  },
+  {
+    "name": "context",
+    "before": "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nline 15\nline 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nline 25\nline 26\nline 27\nline 28\nline 29\nline 30\n",
+    "edits": [
+      {
+        "oldText": "line 15\n",
+        "newText": "changed\n"
+      }
+    ],
+    "path": "example.txt",
+    "after": "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nchanged\nline 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nline 25\nline 26\nline 27\nline 28\nline 29\nline 30\n",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": "    ...\n 11 line 11\n 12 line 12\n 13 line 13\n 14 line 14\n-15 line 15\n+15 changed\n 16 line 16\n 17 line 17\n 18 line 18\n 19 line 19\n    ...",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -11,9 +11,9 @@\n line 11\n line 12\n line 13\n line 14\n-line 15\n+changed\n line 16\n line 17\n line 18\n line 19\n",
+      "firstChangedLine": 15
+    }
+  },
+  {
+    "name": "multiple-far",
+    "before": "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nline 15\nline 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nline 25\nline 26\nline 27\nline 28\nline 29\nline 30\n",
+    "edits": [
+      {
+        "oldText": "line 25\n",
+        "newText": "last\n"
+      },
+      {
+        "oldText": "line 5\n",
+        "newText": "first\nextra\n"
+      }
+    ],
+    "path": "example.txt",
+    "after": "line 1\nline 2\nline 3\nline 4\nfirst\nextra\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nline 15\nline 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nlast\nline 26\nline 27\nline 28\nline 29\nline 30\n",
+    "text": "Successfully replaced 2 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": "  1 line 1\n  2 line 2\n  3 line 3\n  4 line 4\n- 5 line 5\n+ 5 first\n+ 6 extra\n  6 line 6\n  7 line 7\n  8 line 8\n  9 line 9\n    ...\n 21 line 21\n 22 line 22\n 23 line 23\n 24 line 24\n-25 line 25\n+26 last\n 26 line 26\n 27 line 27\n 28 line 28\n 29 line 29\n    ...",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,9 +1,10 @@\n line 1\n line 2\n line 3\n line 4\n-line 5\n+first\n+extra\n line 6\n line 7\n line 8\n line 9\n@@ -21,9 +22,9 @@\n line 21\n line 22\n line 23\n line 24\n-line 25\n+last\n line 26\n line 27\n line 28\n line 29\n",
+      "firstChangedLine": 5
+    }
+  },
+  {
+    "name": "context-merge-eight",
+    "before": "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nline 15\nline 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nline 25\nline 26\nline 27\nline 28\nline 29\nline 30\n",
+    "edits": [
+      {
+        "oldText": "line 5\n",
+        "newText": "first\n"
+      },
+      {
+        "oldText": "line 14\n",
+        "newText": "last\n"
+      }
+    ],
+    "path": "example.txt",
+    "after": "line 1\nline 2\nline 3\nline 4\nfirst\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nlast\nline 15\nline 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nline 25\nline 26\nline 27\nline 28\nline 29\nline 30\n",
+    "text": "Successfully replaced 2 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": "  1 line 1\n  2 line 2\n  3 line 3\n  4 line 4\n- 5 line 5\n+ 5 first\n  6 line 6\n  7 line 7\n  8 line 8\n  9 line 9\n 10 line 10\n 11 line 11\n 12 line 12\n 13 line 13\n-14 line 14\n+14 last\n 15 line 15\n 16 line 16\n 17 line 17\n 18 line 18\n    ...",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,18 +1,18 @@\n line 1\n line 2\n line 3\n line 4\n-line 5\n+first\n line 6\n line 7\n line 8\n line 9\n line 10\n line 11\n line 12\n line 13\n-line 14\n+last\n line 15\n line 16\n line 17\n line 18\n",
+      "firstChangedLine": 5
+    }
+  },
+  {
+    "name": "context-split-nine",
+    "before": "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nline 15\nline 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nline 25\nline 26\nline 27\nline 28\nline 29\nline 30\n",
+    "edits": [
+      {
+        "oldText": "line 5\n",
+        "newText": "first\n"
+      },
+      {
+        "oldText": "line 15\n",
+        "newText": "last\n"
+      }
+    ],
+    "path": "example.txt",
+    "after": "line 1\nline 2\nline 3\nline 4\nfirst\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nlast\nline 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nline 25\nline 26\nline 27\nline 28\nline 29\nline 30\n",
+    "text": "Successfully replaced 2 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": "  1 line 1\n  2 line 2\n  3 line 3\n  4 line 4\n- 5 line 5\n+ 5 first\n  6 line 6\n  7 line 7\n  8 line 8\n  9 line 9\n    ...\n 11 line 11\n 12 line 12\n 13 line 13\n 14 line 14\n-15 line 15\n+15 last\n 16 line 16\n 17 line 17\n 18 line 18\n 19 line 19\n    ...",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,9 +1,9 @@\n line 1\n line 2\n line 3\n line 4\n-line 5\n+first\n line 6\n line 7\n line 8\n line 9\n@@ -11,9 +11,9 @@\n line 11\n line 12\n line 13\n line 14\n-line 15\n+last\n line 16\n line 17\n line 18\n line 19\n",
+      "firstChangedLine": 5
+    }
+  },
+  {
+    "name": "insert",
+    "before": "one\ntwo\n",
+    "edits": [
+      {
+        "oldText": "two",
+        "newText": "extra\ntwo"
+      }
+    ],
+    "path": "example.txt",
+    "after": "one\nextra\ntwo\n",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": " 1 one\n+2 extra\n 2 two",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,2 +1,3 @@\n one\n+extra\n two\n",
+      "firstChangedLine": 2
+    }
+  },
+  {
+    "name": "delete",
+    "before": "one\ntwo\nthree\n",
+    "edits": [
+      {
+        "oldText": "two\n",
+        "newText": ""
+      }
+    ],
+    "path": "example.txt",
+    "after": "one\nthree\n",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": " 1 one\n-2 two\n 3 three",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,3 +1,2 @@\n one\n-two\n three\n",
+      "firstChangedLine": 2
+    }
+  },
+  {
+    "name": "empty-result",
+    "before": "one\n",
+    "edits": [
+      {
+        "oldText": "one\n",
+        "newText": ""
+      }
+    ],
+    "path": "example.txt",
+    "after": "",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": "-1 one",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,1 +0,0 @@\n-one\n",
+      "firstChangedLine": 1
+    }
+  },
+  {
+    "name": "replace-without-newline",
+    "before": "one",
+    "edits": [
+      {
+        "oldText": "one",
+        "newText": "新 🙂"
+      }
+    ],
+    "path": "example.txt",
+    "after": "新 🙂",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": "-1 one\n+1 新 🙂",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,1 +1,1 @@\n-one\n\\ No newline at end of file\n+新 🙂\n\\ No newline at end of file\n",
+      "firstChangedLine": 1
+    }
+  },
+  {
+    "name": "fuzzy",
+    "before": "保持 “原样”  \n改 “这里”  \n",
+    "edits": [
+      {
+        "oldText": "改 \"这里\"",
+        "newText": "改好了"
+      }
+    ],
+    "path": "example.txt",
+    "after": "保持 “原样”  \n改好了\n",
+    "text": "Successfully replaced 1 block(s) in example.txt.",
+    "isError": false,
+    "details": {
+      "diff": " 1 保持 “原样”  \n-2 改 “这里”  \n+2 改好了",
+      "patch": "--- example.txt\n+++ example.txt\n@@ -1,2 +1,2 @@\n 保持 “原样”  \n-改 “这里”  \n+改好了\n",
+      "firstChangedLine": 2
+    }
+  },
+  {
+    "name": "missing",
+    "before": "",
+    "edits": [
+      {
+        "oldText": "one",
+        "newText": "two"
+      }
+    ],
+    "missing": true,
+    "path": "example.txt",
+    "after": null,
+    "text": "Could not edit file: example.txt. Error code: ENOENT.",
+    "isError": true,
+    "details": null
+  }
+]

@@ -1,0 +1,1173 @@
+{
+  "about": "remember 的参数检查：kind 四选一，正文去首尾空白后 1～300 个字（按码点，emoji 算一个，空白按 Python 的集合），subject 只认 owner、self（数字当没写），temporal 只认 stable、temporary，期限要未来、带时区的 RFC3339 且只配 temporary；类型不对的 temporal、valid_until、source_quote 整个拒。参数先于来源判。坏的一律不写；边界上的收下。",
+  "source_tests": [
+    "TestRememberValidatesWhatIsWritten",
+    "TestMemoryLifetimeAndProtectedWritesRejectAtomically",
+    "TestMemoryLifetimePersistsAndExpires",
+    "TestBlankText"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "我说了很多话，请记住",
+      "ago_s": 60
+    }
+  ],
+  "start": {},
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002",
+    "NEWF0000000000000000000003",
+    "NEWF0000000000000000000004",
+    "NEWF0000000000000000000005",
+    "NEWF0000000000000000000006",
+    "NEWF0000000000000000000007",
+    "NEWF0000000000000000000008",
+    "NEWF0000000000000000000009",
+    "NEWF0000000000000000000010",
+    "NEWF0000000000000000000011"
+  ],
+  "steps": [
+    {
+      "do": "remember",
+      "args": {
+        "kind": "",
+        "source_quote": "我说了很多话",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "kind 只能是 fact、promise、preference、boundary 之一，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "todo",
+        "source_quote": "我说了很多话",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "kind 只能是 fact、promise、preference、boundary 之一，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "Fact",
+        "source_quote": "我说了很多话",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "kind 只能是 fact、promise、preference、boundary 之一，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "source_quote": "我说了很多话",
+        "text": "没写 kind"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "kind 只能是 fact、promise、preference、boundary 之一，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": 5,
+        "source_quote": "我说了很多话",
+        "text": "kind 是数字"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "kind 只能是 fact、promise、preference、boundary 之一，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "text": ""
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "要记的内容是空的，这次没有记：用第三人称一句话写清楚。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "text": " \n\t　 "
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "要记的内容是空的，这次没有记：用第三人称一句话写清楚。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "text": "字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话太长了（超过 300 字），这次没有记：拆成几条，每条用第三人称一句话。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "text": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话太长了（超过 300 字），这次没有记：拆成几条，每条用第三人称一句话。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "text": "  字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字\n"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "这句话太长了（超过 300 字），这次没有记：拆成几条，每条用第三人称一句话。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "text": "\u001f\u001c"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "要记的内容是空的，这次没有记：用第三人称一句话写清楚。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "text": 123
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "要记的内容是空的，这次没有记：用第三人称一句话写清楚。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "subject": "someone",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "subject 只能写 owner（所有者）或 self（你自己），这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "subject": "Owner",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "subject 只能写 owner（所有者）或 self（你自己），这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "subject": "person:qq:u1",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "subject 只能写 owner（所有者）或 self（你自己），这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "subject": "主人",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "subject 只能写 owner（所有者）或 self（你自己），这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "subject": "owner,self",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "subject 只能写 owner（所有者）或 self（你自己），这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "now",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "temporal 只能是 stable 或 temporary，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "Stable",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "temporal 只能是 stable 或 temporary，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": 5,
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆参数类型不正确，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": null,
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆参数类型不正确，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "text": "x",
+        "valid_until": true
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆参数类型不正确，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": 5,
+        "temporal": "temporary",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆参数类型不正确，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "stable",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "valid_until_in_s": 86400,
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "valid_until_in_s": -1,
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x"
+      },
+      "input_seqs": [
+        1
+      ],
+      "valid_until_in_s": 0,
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x",
+        "valid_until": "2026-10-30"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x",
+        "valid_until": "2026-10-30 12:00:00Z"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x",
+        "valid_until": "2026-10-30T12:00:00"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x",
+        "valid_until": "2026-10-30t12:00:00z"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x",
+        "valid_until": "2026-10-30T12:00:00+0800"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x",
+        "valid_until": "2026-02-30T12:00:00Z"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x",
+        "valid_until": "明天"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x",
+        "valid_until": "2026-10-30T25:00:00Z"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "x",
+        "valid_until": " 2026-10-30T12:00:00Z"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记忆期限不合法：使用 stable，或 temporary 加未来的带时区 valid_until；这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "todo",
+        "text": "x"
+      },
+      "expect": {
+        "text": "kind 只能是 fact、promise、preference、boundary 之一，这次没有记。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "stable",
+        "text": "字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "promise",
+        "source_quote": "我说了很多话",
+        "text": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "boundary",
+        "source_quote": "我说了很多话",
+        "text": "  字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字甲  "
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "source_quote": "我说了很多话",
+        "subject": " self ",
+        "text": "她喜欢下雨天"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "subject": 5,
+        "temporal": "stable",
+        "text": "主人的主体写成数字也当 owner"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "colour": "蓝",
+        "kind": "fact",
+        "only_her": true,
+        "source_quote": "我说了很多话",
+        "temporal": "stable",
+        "text": "多出来的字段不看"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "带小数秒的期限",
+        "valid_until": "2026-10-27T20:00:00.5+08:00"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "temporal": "temporary",
+        "text": "带时区的期限",
+        "valid_until": "2026-10-28T12:00:00-05:00"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "source_quote": "我说了很多话",
+        "text": "没写时态但写了期限",
+        "valid_until": "2026-10-27T12:00:00Z"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了。"
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000002",
+        "kind": "promise",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "promise",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000003",
+        "kind": "boundary",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "boundary",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字甲",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000004",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "self",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "她喜欢下雨天",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000005",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人的主体写成数字也当 owner",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000006",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "多出来的字段不看",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000007",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "temporary",
+        "text": "带小数秒的期限",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": -86400.5,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000008",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "temporary",
+        "text": "带时区的期限",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": -190800,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000009",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "temporary",
+        "text": "没写时态但写了期限",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": -86400,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000002",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000003",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000004",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000005",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000006",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "temporary",
+          "valid_to_ago_s": -86400.5
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000007",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "temporary",
+          "valid_to_ago_s": -190800
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000008",
+        "op": "add",
+        "reason": null
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "temporary",
+          "valid_to_ago_s": -86400
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000009",
+        "op": "add",
+        "reason": null
+      }
+    ],
+    "evidence": []
+  }
+}

@@ -1,0 +1,18 @@
+{
+ "code": 200,
+ "result": {
+  "id": 90002,
+  "name": "编造的榜单",
+  "description": "这是编造的歌单简介，仅用于解析测试，每日更新。",
+  "coverImgUrl": "https://p2.music.126.net/fixture/playlist.jpg",
+  "createTime": 1378721406014,
+  "trackCount": 200,
+  "playCount": 10001,
+  "subscribedCount": 10002,
+  "tags": [],
+  "creator": {
+   "userId": 90002,
+   "nickname": "编造歌单作者"
+  }
+ }
+}

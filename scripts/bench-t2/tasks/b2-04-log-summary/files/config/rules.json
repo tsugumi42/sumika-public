@@ -1,0 +1,15 @@
+{
+  "error_levels": ["ERROR", "FATAL"],
+  "level_note": "只有级别是 ERROR 或 FATAL 的记录才统计（不分大小写）；WARN、INFO、DEBUG 一律不算，即使内容里有关键词",
+  "entry_note": "一条记录就是它的第一行；以空白开头的行是上一条记录的续行（比如调用栈），既不单独计数，也不参与匹配",
+  "match_note": "拿记录的消息文本（格式说明里的“消息”部分）做不分大小写的子串匹配；一条记录同时命中多个类别时，只算 categories 里排在最前面的那个",
+  "categories": [
+    {"name": "timeout", "match": ["timeout", "timed out"]},
+    {"name": "database", "match": ["deadlock", "connection refused", "sqlstate"]},
+    {"name": "auth", "match": ["invalid token", "token expired", "permission denied"]},
+    {"name": "disk", "match": ["no space left", "disk quota"]}
+  ],
+  "uncategorized": "other",
+  "uncategorized_note": "级别算错误、但一个类别也没命中的记录，计入 other",
+  "top_note": "每个服务“最多的那类”只在上面四个 categories 里比（other 不参与）；次数并列时取 categories 里排在前面的"
+}

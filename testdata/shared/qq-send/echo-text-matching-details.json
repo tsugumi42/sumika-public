@@ -1,0 +1,124 @@
+{
+  "id": "echo-text-matching-details",
+  "about": "回声认领比的文字：去首尾空白、统一换行；别的会话、图片回声、没有平台消息号的回声都不认",
+  "source_tests": [
+    "TestEchoTextMatchingDetails"
+  ],
+  "receipt": "unknown",
+  "steps": [
+    {
+      "do": "say",
+      "label": "p",
+      "as": "ca",
+      "texts": [
+        "第一行\n第二行\n"
+      ],
+      "expect": {}
+    },
+    {
+      "do": "wait_plan",
+      "label": "p",
+      "state": "unknown",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "unknown",
+          "parts": [
+            {
+              "state": "unknown",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "claim",
+      "conv": "g2",
+      "platform_id": "7001",
+      "text": "第一行\n第二行",
+      "expect": {
+        "claimed": false
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "7002",
+      "media": true,
+      "expect": {
+        "claimed": false
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "0",
+      "text": "第一行\n第二行",
+      "expect": {
+        "claimed": false
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "7004",
+      "text": "完全不同的另一句话",
+      "expect": {
+        "claimed": false
+      }
+    },
+    {
+      "do": "claim",
+      "platform_id": "7003",
+      "text": "第一行\r\n第二行",
+      "expect": {
+        "claimed": true
+      }
+    },
+    {
+      "do": "wait_plan",
+      "label": "p",
+      "state": "done",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "done",
+          "parts": [
+            {
+              "state": "confirmed",
+              "via": "echo",
+              "platform_id": "7003",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "final": {
+    "plans": [
+      {
+        "label": "p",
+        "state": "done",
+        "parts": [
+          {
+            "state": "confirmed",
+            "via": "echo",
+            "platform_id": "7003",
+            "attempts": 1
+          }
+        ]
+      }
+    ],
+    "sends": 1,
+    "mapped": {
+      "7003": "p"
+    },
+    "unmapped": [
+      "0",
+      "7001",
+      "7002",
+      "7004"
+    ]
+  }
+}

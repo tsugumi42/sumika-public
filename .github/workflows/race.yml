@@ -1,0 +1,42 @@
+# Go 后台的竞态检查（规格-Go后台 8.2 A11，ADR-183 第 4 条）：本机装了 mingw 的 gcc 也能跑 -race，这里在 Linux 上再跑一次，换个系统和调度。
+# 只跑不依赖 Windows 的契约测试（对拍的录像是在 Windows 上录的，路径、换行跟着系统变）；只报红，不拦合并（私有仓库免费版没有分支保护）
+name: race
+on:
+  push:
+    branches: [main]
+    paths: ["native/**"]
+  workflow_dispatch:
+jobs:
+  race:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: native/go.mod
+          cache-dependency-path: native/go.sum
+      # 白名单由 internal/turn/race_workflow_test.go 的 TestWorkflowWhitelistCoversConcurrencyTests 守着：名字带 Race、Concurrent 或写在 *_race_test.go 里的必须选中，每个分支至少命中一个（issue #36）
+      - name: go test -race（契约测试）
+        working-directory: native
+        run: go test -race -count=1 -timeout 15m ./internal/turn/ -run 'TestPlugin|TestAudience|TestParallel|TestBadTool|TestTruncated|TestRepair|TestQueued|TestSteer|TestStop|TestInterrupt|TestRace|TestControls|TestChannelSteer|TestSettledOnce|TestScenesAnd|TestSaid|TestChannelTurnCommit|TestCommit|TestUncommitted|TestStoppedChannel|TestErroredChannel|TestRelationFrom|TestNewInstanceSeen|TestJunkStep|TestSilent|TestRetry|TestCompact|TestHard|TestEarly|TestRecycle|TestFailedBeforeRun|TestSeen|TestCrash|TestRegisterAndReconcileConcurrent|TestSplitConcurrent|TestIdleCompact'
+      # 记忆插件压缩钩子和同一会话下一轮、通知同时跑（规格-记忆-v2 13.2.7，内核后台提前压缩以后）
+      - name: go test -race（记忆插件并发）
+        working-directory: native
+        run: go test -race -count=1 -timeout 10m ./internal/memplugin/ -run 'TestRaceCompact|TestW7|TestKernel'
+      # 给别的包用的真内核夹具：停在半句上停下、请求卡住时插话、收尾时还有请求挂着
+      - name: go test -race（真内核夹具）
+        working-directory: native
+        run: go test -race -count=1 ./internal/turn/turntest/
+      # 并行的一批里几个 ls 同时排序（Collator 不能共用，2026-10-27 抓到过）
+      - name: go test -race（并行的 ls）
+        working-directory: native
+        run: go test -race -count=1 ./internal/tools/ -run 'TestLsParallel'
+      # 审批的路径判定用本机的路径测一遍（golden_test.go 是 Windows 字面路径，Linux 上不跑）
+      - name: go test（审批路径判定）
+        working-directory: native
+        run: go test -race -count=1 ./internal/policy/ -run 'TestIsInsideNativePaths'
+      # 模型客户端的看门狗、重试判断（规格 8.2 A7）：计时器和读流在不同的协程
+      - name: go test（模型客户端）
+        working-directory: native
+        run: go test -race -count=1 ./internal/llm/

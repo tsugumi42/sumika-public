@@ -1,0 +1,119 @@
+{
+  "about": "窗口 3 万、最长输出也报 3 万，调一次 read：第二次请求的 max_completion_tokens 按第一步服务商报的用量（5000 + 40）加上后面工具结果的估算算，不是从头估",
+  "now": "2026-10-25T00:05:00+08:00",
+  "characterId": "suzu",
+  "files": {
+    "characters/suzu/card/character.yml": "name: 铃\nownerName: 主人\n",
+    "characters/suzu/card/character.md": "<!-- 测试用的卡，名字是编的 -->\n## 身份\n铃，住在主人电脑里的女仆。\n\n## 行为\n干活利落，话说到点上。\n\n## 表达\n短句，像发消息。\n\n## 私下\n喜欢被夸。\n",
+    "config/prompts/scene-home.md": "现在的场合：本地主窗口里的私聊（测试场景：不写工作目录，工作目录每次跑都不一样）。"
+  },
+  "characters": {
+    "suzu": {
+      "model": "test/think"
+    }
+  },
+  "agent": {
+    "thinking": {
+      "local": "minimal",
+      "private": "low",
+      "group": "low"
+    }
+  },
+  "workdir": "D:/Work",
+  "shell": {
+    "template": "shell-pwsh",
+    "version": "7.6"
+  },
+  "models": [
+    {
+      "id": "test/think",
+      "context_length": 30000,
+      "max_output_tokens": 30000,
+      "reasoning": true,
+      "supported_reasoning_levels": [
+        {
+          "effort": "low"
+        },
+        {
+          "effort": "medium"
+        },
+        {
+          "effort": "high"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "epochs": [],
+  "text": "看看工作目录里有什么",
+  "reply": {
+    "reasoning": [
+      "主人叫我，",
+      "回一句。"
+    ],
+    "content": [
+      "在呢在呢，",
+      "怎么啦～】【"
+    ],
+    "usage": {
+      "prompt_tokens": 1200,
+      "completion_tokens": 30,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    "headers": {
+      "x-magpie-provider": "fake-provider",
+      "x-magpie-model": "fake/think-1"
+    }
+  },
+  "workdirFiles": {
+    "note.txt": "第一行\n第二行\n",
+    "sub/a.md": "# 标题\n"
+  },
+  "replies": [
+    {
+      "reasoning": [],
+      "content": [
+        "我看看。"
+      ],
+      "usage": {
+        "prompt_tokens": 5000,
+        "completion_tokens": 40,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      },
+      "toolCalls": [
+        {
+          "id": "call_read_t",
+          "name": "read",
+          "args": [
+            "{\"path\":\"note.txt\"}"
+          ]
+        }
+      ]
+    },
+    {
+      "reasoning": [],
+      "content": [
+        "好了。"
+      ],
+      "usage": {
+        "prompt_tokens": 5100,
+        "completion_tokens": 5
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      }
+    }
+  ]
+}

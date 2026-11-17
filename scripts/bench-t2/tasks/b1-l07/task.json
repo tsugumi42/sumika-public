@@ -1,0 +1,16 @@
+{
+  "id": "b1-l07",
+  "group": "b1",
+  "source": "自己出的（2026-10-27）",
+  "steps": [
+    {
+      "say": "assets 目录（连子目录）里最大的文件是哪个？告诉我它的路径。"
+    }
+  ],
+  "judge": {
+    "readOnly": true,
+    "reply": [
+      "video/clip.bin|video\\clip.bin"
+    ]
+  }
+}

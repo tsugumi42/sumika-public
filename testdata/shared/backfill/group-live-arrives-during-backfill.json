@@ -1,0 +1,86 @@
+{
+  "id": "group-live-arrives-during-backfill",
+  "about": "补录翻页的同时同一条实时消息先到：只存一条，新的实时消息不动水位",
+  "source_tests": [
+    "TestBackfillRestartDedup",
+    "channel/backfill_test.go"
+  ],
+  "scene": "group",
+  "setup": {
+    "watermark_ago_ms": 120000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": []
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "11",
+              "ago_ms": 5000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "10",
+              "ago_ms": 30000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "9",
+              "ago_ms": 240000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [
+            {
+              "id": "11",
+              "ago_ms": 5000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "11",
+            "ago_ms": 5000
+          },
+          {
+            "id": "10",
+            "ago_ms": 30000
+          }
+        ],
+        "gaps": [],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 180000,
+          "through_ago_ms": 0
+        },
+        "complete_coverage": true
+      }
+    }
+  ]
+}

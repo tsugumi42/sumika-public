@@ -1,0 +1,85 @@
+{
+  "id": "private-watermark-overlap-no-rewrite",
+  "about": "水位往回留 60 秒重叠：重叠里已有的消息不重复写；比起点更老的不写",
+  "source_tests": [
+    "TestBackfillRestartDedup"
+  ],
+  "scene": "private",
+  "setup": {
+    "watermark_ago_ms": 10000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [
+      {
+        "id": "31",
+        "ago_ms": 20000,
+        "seq": 0,
+        "from": ""
+      }
+    ],
+    "gaps": []
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "32",
+              "ago_ms": 5000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "31",
+              "ago_ms": 20000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "30",
+              "ago_ms": 180000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "31",
+            "ago_ms": 20000
+          },
+          {
+            "id": "32",
+            "ago_ms": 5000
+          }
+        ],
+        "gaps": [],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 70000,
+          "through_ago_ms": 0
+        },
+        "complete_coverage": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,2136 @@
+[
+  {
+    "Name": "nil segments",
+    "Blocks": null
+  },
+  {
+    "Name": "empty segments",
+    "Blocks": null
+  },
+  {
+    "Name": "merged text",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "前后",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "whitespace",
+    "Blocks": null
+  },
+  {
+    "Name": "trim and preserve interior",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "前\r\n后",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "object replacement character",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "前后",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "inline faces",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "前",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "[表情14]",
+            "Bold": false,
+            "Face": {
+              "ID": "14",
+              "Kind": "face"
+            },
+            "Link": null
+          },
+          {
+            "Text": "[超级表情333]",
+            "Bold": false,
+            "Face": {
+              "ID": "333",
+              "Kind": "superface"
+            },
+            "Link": null
+          },
+          {
+            "Text": "后",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "empty face at edges",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "[表情]",
+            "Bold": false,
+            "Face": {
+              "ID": "",
+              "Kind": "face"
+            },
+            "Link": null
+          },
+          {
+            "Text": " \n ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "[表情]",
+            "Bold": false,
+            "Face": {
+              "ID": "",
+              "Kind": "superface"
+            },
+            "Link": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "mentions",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "@全体成员@某人@编造名字@***45@某人@***45",
+            "Bold": true,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "mixed order",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "前",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      },
+      {
+        "Kind": "images",
+        "Images": [
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 1,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          }
+        ]
+      },
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "后",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      },
+      {
+        "Kind": "note",
+        "Text": "[语音]"
+      },
+      {
+        "Kind": "images",
+        "Images": [
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 4,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "images across whitespace",
+    "Blocks": [
+      {
+        "Kind": "images",
+        "Images": [
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 0,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 2,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "twenty one images",
+    "Blocks": [
+      {
+        "Kind": "images",
+        "Images": [
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 0,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 1,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 2,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 3,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 4,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 5,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 6,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 7,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 8,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 9,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 10,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 11,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 12,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 13,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 14,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 15,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 16,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 17,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 18,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 19,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          },
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 20,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "image dimensions",
+    "Blocks": [
+      {
+        "Kind": "images",
+        "Images": [
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 0,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 640,
+            "Height": 360,
+            "Animated": true,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "image zero dimensions",
+    "Blocks": [
+      {
+        "Kind": "images",
+        "Images": [
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 0,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "sticker name",
+    "Blocks": [
+      {
+        "Kind": "sticker-note",
+        "Text": "[挥手]"
+      }
+    ]
+  },
+  {
+    "Name": "sticker summary",
+    "Blocks": [
+      {
+        "Kind": "sticker-note",
+        "Text": "[点头]"
+      }
+    ]
+  },
+  {
+    "Name": "sticker unnamed",
+    "Blocks": [
+      {
+        "Kind": "sticker-note",
+        "Text": "[表情包]"
+      }
+    ]
+  },
+  {
+    "Name": "sticker image",
+    "Blocks": [
+      {
+        "Kind": "images",
+        "Images": [
+          {
+            "Kind": "emoji",
+            "Text": "",
+            "Target": "",
+            "Ref": "market",
+            "Position": 0,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 128,
+            "Height": 128,
+            "Animated": true,
+            "Sticker": true,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "sticker empty credential",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "emoji without reference",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[尚无本地媒体]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[尚无本地媒体]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/nomedia",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[尚无本地媒体]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/nomedia",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/too-big",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片太大，没有下载]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/too-big",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/too_big",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片太大，没有下载]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/too_big",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/expired",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片已过期]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/expired",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/forward_limit",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没有下载（这条聊天记录图太多）]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/forward_limit",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/pending",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片正在下载]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/pending",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/blocked",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片地址不在允许的主机里]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/blocked",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/not_image",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[收到的文件不是图片]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/not_image",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/outbound-released",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/outbound-released",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image absent/unknown",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "image empty hash/unknown",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[图片没下载下来]"
+      }
+    ]
+  },
+  {
+    "Name": "video cover and duplicate positions",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "前",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      },
+      {
+        "Kind": "video",
+        "Segment": {
+          "Kind": "video",
+          "Text": "",
+          "Target": "",
+          "Ref": "",
+          "Position": 1,
+          "HasMedia": true,
+          "HasHash": true,
+          "HasCover": true,
+          "HasCoverHash": true,
+          "CanDownload": true,
+          "DurationMS": 12500,
+          "Size": 2048,
+          "Width": 640,
+          "Height": 360,
+          "Animated": false,
+          "Sticker": false,
+          "FetchState": "downloaded",
+          "FileKind": "",
+          "MediaState": "",
+          "Issue": "",
+          "Summary": "",
+          "Name": "",
+          "Card": null,
+          "Links": null,
+          "Forward": null
+        },
+        "VideoIndex": 1
+      },
+      {
+        "Kind": "video",
+        "Segment": {
+          "Kind": "video",
+          "Text": "",
+          "Target": "",
+          "Ref": "",
+          "Position": 2,
+          "HasMedia": true,
+          "HasHash": true,
+          "HasCover": true,
+          "HasCoverHash": true,
+          "CanDownload": true,
+          "DurationMS": 12500,
+          "Size": 2048,
+          "Width": 640,
+          "Height": 360,
+          "Animated": false,
+          "Sticker": false,
+          "FetchState": "downloaded",
+          "FileKind": "",
+          "MediaState": "",
+          "Issue": "",
+          "Summary": "",
+          "Name": "",
+          "Card": null,
+          "Links": null,
+          "Forward": null
+        },
+        "VideoIndex": 2
+      }
+    ]
+  },
+  {
+    "Name": "video empty cover",
+    "Blocks": [
+      {
+        "Kind": "video",
+        "Segment": {
+          "Kind": "video",
+          "Text": "",
+          "Target": "",
+          "Ref": "",
+          "Position": 0,
+          "HasMedia": false,
+          "HasHash": false,
+          "HasCover": true,
+          "HasCoverHash": false,
+          "CanDownload": false,
+          "DurationMS": 0,
+          "Size": 0,
+          "Width": 0,
+          "Height": 0,
+          "Animated": false,
+          "Sticker": false,
+          "FetchState": "pending",
+          "FileKind": "",
+          "MediaState": "",
+          "Issue": "",
+          "Summary": "",
+          "Name": "",
+          "Card": null,
+          "Links": null,
+          "Forward": null
+        },
+        "VideoIndex": 0
+      }
+    ]
+  },
+  {
+    "Name": "video unavailable",
+    "Blocks": [
+      {
+        "Kind": "video",
+        "Segment": {
+          "Kind": "video",
+          "Text": "",
+          "Target": "",
+          "Ref": "",
+          "Position": 0,
+          "HasMedia": false,
+          "HasHash": false,
+          "HasCover": false,
+          "HasCoverHash": false,
+          "CanDownload": false,
+          "DurationMS": 0,
+          "Size": 0,
+          "Width": 0,
+          "Height": 0,
+          "Animated": false,
+          "Sticker": false,
+          "FetchState": "",
+          "FileKind": "",
+          "MediaState": "",
+          "Issue": "",
+          "Summary": "",
+          "Name": "",
+          "Card": null,
+          "Links": null,
+          "Forward": null
+        },
+        "VideoIndex": 0
+      }
+    ]
+  },
+  {
+    "Name": "file metadata",
+    "Blocks": [
+      {
+        "Kind": "file",
+        "Segment": {
+          "Kind": "file",
+          "Text": "",
+          "Target": "",
+          "Ref": "",
+          "Position": 0,
+          "HasMedia": false,
+          "HasHash": false,
+          "HasCover": false,
+          "HasCoverHash": false,
+          "CanDownload": true,
+          "DurationMS": 0,
+          "Size": 2048,
+          "Width": 0,
+          "Height": 0,
+          "Animated": false,
+          "Sticker": false,
+          "FetchState": "failed",
+          "FileKind": "text",
+          "MediaState": "",
+          "Issue": "",
+          "Summary": "",
+          "Name": "编造.txt",
+          "Card": null,
+          "Links": null,
+          "Forward": null
+        },
+        "VideoIndex": 0
+      }
+    ]
+  },
+  {
+    "Name": "file unnamed",
+    "Blocks": [
+      {
+        "Kind": "file",
+        "Segment": {
+          "Kind": "file",
+          "Text": "",
+          "Target": "",
+          "Ref": "",
+          "Position": 0,
+          "HasMedia": false,
+          "HasHash": false,
+          "HasCover": false,
+          "HasCoverHash": false,
+          "CanDownload": false,
+          "DurationMS": 0,
+          "Size": 0,
+          "Width": 0,
+          "Height": 0,
+          "Animated": false,
+          "Sticker": false,
+          "FetchState": "",
+          "FileKind": "",
+          "MediaState": "",
+          "Issue": "",
+          "Summary": "",
+          "Name": "",
+          "Card": null,
+          "Links": null,
+          "Forward": null
+        },
+        "VideoIndex": 0
+      }
+    ]
+  },
+  {
+    "Name": "forward summary",
+    "Blocks": [
+      {
+        "Kind": "forward",
+        "Segment": {
+          "Kind": "forward",
+          "Text": "",
+          "Target": "",
+          "Ref": "invented-forward",
+          "Position": 0,
+          "HasMedia": false,
+          "HasHash": false,
+          "HasCover": false,
+          "HasCoverHash": false,
+          "CanDownload": false,
+          "DurationMS": 0,
+          "Size": 0,
+          "Width": 0,
+          "Height": 0,
+          "Animated": false,
+          "Sticker": false,
+          "FetchState": "",
+          "FileKind": "",
+          "MediaState": "",
+          "Issue": "",
+          "Summary": "",
+          "Name": "",
+          "Card": null,
+          "Links": null,
+          "Forward": {
+            "Title": "编造记录",
+            "Lines": [
+              "甲：第一句",
+              "乙：第二句",
+              "甲：第三句"
+            ],
+            "Count": 8,
+            "Missing": 2,
+            "State": "partial"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Name": "forward absent",
+    "Blocks": [
+      {
+        "Kind": "forward",
+        "Segment": {
+          "Kind": "forward",
+          "Text": "",
+          "Target": "",
+          "Ref": "",
+          "Position": 0,
+          "HasMedia": false,
+          "HasHash": false,
+          "HasCover": false,
+          "HasCoverHash": false,
+          "CanDownload": false,
+          "DurationMS": 0,
+          "Size": 0,
+          "Width": 0,
+          "Height": 0,
+          "Animated": false,
+          "Sticker": false,
+          "FetchState": "",
+          "FileKind": "",
+          "MediaState": "",
+          "Issue": "",
+          "Summary": "",
+          "Name": "",
+          "Card": null,
+          "Links": null,
+          "Forward": null
+        }
+      }
+    ]
+  },
+  {
+    "Name": "card fields",
+    "Blocks": [
+      {
+        "Kind": "card",
+        "Segment": {
+          "Kind": "card",
+          "Text": "",
+          "Target": "",
+          "Ref": "",
+          "Position": 0,
+          "HasMedia": false,
+          "HasHash": false,
+          "HasCover": false,
+          "HasCoverHash": false,
+          "CanDownload": false,
+          "DurationMS": 0,
+          "Size": 0,
+          "Width": 0,
+          "Height": 0,
+          "Animated": false,
+          "Sticker": false,
+          "FetchState": "",
+          "FileKind": "",
+          "MediaState": "",
+          "Issue": "",
+          "Summary": "",
+          "Name": "",
+          "Card": {
+            "Title": "编造标题",
+            "Description": "编造简介",
+            "Source": "编造来源",
+            "URL": "https://example.com/card"
+          },
+          "Links": [
+            "https://example.com/card"
+          ],
+          "Forward": null
+        }
+      }
+    ]
+  },
+  {
+    "Name": "card absent",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[卡片]"
+      }
+    ]
+  },
+  {
+    "Name": "reply ignored",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "正文",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "only reply",
+    "Blocks": null
+  },
+  {
+    "Name": "fallback kinds",
+    "Blocks": [
+      {
+        "Kind": "note",
+        "Text": "[其他消息]"
+      },
+      {
+        "Kind": "note",
+        "Text": "[其他消息]"
+      },
+      {
+        "Kind": "note",
+        "Text": "[invented-kind]"
+      },
+      {
+        "Kind": "note",
+        "Text": "[语音]"
+      }
+    ]
+  },
+  {
+    "Name": "issue splits images",
+    "Blocks": [
+      {
+        "Kind": "images",
+        "Images": [
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 0,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          }
+        ]
+      },
+      {
+        "Kind": "note",
+        "Text": "[这段的旧记录对不上，按新格式显示]"
+      },
+      {
+        "Kind": "images",
+        "Images": [
+          {
+            "Kind": "image",
+            "Text": "",
+            "Target": "",
+            "Ref": "",
+            "Position": 1,
+            "HasMedia": true,
+            "HasHash": true,
+            "HasCover": false,
+            "HasCoverHash": false,
+            "CanDownload": false,
+            "DurationMS": 0,
+            "Size": 0,
+            "Width": 0,
+            "Height": 0,
+            "Animated": false,
+            "Sticker": false,
+            "FetchState": "",
+            "FileKind": "",
+            "MediaState": "",
+            "Issue": "mismatch",
+            "Summary": "",
+            "Name": "",
+            "Card": null,
+            "Links": null,
+            "Forward": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "issue before inline",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "前",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      },
+      {
+        "Kind": "note",
+        "Text": "[这段的旧记录对不上，按新格式显示]"
+      },
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "后",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "links",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "前 ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a?utm_source=demo\u0026x=1",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a?utm_source=demo\u0026x=1",
+              "Open": "https://example.com/a?utm_source=demo\u0026x=1",
+              "Clean": "https://example.com/a?x=1"
+            }
+          },
+          {
+            "Text": " 后 https：／／example.com/b",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "link budget across segments",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/a",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/a",
+              "Open": "https://example.com/a",
+              "Clean": "https://example.com/a"
+            }
+          },
+          {
+            "Text": " ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/b",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/b",
+              "Open": "https://example.com/b",
+              "Clean": "https://example.com/b"
+            }
+          },
+          {
+            "Text": " https://example.com/c",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "text fallback/0",
+    "Blocks": null
+  },
+  {
+    "Name": "text fallback/1",
+    "Blocks": null
+  },
+  {
+    "Name": "text fallback/2",
+    "Blocks": [
+      {
+        "Kind": "inline",
+        "Runs": [
+          {
+            "Text": "纯文字 ",
+            "Bold": false,
+            "Face": null,
+            "Link": null
+          },
+          {
+            "Text": "https://example.com/text",
+            "Bold": false,
+            "Face": null,
+            "Link": {
+              "Raw": "https://example.com/text",
+              "Open": "https://example.com/text",
+              "Clean": "https://example.com/text"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

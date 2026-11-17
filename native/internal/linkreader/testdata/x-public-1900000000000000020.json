@@ -1,0 +1,106 @@
+{
+ "code": 200,
+ "status": {
+  "id": "1900000000000000020",
+  "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示",
+  "raw_text": {
+   "facets": [
+    {
+     "type": "url",
+     "original": "https://t.co/fixture0009",
+     "replacement": "https://x.com/ex_author10/status/1900000000000000003/video/2",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。这"
+    },
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0009",
+     "replacement": "https://x.com/ex_author10/status/1900000000000000003/video/2"
+    },
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0013",
+     "replacement": "https://x.com/ex_author10/status/1900000000000000003/video/2"
+    },
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0017",
+     "replacement": "https://x.com/ex_author10/status/1900000000000000003/video/2"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "ex_author13",
+   "id": "1900000000000000054",
+   "name": "编造作者畍",
+   "avatar_url": "https://pbs.twimg.com/profile_images/fixture/22_200x200.jpg"
+  },
+  "replies": 34,
+  "reposts": 127,
+  "likes": 1896,
+  "bookmarks": 709,
+  "quotes": 21,
+  "created_timestamp": 1793635333,
+  "possibly_sensitive": false,
+  "views": 119393,
+  "is_note_tweet": true,
+  "community_note": null,
+  "replying_to": null,
+  "media": {
+   "all": [
+    {
+     "type": "photo",
+     "url": "https://pbs.twimg.com/media/fixture-24.png?name=orig",
+     "width": 2898,
+     "height": 4096
+    },
+    {
+     "url": "https://video.twimg.com/amplify_video/fixture-25/vid/avc1/1448x2046/fixture.mp4?tag=29",
+     "thumbnail_url": "https://pbs.twimg.com/media/fixture-26.jpg",
+     "duration": 28.8,
+     "width": 1449,
+     "height": 2048,
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-28/vid/avc1/1280x720/fixture.mp4?tag=29",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-30/vid/avc1/320x452/fixture.mp4?tag=29",
+       "bitrate": 632000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-33/vid/avc1/480x678/fixture.mp4?tag=29",
+       "bitrate": 950000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-36/vid/avc1/720x1016/fixture.mp4?tag=29",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-39/vid/avc1/1448x2046/fixture.mp4?tag=29",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ]
+    },
+    {
+     "type": "photo",
+     "url": "https://pbs.twimg.com/media/fixture-43.png?name=orig",
+     "width": 2898,
+     "height": 4096
+    }
+   ]
+  }
+ }
+}

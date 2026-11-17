@@ -1,0 +1,90 @@
+{
+ "code": 200,
+ "status": {
+  "id": "1900000000000000024",
+  "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编",
+  "raw_text": {
+   "facets": [
+    {
+     "type": "url",
+     "original": "https://t.co/fixture0004",
+     "replacement": "https://example.com/fixture/5",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。"
+    },
+    {
+     "type": "hashtag",
+     "original": "ガルクラ"
+    },
+    {
+     "type": "hashtag",
+     "original": "GirlsBandCry"
+    },
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0013",
+     "replacement": "https://x.com/ex_author14/status/1900000000000000024/video/1"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "ex_author18",
+   "id": "1900000000000000059",
+   "name": "编造作者畗",
+   "avatar_url": "https://pbs.twimg.com/profile_images/fixture/18_200x200.jpg"
+  },
+  "replies": 139,
+  "reposts": 15051,
+  "likes": 32517,
+  "bookmarks": 4183,
+  "quotes": 2728,
+  "created_timestamp": 1793709120,
+  "possibly_sensitive": false,
+  "views": 1000990,
+  "is_note_tweet": false,
+  "community_note": null,
+  "replying_to": null,
+  "media": {
+   "all": [
+    {
+     "url": "https://video.twimg.com/amplify_video/fixture-19/vid/avc1/1920x1080/fixture.mp4?tag=29",
+     "thumbnail_url": "https://pbs.twimg.com/media/fixture-20.jpg",
+     "duration": 30.03,
+     "width": 1920,
+     "height": 1080,
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-22/vid/avc1/1280x720/fixture.mp4?tag=29&v=f85",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-24/vid/avc1/480x270/fixture.mp4?tag=29",
+       "bitrate": 256000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-27/vid/avc1/640x360/fixture.mp4?tag=29",
+       "bitrate": 832000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-30/vid/avc1/1280x720/fixture.mp4?tag=29",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-33/vid/avc1/1920x1080/fixture.mp4?tag=29",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

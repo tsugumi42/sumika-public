@@ -1,0 +1,32 @@
+{
+  "id": "b1-a06-crypto-square",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/crypto-square（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 crypto_square.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.md": "d8c9f3de5ac4e7dd69b6154cb65c9da758e56f8c5ffa92966b9636f173c8442a",
+    "crypto_square.go": "6a9eeff80eac627b3486370c5aea034d8a0c26a677745c9c335ac8bcc60830ff",
+    "crypto_square_test.go": "b5cb38c2e38bd658ab51448531a998f16a97c40a95a7217b89afcce052a80ee2",
+    "go.mod": "233b8c3f22aa3c7b7ea78446311d27fa2f583e6471afa7caf262d15b3faf5049"
+  }
+}

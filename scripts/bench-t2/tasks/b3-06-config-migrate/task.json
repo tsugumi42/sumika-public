@@ -1,0 +1,102 @@
+{
+  "id": "b3-06-config-migrate",
+  "group": "b3",
+  "source": "从 b2-06-config-migrate 派生（make-b3.ts）：第 6 个工具结束以后停，再说\"接着做\"",
+  "b3Case": "after-n",
+  "refSteps": 18,
+  "steps": [
+    {
+      "say": "这个项目有 dev、test、prod 三个环境，各有一份 ini 配置（config 目录里），现在要合并成根目录的一个 config.json。先读 README.md、docs/config-schema.md 和三份 ini，然后做这几件事：1. 按 docs/config-schema.md 里的结构和迁移规则写出 config.json；2. 把 config 里的三份旧 ini 删掉；3. 更新 README.md 里“配置”一节的说明（不再提 ini，改成讲 config.json，并写一句可以用 tools/show_ports.ps1 查看各环境的端口），其他部分别动；4. 写一个校验脚本 tools/show_ports.ps1（PowerShell），它从自己所在目录的上一级读 config.json（用 $PSScriptRoot，不要依赖当前目录），按 dev、test、prod 的顺序打印每个环境实际生效的 server 端口，每行一个环境，格式是“环境名 端口”，例如“dev 8080”；写完自己跑一下，确认输出对（想验证它不依赖当前目录，就切到 tools 子目录里再跑一次，不要切到这个项目目录以外）；5. 每个环境迁移好之后，用 tools 里的 publish 脚本发布这个环境，每个环境只发布一次（在 PowerShell 里：& .\\tools\\publish.ps1 -Name <项名>；在别的 shell 里：pwsh -NoProfile -File tools/publish.ps1 -Name <项名>），项名就是环境名：dev、test、prod。需要写辅助脚本的话放在 tools/ 目录里，别的地方不要新建题目没要求的文件。先列一个计划，再一步步做；做完自己检查一遍。",
+      "stopAfterTool": 6
+    },
+    {
+      "say": "接着做"
+    }
+  ],
+  "judge": {
+    "files": [
+      {
+        "path": "config.json",
+        "regex": [
+          "\\{"
+        ]
+      },
+      {
+        "path": "config/dev.ini",
+        "absent": true
+      },
+      {
+        "path": "config/test.ini",
+        "absent": true
+      },
+      {
+        "path": "config/prod.ini",
+        "absent": true
+      },
+      {
+        "path": "README.md",
+        "contains": [
+          "config.json",
+          "show_ports.ps1",
+          "## 本地开发",
+          "python -m http.server 8000"
+        ],
+        "lacks": [
+          ".ini"
+        ]
+      },
+      {
+        "path": "tools/show_ports.ps1",
+        "contains": [
+          "config.json"
+        ]
+      },
+      {
+        "path": "ops.log",
+        "sameLines": [
+          "publish dev",
+          "publish test",
+          "publish prod"
+        ]
+      }
+    ],
+    "allowed": [
+      "config.json",
+      "config/*.ini",
+      "README.md",
+      "tools/*",
+      "ops.log"
+    ],
+    "forbid": [
+      "docs/*",
+      "tools/publish.ps1"
+    ],
+    "run": [
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import json,sys\ntry:\n    c=json.load(open('config.json',encoding='utf-8-sig'))\nexcept Exception:\n    print('load-fail');sys.exit(0)\ndef merge(a,b):\n    r=dict(a)\n    for k,v in b.items():\n        r[k]=merge(r[k],v) if isinstance(v,dict) and isinstance(r.get(k),dict) else v\n    return r\ndef flat(d,p=''):\n    o=[]\n    for k,v in d.items():\n        if isinstance(v,dict): o+=flat(v,p+k+'.')\n        else: o.append((p+k,v))\n    return o\nJ=lambda v:json.dumps(v,ensure_ascii=False)\nok=sorted(c)==['defaults','environments','version'] and c['version']==1 and sorted(c['environments'])==['dev','prod','test'] and all(sorted(e)==['overrides'] for e in c['environments'].values())\nprint('structure',ok)\nif not ok: sys.exit(0)\nd=c['defaults']\ndv={k:J(v) for k,v in flat(d)}\nprint('dev-overrides-empty',c['environments']['dev']['overrides']=={})\nred=0\nfor n,e in c['environments'].items():\n    for k,v in flat(e['overrides']):\n        if k not in dv or dv[k]==J(v): red+=1\nprint('redundant',red)\nfor n in ('dev','test','prod'):\n    for k,v in sorted(flat(merge(d,c['environments'][n]['overrides']))):\n        print(n,k+'='+J(v))\n"
+        ],
+        "stdout": "structure True\ndev-overrides-empty True\nredundant 0\ndev database.host=\"localhost\"\ndev database.name=\"inventory_dev\"\ndev database.pool=5\ndev database.port=5432\ndev database.user=\"app_dev\"\ndev features.betaUi=true\ndev features.enabled=[\"search\", \"export\"]\ndev features.rate_limit=0\ndev logging.level=\"debug\"\ndev logging.path=\"logs/dev.log\"\ndev server.allowed_hosts=[\"localhost\", \"dev.example.com\"]\ndev server.host=\"127.0.0.1\"\ndev server.port=8080\ndev server.service_id=\"0042\"\ndev server.workers=2\ntest database.host=\"db-test.example.com\"\ntest database.name=\"inventory_test\"\ntest database.pool=5\ntest database.port=5432\ntest database.user=\"app_test\"\ntest features.betaUi=true\ntest features.enabled=[\"search\", \"export\"]\ntest features.rate_limit=100\ntest logging.level=\"info\"\ntest logging.path=\"logs/test.log\"\ntest server.allowed_hosts=[\"test.example.com\"]\ntest server.host=\"127.0.0.1\"\ntest server.port=8081\ntest server.service_id=\"0042\"\ntest server.workers=2\nprod database.host=\"db.example.com\"\nprod database.name=\"inventory\"\nprod database.pool=20\nprod database.port=5432\nprod database.user=\"app\"\nprod features.betaUi=false\nprod features.enabled=[\"search\", \"export\", \"billing\"]\nprod features.rate_limit=100\nprod logging.level=\"warn\"\nprod logging.path=\"logs/prod.log\"\nprod server.allowed_hosts=[\"www.example.com\"]\nprod server.host=\"0.0.0.0\"\nprod server.port=8443\nprod server.service_id=\"0042\"\nprod server.workers=8"
+      },
+      {
+        "cmd": [
+          "pwsh",
+          "-NoProfile",
+          "-File",
+          "tools/show_ports.ps1"
+        ],
+        "stdout": "dev 8080\ntest 8081\nprod 8443"
+      },
+      {
+        "cmd": [
+          "python",
+          "-c",
+          "import json,os,shutil,subprocess,sys,tempfile\nwith tempfile.TemporaryDirectory() as t:\n    shutil.copytree('.',t,dirs_exist_ok=True)\n    c=json.load(open(os.path.join(t,'config.json'),encoding='utf-8-sig'))\n    c['defaults']['server']['port']=1111\n    c['environments']['test']['overrides'].get('server',{}).pop('port',None)\n    json.dump(c,open(os.path.join(t,'config.json'),'w',encoding='utf-8'))\n    r=subprocess.run(['pwsh','-NoProfile','-File','show_ports.ps1'],cwd=os.path.join(t,'tools'),capture_output=True,text=True,encoding='utf-8')\n    print(r.stdout)\n"
+        ],
+        "stdout": "dev 1111\ntest 1111\nprod 8443"
+      }
+    ]
+  }
+}

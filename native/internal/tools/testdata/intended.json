@@ -1,0 +1,8 @@
+[
+  {
+    "name": "ps-trash-not-empty",
+    "adr": "ADR-182",
+    "why": "Go 的 powershell 输出设成纯文本，没有颜色码；Bun 录的那份带 pwsh 的颜色码",
+    "text": "Remove-Item: \r\nLine |\r\n  42 |  Remove-Item sub\r\n     |  ~~~~~~~~~~~~~~~\r\n     | 目录不是空的，要删就加 -Recurse：<WORKDIR>\\sub\r\n"
+  }
+]

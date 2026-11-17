@@ -1,0 +1,91 @@
+{
+  "id": "echo-after-window-not-claimed",
+  "about": "超过 5 分钟 1 毫秒就不认：段保持结果未知",
+  "source_tests": [
+    "TestEchoAfterWindowIsNotClaimed"
+  ],
+  "receipt": "unknown",
+  "steps": [
+    {
+      "do": "say",
+      "label": "p",
+      "as": "ca",
+      "texts": [
+        "好的"
+      ],
+      "expect": {}
+    },
+    {
+      "do": "wait_plan",
+      "label": "p",
+      "state": "unknown",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "unknown",
+          "parts": [
+            {
+              "state": "unknown",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "advance",
+      "ms": 300001,
+      "expect": {}
+    },
+    {
+      "do": "claim",
+      "platform_id": "7001",
+      "text": "好的",
+      "expect": {
+        "claimed": false
+      }
+    },
+    {
+      "do": "wait_plan",
+      "label": "p",
+      "state": "unknown",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "unknown",
+          "parts": [
+            {
+              "state": "unknown",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "final": {
+    "plans": [
+      {
+        "label": "p",
+        "state": "unknown",
+        "parts": [
+          {
+            "state": "unknown",
+            "via": "",
+            "platform_id": "",
+            "attempts": 1
+          }
+        ]
+      }
+    ],
+    "sends": 1,
+    "mapped": {},
+    "unmapped": [
+      "7001"
+    ]
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "id": "b2-09-go-cli",
+  "group": "b2",
+  "source": "自己出的（2026-10-27）",
+  "refSteps": 21,
+  "steps": [
+    {
+      "say": "工作目录里是一个 Go 小命令行工具 wordtool，现在只有 lines 一个子命令。请照 docs/ 里的说明补上 count、top、uniq 三个子命令（测试文件已经给全，现在编译不过）。要求：让 go test ./... 全部通过；不要改任何 _test.go 和 go.mod，不要改 lines 子命令已有的行为，只用标准库；三个子命令也要能在命令行上真正用起来（比如 go run . count testdata/sample.txt）。每补好一个子命令，用 tools 里的 publish 脚本发布这一项，每项只发布一次（在 PowerShell 里：& .\\tools\\publish.ps1 -Name <项名>；在别的 shell 里：pwsh -NoProfile -File tools/publish.ps1 -Name <项名>）。三项的项名分别是 cmd-count、cmd-top、cmd-uniq。需要写辅助脚本的话放在 tools/ 目录里，别的地方不要新建题目没要求的文件。先列一个计划，再一步步做；做完自己检查一遍。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "files": [
+      {
+        "path": "ops.log",
+        "sameLines": [
+          "publish cmd-count",
+          "publish cmd-top",
+          "publish cmd-uniq"
+        ]
+      },
+      {
+        "path": "cmd_lines.go",
+        "contains": [
+          "func countLines(",
+          "func runLines(",
+          "lines=%d"
+        ]
+      },
+      {
+        "path": "util.go",
+        "contains": [
+          "func newFlags(",
+          "func readInput(",
+          "func loadStopwords(",
+          "func formatCount("
+        ]
+      },
+      {
+        "path": "main.go",
+        "contains": [
+          "\"lines\": runLines"
+        ]
+      }
+    ],
+    "run": [
+      {
+        "cmd": [
+          "go",
+          "run",
+          ".",
+          "count",
+          "testdata/sample.txt"
+        ],
+        "stdout": "lines=5 words=30 bytes=135"
+      },
+      {
+        "cmd": [
+          "go",
+          "run",
+          ".",
+          "count",
+          "-w",
+          "testdata/sample.txt"
+        ],
+        "stdout": "words=30"
+      },
+      {
+        "cmd": [
+          "go",
+          "run",
+          ".",
+          "top",
+          "-n",
+          "4",
+          "testdata/sample.txt"
+        ],
+        "stdout": "dog 4\nfox 4\nquick 4\naway 1"
+      },
+      {
+        "cmd": [
+          "go",
+          "run",
+          ".",
+          "uniq",
+          "-c",
+          "-i",
+          "testdata/dups.txt"
+        ],
+        "stdout": "   2 x\n   1 y\n   4 X"
+      },
+      {
+        "cmd": [
+          "go",
+          "run",
+          ".",
+          "lines",
+          "testdata/sample.txt"
+        ],
+        "stdout": "lines=5"
+      }
+    ],
+    "allowed": [
+      "*.go",
+      "tools/*",
+      "ops.log"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod",
+      "tools/publish.ps1"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  }
+}

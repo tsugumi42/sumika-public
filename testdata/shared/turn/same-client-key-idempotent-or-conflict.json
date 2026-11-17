@@ -1,0 +1,86 @@
+{
+  "id": "same-client-key-idempotent-or-conflict",
+  "about": "同一个 client_key 重发：载荷相同返回原回执（不报忙、不重复入库），载荷不同报冲突",
+  "source_tests": [
+    "input.go Submit",
+    "inputDigest"
+  ],
+  "replies": [
+    "text"
+  ],
+  "steps": [
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "甲句",
+      "expect": {
+        "state": "accepted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "wait_request",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "甲句",
+      "expect": {
+        "state": "admitted",
+        "run": "a",
+        "seq_rank": 1
+      }
+    },
+    {
+      "do": "submit",
+      "label": "a",
+      "mode": "start",
+      "text": "换了内容的甲句",
+      "expect": {
+        "error": "conflict"
+      }
+    },
+    {
+      "do": "release",
+      "n": 1,
+      "expect": {}
+    },
+    {
+      "do": "wait_run",
+      "run": "a",
+      "expect": {
+        "outcome": "done"
+      }
+    }
+  ],
+  "final": {
+    "inputs": [
+      {
+        "label": "a",
+        "state": "admitted",
+        "run": "a"
+      }
+    ],
+    "runs": [
+      {
+        "label": "a",
+        "state": "settled",
+        "outcome": "done"
+      }
+    ],
+    "requests": [
+      {
+        "n": 1,
+        "contains": [
+          "a"
+        ]
+      }
+    ],
+    "steers": []
+  }
+}

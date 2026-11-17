@@ -1,0 +1,113 @@
+{
+  "id": "private-cancel-keeps-watermark",
+  "about": "取消（断线、停止）后返回的页不写库、不记缺口、不推水位；重连后那一轮补回；实时消息不推水位",
+  "source_tests": [
+    "TestBackfillDisconnect"
+  ],
+  "scene": "private",
+  "setup": {
+    "watermark_ago_ms": 3600000,
+    "peer": {
+      "latest": true,
+      "continuous": true,
+      "unsupported": false
+    },
+    "stored": [],
+    "gaps": []
+  },
+  "steps": [
+    {
+      "advance_ms": 0,
+      "live_before": [],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "4001",
+              "ago_ms": 1000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": true
+        }
+      ],
+      "expect": {
+        "error": "context canceled",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [],
+        "gaps": [],
+        "watermark_ago_ms": 3600000,
+        "continuity": null,
+        "complete_coverage": true
+      }
+    },
+    {
+      "advance_ms": 0,
+      "live_before": [
+        {
+          "id": "4002",
+          "ago_ms": 0,
+          "seq": 0,
+          "from": ""
+        }
+      ],
+      "pages": [
+        {
+          "messages": [
+            {
+              "id": "4001",
+              "ago_ms": 1000,
+              "seq": 0,
+              "from": ""
+            },
+            {
+              "id": "4000",
+              "ago_ms": 7200000,
+              "seq": 0,
+              "from": ""
+            }
+          ],
+          "error": "",
+          "live_during": [],
+          "repeat": false,
+          "cancel": false
+        }
+      ],
+      "expect": {
+        "error": "",
+        "calls": [
+          {
+            "anchor": "",
+            "count": 100
+          }
+        ],
+        "stored": [
+          {
+            "id": "4002",
+            "ago_ms": 0
+          },
+          {
+            "id": "4001",
+            "ago_ms": 1000
+          }
+        ],
+        "gaps": [],
+        "watermark_ago_ms": 0,
+        "continuity": {
+          "from_ago_ms": 3660000,
+          "through_ago_ms": 0
+        },
+        "complete_coverage": true
+      }
+    }
+  ]
+}

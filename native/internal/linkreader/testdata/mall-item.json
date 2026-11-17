@@ -1,0 +1,26 @@
+{
+  "success": true,
+  "code": 0,
+  "data": {
+    "itemsId": 70001,
+    "name": "纸舟工房 星灯摆件",
+    "price": "325.50",
+    "maxPrice": "499.90",
+    "itemsType": "1",
+    "itemsStatus": 1,
+    "saleStatus": 11,
+    "status": 11,
+    "img": ["//i0.hdslb.com/bfs/mall/fictional-first.png", "//i0.hdslb.com/bfs/mall/fictional-second.png"],
+    "shopInfoVO": {"shopName": "纸舟商店", "mid": "fictional-shop-account"},
+    "shopVO": {"shopName": "备用商店"},
+    "advState": {
+      "deposit": "48.75",
+      "maxDeposit": "74.98",
+      "presaleStartOrderTime": 1792670100,
+      "presaleEndOrderTime": 1795622340
+    },
+    "autoOnSaleTime": 0,
+    "presaleDeliveryTimeStr": "2027年05月",
+    "itemsSkuListVO": {"itemsSkuList": [{"stock": 9, "stockLevel": 1, "status": 1, "subStatus": 11}]}
+  }
+}

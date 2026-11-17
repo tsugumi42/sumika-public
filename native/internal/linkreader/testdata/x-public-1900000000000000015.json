@@ -1,0 +1,120 @@
+{
+ "code": 200,
+ "status": {
+  "id": "1900000000000000015",
+  "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文",
+  "raw_text": {
+   "facets": [
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0005",
+     "replacement": "https://x.com/ex_author08/status/1900000000000000015/video/1"
+    },
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0009",
+     "replacement": "https://x.com/ex_author08/status/1900000000000000015/video/1"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "ex_author07",
+   "id": "1900000000000000031",
+   "name": "编造作者畁",
+   "avatar_url": "https://pbs.twimg.com/profile_images/fixture/14_200x200.jpg"
+  },
+  "replies": 68,
+  "reposts": 867,
+  "likes": 8410,
+  "bookmarks": 2940,
+  "quotes": 12,
+  "created_timestamp": 1793363457,
+  "possibly_sensitive": false,
+  "views": 147857,
+  "is_note_tweet": false,
+  "community_note": null,
+  "replying_to": null,
+  "media": {
+   "all": [
+    {
+     "url": "https://video.twimg.com/amplify_video/fixture-15/vid/avc1/944x1920/fixture.mp4?tag=29",
+     "thumbnail_url": "https://pbs.twimg.com/media/fixture-16.jpg",
+     "duration": 6.333,
+     "width": 944,
+     "height": 1920,
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-18/vid/avc1/1280x720/fixture.mp4?tag=29",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-20/vid/avc1/320x650/fixture.mp4?tag=29",
+       "bitrate": 632000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-23/vid/avc1/480x976/fixture.mp4?tag=29",
+       "bitrate": 950000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-26/vid/avc1/720x1464/fixture.mp4?tag=29",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-29/vid/avc1/944x1920/fixture.mp4?tag=29",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ]
+    },
+    {
+     "url": "https://video.twimg.com/amplify_video/fixture-32/vid/avc1/966x1920/fixture.mp4?tag=29",
+     "thumbnail_url": "https://pbs.twimg.com/media/fixture-33.jpg",
+     "duration": 4.667,
+     "width": 966,
+     "height": 1920,
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-35/vid/avc1/1280x720/fixture.mp4?tag=29",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-37/vid/avc1/320x636/fixture.mp4?tag=29",
+       "bitrate": 632000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-40/vid/avc1/480x954/fixture.mp4?tag=29",
+       "bitrate": 950000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-43/vid/avc1/720x1430/fixture.mp4?tag=29",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-46/vid/avc1/966x1920/fixture.mp4?tag=29",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "b1-l08",
+  "group": "b1",
+  "source": "自己出的（2026-10-27）",
+  "steps": [
+    {
+      "say": "settings.json 里把 theme 改成 dark，再在 plugins 最后加一个 spellcheck，其余内容保持不变。"
+    }
+  ],
+  "judge": {
+    "files": [
+      {
+        "path": "settings.json",
+        "regex": [
+          "\"theme\"\\s*:\\s*\"dark\"",
+          "\"plugins\"\\s*:\\s*\\[\\s*\"git\"\\s*,\\s*\"markdown\"\\s*,\\s*\"spellcheck\"\\s*\\]",
+          "\"fontSize\"\\s*:\\s*14\\b",
+          "\"tabSize\"\\s*:\\s*2\\b",
+          "\"wordWrap\"\\s*:\\s*true"
+        ],
+        "lacks": [
+          "light"
+        ]
+      }
+    ],
+    "allowed": [
+      "settings.json"
+    ]
+  }
+}

@@ -1,0 +1,47 @@
+{
+ "code": 200,
+ "status": {
+  "id": "1900000000000000017",
+  "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示",
+  "raw_text": {
+   "facets": [
+    {
+     "type": "url",
+     "original": "https://t.co/fixture0004",
+     "replacement": "https://example.com/fixture/11",
+     "display": "这是编造的示例帖子正文，"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "ex_author10",
+   "id": "1900000000000000033",
+   "name": "编造作者畇",
+   "avatar_url": "https://pbs.twimg.com/profile_images/fixture/10_200x200.jpg"
+  },
+  "replies": 396,
+  "reposts": 465,
+  "likes": 9087,
+  "bookmarks": 10268,
+  "quotes": 308,
+  "created_timestamp": 1793461160,
+  "possibly_sensitive": false,
+  "views": 1100328,
+  "is_note_tweet": false,
+  "community_note": null,
+  "replying_to": null,
+  "media": {},
+  "card": {
+   "url": "https://example.com/fixture/11",
+   "title": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示",
+   "description": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正",
+   "domain": "example.com",
+   "image": {
+    "width": 800,
+    "height": 419,
+    "url": "https://pbs.twimg.com/card_img/fixture-15.jpg?format=jpg&name=800x419",
+    "alt": "编造的卡片图片说明，仅用于解析测试。"
+   }
+  }
+ }
+}

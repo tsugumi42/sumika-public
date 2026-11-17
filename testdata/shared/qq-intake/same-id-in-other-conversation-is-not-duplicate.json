@@ -1,0 +1,77 @@
+{
+  "id": "same-id-in-other-conversation-is-not-duplicate",
+  "about": "平台消息号相同、会话不同：不算重复，各存一条",
+  "source_tests": [
+    "TestSameIDInOtherConversationIsNotDuplicate"
+  ],
+  "items": [
+    {
+      "account": "a",
+      "conv": "g1",
+      "kind": "message",
+      "platform_id": "500",
+      "from": "friend",
+      "text": "甲群",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "a",
+      "conv": "g2",
+      "kind": "message",
+      "platform_id": "500",
+      "from": "friend",
+      "text": "乙群",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    }
+  ],
+  "final": {
+    "events": [
+      {
+        "conv": "qq:group:900",
+        "platform_id": "500",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "甲群",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:group:901",
+        "platform_id": "500",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "乙群",
+        "time_s": 0
+      }
+    ],
+    "observations": [
+      {
+        "character": "ca",
+        "event": 1
+      },
+      {
+        "character": "ca",
+        "event": 2
+      }
+    ]
+  }
+}

@@ -1,0 +1,824 @@
+{
+  "about": "撤销也服从取代保护的白名单：整理只能撤 confirmed_by 是 ai 的有效事实，其余（owner、导入的、owner_said、不认识的值）计 revoke_protected 不动；不是有效的（已撤过、待确认、没有这个编号）计 revoke_noop；模型的 remember 一类还只动关于主人或她自己的事实；主人本人的批次什么都能撤。",
+  "source_tests": [
+    "TestRevokeProtectionMatrix",
+    "TestRevokeOnlyTouchesActiveFacts",
+    "TestOwnerSaidRevokeAction",
+    "TestCountsRecordProtected"
+  ],
+  "options": {},
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "text": "ai 写的",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000OWN001",
+        "kind": "fact",
+        "text": "主人放行的",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner"
+      },
+      {
+        "id": "SEED0000000000000000IMP001",
+        "kind": "fact",
+        "text": "导入的",
+        "subject": "owner",
+        "status": "active"
+      },
+      {
+        "id": "SEED0000000000000000OSD001",
+        "kind": "fact",
+        "text": "owner_said 的",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner_said"
+      },
+      {
+        "id": "SEED0000000000000000WRD001",
+        "kind": "fact",
+        "text": "不认识的值",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "weird"
+      },
+      {
+        "id": "SEED0000000000000000PRS001",
+        "kind": "fact",
+        "text": "别人的事",
+        "subject": "person:u9",
+        "status": "active",
+        "confirmed_by": "ai",
+        "scopes": [
+          "person:u9"
+        ]
+      },
+      {
+        "id": "SEED0000000000000000SLF001",
+        "kind": "fact",
+        "text": "她自己的事",
+        "subject": "self",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000OSD002",
+        "kind": "fact",
+        "text": "owner_said 的另一条",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner_said"
+      },
+      {
+        "id": "SEED0000000000000000OSD003",
+        "kind": "fact",
+        "text": "owner_said 的第三条",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner_said"
+      },
+      {
+        "id": "SEED0000000000000000GON001",
+        "kind": "fact",
+        "text": "已经撤过的",
+        "subject": "owner",
+        "status": "revoked",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000CAN001",
+        "kind": "fact",
+        "text": "待确认的",
+        "subject": "owner",
+        "status": "candidate"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000AI0001",
+          "reason": "整理想撤销 AI0001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "revoked",
+            "ref": "f:SEED0000000000000000AI0001",
+            "status": "revoked"
+          }
+        ],
+        "counts": {
+          "revoked": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000OWN001",
+          "reason": "整理想撤销 OWN001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "noop",
+            "ref": "f:SEED0000000000000000OWN001",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "revoke_protected": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000IMP001",
+          "reason": "整理想撤销 IMP001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "noop",
+            "ref": "f:SEED0000000000000000IMP001",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "revoke_protected": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000OSD001",
+          "reason": "整理想撤销 OSD001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "noop",
+            "ref": "f:SEED0000000000000000OSD001",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "revoke_protected": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000WRD001",
+          "reason": "整理想撤销 WRD001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "noop",
+            "ref": "f:SEED0000000000000000WRD001",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "revoke_protected": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000GON001",
+          "reason": "整理想撤销 GON001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "noop",
+            "ref": "f:SEED0000000000000000GON001",
+            "status": "revoked"
+          }
+        ],
+        "counts": {
+          "revoke_noop": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000CAN001",
+          "reason": "整理想撤销 CAN001"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "noop",
+            "ref": "f:SEED0000000000000000CAN001",
+            "status": "candidate"
+          }
+        ],
+        "counts": {
+          "revoke_noop": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "summary",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000NOSUCH",
+          "reason": "没有这个编号"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "noop",
+            "ref": "f:SEED0000000000000000NOSUCH",
+            "status": ""
+          }
+        ],
+        "counts": {
+          "revoke_noop": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "revoke",
+          "code": "PRS001",
+          "reason": "模型想忘别人的事"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "noop",
+            "ref": "f:SEED0000000000000000PRS001",
+            "status": "active"
+          }
+        ],
+        "counts": {
+          "revoke_wrong_subject": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "revoke",
+          "code": "SLF001",
+          "reason": "她自己的事可以忘"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "revoked",
+            "ref": "f:SEED0000000000000000SLF001",
+            "status": "revoked"
+          }
+        ],
+        "counts": {
+          "revoked": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "revoke",
+          "code": "OSD002",
+          "reason": "owner_said 可以忘"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "revoked",
+            "ref": "f:SEED0000000000000000OSD002",
+            "status": "revoked"
+          }
+        ],
+        "counts": {
+          "revoked": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000OWN001",
+          "reason": "主人本人什么都能撤"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "revoked",
+            "ref": "f:SEED0000000000000000OWN001",
+            "status": "revoked"
+          }
+        ],
+        "counts": {
+          "revoked": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember",
+      "ops": [
+        {
+          "op": "revoke",
+          "id": "SEED0000000000000000IMP001",
+          "reason": "主人本人撤导入的"
+        }
+      ],
+      "expect": {
+        "outcomes": [
+          {
+            "result": "revoked",
+            "ref": "f:SEED0000000000000000IMP001",
+            "status": "revoked"
+          }
+        ],
+        "counts": {
+          "revoked": 1
+        }
+      }
+    },
+    {
+      "do": "batch",
+      "by": "remember-ai",
+      "ops": [
+        {
+          "op": "revoke",
+          "code": "OWN001",
+          "reason": "已经撤过了"
+        }
+      ],
+      "expect": {
+        "error": {
+          "code": "replace_gone",
+          "message": "要替换的那条已经不是有效的了（被别处改过、撤销了，或编号不对），这次什么都没写：OWN001"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000AI0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "revoked",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "ai 写的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAN001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "待确认的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000GON001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "revoked",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "已经撤过的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000IMP001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "revoked",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "导入的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OSD001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "owner_said 的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OSD002",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "revoked",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "owner_said 的另一条",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OSD003",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "owner_said 的第三条",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OWN001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "revoked",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人放行的",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000PRS001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "person:u9",
+        "scopes": [
+          "person:u9"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "person:u9",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "别人的事",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "person",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000SLF001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "revoked",
+        "subject": "self",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "她自己的事",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "weird",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000WRD001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "不认识的值",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "status": "revoked"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "summary",
+        "fact_id": "SEED0000000000000000AI0001",
+        "op": "revoke",
+        "reason": "整理想撤销 AI0001"
+      },
+      {
+        "after": {
+          "status": "revoked"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000SLF001",
+        "op": "revoke",
+        "reason": "她自己的事可以忘"
+      },
+      {
+        "after": {
+          "status": "revoked"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000OSD002",
+        "op": "revoke",
+        "reason": "owner_said 可以忘"
+      },
+      {
+        "after": {
+          "status": "revoked"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember",
+        "fact_id": "SEED0000000000000000OWN001",
+        "op": "revoke",
+        "reason": "主人本人什么都能撤"
+      },
+      {
+        "after": {
+          "status": "revoked"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember",
+        "fact_id": "SEED0000000000000000IMP001",
+        "op": "revoke",
+        "reason": "主人本人撤导入的"
+      }
+    ],
+    "evidence": []
+  }
+}

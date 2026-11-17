@@ -1,0 +1,661 @@
+{
+  "about": "改口：replaces 填旧事实的短码（大小写、# 都不拘），旧的标被取代、成功文字带旧的原文；改正的话和已有的一条同文时，错的退成被已有的取代；待确认的同文加 replaces 放行并取代；取代没成连放行也不留；ai 和 owner_said 写的旧事实模型可以取代。",
+  "source_tests": [
+    "TestRememberB19ReplacesTheOldOne",
+    "TestRememberReplacesWithTheSameTextAsAnotherActiveFact",
+    "TestOwnerSaidRememberReplaceViaTool"
+  ],
+  "options": {},
+  "events": [
+    {
+      "seq": 1,
+      "conversation": "console:a",
+      "text": "我搬到上海了",
+      "ago_s": 60
+    },
+    {
+      "seq": 2,
+      "conversation": "console:a",
+      "text": "现在住在广州",
+      "ago_s": 60
+    },
+    {
+      "seq": 3,
+      "conversation": "console:a",
+      "text": "家里养了一只狗",
+      "ago_s": 60
+    },
+    {
+      "seq": 4,
+      "conversation": "console:a",
+      "text": "我养了一条鱼",
+      "ago_s": 60
+    },
+    {
+      "seq": 5,
+      "conversation": "console:a",
+      "text": "我现在改喝乌龙茶了",
+      "ago_s": 60
+    }
+  ],
+  "start": {
+    "facts": [
+      {
+        "id": "SEED0000000000000000BJ0001",
+        "kind": "fact",
+        "text": "主人住在北京",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000SZ0001",
+        "kind": "fact",
+        "text": "主人住在深圳",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000GZ0001",
+        "kind": "fact",
+        "text": "主人住在广州",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000CAT001",
+        "kind": "fact",
+        "text": "主人养了一只猫",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "ai"
+      },
+      {
+        "id": "SEED0000000000000000DOG001",
+        "kind": "fact",
+        "text": "主人养了一只狗",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000FSH001",
+        "kind": "fact",
+        "text": "主人养了一条鱼",
+        "subject": "owner",
+        "status": "candidate"
+      },
+      {
+        "id": "SEED0000000000000000OSD001",
+        "kind": "preference",
+        "text": "主人喜欢喝红茶",
+        "subject": "owner",
+        "status": "active",
+        "confirmed_by": "owner_said"
+      }
+    ]
+  },
+  "new_ids": [
+    "NEWF0000000000000000000001",
+    "NEWF0000000000000000000002",
+    "NEWF0000000000000000000003"
+  ],
+  "steps": [
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": " #bj0001 ",
+        "source_quote": "搬到上海了",
+        "temporal": "stable",
+        "text": "主人搬到上海了"
+      },
+      "input_seqs": [
+        1
+      ],
+      "expect": {
+        "text": "记住了，原来那条（\"主人住在北京\"）不再用了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "SZ0001",
+        "source_quote": "住在广州",
+        "temporal": "stable",
+        "text": "主人住在广州。"
+      },
+      "input_seqs": [
+        2
+      ],
+      "expect": {
+        "text": "记住了，原来那条（\"主人住在深圳\"）不再用了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "GZ0001",
+        "source_quote": "住在广州",
+        "temporal": "stable",
+        "text": "主人住在广州"
+      },
+      "input_seqs": [
+        2
+      ],
+      "expect": {
+        "text": "这件事已经记着了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "#cat001",
+        "source_quote": "养了一只狗",
+        "temporal": "stable",
+        "text": "主人养了一只狗"
+      },
+      "input_seqs": [
+        3
+      ],
+      "expect": {
+        "text": "记住了，原来那条（\"主人养了一只猫\"）不再用了。"
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "ZZZZZZ",
+        "source_quote": "养了一条鱼",
+        "temporal": "stable",
+        "text": "主人养了一条鱼"
+      },
+      "input_seqs": [
+        4
+      ],
+      "expect": {
+        "text": "没找到编号 ZZZZZZ 的记忆（可能已经被改过、撤销了，或者编号抄错了）。这次没有记：先用 memory_search 查到现在的编号，再记一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "fact",
+        "replaces": "ZZZZZZ",
+        "source_quote": "住在广州",
+        "temporal": "stable",
+        "text": "主人住在广州"
+      },
+      "input_seqs": [
+        2
+      ],
+      "expect": {
+        "text": "没找到编号 ZZZZZZ 的记忆（可能已经被改过、撤销了，或者编号抄错了）。这次没有记：先用 memory_search 查到现在的编号，再记一次。",
+        "is_error": true
+      }
+    },
+    {
+      "do": "remember",
+      "args": {
+        "kind": "preference",
+        "replaces": "OSD001",
+        "source_quote": "改喝乌龙茶",
+        "temporal": "stable",
+        "text": "主人改喝乌龙茶了"
+      },
+      "input_seqs": [
+        5
+      ],
+      "expect": {
+        "text": "记住了，原来那条（\"主人喜欢喝红茶\"）不再用了。"
+      }
+    }
+  ],
+  "expect": {
+    "facts": [
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[1]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人搬到上海了",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": "owner",
+        "confirmed_by": "owner_said",
+        "conversation": "console:a",
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "NEWF0000000000000000000002",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": "owner",
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[5]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人改喝乌龙茶了",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000BJ0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "NEWF0000000000000000000001",
+        "temporal": null,
+        "text": "主人住在北京",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000CAT001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "SEED0000000000000000DOG001",
+        "temporal": null,
+        "text": "主人养了一只猫",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "SEED0000000000000000DOG001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": "assert",
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人养了一只狗",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": null,
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000FSH001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "candidate",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": null,
+        "text": "主人养了一条鱼",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": 60,
+        "id": "SEED0000000000000000GZ0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "active",
+        "subject": "owner",
+        "superseded_by": null,
+        "temporal": "stable",
+        "text": "主人住在广州",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "owner_said",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000OSD001",
+        "kind": "preference",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "NEWF0000000000000000000002",
+        "temporal": null,
+        "text": "主人喜欢喝红茶",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      },
+      {
+        "attributed_to": null,
+        "audience_at_origin": null,
+        "confirmed_by": "ai",
+        "conversation": null,
+        "created_ago_s": 0,
+        "event_ago_s": null,
+        "id": "SEED0000000000000000SZ0001",
+        "kind": "fact",
+        "learned_ago_s": 0,
+        "learned_by": null,
+        "no_mention": 0,
+        "only_her": 1,
+        "origin": null,
+        "scope": "owner",
+        "scopes": [
+          "owner"
+        ],
+        "source_seqs": "[]",
+        "speech_act": null,
+        "status": "superseded",
+        "subject": "owner",
+        "superseded_by": "SEED0000000000000000GZ0001",
+        "temporal": null,
+        "text": "主人住在深圳",
+        "valid_from_ago_s": null,
+        "valid_to_ago_s": null,
+        "visibility": "private",
+        "whisper_json": null
+      }
+    ],
+    "episodes": [],
+    "revisions": [
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "NEWF0000000000000000000001"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000BJ0001",
+        "op": "supersede",
+        "reason": "被 NEWF0000000000000000000001 替换"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000001",
+        "op": "add",
+        "reason": "替换 SEED0000000000000000BJ0001"
+      },
+      {
+        "after": {
+          "event_ago_s": 60,
+          "source_seqs": [
+            2
+          ],
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": {
+          "event_at": 0,
+          "temporal": ""
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000GZ0001",
+        "op": "lifetime",
+        "reason": "更晚的本人来源更新期限，不代表完成"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "status": "active"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "confirmed_by": "ai",
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000GZ0001",
+        "op": "confirm",
+        "reason": "主人本人又说了一遍，来源绑定原话，升成 owner_said"
+      },
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "SEED0000000000000000GZ0001"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000SZ0001",
+        "op": "supersede",
+        "reason": "被 SEED0000000000000000GZ0001 替换"
+      },
+      {
+        "after": {
+          "event_ago_s": 60,
+          "source_seqs": [
+            3
+          ],
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": {
+          "event_at": 0,
+          "temporal": ""
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000DOG001",
+        "op": "lifetime",
+        "reason": "更晚的本人来源更新期限，不代表完成"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "scopes": [
+            "owner"
+          ],
+          "status": "candidate"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000DOG001",
+        "op": "confirm",
+        "reason": "按写入来源更新确认状态"
+      },
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "SEED0000000000000000DOG001"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000CAT001",
+        "op": "supersede",
+        "reason": "被 SEED0000000000000000DOG001 替换"
+      },
+      {
+        "after": {
+          "status": "superseded",
+          "superseded_by": "NEWF0000000000000000000002"
+        },
+        "at_ago_s": 0,
+        "before": {
+          "status": "active"
+        },
+        "by": "remember-ai",
+        "fact_id": "SEED0000000000000000OSD001",
+        "op": "supersede",
+        "reason": "被 NEWF0000000000000000000002 替换"
+      },
+      {
+        "after": {
+          "confirmed_by": "owner_said",
+          "scopes": [
+            "owner"
+          ],
+          "status": "active",
+          "temporal": "stable",
+          "valid_to": null
+        },
+        "at_ago_s": 0,
+        "before": null,
+        "by": "remember-ai",
+        "fact_id": "NEWF0000000000000000000002",
+        "op": "add",
+        "reason": "替换 SEED0000000000000000OSD001"
+      }
+    ],
+    "evidence": []
+  }
+}

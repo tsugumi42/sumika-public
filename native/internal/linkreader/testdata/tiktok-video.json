@@ -1,0 +1,30 @@
+{
+  "webapp.video-detail": {
+    "itemInfo": {
+      "itemStruct": {
+        "id": "7000000000000000001",
+        "desc": "",
+        "createTime": "1640896362",
+        "video": {
+          "cover": "https://p16-common-sign.tiktokcdn-us.com/fixture/video-cover.jpeg",
+          "width": 576,
+          "height": 1024,
+          "duration": 21
+        },
+        "author": {
+          "id": "7000000000000000002",
+          "uniqueId": "hankgreen1",
+          "nickname": "Hank Green"
+        },
+        "statsV2": {
+          "playCount": "1400000",
+          "diggCount": "270400",
+          "commentCount": "4544",
+          "shareCount": "5149",
+          "collectCount": "4094"
+        }
+      }
+    },
+    "statusCode": 0
+  }
+}

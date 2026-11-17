@@ -1,0 +1,493 @@
+// Package semver 是语义化版本的解析、比较、递增和范围匹配（参考做法，题目 b2-11-big-file）。
+package semver
+
+import (
+	"errors"
+	"fmt"
+	"sort"
+	"strconv"
+	"strings"
+)
+
+// Version 是一个版本。
+type Version struct {
+	Major, Minor, Patch uint64
+	Pre                 []string
+	Build               string
+}
+
+func isIdent(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		switch {
+		case c >= '0' && c <= '9', c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z', c == '-':
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+func isNumeric(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func parseNum(s string) (uint64, error) {
+	if !isNumeric(s) {
+		return 0, fmt.Errorf("%q 不是数字", s)
+	}
+	if len(s) > 1 && s[0] == '0' {
+		return 0, fmt.Errorf("%q 有前导零", s)
+	}
+	return strconv.ParseUint(s, 10, 64)
+}
+
+// Parse 解析一个完整的版本号。
+func Parse(s string) (Version, error) {
+	orig := s
+	fail := func(why string) (Version, error) {
+		return Version{}, fmt.Errorf("版本 %q 不合规：%s", orig, why)
+	}
+	s = strings.TrimPrefix(s, "v")
+	var v Version
+	if i := strings.Index(s, "+"); i >= 0 {
+		v.Build = s[i+1:]
+		s = s[:i]
+		for _, id := range strings.Split(v.Build, ".") {
+			if !isIdent(id) {
+				return fail("构建标识不对")
+			}
+		}
+	}
+	if i := strings.Index(s, "-"); i >= 0 {
+		pre := s[i+1:]
+		s = s[:i]
+		for _, id := range strings.Split(pre, ".") {
+			if !isIdent(id) {
+				return fail("预发布标识不对")
+			}
+			if isNumeric(id) && len(id) > 1 && id[0] == '0' {
+				return fail("预发布的数字标识有前导零")
+			}
+			v.Pre = append(v.Pre, id)
+		}
+	}
+	parts := strings.Split(s, ".")
+	if len(parts) != 3 {
+		return fail("核心部分要正好三段")
+	}
+	var nums [3]uint64
+	for i, p := range parts {
+		n, err := parseNum(p)
+		if err != nil {
+			return fail(err.Error())
+		}
+		nums[i] = n
+	}
+	v.Major, v.Minor, v.Patch = nums[0], nums[1], nums[2]
+	return v, nil
+}
+
+// String 是不带 v 的写法。
+func (v Version) String() string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "%d.%d.%d", v.Major, v.Minor, v.Patch)
+	if len(v.Pre) > 0 {
+		b.WriteString("-" + strings.Join(v.Pre, "."))
+	}
+	if v.Build != "" {
+		b.WriteString("+" + v.Build)
+	}
+	return b.String()
+}
+
+func cmpUint(a, b uint64) int {
+	switch {
+	case a < b:
+		return -1
+	case a > b:
+		return 1
+	}
+	return 0
+}
+
+func cmpIdent(a, b string) int {
+	an, bn := isNumeric(a), isNumeric(b)
+	switch {
+	case an && bn:
+		x, _ := strconv.ParseUint(a, 10, 64)
+		y, _ := strconv.ParseUint(b, 10, 64)
+		return cmpUint(x, y)
+	case an:
+		return -1
+	case bn:
+		return 1
+	}
+	return strings.Compare(a, b)
+}
+
+// Compare 按优先级比较，构建元数据不参与。
+func (v Version) Compare(o Version) int {
+	if c := cmpUint(v.Major, o.Major); c != 0 {
+		return c
+	}
+	if c := cmpUint(v.Minor, o.Minor); c != 0 {
+		return c
+	}
+	if c := cmpUint(v.Patch, o.Patch); c != 0 {
+		return c
+	}
+	switch {
+	case len(v.Pre) == 0 && len(o.Pre) == 0:
+		return 0
+	case len(v.Pre) == 0:
+		return 1
+	case len(o.Pre) == 0:
+		return -1
+	}
+	for i := 0; i < len(v.Pre) && i < len(o.Pre); i++ {
+		if c := cmpIdent(v.Pre[i], o.Pre[i]); c != 0 {
+			return c
+		}
+	}
+	return cmpUint(uint64(len(v.Pre)), uint64(len(o.Pre)))
+}
+
+// Bump 返回递增后的新版本。
+func (v Version) Bump(part string) (Version, error) {
+	n := Version{Major: v.Major, Minor: v.Minor, Patch: v.Patch}
+	switch part {
+	case "major":
+		n.Major, n.Minor, n.Patch = v.Major+1, 0, 0
+	case "minor":
+		n.Minor, n.Patch = v.Minor+1, 0
+	case "patch":
+		if len(v.Pre) == 0 {
+			n.Patch++
+		}
+	case "prerelease":
+		if len(v.Pre) == 0 {
+			n.Patch++
+			n.Pre = []string{"rc", "1"}
+			break
+		}
+		n.Pre = append([]string(nil), v.Pre...)
+		last := n.Pre[len(n.Pre)-1]
+		if isNumeric(last) {
+			x, _ := strconv.ParseUint(last, 10, 64)
+			n.Pre[len(n.Pre)-1] = strconv.FormatUint(x+1, 10)
+		} else {
+			n.Pre = append(n.Pre, "1")
+		}
+	default:
+		return Version{}, fmt.Errorf("不认识的递增部分 %q", part)
+	}
+	return n, nil
+}
+
+type op int
+
+const (
+	opEq op = iota
+	opNe
+	opGt
+	opGe
+	opLt
+	opLe
+)
+
+type comparator struct {
+	op op
+	v  Version
+}
+
+func (c comparator) match(v Version) bool {
+	r := v.Compare(c.v)
+	switch c.op {
+	case opEq:
+		return r == 0
+	case opNe:
+		return r != 0
+	case opGt:
+		return r > 0
+	case opGe:
+		return r >= 0
+	case opLt:
+		return r < 0
+	default:
+		return r <= 0
+	}
+}
+
+// Constraint 是解析好的范围：多个组，满足任意一组即可。
+type Constraint struct {
+	groups [][]comparator
+}
+
+// partial 是可能不完整的版本：given 是给出了几段（0 表示全是通配）。
+type partial struct {
+	nums  [3]uint64
+	given int
+	pre   []string
+}
+
+func (p partial) lo() Version {
+	return Version{Major: p.nums[0], Minor: p.nums[1], Patch: p.nums[2], Pre: p.pre}
+}
+
+// bump 把第 i 段（0 起）加一、后面归零。
+func bumpAt(p partial, i int) Version {
+	v := Version{Major: p.nums[0], Minor: p.nums[1], Patch: p.nums[2]}
+	switch i {
+	case 0:
+		v.Major, v.Minor, v.Patch = v.Major+1, 0, 0
+	case 1:
+		v.Minor, v.Patch = v.Minor+1, 0
+	default:
+		v.Patch++
+	}
+	return v
+}
+
+// next 是"下一个"：把最后一个给出的段加一。
+func (p partial) next() Version {
+	return bumpAt(p, max(p.given-1, 0))
+}
+
+func parsePartial(s string) (partial, error) {
+	var p partial
+	s = strings.TrimPrefix(s, "v")
+	if i := strings.Index(s, "+"); i >= 0 {
+		s = s[:i]
+	}
+	if s == "" {
+		return p, errors.New("缺版本号")
+	}
+	if i := strings.Index(s, "-"); i >= 0 {
+		full, err := Parse(s)
+		if err != nil {
+			return p, err
+		}
+		return partial{nums: [3]uint64{full.Major, full.Minor, full.Patch}, given: 3, pre: full.Pre}, nil
+	}
+	parts := strings.Split(s, ".")
+	if len(parts) > 3 {
+		return p, fmt.Errorf("版本 %q 的段太多", s)
+	}
+	wild := false
+	for i, part := range parts {
+		if part == "x" || part == "X" || part == "*" {
+			wild = true
+			continue
+		}
+		if wild {
+			return p, fmt.Errorf("版本 %q：通配之后不能再有数字", s)
+		}
+		n, err := parseNum(part)
+		if err != nil {
+			return p, fmt.Errorf("版本 %q：%v", s, err)
+		}
+		p.nums[i] = n
+		p.given = i + 1
+	}
+	return p, nil
+}
+
+func anyVersion() []comparator { return []comparator{{opGe, Version{}}} }
+
+// expand 把一个带比较符的写法展开成若干比较。
+func expand(sym string, p partial) ([]comparator, error) {
+	if p.given == 0 {
+		if sym == "!=" {
+			return nil, errors.New("!= 不能配通配")
+		}
+		return anyVersion(), nil
+	}
+	full := p.given == 3
+	if p.pre != nil && !full {
+		return nil, errors.New("不完整的版本不能带预发布")
+	}
+	lo := p.lo()
+	switch sym {
+	case "", "=":
+		if full {
+			return []comparator{{opEq, lo}}, nil
+		}
+		return []comparator{{opGe, lo}, {opLt, p.next()}}, nil
+	case "!=":
+		if !full {
+			return nil, errors.New("!= 只能配完整版本")
+		}
+		return []comparator{{opNe, lo}}, nil
+	case ">":
+		if full {
+			return []comparator{{opGt, lo}}, nil
+		}
+		return []comparator{{opGe, p.next()}}, nil
+	case ">=":
+		return []comparator{{opGe, lo}}, nil
+	case "<":
+		return []comparator{{opLt, lo}}, nil
+	case "<=":
+		if full {
+			return []comparator{{opLe, lo}}, nil
+		}
+		return []comparator{{opLt, p.next()}}, nil
+	case "~":
+		if p.given == 1 {
+			return []comparator{{opGe, lo}, {opLt, bumpAt(p, 0)}}, nil
+		}
+		return []comparator{{opGe, lo}, {opLt, bumpAt(p, 1)}}, nil
+	case "^":
+		idx := p.given - 1
+		for i := 0; i < p.given; i++ {
+			if p.nums[i] != 0 {
+				idx = i
+				break
+			}
+		}
+		return []comparator{{opGe, lo}, {opLt, bumpAt(p, idx)}}, nil
+	}
+	return nil, fmt.Errorf("不认识的比较符 %q", sym)
+}
+
+func splitOp(tok string) (string, string) {
+	for _, sym := range []string{">=", "<=", "!=", ">", "<", "=", "^", "~"} {
+		if strings.HasPrefix(tok, sym) {
+			return sym, tok[len(sym):]
+		}
+	}
+	return "", tok
+}
+
+func parseGroup(g string) ([]comparator, error) {
+	g = strings.TrimSpace(g)
+	if g == "" {
+		return nil, errors.New("空的组")
+	}
+	if i := strings.Index(g, " - "); i >= 0 {
+		if f := strings.Fields(g); len(f) != 3 || f[1] != "-" {
+			return nil, errors.New("连字符范围不能和别的比较混写")
+		}
+		a, err := parsePartial(strings.TrimSpace(g[:i]))
+		if err != nil {
+			return nil, err
+		}
+		b, err := parsePartial(strings.TrimSpace(g[i+3:]))
+		if err != nil {
+			return nil, err
+		}
+		out := []comparator{{opGe, a.lo()}}
+		if b.given == 3 {
+			return append(out, comparator{opLe, b.lo()}), nil
+		}
+		if b.given == 0 {
+			return out, nil
+		}
+		return append(out, comparator{opLt, b.next()}), nil
+	}
+	fields := strings.Fields(g)
+	var toks []string
+	for i := 0; i < len(fields); i++ {
+		f := fields[i]
+		if sym, rest := splitOp(f); rest == "" && sym != "" {
+			if i+1 >= len(fields) {
+				return nil, fmt.Errorf("比较符 %q 后面没有版本", f)
+			}
+			i++
+			f += fields[i]
+		}
+		toks = append(toks, f)
+	}
+	var out []comparator
+	for _, t := range toks {
+		sym, rest := splitOp(t)
+		p, err := parsePartial(rest)
+		if err != nil {
+			return nil, err
+		}
+		cs, err := expand(sym, p)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, cs...)
+	}
+	return out, nil
+}
+
+// ParseConstraint 解析范围写法。
+func ParseConstraint(s string) (Constraint, error) {
+	if strings.TrimSpace(s) == "" {
+		return Constraint{groups: [][]comparator{anyVersion()}}, nil
+	}
+	var c Constraint
+	for _, g := range strings.Split(s, "||") {
+		cs, err := parseGroup(g)
+		if err != nil {
+			return Constraint{}, fmt.Errorf("范围 %q 不合规：%v", s, err)
+		}
+		c.groups = append(c.groups, cs)
+	}
+	return c, nil
+}
+
+// Check 判断版本是否满足范围。
+func (c Constraint) Check(v Version) bool {
+	for _, g := range c.groups {
+		if groupMatches(g, v) {
+			return true
+		}
+	}
+	return false
+}
+
+func groupMatches(g []comparator, v Version) bool {
+	if len(v.Pre) > 0 {
+		ok := false
+		for _, cmp := range g {
+			if len(cmp.v.Pre) > 0 && cmp.v.Major == v.Major && cmp.v.Minor == v.Minor && cmp.v.Patch == v.Patch {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			return false
+		}
+	}
+	for _, cmp := range g {
+		if !cmp.match(v) {
+			return false
+		}
+	}
+	return true
+}
+
+// Sort 原地稳定升序排序。
+func Sort(vs []Version) {
+	sort.SliceStable(vs, func(i, j int) bool { return vs[i].Compare(vs[j]) < 0 })
+}
+
+// MaxSatisfying 返回满足范围的最大版本。
+func MaxSatisfying(vs []Version, c Constraint) (Version, bool) {
+	var best Version
+	found := false
+	for _, v := range vs {
+		if !c.Check(v) {
+			continue
+		}
+		if !found || v.Compare(best) > 0 {
+			best, found = v, true
+		}
+	}
+	return best, found
+}

@@ -1,0 +1,16 @@
+{
+  "id": "b1-l04",
+  "group": "b1",
+  "source": "自己出的（2026-10-27）",
+  "steps": [
+    {
+      "say": "data/sales.csv 里，华东区域的销售额一共是多少？"
+    }
+  ],
+  "judge": {
+    "readOnly": true,
+    "reply": [
+      "7595|7,595|7 595"
+    ]
+  }
+}

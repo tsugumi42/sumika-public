@@ -1,0 +1,102 @@
+{
+ "code": 200,
+ "status": {
+  "id": "1900000000000000016",
+  "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖",
+  "raw_text": {
+   "facets": [
+    {
+     "type": "media",
+     "display": "这是编造的示例帖子正文，仅用于解析测试。",
+     "original": "https://t.co/fixture0005",
+     "replacement": "https://x.com/ex_author09/status/1900000000000000016/video/1"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "ex_author08",
+   "id": "1900000000000000032",
+   "name": "编造作者畃",
+   "avatar_url": "https://pbs.twimg.com/profile_images/fixture/10_200x200.jpg"
+  },
+  "replies": 39,
+  "reposts": 934,
+  "likes": 10908,
+  "bookmarks": 752,
+  "quotes": 19,
+  "created_timestamp": 1793455900,
+  "possibly_sensitive": false,
+  "views": 294884,
+  "is_note_tweet": false,
+  "community_note": null,
+  "replying_to": null,
+  "media": {
+   "all": [
+    {
+     "url": "https://video.twimg.com/amplify_video/fixture-11/vid/avc1/960x720/fixture.mp4?tag=29",
+     "thumbnail_url": "https://pbs.twimg.com/media/fixture-12.jpg",
+     "duration": 48.552,
+     "width": 960,
+     "height": 720,
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-14/vid/avc1/1280x720/fixture.mp4?tag=29&v=cfc",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-16/vid/avc1/360x270/fixture.mp4?tag=29",
+       "bitrate": 256000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-19/vid/avc1/480x360/fixture.mp4?tag=29",
+       "bitrate": 832000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/fixture-22/vid/avc1/960x720/fixture.mp4?tag=29",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ]
+    }
+   ]
+  },
+  "quote": {
+   "id": "1900000000000000001",
+   "text": "这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析测试。这是编造的示例帖子正文，仅用于解析",
+   "raw_text": {
+    "facets": [
+     {
+      "type": "url",
+      "original": "https://t.co/fixture0028",
+      "replacement": "https://example.com/fixture/29",
+      "display": "这是编造的示例帖子正文，仅用于"
+     }
+    ]
+   },
+   "author": {
+    "screen_name": "ex_author09",
+    "id": "1605",
+    "name": "编造作者畅",
+    "avatar_url": "https://pbs.twimg.com/profile_images/fixture/34_200x200.jpg"
+   },
+   "replies": 4956,
+   "reposts": 13795,
+   "likes": 114533,
+   "bookmarks": 45075,
+   "quotes": 13145,
+   "created_timestamp": 1669837118,
+   "possibly_sensitive": false,
+   "views": null,
+   "is_note_tweet": false,
+   "community_note": null,
+   "replying_to": null,
+   "media": {}
+  }
+ }
+}

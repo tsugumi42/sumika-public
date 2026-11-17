@@ -1,0 +1,104 @@
+{
+  "categories": [
+    {"id": "geocode", "name": "地名编码"},
+    {"id": "weather", "name": "天气"},
+    {"id": "holiday", "name": "法定假日"},
+    {"id": "fx", "name": "汇率"}
+  ],
+  "providers": [
+    {
+      "id": "open-meteo-geo", "category": "geocode", "name": "Open-Meteo 编码",
+      "url": "https://geocoding-api.open-meteo.com/v1/search",
+      "tier": {"*": 1}, "network": "proxy", "auth": "none",
+      "published": {"perMinute": 600, "perDay": 10000, "source": "https://open-meteo.com/en/pricing", "checked": "2026-11-09"},
+      "probe": {"name": "北京"},
+      "notes": "免费档仅限非商用；language=zh 时 admin1 不带“省”"
+    },
+    {
+      "id": "tencent-weather", "category": "weather", "name": "腾讯新闻天气",
+      "url": "https://i.news.qq.com/weather/common",
+      "regions": ["cn"], "tier": {"*": 1}, "network": "direct", "auth": "none", "grey": true,
+      "published": {"source": "非公开接口，没有公布限额", "checked": "2026-11-09"},
+      "probe": {"province": "北京市", "city": "北京市"},
+      "notes": "按省、市名查，要带 Referer；只发到市；查无此地回 200 加空 observe"
+    },
+    {
+      "id": "open-meteo", "category": "weather", "name": "Open-Meteo",
+      "url": "https://api.open-meteo.com/v1/forecast",
+      "tier": {"cn": 2, "*": 1}, "network": "proxy", "auth": "none",
+      "published": {"perMinute": 600, "perDay": 10000, "source": "https://open-meteo.com/en/pricing", "checked": "2026-11-09"},
+      "probe": {"lat": "39.9042", "lon": "116.4074"},
+      "notes": "免费档仅限非商用，数据 CC BY 4.0"
+    },
+    {
+      "id": "met-norway", "category": "weather", "name": "MET Norway",
+      "url": "https://api.met.no/weatherapi/locationforecast/2.0/compact",
+      "tier": {"cn": 3, "*": 2}, "network": "proxy", "auth": "none",
+      "published": {"perMinute": 1200, "source": "https://api.met.no/doc/TermsOfService", "checked": "2026-11-09"},
+      "dailyCap": 1000,
+      "probe": {"lat": "59.9139", "lon": "10.7522"},
+      "notes": "要真实 UA；经纬度最多 4 位小数；compact 没有日最高最低，自己按本地日聚合；数据 CC BY 4.0"
+    },
+    {
+      "id": "holiday-jsdelivr", "category": "holiday", "name": "holiday-cn（jsDelivr）",
+      "url": "https://cdn.jsdelivr.net/gh/NateScarlet/holiday-cn@master/{year}.json",
+      "tier": {"cn": 1, "*": 1}, "network": "proxy", "auth": "none",
+      "published": {"source": "静态 CDN，无公布限额", "checked": "2026-11-09"},
+      "dailyCap": 2000,
+      "probe": {"year": "current"},
+      "notes": "对 @master 有缓存，所以它说没有这一年时还要问 raw 一次"
+    },
+    {
+      "id": "holiday-raw", "category": "holiday", "name": "holiday-cn（GitHub raw）",
+      "url": "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/{year}.json",
+      "tier": {"cn": 2, "*": 2}, "network": "proxy", "auth": "none",
+      "published": {"source": "GitHub raw，无公布限额", "checked": "2026-11-09"},
+      "dailyCap": 2000,
+      "probe": {"year": "current"},
+      "notes": "对国内时快时慢"
+    },
+    {
+      "id": "holiday-timor", "category": "holiday", "name": "timor.tech 节假日",
+      "url": "https://timor.tech/api/holiday/year/{year}",
+      "tier": {"cn": 3, "*": 3}, "network": "direct", "auth": "none",
+      "published": {"perDay": 10000, "source": "响应头 X-RateLimit-Limit", "checked": "2026-11-09"},
+      "probe": {"year": "current"},
+      "notes": "形状和 holiday-cn 不同，转换后再用；未公布的年份回 200 加空表，不能当“没公布”"
+    },
+    {
+      "id": "fx-fawaz-jsdelivr", "category": "fx", "name": "fawazahmed0 汇率（jsDelivr）",
+      "url": "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/{base}.json",
+      "tier": {"cn": 1, "*": 3}, "network": "proxy", "auth": "none",
+      "published": {"source": "静态 CDN，无限速", "checked": "2026-11-09"},
+      "dailyCap": 2000,
+      "probe": {"base": "usd", "quote": "cny"},
+      "notes": "日更；币种代码小写；不存在的币种回 404"
+    },
+    {
+      "id": "fx-fawaz-pages", "category": "fx", "name": "fawazahmed0 汇率（pages.dev）",
+      "url": "https://latest.currency-api.pages.dev/v1/currencies/{base}.json",
+      "tier": {"cn": 2, "*": 4}, "network": "proxy", "auth": "none",
+      "published": {"source": "静态 CDN，无限速", "checked": "2026-11-09"},
+      "dailyCap": 2000,
+      "probe": {"base": "usd", "quote": "cny"},
+      "notes": "比 jsDelivr 新一天；Windows 自带 curl 握手失败过，Go 通"
+    },
+    {
+      "id": "fx-frankfurter", "category": "fx", "name": "Frankfurter 汇率",
+      "url": "https://api.frankfurter.dev/v1/latest",
+      "tier": {"cn": 3, "*": 1}, "network": "proxy", "auth": "none",
+      "published": {"source": "无配额，只防滥用限速", "checked": "2026-11-09"},
+      "dailyCap": 2000,
+      "probe": {"base": "usd", "quote": "cny"},
+      "notes": "央行日更，约 30 种货币；不存在的币种回 404"
+    },
+    {
+      "id": "fx-exchangerate-api", "category": "fx", "name": "ExchangeRate-API 开放端点",
+      "url": "https://open.er-api.com/v6/latest/{base}",
+      "tier": {"cn": 4, "*": 2}, "network": "proxy", "auth": "none",
+      "published": {"source": "文档不给数字；超限 429 并封 20 分钟", "checked": "2026-11-09"},
+      "probe": {"base": "usd", "quote": "cny"},
+      "notes": "每天更新一次；不存在的币种回 200 加 result:error"
+    }
+  ]
+}

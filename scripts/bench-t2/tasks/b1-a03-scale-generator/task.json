@@ -1,0 +1,33 @@
+{
+  "id": "b1-a03-scale-generator",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/scale-generator（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 scale_generator.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.md": "a7b987d02470634798239eddb1e31003e1025e3d64c5bcfe83b3584c0f273733",
+    "cases_test.go": "e63f59f72ba9b8eec5af0f365e0661418acda719e84976856cc54f5497e3b0c0",
+    "go.mod": "531b6da84b510fe8b697f9d91575d0a5ac05d64901926d283749c80ba6b73f00",
+    "scale_generator.go": "4ddc380b9e4b2e64bb0a523b6136e9809b7978ab4e27424c16227f3a8e7a311d",
+    "scale_generator_test.go": "4f1ab98b3f5427de9edee220fcfdc9d7c6675ec9ac9fd37ed3eee9b38ddacf70"
+  }
+}

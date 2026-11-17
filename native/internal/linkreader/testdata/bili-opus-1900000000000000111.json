@@ -1,0 +1,548 @@
+{
+ "code": 0,
+ "data": {
+  "item": {
+   "id_str": "1900000000000000111",
+   "type": 1,
+   "modules": [
+    {
+     "module_type": "MODULE_TYPE_TITLE",
+     "module_title": {
+      "text": "编造的B站标题"
+     }
+    },
+    {
+     "module_type": "MODULE_TYPE_AUTHOR",
+     "module_author": {
+      "name": "编造作者",
+      "mid": 900000000731940507,
+      "face": "https://i2.hdslb.com/bfs/fixture/1.jpg",
+      "pub_ts": "1793708371",
+      "pub_time": "2026年11月03日 20:19"
+     }
+    },
+    {
+     "module_type": "MODULE_TYPE_CONTENT",
+     "module_content": {
+      "paragraphs": [
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解析测试。这是编"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 2,
+        "pic": {
+         "pics": [
+          {
+           "url": "https://i0.hdslb.com/bfs/fixture/2.png",
+           "width": 592,
+           "height": 9
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅用于解析测试。"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正文，仅"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 5,
+        "list": {
+         "items": [
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_RICH",
+             "rich": {
+              "text": "这是编造的B"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_RICH",
+             "rich": {
+              "text": "这是编造的B"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这"
+             }
+            }
+           ]
+          }
+         ],
+         "children": []
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 5,
+        "list": {
+         "items": [
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_RICH",
+             "rich": {
+              "text": "这是编造的B"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_RICH",
+             "rich": {
+              "text": "这是编造的B"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_RICH",
+             "rich": {
+              "text": "这是编造的B"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_RICH",
+             "rich": {
+              "text": "这是编造的B"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_RICH",
+             "rich": {
+              "text": "这是编造的B"
+             }
+            },
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是"
+             }
+            }
+           ]
+          }
+         ],
+         "children": []
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 5,
+        "list": {
+         "items": [
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析"
+             }
+            }
+           ]
+          }
+         ],
+         "children": []
+        }
+       },
+       {
+        "para_type": 1,
+        "text": {
+         "nodes": [
+          {
+           "type": "TEXT_NODE_TYPE_WORD",
+           "word": {
+            "words": "这是编造的B站示例正"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "para_type": 5,
+        "list": {
+         "items": [
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测"
+             }
+            }
+           ]
+          },
+          {
+           "nodes": [
+            {
+             "type": "TEXT_NODE_TYPE_WORD",
+             "word": {
+              "words": "这是编造的B站示例正文，仅用于解析测试。这是编造的B站示例正文，仅用于解析测试。这是编"
+             }
+            }
+           ]
+          }
+         ],
+         "children": []
+        }
+       }
+      ]
+     }
+    },
+    {
+     "module_type": "MODULE_TYPE_STAT",
+     "module_stat": {
+      "like": {
+       "count": 236
+      },
+      "comment": {
+       "count": 23
+      },
+      "forward": {
+       "count": 0
+      }
+     }
+    }
+   ],
+   "basic": {}
+  }
+ }
+}

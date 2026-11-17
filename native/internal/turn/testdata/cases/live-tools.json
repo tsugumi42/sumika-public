@@ -1,0 +1,185 @@
+{
+  "about": "第一轮三步（说话 + 读、只调 ls、说话）两条文字；第二轮请求里留着上一轮的工具调用、结果和思考",
+  "now": "2026-10-25T00:05:00+08:00",
+  "characterId": "suzu",
+  "files": {
+    "characters/suzu/card/character.yml": "name: 铃\nownerName: 主人\n",
+    "characters/suzu/card/character.md": "<!-- 测试用的卡，名字是编的 -->\n## 身份\n铃，住在主人电脑里的女仆。\n\n## 行为\n干活利落，话说到点上。\n\n## 表达\n短句，像发消息。\n\n## 私下\n喜欢被夸。\n",
+    "config/prompts/scene-home.md": "现在的场合：本地主窗口里的私聊（测试场景：不写工作目录，工作目录每次跑都不一样）。"
+  },
+  "characters": {
+    "suzu": {
+      "model": "test/think"
+    }
+  },
+  "agent": {
+    "thinking": {
+      "local": "minimal",
+      "private": "low",
+      "group": "low"
+    }
+  },
+  "workdir": "D:/Work",
+  "shell": {
+    "template": "shell-pwsh",
+    "version": "7.6"
+  },
+  "models": [
+    {
+      "id": "test/think",
+      "context_length": 1048000,
+      "max_output_tokens": 32000,
+      "reasoning": true,
+      "supported_reasoning_levels": [
+        {
+          "effort": "low"
+        },
+        {
+          "effort": "medium"
+        },
+        {
+          "effort": "high"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "epochs": [],
+  "text": "再看看",
+  "reply": {
+    "reasoning": [
+      "主人叫我，",
+      "回一句。"
+    ],
+    "content": [
+      "在呢在呢，",
+      "怎么啦～】【"
+    ],
+    "usage": {
+      "prompt_tokens": 1200,
+      "completion_tokens": 30,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    "headers": {
+      "x-magpie-provider": "fake-provider",
+      "x-magpie-model": "fake/think-1"
+    }
+  },
+  "workdirFiles": {
+    "a.md": "甲\n"
+  },
+  "replies": [
+    {
+      "reasoning": [
+        "先读文件。"
+      ],
+      "content": [
+        "我看看。"
+      ],
+      "usage": {
+        "prompt_tokens": 1500,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      },
+      "toolCalls": [
+        {
+          "id": "call_r",
+          "name": "read",
+          "args": [
+            "{\"purpose\": \"看文件\", \"path\": \"a.md\"}"
+          ]
+        }
+      ]
+    },
+    {
+      "reasoning": [],
+      "content": [],
+      "usage": {
+        "prompt_tokens": 1600,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      },
+      "toolCalls": [
+        {
+          "id": "call_l",
+          "name": "ls",
+          "args": [
+            "{\"purpose\": \"看目录\"}"
+          ]
+        }
+      ]
+    },
+    {
+      "reasoning": [],
+      "content": [
+        "里面是\"甲\"。"
+      ],
+      "usage": {
+        "prompt_tokens": 1700,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      }
+    },
+    {
+      "reasoning": [],
+      "content": [
+        "刚才读过了，是\"甲\"。"
+      ],
+      "usage": {
+        "prompt_tokens": 1800,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      }
+    }
+  ],
+  "next": [
+    {
+      "text": "刚才那个文件里写的什么",
+      "now": "2026-10-25T00:06:00+08:00"
+    }
+  ],
+  "tools": {
+    "approvalMode": "auto"
+  }
+}

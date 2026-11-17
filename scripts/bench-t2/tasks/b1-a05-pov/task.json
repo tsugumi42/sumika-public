@@ -1,0 +1,33 @@
+{
+  "id": "b1-a05-pov",
+  "group": "b1",
+  "source": "Aider-AI/polyglot-benchmark@7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f go/exercises/practice/pov（Exercism，MIT）",
+  "steps": [
+    {
+      "say": "工作目录里是一道 Go 练习题，说明在 .docs/ 里。请修改 pov.go 实现它（需要的话可以新建 .go 文件放辅助代码），让 go test ./... 通过。不要改或新建测试文件（_test.go），不要改 go.mod，不要改已有函数和类型的名字，只用标准库。"
+    }
+  ],
+  "judge": {
+    "goTest": true,
+    "allowed": [
+      "*.go"
+    ],
+    "forbid": [
+      "*_test.go",
+      "go.mod"
+    ],
+    "ignore": [
+      "*.test",
+      "*.exe",
+      "*.out",
+      "*.prof"
+    ]
+  },
+  "sha256": {
+    ".docs/instructions.append.md": "dd4e6fa52a350c42657c1c8fb84feb015c9eed4db58921ea3ee4b400c3451c74",
+    ".docs/instructions.md": "ec078a5e1dfc994b64951f0f9cf19dbd8ced93e7d570238dffecd9288b83cc69",
+    "go.mod": "71ac7847d008021ba8348e550f61d79a83184dea8fa43b201351349637707422",
+    "pov.go": "5de116684dd4012a35066dbb02c1ca582deb36631427d638d0a771435a4ff28c",
+    "pov_test.go": "b70c76779c7c7cdcd918359985b5d9cd022b8b0d603cc390a727eb7fc8d1d7bf"
+  }
+}

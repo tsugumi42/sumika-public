@@ -1,0 +1,883 @@
+[
+  {
+    "name": "write-new",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_write-new",
+      "tool": "write",
+      "purpose": "这一步做什么",
+      "title": "新建文件",
+      "subject": "<WORKDIR>\\a.txt",
+      "preview": {
+        "kind": "content",
+        "text": "新内容\n",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR> 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "write-overwrite",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_write-overwrite",
+      "tool": "write",
+      "purpose": "这一步做什么",
+      "title": "覆盖文件",
+      "subject": "<WORKDIR>\\a.txt",
+      "preview": {
+        "kind": "diff",
+        "text": " 1 第一行\n-2 第二行 old\n+2 改了\n 3 第三行",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR> 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "write-long",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_write-long",
+      "tool": "write",
+      "purpose": "这一步做什么",
+      "title": "新建文件",
+      "subject": "<WORKDIR>\\long.txt",
+      "preview": {
+        "kind": "content",
+        "text": "长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长",
+        "truncated": true
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR> 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "edit-diff",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_edit-diff",
+      "tool": "edit",
+      "purpose": "这一步做什么",
+      "title": "修改文件",
+      "subject": "<WORKDIR>\\a.txt",
+      "preview": {
+        "kind": "diff",
+        "text": " 1 第一行\n-2 第二行 old\n+2 第二行 [$&][$$][$`][$'][$1]\n 3 第三行",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR> 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "edit-two",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_edit-two",
+      "tool": "edit",
+      "purpose": "这一步做什么",
+      "title": "修改文件",
+      "subject": "<WORKDIR>\\a.txt",
+      "preview": {
+        "kind": "content",
+        "text": "Could not find edits[1] in a.txt. The oldText must match exactly including all whitespace and newlines.",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR> 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "edit-missing",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_edit-missing",
+      "tool": "edit",
+      "purpose": "这一步做什么",
+      "title": "修改文件",
+      "subject": "<WORKDIR>\\nope.txt",
+      "preview": {
+        "kind": "content",
+        "text": "[\n  {\n    \"oldText\": \"a\",\n    \"newText\": \"b\"\n  }\n]",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR> 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "write-outside",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_write-outside",
+      "tool": "write",
+      "purpose": "这一步做什么",
+      "title": "新建文件",
+      "subject": "<HOME>\\AppData\\Local\\Temp\\out.txt",
+      "preview": {
+        "kind": "content",
+        "text": "x",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<HOME>\\AppData\\Local\\Temp 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "ps-remove",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_ps-remove",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "Remove-Item a.txt",
+      "notes": [
+        "会改动：Remove-Item → a.txt"
+      ],
+      "options": [
+        "conversation"
+      ],
+      "kindLabel": "「remove-item」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "ps-push",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_ps-push",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "git push origin main",
+      "notes": [
+        "会改动：git push origin main"
+      ],
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「git push」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "ps-copy-out",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_ps-copy-out",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "Copy-Item a.txt ..\\backup\\a.txt",
+      "notes": [
+        "会改动：Copy-Item → a.txt、..\\backup\\a.txt"
+      ],
+      "options": [
+        "conversation"
+      ],
+      "kindLabel": "「copy-item」动到 <HOME>\\AppData\\Local\\Temp\\backup 里的",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "ps-mkdir-out",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_ps-mkdir-out",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "New-Item -ItemType Directory ..\\newdir",
+      "notes": [
+        "会改动：New-Item → Directory、..\\newdir"
+      ],
+      "options": [
+        "conversation"
+      ],
+      "kindLabel": "「new-item」动到 <HOME>\\AppData\\Local\\Temp\\newdir 里的",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "ps-method",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_ps-method",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "[IO.File]::Delete(\"a.txt\")",
+      "notes": [
+        "会改动：调用 [IO.File]::Delete(\"a.txt\")",
+        "看不清：直接调用 .NET 方法改东西（看不出改什么）：[IO.File]::Delete(\"a.txt\")"
+      ],
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "ps-parse",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_ps-parse",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "Remove-Item (",
+      "notes": [
+        "会改动：Remove-Item",
+        "看不清：语法有问题：“(” 后应为表达式。",
+        "看不清：语法有问题：表达式中缺少右括号“)”。",
+        "看不清：Remove-Item 的参数用了变量或表达式：("
+      ],
+      "options": [
+        "conversation"
+      ],
+      "kindLabel": "「remove-item」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "ps-readonly-manual",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_ps-readonly-manual",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "Get-ChildItem",
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「get-childitem」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "read-protected",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_read-protected",
+      "tool": "read",
+      "title": "读文件",
+      "subject": "<WORKDIR>\\~\\.ssh\\config",
+      "why": "要碰 Sumika 自己的数据目录或放密钥的地方（里面有配置、密钥、记忆），每次都要所有者看过",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "grep-protected",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_grep-protected",
+      "tool": "grep",
+      "title": "搜文件内容",
+      "subject": "<WORKDIR>\\~\n搜：token",
+      "why": "要碰 Sumika 自己的数据目录或放密钥的地方（里面有配置、密钥、记忆），每次都要所有者看过",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "read-env",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_read-env",
+      "tool": "read",
+      "title": "读文件",
+      "subject": "<WORKDIR>\\.env",
+      "why": "要碰 Sumika 自己的数据目录或放密钥的地方（里面有配置、密钥、记忆），每次都要所有者看过",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "undeclared",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_undeclared",
+      "tool": "mcp_x",
+      "title": "运行工具 mcp_x",
+      "subject": "{\n  \"q\": \"x\",\n  \"n\": [\n    1,\n    {\n      \"a\": null\n    }\n  ],\n  \"empty\": [],\n  \"obj\": {}\n}",
+      "why": "这个工具没有声明自己会做什么",
+      "options": [
+        "conversation"
+      ],
+      "kindLabel": "「mcp_x」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "qq-read",
+    "result": {
+      "block": true,
+      "reason": "这个工具只在主窗口给所有者用。"
+    },
+    "approval": null,
+    "auto": null
+  },
+  {
+    "name": "auto-write",
+    "result": null,
+    "approval": null,
+    "auto": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "toolCallId": "call_auto-write",
+      "tool": "write",
+      "purpose": "这一步做什么",
+      "title": "新建文件",
+      "subject": "<WORKDIR>\\a.txt",
+      "preview": {
+        "kind": "content",
+        "text": "x",
+        "truncated": false
+      },
+      "reason": "自动模式：在允许的目录里",
+      "minutes": 10
+    }
+  },
+  {
+    "name": "auto-ps-read",
+    "result": null,
+    "approval": null,
+    "auto": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "toolCallId": "call_auto-ps-read",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "Get-ChildItem",
+      "reason": "自动模式：只读",
+      "minutes": 10
+    }
+  },
+  {
+    "name": "auto-ps-remove",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_auto-ps-remove",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "Remove-Item a.txt",
+      "notes": [
+        "会改动：Remove-Item → a.txt"
+      ],
+      "options": [
+        "conversation"
+      ],
+      "kindLabel": "「remove-item」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "auto-read",
+    "result": null,
+    "approval": null,
+    "auto": null
+  },
+  {
+    "name": "yolo-remove",
+    "result": null,
+    "approval": null,
+    "auto": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "toolCallId": "call_yolo-remove",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "Remove-Item a.txt",
+      "reason": "YOLO：看得清、只碰工作目录里的东西",
+      "minutes": 10
+    }
+  },
+  {
+    "name": "yolo-iex",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_yolo-iex",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "iex \"rm x\"",
+      "why": "这条命令拆不开、或者是动态执行 / 编码过的（iex、-EncodedCommand、内联代码之类），看不清它到底会删什么，又带着删除动作，YOLO 下也要所有者看过",
+      "notes": [
+        "看不清：iex 会把一段文字当命令跑，里面做什么看不出来"
+      ],
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "yolo-npx-declared",
+    "result": null,
+    "approval": null,
+    "auto": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "toolCallId": "call_yolo-npx-declared",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "npx eslint .",
+      "reason": "YOLO：看得清、只碰工作目录里的东西",
+      "minutes": 10
+    }
+  },
+  {
+    "name": "yolo-npx-bin",
+    "result": null,
+    "approval": null,
+    "auto": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "toolCallId": "call_yolo-npx-bin",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "npx tsc -p .",
+      "reason": "YOLO：看得清、只碰工作目录里的东西",
+      "minutes": 10
+    }
+  },
+  {
+    "name": "yolo-npx-undeclared",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_yolo-npx-undeclared",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "npx cowsay hi",
+      "why": "要下载 cowsay 来跑（项目的 package.json 里没写它），YOLO 下也要所有者看过",
+      "notes": [
+        "看不清：npx 会运行 cowsay 里的程序，里面做什么看不出来"
+      ],
+      "options": [
+        "conversation"
+      ],
+      "kindLabel": "「npx cowsay」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "always-push",
+    "result": null,
+    "approval": null,
+    "auto": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "toolCallId": "call_always-push",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "git push origin main",
+      "reason": "你设过始终允许这一类",
+      "minutes": 10
+    }
+  },
+  {
+    "name": "always-remove",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_always-remove",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "Remove-Item a.txt",
+      "notes": [
+        "会改动：Remove-Item → a.txt"
+      ],
+      "options": [
+        "conversation"
+      ],
+      "kindLabel": "「remove-item」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "conv-remove",
+    "result": null,
+    "approval": null,
+    "auto": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "toolCallId": "call_conv-remove",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "Remove-Item a.txt",
+      "reason": "这个对话里你允许过这一类",
+      "minutes": 10
+    }
+  },
+  {
+    "name": "conv-copy-covered",
+    "result": null,
+    "approval": null,
+    "auto": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "toolCallId": "call_conv-copy-covered",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "Copy-Item a.txt ..\\backup\\b.txt",
+      "reason": "这个对话里你允许过这一类",
+      "minutes": 10
+    }
+  },
+  {
+    "name": "conv-write-dir",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_conv-write-dir",
+      "tool": "write",
+      "purpose": "这一步做什么",
+      "title": "新建文件",
+      "subject": "<WORKDIR>\\b.txt",
+      "preview": {
+        "kind": "content",
+        "text": "x",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR> 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "minutes",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_minutes",
+      "tool": "write",
+      "purpose": "这一步做什么",
+      "title": "新建文件",
+      "subject": "<WORKDIR>\\a.txt",
+      "preview": {
+        "kind": "content",
+        "text": "x",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR> 里的文件」",
+      "minutes": 0.5
+    },
+    "auto": null
+  },
+  {
+    "name": "ps-method-named",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_ps-method-named",
+      "tool": "powershell",
+      "purpose": "这一步做什么",
+      "title": "运行 PowerShell 命令",
+      "subject": "(Get-Item a.txt).Delete()",
+      "notes": [
+        "会改动：调用 (Get-Item a.txt).Delete()",
+        "看不清：直接调用 .NET 方法改东西（看不出改什么）：(Get-Item a.txt).Delete()"
+      ],
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "edit-twice",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_edit-twice",
+      "tool": "edit",
+      "purpose": "这一步做什么",
+      "title": "修改文件",
+      "subject": "<WORKDIR>\\a.txt",
+      "preview": {
+        "kind": "content",
+        "text": "Found 3 occurrences of the text in a.txt. The text must be unique. Please provide more context to make it unique.",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR> 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "auto-junction",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_auto-junction",
+      "tool": "write",
+      "purpose": "这一步做什么",
+      "title": "新建文件",
+      "subject": "<WORKDIR>\\link\\x.txt",
+      "preview": {
+        "kind": "content",
+        "text": "x",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR>\\link 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  },
+  {
+    "name": "no-purpose",
+    "result": {
+      "block": true,
+      "reason": "操作被取消了（所有者发了新消息或对话被中止），没有执行。"
+    },
+    "approval": {
+      "identity": {"Scope":{"CharacterID":"suzu","Conversation":"console:suzu","ScopeID":"console","Platform":"local","Channel":"console","AccountID":"fixture-desktop","Scene":"private","ActorKind":"owner","ActorID":"owner","AuthorityID":"fixture-authority","AuthorityRevision":1},"InputID":"fixture-input","RootID":"fixture-root","RunID":"fixture-run","ParentRunID":"","StepID":"fixture-step","AttemptID":"","ToolID":"fixture-tool","ProviderCallID":"","Generation":1,"Kind":"foreground"},
+      "characterId": "suzu",
+      "conversation": "console:suzu",
+      "toolCallId": "call_no-purpose",
+      "tool": "write",
+      "title": "新建文件",
+      "subject": "<WORKDIR>\\a.txt",
+      "preview": {
+        "kind": "content",
+        "text": "x",
+        "truncated": false
+      },
+      "options": [
+        "conversation",
+        "always"
+      ],
+      "kindLabel": "「<WORKDIR> 里的文件」",
+      "minutes": 10
+    },
+    "auto": null
+  }
+]

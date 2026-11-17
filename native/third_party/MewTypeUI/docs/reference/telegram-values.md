@@ -1,0 +1,303 @@
+# Telegram Desktop 聊天界面数值对照总表
+
+> 2026-11-03，Sol（omp）读本机 tdesktop 250fc73、lib_ui 1ff7be7 和 Sumika native/ 写成；主会话抽查了 dialogsRowHeight（62）、msgMaxWidth（430）、bubbleRadiusLarge（16）的值和行号，对得上。用途：ADR-246 的验收对照表；组件库 MewTypeUI 的 docs/reference 以它为底。参考：[对照-Telegram桌面版](对照-Telegram桌面版-2026-11-03.md)。
+
+**先说人话：最大的五处差距是：① 消息整体偏窄，Sumika 气泡上限 320，Telegram 是 430；普通图片上限 296，对方是 430，贴纸则是 128 对 224。② 气泡结构不同：Telegram 连发会改变靠发送侧的圆角，末条可带尾巴，时间通常在气泡内；Sumika 统一圆角 12、没有尾巴，时间在气泡外且只显示组内末条。③ 窄窗口策略不同：Telegram 扣掉文件夹栏后，小于 640 切单栏；Sumika 保留头像列表和聊天区。④ 配色和文字层级不同：Telegram 默认收信白底、发信浅绿底，Sumika 普通发信使用蓝底白字；Telegram 会话名和聊天标题通常为 13 semibold，Sumika 分别为 14 bold、15.4/600。⑤ 动效不是同一套：Telegram 当前聊天路径的新消息展开为 150 ms、`easeOutCirc`，Sumika 是 200 ms、三次方 `EaseOut`；Telegram 的菜单、未读分隔和跳到最新按钮也还没有对应的 Sumika 聊天实现。**
+
+依据 ADR-245、ADR-246。Telegram 对照版本为 `tdesktop 250fc73`，基础 UI 库为它锁定的 `lib_ui 1ff7be7`；Sumika 对照当前 `native/` 源码、锁定的 CrychicUI 和 mygo v0.7.4。
+
+本次只读 Sumika 源码；没有修改 Sumika 文件，没有访问 `sumika/data/`，没有运行程序或测试。仅在获准的 Telegram 外部源码目录补取了布局、动画和资源文件。
+
+表中路径前缀：
+
+| 前缀 | 根目录 |
+|---|---|
+| `T/` | [tdesktop/Telegram/SourceFiles](<Telegram 源码目录>/tdesktop/Telegram/SourceFiles) |
+| `R/` | [tdesktop/Telegram/Resources](<Telegram 源码目录>/tdesktop/Telegram/Resources) |
+| `L/` | [lib_ui](<Telegram 源码目录>/lib_ui) |
+| `C/` | [当前 CrychicUI 模块](<Go 模块缓存>/github.com/!e!l!y-!open-!source/!crychic!u!i@v0.0.0-20261027050735-bf15ddf6600a) |
+| `M/` | [mygo v0.7.4](<Go 模块缓存>/github.com/egoist/mygo@v0.7.4) |
+| `native/` | [Sumika 原生界面](native) |
+
+`L/` 的动画 C++ 文件没有写入本机，使用同一提交的[上游源码](https://github.com/desktop-app/lib_ui/tree/1ff7be7)只读核对；表中注明“上游”的位置指该版本。
+
+数值口径：
+
+- 尺寸均为 DIP；时长均为 ms。差值统一为 **Sumika − Telegram**。
+- 内外边距统一写成 **左、上、右、下**，避免与 Go 的 `Padding(上下, 左右)` 参数顺序混淆。
+- Sumika 数值按 Windows 默认主题展开：`Space(1)=4`、`Rem(1)=14`、`Radius=6`，来源 `M/ui/theme.go:103`、`:112`。系统字号、用户拖动后的栏宽不属于这份静态默认值。
+- **字号不等于字体实际行高。** 两边使用平台字体度量的地方，最终 DIP 标“未核实”，不凭字号猜行高。
+- “没有”指当前聊天界面没有接入对应功能；依赖库里有同名组件不等于 Sumika 已经使用。
+- 当前版本的主要消息样式位于 `T/ui/chat/chat.style`；不能照附件中的历史路径假定存在 `history/history.style`。
+
+## 1. 主窗口结构
+
+令 `B` 为 Telegram 扣掉文件夹竖条后的主体宽度，`W` 为 Sumika 窗口内容宽度。
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 文件夹竖条宽度 | `windowFiltersWidth` | `T/window/window.style:229` | 72 | 80 | `native/panes.go:216` | +8 |
+| 会话列表默认宽度 | `kDefaultDialogsWidthRatio`、`countDialogsWidthFromRatio` | `T/core/core_settings.h:1073`；`T/window/window_session_controller.cpp:2816` | Windows 为主体宽度的 **5/14≈35.7143%**，四舍五入，正常模式至少260；主体800时为286 | 固定初始280，可拖动保存 | `native/internal/desksettings/panes.go:20` | 主体800示例为−6；不是相同的定宽策略 |
+| 默认窗口800且显示72竖条时的列表宽度 | 同上 | `T/window/window.style:15`；`T/window/window_session_controller.cpp:2769` | 主体728，`728×5/14=260` | 初始280 | `native/internal/desksettings/panes.go:20` | +20 |
+| 展开列表最小宽度 | `columnMinimalWidthLeft` | `T/window/window.style:34` | 260 | 220 | `native/internal/desksettings/panes.go:18` | −40 |
+| 展开列表最大宽度 | `columnMaximalWidthLeft` | `T/window/window.style:35`；`T/window/window_session_controller.cpp:2825` | 声明540，但当前按比例计算处的540上限被注释，**不能当作已生效硬上限** | 硬上限400 | `native/internal/desksettings/panes.go:19` | 对声明值−140；实际策略不同 |
+| 拖动收成头像的阈值 | `columnMinimalWidthLeft / 2` | `T/mainwidget.cpp:2908` | 拖动宽度 **<130** 时保存比例0，进入窄列表 | 原始拖动位置<160 | `native/panes.go:28`；`:200` | +30 |
+| 头像列表宽度 | `dialogsSmallColumnWidth()` | `T/window/window_session_controller.cpp:2754` | `10+46+10=66` | 72 | `native/panes.go:26` | +6 |
+| 聊天区最小宽度 | `columnMinimalWidthMain`、`historyMinimalWidth` | `T/window/window.style:36`；`T/ui/chat/chat.style:179` | 380 | 420 | `native/panes.go:39` | +40 |
+| 右栏宽度范围 | `columnMinimalWidthThird`、`columnMaximalWidthThird` | `T/window/window.style:37` | 292～392；初始设置0经夹取后为292 | 260～520，初始320 | `native/internal/desksettings/panes.go:21` | 下限−32；上限+128；初始+28 |
+| 三栏成立的最低主体宽度 | `minimalThreeColumnWidth()` | `T/window/window_session_controller.cpp:2760` | `260+380+292=932`，且右栏功能已开启 | 默认列表280时，整窗至少1042能并排最小右栏；1102能放足默认320右栏 | `native/panes.go:96` | 口径不同；Sumika 数值含80竖栏及两条1分隔线 |
+| 双栏→单栏 | `computeColumnLayout()` | `T/window/window_session_controller.cpp:2772` | **B<640** 切单栏；有72竖条时相当于总宽<712 | 没有列表/聊天二选一的单栏模式 | `native/panes.go:96` | 结构缺失 |
+| 右栏放不下时 | `useNormalLayout` | `T/window/window_session_controller.cpp:2781` | 三栏退回双栏；右栏能否打开还涉及扩窗或独立展示逻辑 | 先取消并排，用户再打开时用右侧覆盖浮层 | `native/panes.go:171`；`:264` | 行为不同 |
+| 默认设置下继续缩窄 | `computeColumnLayout()` | `T/window/window_session_controller.cpp:2766` | 普通主体≥640时双栏；<640单栏。头像模式另由拖动比例0决定 | `W≥781`列表280；`721≤W<781`列表逐渐缩到220；`W<721`列表变72头像栏 | `native/panes.go:96` | Telegram 不采用这组自动收头像档位 |
+| 文件夹竖条在极窄窗口时 | `enoughSpaceForFilters()` | `T/window/window_session_controller.cpp:3441` | 是否保留竖条取决于窗口宽度≥最小窗口宽度+72，否则改横向筛选 | 80竖栏始终存在 | `native/ui.go:34` | 行为不同 |
+| 窗口最小宽高 | `windowMinWidth`、`windowMinHeight` | `T/window/window.style:13` | 380×480 | 默认900×560；`SUMIKA_SIZE`可降低初始化下限 | `native/shell.go:86` | 默认+520、+80 |
+
+最大的差距是窄窗口结构：Telegram 会让列表与聊天轮流占整栏，Sumika 的算法始终保留头像列表。另一个影响是 Sumika 默认窗口下限900，普通手动缩窗实际到不了721以下的算法分支；不能把这些分支当作默认窗口已经能体验的行为。
+
+## 2. 会话列表行
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 普通会话行高 | `dialogsRowHeight` | `T/dialogs/dialogs.style:91` | 62 | 没有固定行高；头像40+上下各8构成56的高度下限，最终高度随文字度量 | `C/chat/conversation_list.go:42` | 配置下限−6；最终行高未核实 |
+| 特殊行高 | `taggedDialogRow`、`forumDialogRow` | `T/dialogs/dialogs.style:114` | 带标签72；论坛80；论坛加标签96 | 没有对应行类型 | `native/ui.go:116` | 没有 |
+| 行间额外间距 | `defaultDialogRow.height` | `T/dialogs/dialogs.style:95` | 普通行按62连续排列，无额外卡片间隙 | 同组条目间2；外围分组间8 | `C/chat/conversation_list.go:36`；`native/ui.go:78` | 同组+2 |
+| 头像大小 | `defaultDialogRow.photoSize` | `T/dialogs/dialogs.style:98` | 46×46 | 40×40 | `C/display/avatar.go:7` | −6 |
+| 行内边距 | `defaultDialogRow.padding` | `T/dialogs/dialogs.style:97` | 左右10，上下8 | 左右12，上下8；列表外层左右还各8 | `C/chat/conversation_list.go:43`；`native/ui.go:78` | 行内左右+2；相对栏边另加8 |
+| 名字起始位置 | `nameLeft`、`nameTop` | `T/dialogs/dialogs.style:99` | 行左起68，上起10 | 内部头像40+间距12+行左12=64；相对栏边再加8成为72；垂直居中排版 | `C/chat/conversation_list.go:42`；`native/ui.go:78` | 横向相对栏边+4；纵向未核实 |
+| 名字字号与字重 | `semiboldFont` | `T/dialogs/ui/dialogs_layout.cpp:866`；`L/ui/basic.style:53` | 13，semibold | 14，700 | `C/chat/conversation_list.go:52`；`M/ui/element.go:1282` | 字号+1；字重更重 |
+| 消息预览字号 | `dialogsTextFont` | `T/dialogs/dialogs.style:86`；`L/ui/basic.style:54` | 13，regular | 11.9，regular | `C/chat/conversation_list.go:54` | −1.1 |
+| 消息预览颜色 | `dialogsTextFg` | `L/ui/colors.palette:187` | `#999999` | `#71717A` | `C/chat/conversation_list.go:54`；`M/ui/theme.go:121` | 颜色不同 |
+| 时间字号 | `dialogsDateFont` | `T/dialogs/dialogs.style:88` | 13 | 10.5 | `C/chat/conversation_list.go:58` | −2.5 |
+| 未读角标高度 | `dialogsUnreadHeight` | `T/dialogs/dialogs.style:79` | 19 | 最小18，随文字高度可增加 | `C/chat/conversation_list.go:60` | 配置下限−1 |
+| 未读角标水平内边距 | `dialogsUnreadPadding` | `T/dialogs/dialogs.style:80` | 左右5 | 左右6 | `C/chat/conversation_list.go:60` | +1 |
+| 未读角标圆角 | 胶囊绘制 | `T/ui/unread_badge_paint.cpp`（绘制细节未核实）；`T/dialogs/dialogs.style:79` | 高度19；精确半径未核实 | 配置999，实际受尺寸夹取 | `C/chat/conversation_list.go:60` | 最终半径未核实 |
+| 未读角标字号字重 | `dialogsUnreadFont` | `T/dialogs/dialogs.style:78` | 12，bold | 10.5，700 | `C/chat/conversation_list.go:63` | −1.5 |
+| 选中行底色 | `dialogsBgActive` | `L/ui/colors.palette:218` | `#419FD9`，不透明蓝色；文字切白 | `#2563EB`的10%透明色，叠在列表底上；名字保留正文色 | `C/chat/conversation_list.go:45`；`native/ui.go:68` | 色值、透明度及文字反色策略不同 |
+| 悬停行底色 | `dialogsBgOver` | `L/ui/colors.palette:201` | `#F1F1F1` | `#E9E9EC` | `C/chat/conversation_list.go:44`；`M/ui/theme.go:117` | 颜色不同 |
+| 行选中底板圆角 | 普通整行绘制 | `T/dialogs/ui/dialogs_layout.cpp`；普通行样式 `T/dialogs/dialogs.style:95` | 整行矩形背景 | 6，且行外有列表留白 | `C/chat/conversation_list.go:43` | +6；结构不同 |
+| 搜索框高度 | `dialogsFilter.heightMin` | `T/dialogs/dialogs.style:339` | 最小35 | 没有固定高度；输入文字行高+上下16+边框2 | `C/input/search_input.go:24`；`:29` | 最终高度未核实 |
+| 搜索框圆角 | `dialogsFilter.borderRadius` | `T/dialogs/dialogs.style:334` | 18 | 6 | `C/input/search_input.go:24` | −12 |
+
+最大的差距是选中态：Telegram 是整行实色反白，Sumika 是有间隔的小圆角浅色卡片。预览、时间、未读数也普遍偏小，尤其时间差2.5 DIP。
+
+## 3. 聊天顶栏
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 内容顶栏高度 | `topBarHeight` | `T/info/info.style:919` | 54 | 52 | `native/titlebar.go:57` | −2 |
+| 系统标题按钮的额外顶部空间 | 非同一内容顶栏常量 | `T/info/info.style:919` | 聊天内容顶栏本身54；系统标题区域另算 | 右栏并排时，聊天顶栏上方额外留`room.Bar`；Windows通常至少32 | `native/titlebar.go:35`；`:62`；`native/ui.go:197` | 界面结构不同，不能只比52和54 |
+| 会话名字字号字重 | `msgNameStyle`、`semiboldFont` | `T/history/view/history_view_top_bar_widget.cpp:693`；`L/ui/basic.style:55` | 13，semibold | 15.4，600 | `native/ui.go:201`；`C/typography/heading.go:14` | +2.4 |
+| 状态行字号 | `dialogsTextFont` | `T/history/view/history_view_top_bar_widget.cpp:716` | 13 | 11.9 | `native/ui.go:202`；`C/typography/caption.go:10` | −1.1 |
+| 名字顶部位置 | `topBarArrowPadding.top` | `T/info/info.style:923`；`T/history/view/history_view_top_bar_widget.cpp:552` | 上起8 | 两行整体垂直居中，没有固定名字顶部值 | `native/ui.go:200`；`native/titlebar.go:57` | 未核实 |
+| 状态行垂直位置 | `topBarArrowPadding.bottom` | `T/history/view/history_view_top_bar_widget.cpp:553` | 状态行底部距栏底8；顶部由字体实际高度反算 | 两行整体居中 | `native/ui.go:200` | 未核实 |
+| 右侧搜索/通话按钮外框 | `topBarSearch`、`topBarCall` | `T/info/info.style:928`；`:958` | 40×54；搜索涟漪区域40×40 | 40×40，有1边框和6圆角 | `C/button/icon_button.go:16` | 宽0，高−14；外观不同 |
+| 更多菜单按钮外框 | `topBarMenuToggle` | `T/info/info.style:949` | 44×54 | 没有同功能按钮；当前本地操作键仍为40×40 | `native/ui.go:204` | 同尺寸组件比较为−4、−14 |
+| 本地标题左右内边距 | `topBarArrowPadding`等 | `T/info/info.style:923`；`T/history/view/history_view_top_bar_widget.cpp:1219` | 无返回键时名字左侧基础17；按钮各自布局 | 左20，右基础20，必要时再让系统按钮区域 | `native/ui.go:190`；`:198` | 左侧基础+3 |
+
+最大的差距是名字字号和按钮形态，而不是顶栏高度本身。Sumika 在右栏并排时还多留一条系统按钮空带，对齐目标时必须把内容顶栏与系统标题区域分开核对。
+
+## 4. 消息气泡
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 气泡最大宽度 | `msgMaxWidth` | `T/ui/chat/chat.style:14` | 430 | 320 | `native/bubble.go:291` | −110 |
+| 普通气泡内边距 | `msgPadding` | `T/ui/chat/chat.style:25` | 11、8、11、8 | 12、8、12、8；收信另有1边框 | `native/bubble.go:287`；`:295` | 配置左右各+1；边框还会占内容空间 |
+| 最大正文可用宽度 | `msgMaxWidth`−水平内边距 | `T/ui/chat/chat.style:14`；`:25` | 普通无额外装饰时408 | 发信296；收信294 | `native/inline.go:123`；`:141` | −112／−114 |
+| 大圆角 | `bubbleRadiusLarge` | `T/ui/chat/chat.style:327` | 16 | 12 | `native/bubble.go:291` | −4 |
+| 连发小圆角 | `bubbleRadiusSmall`→`roundRadiusLarge` | `T/ui/chat/chat.style:326`；`L/ui/basic.style:107` | 6 | 没有分角变化，仍12 | `native/bubble.go:291` | 对应角+6 |
+| 连发时哪些角变小 | `countMessageRounding()` | `T/history/view/history_view_message.cpp:6615` | 靠发送侧：接前条则上角6；接后条则下角6；其余16；尾巴条件另判 | 所有消息四角相同 | `native/bubble.go:285` | 结构不同 |
+| 同人合组时间窗 | `kAttachMessageToPreviousSecondsDelta` | `T/history/view/history_view_element.cpp:105`；`:2430` | 普通合组时间差<900秒，另检查身份、消息类型等 | 同actor、同方向，时间差<300秒 | `native/bubble.go:37` | −600秒 |
+| 同人连发基础间距 | `msgMargin.bottom`、`msgMarginTopAttached` | `T/ui/chat/chat.style:52`；`:53`；`T/history/view/history_view_message.cpp:1750` | 前条底2+后条顶0=2 | 行上下各2，连续行基础留白4；实际气泡边距还受头像等影响 | `native/row.go:35` | 基础留白+2；实际气泡边距未核实 |
+| 换人基础间距 | `msgMargin.top/bottom` | `T/ui/chat/chat.style:52` | 前条底2+后条顶6=8 | 行基础4+首条额外上边距8=12，名字等另占空间 | `native/row.go:35`；`:37` | 基础留白+4 |
+| 消息区外侧留白 | `msgMargin` | `T/ui/chat/chat.style:52` | 左16、右56；头像、发信方向和宽屏另参与计算 | 消息列表左右各20，上下16 | `native/ui.go:222` | 非同构：左基础+4，右基础−36 |
+| 消息头像大小 | `msgPhotoSize` | `T/ui/chat/chat.style:23` | 33×33 | 40×40 | `native/avatar.go:187` | +7 |
+| 头像占位横向宽度 | `msgPhotoSkip` | `T/ui/chat/chat.style:24` | 40，含33头像及横向余量 | 40头像+8间隔=48 | `native/row.go:67` | +8 |
+| 头像横向位置 | `historyPhotoLeft` | `T/ui/chat/chat.style:329`；`T/history/history_inner_widget.cpp:1746` | 消息区左起14 | 列表左内边距20 | `native/ui.go:222`；`native/row.go:68` | +6 |
+| 头像纵向位置 | `displayFromPhoto()`及头像遍历 | `T/history/view/history_view_message.cpp:3331`；`T/history/history_inner_widget.cpp:1102` | 通常位于连发组末端，按组底对齐，滚动时有可见区约束 | 组首条显示，顶对齐；后续留空占位 | `native/avatar.go:186`；`native/row.go:67` | 行为相反 |
+| 发送人名字字号字重 | `msgNameFont`→`semiboldFont` | `T/ui/chat/chat.style:16`；`L/ui/basic.style:55` | 13，semibold | 11.2，700 | `native/row.go:75` | −1.8；字重更重 |
+| 发送人名字位置 | `displayFromName()` | `T/history/view/history_view_message.cpp:5844` | 合组首条显示在消息内容布局内 | 首条显示在气泡外上方 | `native/row.go:73` | 结构不同 |
+| 正文字号 | `msgFont`→`fsize` | `T/ui/chat/chat.style:15`；`L/ui/basic.style:53` | 13 | 普通富文本14；Markdown正文默认14 | `native/bubble.go:428`；`native/inline.go:141`；`M/ui/markdown/theme.go:106` | +1 |
+| 正文行高 | `messageTextStyle`→`historyTextStyle`→`defaultTextStyle` | `T/ui/chat/chat.style:109`；`T/chat_helpers/chat_helpers.style:1289`；`L/ui/basic.style:86` | 未设固定行高；用平台字体度量，最终DIP未核实 | 普通富文本同样自然行高；Markdown额外使用1.5行高配置 | `M/internal/text/layout.go:27`；`M/ui/markdown/theme.go:109` | 最终DIP未核实；Markdown与普通文字还不统一 |
+| 时间字号 | `msgDateFont` | `T/ui/chat/chat.style:21` | 13 | 11.9 | `native/row.go:92`；`C/typography/caption.go:10` | −1.1 |
+| 时间位置 | `msgDateDelta`、`msgPadding` | `T/ui/chat/chat.style:102`；`T/history/view/history_view_message.cpp:5432` | 普通气泡内右下；信息块右侧参考点距右边`11−2=9`，底部参考点距下边`8−5=3` | 气泡外，与底边对齐，间隔8；发信时间在左，收信在右 | `native/row.go:88` | 结构不同 |
+| 时间显示粒度 | `needInfoDisplay()`、底部信息绘制 | `T/history/view/history_view_message.cpp:5413` | 普通消息各自有底部时间信息；媒体等有特殊显隐规则 | 一组只在最后一条显示 | `native/row.go:91` | 行为不同 |
+| 尾巴 | `historyBubbleTailInLeft/Right`、`countMessageRounding()` | `T/ui/chat/chat_style.style:239`；`T/history/view/history_view_message.cpp:6629` | 满足条件的组末条发送侧下角带尾巴；100%尾巴掩模资源6×10，含阴影范围 | 没有 | `native/bubble.go:285` | 缺尾巴和条件分支 |
+| 边框和阴影 | `msgShadow`、`msgInShadow`、`msgOutShadow` | `T/ui/chat/chat.style:54`；`L/ui/colors.palette:359` | 气泡下方阴影深度2；收信与发信分别着色 | 收信1边框，发信无边框；没有相同气泡阴影 | `native/bubble.go:292` | 绘制方式不同 |
+
+最大的差距是气泡的结构和连发规则：圆角、头像、名字、时间都需要一起调整，单独把320改成430不会得到 Telegram 的排法。还有一条当前实现差异：角色 Markdown 用 `C/chat/markdown_message.go:20` 的 `shell(c, false)`，即使靠右也沿用收信壳颜色，不能把所有右侧消息概括成蓝底白字。
+
+## 5. 引用块（回复）
+
+这里核对的是当前 `Reply::paint()` 使用的引用背景，不能把仍保留的旧式 `msgReplyBarSize=2×36` 当作当前实际引用条。
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 左侧条宽度 | `messageQuoteStyle.outline`→`historyQuoteStyle.outline` | `T/chat_helpers/chat_helpers.style:1285`；`T/history/view/history_view_reply.cpp:863` | 3 | 3 | `native/quote.go:120` | 0 |
+| 条偏移参数 | `outlineShift` | `T/chat_helpers/chat_helpers.style:1286` | 2 | 没有同一偏移参数；单独放一条圆头矩形 | `native/quote.go:120` | 绘制结构不同 |
+| 回复内容内边距 | `historyReplyPadding` | `T/ui/chat/chat.style:73`；`T/history/view/history_view_reply.cpp:929` | 11、2、6、2 | 8、6、8、6；条与文本另隔8 | `native/quote.go:115`；`:120` | 配置为−3、+4、+2、+4；条布局另有差异 |
+| 引用块上下外留白 | `historyReplyTop`、`historyReplyBottom` | `T/ui/chat/chat.style:63` | 上2、下2 | 没有同名外边距；外壳四周8，内容块间4 | `native/bubble.go:289`；`:291` | 结构不同 |
+| 名字字号字重 | `fwdTextStyle`→`semiboldTextStyle` | `T/history/view/history_view_reply.cpp:694`；`T/ui/chat/chat.style:151` | 13，semibold | 11.9，700 | `native/quote.go:127` | −1.1；字重更重 |
+| 正文字号 | `defaultTextStyle` | `T/history/view/history_view_reply.cpp:467` | 13 | 12.6 | `native/quote.go:128` | −0.4 |
+| 背景圆角 | `messageQuoteStyle.radius`→`historyQuoteStyle.radius` | `T/chat_helpers/chat_helpers.style:1287`；`T/history/view/history_view_reply.cpp:863` | 5 | 收信3；发信4 | `native/bubble.go:299` | −2／−1 |
+| 回复预览图 | `historyReplyPreview` | `T/ui/chat/chat.style:65` | 32×32 | 没有 | `native/quote.go:119` | 没有 |
+| 引用正文行数 | `_multiline`及展开逻辑 | `T/history/view/history_view_reply.cpp:756` | 普通回复和显式引用有不同单行/多行处理，可有展开状态 | 最多2行，文本先截200字符 | `native/quote.go:32`；`:128` | 行为不同 |
+
+条宽已经对上，但 Sumika 的引用块上下明显更松、名字更小、圆角更小。Telegram 的预览图和引用展开行为也没有对应实现。
+
+## 6. 表情回应
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 普通药丸高度 | `reactionInlinePadding`、`reactionInlineSize` | `T/ui/chat/chat.style:673`；`T/history/view/reactions/history_view_reactions.cpp:356` | `2+18+2=22` | 图像表情分支至少`2+16+2+上下边框2=22`；文字表情可能撑高 | `native/reaction.go:107`；`:134` | 图像分支下限0；最终高度未核实 |
+| 普通药丸圆角 | `fill.height()/2` | `T/history/view/reactions/history_view_reactions.cpp:708` | 11 | 配置999，布局后夹成胶囊 | `native/reaction.go:107` | 22高时相同；实际半径未核实 |
+| 内边距 | `reactionInlinePadding` | `T/ui/chat/chat.style:673` | 5、2、7、2 | 8、2、8、2，另有1边框 | `native/reaction.go:107` | +3、0、+1、0 |
+| 表情布局槽 | `reactionInlineSize` | `T/ui/chat/chat.style:674` | 18×18 | QQ图像表情16×16 | `native/reaction.go:90` | −2 |
+| 表情绘制画布 | `reactionInlineImage` | `T/ui/chat/chat.style:675`；`T/history/view/reactions/history_view_reactions.cpp:465` | 32×32画布居中跨出18槽；不等于可见图形一定32大 | 位图直接16×16；Unicode表情字号13.3 | `native/reaction.go:122`；`:134` | 画布−16；可见图形不可直接相减 |
+| 计数字号字重 | `semiboldFont` | `T/history/view/reactions/history_view_reactions.cpp:284`；`:469` | 13，semibold | 11.2，regular，透明度0.8 | `native/reaction.go:112` | −1.8；字重不同 |
+| 表情与计数间距 | `reactionInlineSkip` | `T/ui/chat/chat.style:676` | 3 | 4 | `native/reaction.go:107` | +1 |
+| 药丸之间及换行间距 | `reactionInlineBetween` | `T/ui/chat/chat.style:687`；`T/history/view/reactions/history_view_reactions.cpp:408` | 4 | 4 | `native/reaction.go:98` | 0 |
+| 在气泡中的横向修正 | `reactionInlineInBubbleLeft` | `T/ui/chat/chat.style:688` | −3 | 没有；回应整行放在气泡下面 | `native/row.go:81` | 结构不同 |
+| 少量回应者头像 | `reactionInlineUserpics` | `T/ui/chat/chat.style:690` | 头像20，叠放位移参数7，描边1 | 没有；只显示表情和人数 | `native/reaction.go:110` | 没有 |
+
+药丸基础高度和药丸间距接近，最大的差距是表情、数字的尺寸与字重，以及回应属于气泡布局还是独立放在下面。Telegram 的32绘制画布有透明边，不应直接把 Sumika 图标改成32就认为对齐。
+
+## 7. 图片、相册、贴纸、GIF
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 普通单图宽度上限 | `maxMediaSize` | `T/ui/chat/chat.style:169`；`T/history/view/media/history_view_photo.cpp:381` | 430 | 296 | `native/picture.go:27` | −134 |
+| 普通单图常规缩放边界 | `CountDesiredMediaSize()` | `T/history/view/media/history_view_media_common.cpp:320` | 先按430×430边界缩小；带文字等情况另有减少裁切的增高分支 | 静态图显示宽≤296，常规高度上限532.8；过长裁顶部 | `native/picture.go:44`；`:58` | 常规高度上限相对430为+102.8；不能概括为所有 Telegram 图都硬限430高 |
+| 带正文图片的增高规则 | `adjustHeightForLessCrop()` | `T/history/view/media/history_view_photo.cpp:425` | 允许按宽高比增加高度，具体值依图片和容器 | 超过532.8裁顶部并加“长图”标记 | `native/picture.go:58`；`:370` | 行为不同 |
+| 小图最小尺寸处理 | `minPhotoSize` | `T/ui/chat/chat.style:168`；`T/history/view/media/history_view_photo.cpp:343` | 基础最小100，带气泡时还可能受200宽等约束 | 普通小图不放大，无100下限 | `native/picture.go:33` | 策略不同 |
+| 单图圆角 | `adjustedBubbleRounding()` | `T/history/view/media/history_view_photo.cpp:676`；气泡常量 `T/ui/chat/chat.style:326` | 随所在气泡外角16/6及连接状态变化 | 裸图12；壳内图6 | `native/picture.go:193` | 普通大外角−4；缺分角连接规则 |
+| 相册最大宽度 | `historyGroupWidthMax`→`maxMediaSize` | `T/ui/chat/chat.style:508` | 430 | 296 | `native/picture.go:102` | −134 |
+| 相册网格基础间距 | `historyGroupSkip` | `T/ui/chat/chat.style:510` | 4；相册缩放时几何还会按比例换算 | 横向2；行间由外层`Gap(4)`形成4 | `native/picture.go:23`；`:103`；`:206` | 横向−2；行间基础0 |
+| 相册圆角分配 | `applyRoundingSides()` | `T/history/view/media/history_view_media_grouped.cpp:288` | 只有相册外轮廓保留对应圆角；内部角为0 | 每一格都用6圆角 | `native/picture.go:208` | 内部角+6；结构不同 |
+| 相册排法 | `LayoutMediaGroup()` | `T/history/view/media/history_view_media_grouped.cpp:173` | 按各图比例计算布局 | 2或4张两列，其余三列，方格cover裁切；最多20格 | `native/picture.go:67`；`:145` | 结构不同 |
+| 贴纸最大尺寸 | `maxStickerSize` | `T/ui/chat/chat.style:170` | 224×224边界，具体内容按比例 | 固定128×128框，contain | `native/picture.go:306`；`:320` | 框上限−96 |
+| GIF缩略图边界 | `maxGifSize` | `T/ui/chat/chat.style:172`；`T/history/view/media/history_view_gif.cpp:364` | 普通GIF缩放边界320；视频等另有430/240分支 | 共用普通图片296宽；动图不走静态长图532.8裁切上限 | `native/picture.go:58`；`:132` | 宽−24；高度策略不同 |
+| GIF角标外侧位置 | `msgDateImgDelta` | `T/ui/chat/chat.style:104`；`T/history/view/media/history_view_video_status.cpp:53` | 左上外框起点4、4 | 左上6、6 | `native/picture.go:363` | 各+2 |
+| GIF角标内边距 | `msgDateImgPadding` | `T/ui/chat/chat.style:105`；`T/history/view/media/history_view_video_status.cpp:39` | 左右8，上下2 | 左右6，上下2 | `native/picture.go:363` | 左右−2 |
+| GIF角标字号与圆角 | `normalFont`、`msgDateImgBgCorners` | `T/history/view/media/history_view_video_status.cpp:36`；`T/ui/chat/chat_style.cpp:799` | 字号13，regular；半径为角标高度的一半，最终DIP依字体度量 | 字号9.1，700；圆角6 | `native/picture.go:363`；`:365` | 字号−3.9；最终半径未核实 |
+| GIF角标显隐 | `needInfoDisplay()` | `T/history/view/media/history_view_gif.cpp:2711` | 悬停、发送/上传中、预览等条件显示，并非所有GIF常驻 | 解码成功的动图常驻显示 | `native/picture.go:176` | 行为不同 |
+
+媒体最大的差距是尺寸和相册结构：普通图少134 DIP、贴纸少96 DIP，而且 Sumika 相册是固定方格，Telegram 是按比例拼合。另一个容易漏掉的值是 Sumika 相册横向2、纵向4，目前两个方向并不一致。
+
+## 8. 日期分隔、未读分隔、跳到最新
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 日期分隔外形 | `ServiceMessagePainter::PaintDate` | `T/history/view/history_view_service_message.cpp:146` | 居中的填色胶囊 | 中间文字、两侧各一条横线，没有填色胶囊 | `C/chat/day_divider.go:14` | 结构不同 |
+| 日期文字字号字重 | `msgServiceFont`→`semiboldFont` | `T/ui/chat/chat.style:18` | 13，semibold | 11.2，700 | `C/chat/day_divider.go:18` | −1.8 |
+| 日期胶囊内边距 | `msgServicePadding` | `T/ui/chat/chat.style:95` | 12、3、12、4 | 没有胶囊内边距；文字与两侧横线间隔12 | `C/chat/day_divider.go:14` | 结构不同 |
+| 日期分隔外边距 | `msgServiceMargin` | `T/ui/chat/chat.style:96` | 10、10、10、2 | 随消息行布局，没有同值专门外边距 | `native/row.go:35`；`:51` | 未核实最终间距 |
+| 日期胶囊高度、圆角 | `HistoryServiceMsgRadius()` | `T/ui/chat/chat_style.cpp:94`；`T/history/view/history_view_element.cpp:832` | 胶囊高=字体实际高度+7；圆角=该高度整数除2；最终DIP未核实 | 没有胶囊 | `C/chat/day_divider.go:14` | 没有 |
+| 日期是否吸顶及淡出 | `historyScrollDateHideTimeout`、`historyDateFadeDuration` | `T/ui/chat/chat.style:312`；`T/history/history_inner_widget.cpp:1155` | 滚动时可贴可见区顶部；延迟1000后淡出200 | 只有列表内日期行，无同等吸顶日期层 | `native/row.go:50` | 没有 |
+| 未读分隔总占高 | `historyUnreadBarHeight`、`historyUnreadBarMargin` | `T/ui/chat/chat.style:353`；`T/history/view/history_view_element.cpp:769` | 条高32，外留白8，总占40 | 没有 | `native/row.go:49` | 没有 |
+| 未读分隔文字 | `historyUnreadBarFont` | `T/ui/chat/chat.style:355` | 13，semibold | 没有 | `native/row.go:49` | 没有 |
+| 未读分隔边线 | `lineWidth`、`historyUnreadBarBorder` | `T/history/view/history_view_element.cpp:797`；`L/ui/basic.style:61` | 下边线1 | 没有 | `native/row.go:49` | 没有 |
+| 跳到最新按钮外框 | `historyToDown` | `T/chat_helpers/chat_helpers.style:1207` | 52×62，包含顶部角标空间及阴影；按下涟漪直径42 | 没有 | `native/ui.go:181` | 没有 |
+| 跳到最新按钮位置 | `historyToDownPosition` | `T/chat_helpers/chat_helpers.style:1195`；`T/history/view/history_view_corner_buttons.cpp:553` | 距聊天滚动区右边12、底边10 | 没有 | `native/ui.go:222` | 没有 |
+| 跳到最新角标 | `historyToDownBadgeSize`、`historyToDownBadgeFont` | `T/chat_helpers/chat_helpers.style:1223`；`T/ui/controls/jump_down_button.cpp:53` | 高22，13 semibold；画在按钮顶部 | 没有 | `native/ui.go:181` | 没有 |
+| 跳到最新出现阈值 | `historyToDownShownAfter` | `T/chat_helpers/chat_helpers.style:1226`；`T/history/history_widget.cpp:9271` | 离底超过480时显示，回复返回及未加载到底等另有条件 | 仅`FollowEnd=true`，没有这个按钮和阈值 | `native/ui.go:184` | 没有 |
+
+日期分隔的形状完全不同；未读分隔和跳到最新则是缺功能。CrychicUI 虽然有 `UnreadDivider`、`JumpToLatest`，当前 `chatView` 没有调用，不能按库组件的默认值填写“Sumika 已有”。
+
+## 9. 输入框（以后要做）
+
+Sumika 正常后台模式目前只显示“只读模式”；以下现值同时注明演示模式中已使用的 `chat.Composer`。
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 真实聊天输入能力 | `historyComposeField` | `T/chat_helpers/chat_helpers.style:1307` | 正式聊天输入区 | 正常模式没有；演示模式有Composer | `native/ui.go:225` | 正式输入区没有 |
+| 文本框最小高度 | `historyComposeField.heightMin` | `T/chat_helpers/chat_helpers.style:1313` | 36 | 演示框为1～6行自然文字高度，没有36固定值 | `C/chat/composer.go:32` | 最终高度未核实 |
+| 实际输入区最小总高 | `historySendPadding` | `T/chat_helpers/chat_helpers.style:1330`；`T/history/history_widget.cpp:8692` | 文本36+上下各9=54，不含回复条等附加区 | 演示Composer由内容及上下8撑高，并有边框；外围还加上12下16 | `C/chat/composer.go:26`；`native/ui.go:225` | 最终高度未核实 |
+| 多行高度上限 | `historyComposeFieldMaxHeight` | `T/chat_helpers/chat_helpers.style:1327`；`T/history/history_widget.cpp:9253` | 最高224，并受剩余窗口高度限制；不能把样式继承中的72当最终上限 | 最多6行 | `C/chat/composer.go:32` | 不同计量策略 |
+| 输入区圆角 | `historyComposeField`继承`borderRadius` | `L/ui/widgets/widgets.style:1054`；`T/chat_helpers/chat_helpers.style:1323` | 文本场无圆角描边，融入整条输入区，基础圆角0 | 演示外壳圆角6、1边框 | `C/chat/composer.go:26` | +6 |
+| 内部文本边距 | `historyComposeField.textMargins` | `T/chat_helpers/chat_helpers.style:1309` | 0、0、0、0；外层纵向留9 | Composer外壳四周8；TextArea还受基础输入组件样式影响 | `C/chat/composer.go:26`；`:32` | 不能把外壳8当全部文本边距 |
+| 附件按钮 | `historyAttach` | `T/chat_helpers/chat_helpers.style:1333` | 44×46；涟漪40 | 32×32；圆形；图标16 | `C/chat/helpers.go:87` | 外框−12、−14 |
+| 发送按钮 | `historySendSize` | `T/chat_helpers/chat_helpers.style:1431` | 44×46 | 32×32；圆形蓝底；图标16 | `C/chat/composer.go:45` | −12、−14 |
+| 发送区右侧留白 | `historySendRight` | `T/chat_helpers/chat_helpers.style:1329` | 2 | 演示外壳右8，外部输入区域右20 | `C/chat/composer.go:26`；`native/ui.go:225` | 两层合计28，较2多26；布局层次不同 |
+
+正式输入框还没有落地。演示 Composer 是独立圆角边框框体，Telegram 是整条输入区布局，附件和发送按钮外框也更大。
+
+## 10. 右键菜单
+
+Telegram 聊天消息实际创建的是 `popupMenuWithIcons`，来源 `T/history/history_inner_widget.cpp:2954`；其上下内边距覆盖为5，不是 `defaultPopupMenu` 的8。
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 消息专用右键菜单 | `popupMenuWithIcons` | `T/history/history_inner_widget.cpp:2954` | 按消息内容创建带图标菜单 | 没有接入 | `native/row.go:59`；`native/bubble.go:452` | 没有 |
+| 普通菜单项高度 | `menuWithIcons.itemPadding`、`itemStyle.font->height` | `L/ui/widgets/widgets.style:1697`；上游`ui/widgets/menu/menu_action.cpp:62` | 字体实际高度+16；字号13，最终项高DIP未核实 | 没有 | 同上 | 没有 |
+| 菜单项内边距 | `menuWithIcons.itemPadding` | `L/ui/widgets/widgets.style:1697` | 54、8、17、8 | 没有 | 同上 | 没有 |
+| 菜单整体上下内边距 | `popupMenuWithIcons.scrollPadding` | `L/ui/widgets/widgets.style:1710` | 上5、下5 | 没有 | 同上 | 没有 |
+| 外框圆角 | `defaultPopupMenu.radius` | `L/ui/widgets/widgets.style:995` | 8 | 没有 | 同上 | 没有 |
+| 阴影 | `defaultBoxShadow` | `L/ui/widgets/widgets.style:913` | 模糊半径5，偏移0、1，不透明度0.25 | 没有 | 同上 | 没有 |
+| 图标位置 | `menuWithIcons.itemIconPosition` | `L/ui/widgets/widgets.style:1696` | 项内左15、上5 | 没有 | 同上 | 没有 |
+| 普通图标画布大小 | `menuIconCopy`等资源 | `T/ui/menu_icons.style:18`；`R/icons/menu/copy.png` | 复制图标100%画布24×24；其他特殊图标需分别核对 | 没有 | 同上 | 没有 |
+| 菜单宽度范围 | `defaultMenu.widthMin/Max` | `L/ui/widgets/widgets.style:980` | 156～300 | 没有 | 同上 | 没有 |
+| 出现动画 | `showDuration`、`defaultPanelAnimation` | `L/ui/widgets/widgets.style:931`；`:997`；上游`ui/effects/panel_animation.cpp:330` | 总200；宽50%起、高30%起；宽120、高180、透明度60完成；内部用`easeOutCirc` | 没有 | 同上 | 没有 |
+| 消失动画 | `defaultPopupMenu.duration` | `L/ui/widgets/widgets.style:996`；上游`ui/widgets/popup_menu.cpp:850` | 150，透明度线性淡出 | 没有 | 同上 | 没有 |
+
+这里是整块缺失，不是菜单圆角差几 DIP。`native/shell.go:262` 的菜单属于托盘，不能用来填聊天消息右键菜单的现值。
+
+## 11. 动效
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 当前聊天路径的新消息展开 | `itemRevealDuration` | `T/ui/chat/chat.style:58`；`T/history/history_widget.cpp:8957` | 150；普通展开`anim::easeOutCirc`，伴随发送飞行动画时按对应进度线性驱动展开 | 200；`ui.EaseOut`即`1−(1−t)³`；普通壳从下方8淡入 | `native/bubble.go:456`；`C/kit/kit.go:33`；`M/ui/widgets.go:98` | +50；曲线和展开方式不同 |
+| 另一消息列表路径展开 | 同上 | `T/history/view/history_view_list_widget.cpp:3092` | 150；普通展开`easeOutQuint` | 仍共用200 cubic EaseOut | `C/kit/kit.go:33` | +50；曲线不同 |
+| 发送中的内容飞行动画 | `itemRevealDuration` | `T/ui/effects/message_sending_animation_controller.cpp:196` | 150，整体进度`easeOutQuint`；按输入区与落点几何移动缩放 | 没有从输入区飞入落点的动画；只做局部位移/淡入 | `native/bubble.go:456` | 缺少对应运动 |
+| 当前聊天路径程序滚动 | `slideDuration` | `L/ui/basic.style:96`；`T/history/history_widget.cpp:1907` | 240，实际`start()`传入`anim::sineInOut` | 引用跳转使用`ListState.ScrollTo`，下一布局直接定位，没有传时长/曲线 | `native/quote.go:155`；`M/ui/list.go:296` | 缺240插值过程 |
+| 另一列表路径程序滚动 | `slideDuration` | `T/history/view/history_view_list_widget.cpp:1215` | 默认240；完整移动`sineInOut`，部分远距离移动`easeOutCubic` | 同上 | 同上 | 缺对应过程 |
+| 普通鼠标滚轮/触控惯性 | 滚动器、输入设备参数 | `T/history/view/history_view_touch_scroll.cpp`；基础滚动器 | 不是单一`Duration`常量；本次未完成设备与惯性参数核实 | mygo滚动器行为；未核实惯性参数 | `native/ui.go:222` | 未核实 |
+| 会话列表收头像动画 | `dialogsWidthDuration`→`universalDuration` | `T/dialogs/dialogs.style:217`；`L/ui/basic.style:137`；`T/mainwidget.cpp:2968` | 120，`easeOutCirc` | 直接重算栏宽；没有同等宽度过渡 | `native/panes.go:149` | 缺120插值过程 |
+| 菜单弹出/消失 | `showDuration`、`duration` | `L/ui/widgets/widgets.style:996`；上游`ui/effects/panel_animation.cpp:330` | 出现200，内部宽/高/透明度`easeOutCirc`；消失150 linear | 没有聊天菜单 | `native/row.go:59` | 没有 |
+| 看大图窗口打开/关闭 | `OverlayWidget::showAndActivate/close/hide` | `T/media/view/media_view_overlay_widget.cpp:3170`；`:4549`；`:5028` | 应用层直接show/hide独立窗口，没有在这些入口套统一淡入淡出；系统窗口效果未核实 | 遮罩和图像200 cubic EaseOut淡入；关闭后停止构建，无退出淡出 | `native/viewer.go:262`；`:272`；`:302`；`:319` | 打开方式不同；不能拿下行200/600作窗口开关时长 |
+| 看图工具栏显示/隐藏 | `mediaviewShowDuration`、`mediaviewHideDuration` | `T/media/view/media_view.style:280`；`T/media/view/media_view_overlay_widget.cpp:2592` | 显示200、隐藏600，linear；隐藏等待1100 | 没有同等自动显隐，按钮随浮层常驻 | `native/viewer.go:322` | 没有 |
+| 看图控件悬停 | `mediaviewOverDuration`、`mediaviewFadeDuration` | `T/media/view/media_view.style:18`；`:282`；`T/media/view/media_view_overlay_widget.cpp:2580` | 150，linear | `ui.Snappy`弹簧；参数Duration500、Bounce0.15 | `native/viewer.go:295`；`M/ui/motion.go:34` | 曲线不同；500是弹簧参数，不能视为硬截止差350 |
+| 聊天顶栏图标悬停 | `IconButton.duration` | `T/info/info.style:928`；`L/ui/widgets/widgets.style:347`；上游`ui/widgets/buttons.cpp:709` | 顶栏样式没有显式给duration；最终生成默认值未核实，不能统一填写150 | `ui.Snappy`弹簧，背景颜色插值 | `C/button/icon_button.go:23` | 未核实Telegram最终时长；已确认曲线体系不同 |
+| 按下涟漪扩散 | `defaultRippleAnimation.showDuration` | `L/ui/widgets/widgets.style:705`；上游`ui/effects/ripple_animation.cpp:85` | 650，`easeOutQuint` | 没有同等径向涟漪；按下缩放到0.97，Snappy弹簧 | `C/kit/kit.go:14` | 缺涟漪 |
+| 松开涟漪消退 | `defaultRippleAnimation.hideDuration` | `L/ui/widgets/widgets.style:706`；上游`ui/effects/ripple_animation.cpp:151` | 200，linear | 缩放弹回，Snappy弹簧 | `C/kit/kit.go:14` | 运动类型不同 |
+| 跳到最新按钮显隐 | `historyToDownDuration` | `T/chat_helpers/chat_helpers.style:1227`；`T/history/view/history_view_corner_buttons.cpp:451` | 150，默认linear；位置插值 | 没有 | `native/ui.go:181` | 没有 |
+
+最大的差距是有限时长缓动与弹簧混用：Sumika 的悬停、按下使用 `Snappy`，不能只把一个“时长”改成 Telegram 的值。还要区分 Telegram 两条消息列表路径：当前 `HistoryWidget` 展开用 Circ，另一 `ListWidget` 用 Quint；当前 `HistoryWidget` 的滚动函数虽然计算了一个 `transition`变量，实际动画调用仍固定传入`sineInOut`。
+
+## 12. 颜色
+
+下表亮色为 `L/ui/colors.palette` 中默认值展开后的结果，**不是 `day-blue` 等额外主题的值**。聊天背景墙纸也不是一个通用纯色常量，不能把`windowBg`当作墙纸色。
+
+已找到 `R/night.tdesktop-theme`、`R/night-green.tdesktop-theme`、`R/night-custom-base.tdesktop-theme`。它们是压缩主题包；当前读取工具不能直接展开该扩展名，本次未执行解压命令，因此暗色值统一记 **“未取到”**。
+
+| 项目（中文说明） | Telegram 常量名 | 源码位置（文件:行号） | Telegram 值（引用已展开） | Sumika 现在的值 | Sumika 位置（文件:行号） | 差多少 |
+|---|---|---|---|---|---|---|
+| 窗口基础底色 | `windowBg` | `L/ui/colors.palette:9` | 亮`#FFFFFF`；暗未取到 | 亮`#FFFFFF`；暗`#18181B` | `M/ui/theme.go:114`；`:141` | 亮相同；暗无法比较 |
+| 聊天区底色/墙纸 | 无单一通用颜色名 | Telegram主题背景资源及加载逻辑；本次未核实最终墙纸 | 亮色默认墙纸非单一纯色；暗未取到 | 主聊天区继承窗口底色，没有对应墙纸层 | `native/ui.go:34`；`:195` | 背景结构不同 |
+| 会话列表底色 | `dialogsBg`→`windowBg` | `L/ui/colors.palette:183` | 亮`#FFFFFF`；暗未取到 | 亮`#F4F4F5`；暗`#27272A` | `native/ui.go:68`；`M/ui/theme.go:116`；`:142` | 亮不同 |
+| 列表悬停底色 | `dialogsBgOver`→`windowBgOver` | `L/ui/colors.palette:201`；`:11` | 亮`#F1F1F1`；暗未取到 | 亮`#E9E9EC`；暗`#323236` | `C/chat/conversation_list.go:44`；`M/ui/theme.go:117`；`:143` | 不同 |
+| 列表选中底色 | `dialogsBgActive` | `L/ui/colors.palette:218` | 亮`#419FD9`；暗未取到 | 亮`#2563EB`、α0.1叠于列表底；暗`#3B82F6`、α0.1 | `C/chat/conversation_list.go:46`；`M/ui/theme.go:122`；`:148` | 颜色与透明度均不同 |
+| 列表选中主文字 | `dialogsNameFgActive`→`windowFgActive` | `L/ui/colors.palette:219`；`:19` | 亮`#FFFFFF`；暗未取到 | 不反白，沿用亮`#18181B`／暗`#F4F4F5` | `C/chat/conversation_list.go:52`；`M/ui/theme.go:120`；`:146` | 不同 |
+| 列表名字 | `dialogsNameFg`→`windowBoldFg` | `L/ui/colors.palette:184`；`:16` | 亮`#222222`；暗未取到 | 亮`#18181B`；暗`#F4F4F5` | `C/chat/conversation_list.go:52`；`M/ui/theme.go:120`；`:146` | 不同 |
+| 列表预览、时间 | `dialogsTextFg`、`dialogsDateFg`→`windowSubTextFg` | `L/ui/colors.palette:186`；`:187`；`:14` | 亮`#999999`；暗未取到 | 亮`#71717A`；暗`#A1A1AA` | `C/chat/conversation_list.go:54`；`:58`；`M/ui/theme.go:121`；`:147` | 不同 |
+| 未读角标底色 | `dialogsUnreadBg`→`windowBgActive` | `L/ui/colors.palette:194`；`:18` | 亮`#40A7E3`；暗未取到 | 亮`#2563EB`；暗`#3B82F6` | `C/chat/conversation_list.go:61`；`M/ui/theme.go:122`；`:148` | 不同 |
+| 收信气泡底色 | `msgInBg`→`windowBg` | `L/ui/colors.palette:349` | 亮`#FFFFFF`；暗未取到 | 亮`#F4F4F5`；暗`#27272A` | `native/bubble.go:295`；`M/ui/theme.go:116`；`:142` | 不同 |
+| 普通发信气泡底色 | `msgOutBg` | `L/ui/colors.palette:351` | 亮`#EFFDDE`；暗未取到 | 亮`#2563EB`；暗`#3B82F6` | `native/bubble.go:293`；`M/ui/theme.go:122`；`:148` | 差异显著 |
+| 角色Markdown气泡底色 | 同上，按消息方向处理 | `L/ui/colors.palette:351` | 亮发信默认`#EFFDDE`；暗未取到 | 即使靠右仍取收信壳：亮`#F4F4F5`、暗`#27272A` | `C/chat/markdown_message.go:20`；`C/chat/helpers.go:63` | 与普通发信分支也不统一 |
+| 收信正文 | `historyTextInFg`→`windowFg` | `L/ui/colors.palette:260`；`:10` | 亮`#000000`；暗未取到 | 亮`#18181B`；暗`#F4F4F5` | `native/bubble.go:295`；`M/ui/theme.go:120`；`:146` | 不同 |
+| 普通发信正文 | `historyTextOutFg`→`windowFg` | `L/ui/colors.palette:262` | 亮`#000000`；暗未取到 | 亮暗均`#FFFFFF` | `native/bubble.go:293`；`M/ui/theme.go:125`；`:151` | 反色策略不同 |
+| 次要文字 | `windowSubTextFg` | `L/ui/colors.palette:14` | 亮`#999999`；暗未取到 | 亮`#71717A`；暗`#A1A1AA` | `M/ui/theme.go:121`；`:147` | 不同 |
+| 收信链接 | `historyLinkInFg`→`windowActiveTextFg` | `L/ui/colors.palette:264`；`:20` | 亮`#168ACD`；暗未取到 | Markdown链接亮`#2563EB`，暗`#3B82F6`；普通QQ富文本当前仅文本/加粗等分段，没有同等链接样式入口 | `M/ui/markdown/theme.go:113`；`native/bubble.go:307` | 色值及普通消息链接能力不同 |
+| 发信链接 | `historyLinkOutFg`→`windowActiveTextFg` | `L/ui/colors.palette:266` | 亮`#168ACD`；暗未取到 | Markdown同上，普通发信无独立链接颜色配置 | 同上 | 不同 |
+| 强调填色 | `windowBgActive` | `L/ui/colors.palette:18` | 亮`#40A7E3`；暗未取到 | 亮`#2563EB`；暗`#3B82F6` | `M/ui/theme.go:122`；`:148` | 不同 |
+| 强调文字 | `windowActiveTextFg` | `L/ui/colors.palette:20` | 亮`#168ACD`；暗未取到 | 与强调填色共用Accent：亮`#2563EB`、暗`#3B82F6` | `native/row.go:75`；`M/ui/theme.go:122`；`:148` | Telegram把强调填色、强调文字分开 |
+| 收信时间 | `msgInDateFg` | `L/ui/colors.palette:363` | 亮`#A0ACB6`；暗未取到 | 亮`#71717A`；暗`#A1A1AA` | `native/row.go:92`；`C/typography/caption.go:10` | 不同 |
+| 发信时间 | `msgOutDateFg` | `L/ui/colors.palette:365` | 亮`#6DB566`；暗未取到 | 同收信时间，没有按进出分色 | 同上 | 不同 |
+| 日期胶囊文字 | `msgServiceFg`→`windowFgActive` | `L/ui/colors.palette:367` | 亮`#FFFFFF`；暗未取到 | 亮`#71717A`；暗`#A1A1AA` | `C/chat/day_divider.go:18` | 不同 |
+| 日期胶囊底色 | `msgServiceBg` | `L/ui/colors.palette:368` | 亮`#517C417F`，会受背景调整；暗未取到 | 没有胶囊底色 | `C/chat/day_divider.go:14` | 没有 |
+| 回复条收信色 | `msgInReplyBarColor`→`activeLineFg` | `L/ui/colors.palette:370`；`:40` | 亮`#37A1DE`；暗未取到；发送人配色还可能覆盖 | 普通收信条亮`#2563EB`，暗`#3B82F6` | `native/quote.go:96` | 不同 |
+| 回复条发信色 | `msgOutReplyBarColor` | `L/ui/colors.palette:372` | 亮`#5EB854`；暗未取到 | 普通发信条`#FFFFFF` | `native/quote.go:101` | 不同 |
+| 未读分隔底色、文字 | `historyUnreadBarBg/Fg` | `L/ui/colors.palette:285`；`:287` | 亮底`#FCFBFA`、字`#538BB4`；暗未取到 | 没有 | `native/row.go:49` | 没有 |
+| GIF/媒体时间角标底色 | `msgDateImgBg` | `L/ui/colors.palette:380` | 亮`#00000054`，α≈0.3294；暗未取到 | GIF角标黑色α0.55 | `native/picture.go:364` | α约+0.2206 |
+| 输入区底色 | `historyComposeAreaBg`→`msgInBg` | `L/ui/colors.palette:458` | 亮`#FFFFFF`；暗未取到 | 演示Composer亮`#FFFFFF`，暗`#18181B`；正常模式没有输入框 | `C/chat/composer.go:27`；`native/ui.go:226` | 演示亮色相同；其余无法比较 |
+
+最大的颜色差距是发信浅绿黑字与蓝底白字，以及列表选中实色反白与浅色透明底。`native/theme.go` 中自定义配色目前没有启用；这张表使用实际默认主题及组件调用处的颜色，不能拿那份未启用主题来代表当前界面。

@@ -1,0 +1,10 @@
+{
+  "name": "@harbor/api",
+  "version": "1.4.2",
+  "private": true,
+  "main": "src/server.js",
+  "dependencies": {
+    "express-lite": "1.4.2",
+    "uuid-short": "2.0.1"
+  }
+}

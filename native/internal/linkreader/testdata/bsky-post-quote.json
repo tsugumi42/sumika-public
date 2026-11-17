@@ -1,0 +1,57 @@
+{
+  "thread": {
+    "$type": "app.bsky.feed.defs#threadViewPost",
+    "post": {
+      "uri": "at://did:plc:samplelabsamplelabsample/app.bsky.feed.post/3muwxhygya22x",
+      "author": {
+        "did": "did:plc:samplelabsamplelabsample",
+        "handle": "example-lab.bsky.social",
+        "displayName": "编造作者甲",
+        "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:samplelabsamplelabsample/bafkreiavsw7yv2krrcv6oac7miximpti6a5fi4zcjlxdttvsa42vmvzhb4",
+        "labels": [],
+        "createdAt": "2022-11-17T00:35:16.391Z"
+      },
+      "record": {
+        "$type": "app.bsky.feed.post",
+        "createdAt": "2026-09-07T16:46:26.038Z",
+        "text": "编造的正文第一行\nsecond line of invented text"
+      },
+      "embed": {
+        "record": {
+          "uri": "at://did:plc:samplelabsamplelabsample/app.bsky.feed.post/3muwxbtebrk2x",
+          "author": {
+            "did": "did:plc:samplelabsamplelabsample",
+            "handle": "example-lab.bsky.social",
+            "displayName": "编造作者甲",
+            "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:samplelabsamplelabsample/bafkreiavsw7yv2krrcv6oac7miximpti6a5fi4zcjlxdttvsa42vmvzhb4",
+            "labels": [],
+            "createdAt": "2022-11-17T00:35:16.391Z"
+          },
+          "value": {
+            "$type": "app.bsky.feed.post",
+            "createdAt": "2026-09-07T16:42:59.383Z",
+            "reply": {
+              "parent": {
+                "uri": "at://did:plc:samplelabsamplelabsample/app.bsky.feed.post/3muwwxub3xk2s"
+              }
+            },
+            "text": "编造的正文第一行\nsecond line of invented text"
+          },
+          "labels": [],
+          "likeCount": 222,
+          "replyCount": 92,
+          "repostCount": 6,
+          "quoteCount": 93,
+          "embeds": [],
+          "$type": "app.bsky.embed.record#viewRecord"
+        },
+        "$type": "app.bsky.embed.record#view"
+      },
+      "replyCount": 28,
+      "repostCount": 38,
+      "likeCount": 346,
+      "quoteCount": 4,
+      "labels": []
+    }
+  }
+}

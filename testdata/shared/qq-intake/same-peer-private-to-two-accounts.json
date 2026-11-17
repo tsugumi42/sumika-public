@@ -1,0 +1,77 @@
+{
+  "id": "same-peer-private-to-two-accounts",
+  "about": "同一个朋友分别私聊两个号，消息号相同：是两个会话，各存各的",
+  "source_tests": [
+    "TestSamePeerPrivateToTwoAccounts"
+  ],
+  "items": [
+    {
+      "account": "a",
+      "conv": "pa",
+      "kind": "message",
+      "platform_id": "700",
+      "from": "friend",
+      "text": "私聊甲",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "ca",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    },
+    {
+      "account": "b",
+      "conv": "pb",
+      "kind": "message",
+      "platform_id": "700",
+      "from": "friend",
+      "text": "私聊乙",
+      "time_s": 0,
+      "backfill": false,
+      "expect": {
+        "duplicate": false,
+        "dropped": false,
+        "character": "cb",
+        "origin": "peer",
+        "actor_kind": "human",
+        "observed": true
+      }
+    }
+  ],
+  "final": {
+    "events": [
+      {
+        "conv": "qq:private:20001:30001",
+        "platform_id": "700",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "私聊甲",
+        "time_s": 0
+      },
+      {
+        "conv": "qq:private:20002:30001",
+        "platform_id": "700",
+        "actor_kind": "human",
+        "actor_id": "qq:30001",
+        "origin": "peer",
+        "text": "私聊乙",
+        "time_s": 0
+      }
+    ],
+    "observations": [
+      {
+        "character": "ca",
+        "event": 1
+      },
+      {
+        "character": "cb",
+        "event": 2
+      }
+    ]
+  }
+}

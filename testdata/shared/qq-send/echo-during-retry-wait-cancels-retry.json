@@ -1,0 +1,146 @@
+{
+  "id": "echo-during-retry-wait-cancels-retry",
+  "about": "段明确失败、在等重试时回声来了：认领成确认，重试作废（不再第二次 Send），后面的段接着发",
+  "source_tests": [
+    "TestEchoDuringRetryWaitCancelsTheRetry"
+  ],
+  "receipt": "failed_first",
+  "steps": [
+    {
+      "do": "say",
+      "label": "p",
+      "as": "ca",
+      "texts": [
+        "第一条",
+        "第二条"
+      ],
+      "expect": {}
+    },
+    {
+      "do": "wait_part",
+      "label": "p",
+      "state": "retrying",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "sending",
+          "parts": [
+            {
+              "state": "retrying",
+              "via": "",
+              "platform_id": "",
+              "attempts": 1
+            },
+            {
+              "state": "pending",
+              "via": "",
+              "platform_id": "",
+              "attempts": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "wait_timer",
+      "ms": 1000,
+      "expect": {}
+    },
+    {
+      "do": "claim",
+      "platform_id": "7001",
+      "text": "第一条",
+      "expect": {
+        "claimed": true
+      }
+    },
+    {
+      "do": "wait_part",
+      "label": "p",
+      "state": "confirmed",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "sending",
+          "parts": [
+            {
+              "state": "confirmed",
+              "via": "echo",
+              "platform_id": "7001",
+              "attempts": 1
+            },
+            {
+              "state": "pending",
+              "via": "",
+              "platform_id": "",
+              "attempts": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "do": "wait_timer",
+      "ms": 120,
+      "expect": {}
+    },
+    {
+      "do": "advance",
+      "ms": 1000,
+      "expect": {}
+    },
+    {
+      "do": "wait_plan",
+      "label": "p",
+      "state": "done",
+      "expect": {
+        "plan": {
+          "label": "p",
+          "state": "done",
+          "parts": [
+            {
+              "state": "confirmed",
+              "via": "echo",
+              "platform_id": "7001",
+              "attempts": 1
+            },
+            {
+              "state": "confirmed",
+              "via": "reply",
+              "platform_id": "6002",
+              "attempts": 1
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "final": {
+    "plans": [
+      {
+        "label": "p",
+        "state": "done",
+        "parts": [
+          {
+            "state": "confirmed",
+            "via": "echo",
+            "platform_id": "7001",
+            "attempts": 1
+          },
+          {
+            "state": "confirmed",
+            "via": "reply",
+            "platform_id": "6002",
+            "attempts": 1
+          }
+        ]
+      }
+    ],
+    "sends": 2,
+    "mapped": {
+      "6002": "p",
+      "7001": "p"
+    },
+    "unmapped": []
+  }
+}
