@@ -64,6 +64,9 @@ func mediaFiles(t *testing.T, root string) (count int, size int64) {
 	return
 }
 func TestMediaPreparationAndCleanup(t *testing.T) {
+	if _, err := exec.LookPath("ffmpeg"); err != nil {
+		t.Skip("没有 ffmpeg：生成不了真实短片（和 mediafetch 的视频测试同一个前提）")
+	}
 	red, blue := mediaPNG(t, color.RGBA{R: 255, A: 255}), mediaPNG(t, color.RGBA{B: 255, A: 255})
 	var zipBytes bytes.Buffer
 	zw := zip.NewWriter(&zipBytes)

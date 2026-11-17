@@ -403,6 +403,9 @@ func TestUsageMentionsEveryCommand(t *testing.T) {
 
 // status 里守护进程那一栏：在、已停止拉起、没有，以及最近一次异常退出
 func TestHumanOutputWatchdog(t *testing.T) {
+	// 状态里的时间按本机时区显示：期望也按本机时区算，CI 机器在 UTC
+	at, _ := time.Parse(time.RFC3339, "2026-11-13T19:37:00+08:00")
+	incidentLocal := at.Local().Format("2006-01-02 15:04:05")
 	base := `"phase":"archive","mode":"archive","alerts":[],"autoReceive":false,"autostart":true,"version":"v1","pid":1`
 	for name, c := range map[string]struct {
 		wd   string
@@ -410,7 +413,7 @@ func TestHumanOutputWatchdog(t *testing.T) {
 		not  []string
 	}{
 		"在": {`{"running":true,"supervised":true,"pid":77,"state":"running","restarts":2,"lastIncidentAt":"2026-11-13T19:37:00+08:00","lastReason":"进程退出，退出码 2","lastFile":"2026-11-13_193700.md"}`,
-			[]string{"守护进程：在（进程 77，这一轮已重新拉起 2 次）", "最近一次异常退出：2026-11-13 19:37:00，进程退出，退出码 2（记录 logs\\incidents\\2026-11-13_193700.md）"}, nil},
+			[]string{"守护进程：在（进程 77，这一轮已重新拉起 2 次）", "最近一次异常退出：" + incidentLocal + "，进程退出，退出码 2（记录 logs\\incidents\\2026-11-13_193700.md）"}, nil},
 		"放弃了": {`{"running":false,"supervised":false,"state":"gave-up","restarts":3,"lastIncidentAt":"2026-11-13T19:37:00+08:00","lastReason":"卡死","lastFile":"x.md"}`,
 			[]string{"守护进程：已停止拉起（连续异常退出太多次）", "最近一次异常退出"}, nil},
 		"直接启动": {`{"running":false,"supervised":false,"restarts":0}`,

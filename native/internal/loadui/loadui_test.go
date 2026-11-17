@@ -11,6 +11,18 @@ import (
 
 // 骨架条的高度要和同字号的真实文字行一样：换内容时不跳
 func TestBarHeightEqualsTextLine(t *testing.T) {
+	// 前提：占位字和真实文字落在同一种中文字体上。有的机器（CI 的 Windows Server）中文分散在几种兜底字体里，
+	// 两段汉字各取各的，行高本来就差零点几：这时测不出骨架条的问题，跳过并写明
+	var one, line float32
+	ui.NewTester(func(c *ui.Context) {
+		ui.Column(c).Children(func() {
+			one = ui.Text(c, blank).SingleLine().LayoutBounds().H
+			line = ui.Text(c, "真实的一行").SingleLine().LayoutBounds().H
+		})
+	}, 400, 200).Frame()
+	if one != line {
+		t.Skipf("这台机器上中文字落在不同的兜底字体里（%q 行高 %v，“真实的一行” %v），量不出骨架条", blank, one, line)
+	}
 	for _, fs := range []float32{0, 12, 14, 16, 20} {
 		var bh, th float32
 		tt := ui.NewTester(func(c *ui.Context) {
