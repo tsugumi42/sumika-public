@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"sumika-native/internal/channel/types"
+	"sumika-native/internal/linktemplate"
 )
 
 // 发送形状（规格-链接发送改版 B3，2026-11-12 复核修订）：模板拼完以后由代码保证、所有站点一样（自定义模板也生效）的几条：
@@ -80,7 +81,7 @@ func shapeDirect(d *Draft, limit int, forwardOK bool) {
 			parts = append(parts, p)
 		case forwardOK:
 			// 只因为图多才进的转发：Prepare 后图少了就收回（第 4 条），没有转发模板的站点也一样
-			parts = append(parts, Part{Kind: types.PartForward, Quote: p.Quote, Nodes: itemsToNodes(p.Body), fitDirect: true, imageCap: limit})
+			parts = append(parts, Part{Kind: types.PartForward, Quote: p.Quote, Nodes: itemsToNodes(p.Body, d.nodeBytes), fitDirect: true, imageCap: limit, nodeBytes: d.nodeBytes})
 		default:
 			parts = append(parts, truncateImages(p, limit))
 		}
@@ -88,17 +89,102 @@ func shapeDirect(d *Draft, limit int, forwardOK bool) {
 	d.Parts = parts
 }
 
-// splitText 把一段文字切成每段最多 2000 字（切点不落在链接中间，见 nodeHead）；切处的空行去掉，不留在节点末尾。
-func splitText(s string) []string {
+// splitText 把一段文字切成每段最多 maxBytes 个 UTF-8 字节（切点不落在链接或多字节字符中间，见 nodeHead）；
+// 切处的空行去掉，不留在节点末尾。
+func splitText(s string, maxBytes int) []string { return splitTextCost(s, maxBytes, nil) }
+
+// splitTextCost 是 splitText 的可计数版本；cost 非空时累计链接区间扫描和候选切点检查的次数（测试用，不靠墙钟）。
+func splitTextCost(s string, maxBytes int, cost *linkCost) []string {
+	if maxBytes <= 0 {
+		maxBytes = linktemplate.DefaultForwardOverBytes
+	}
 	var out []string
 	for rest := s; rest != ""; {
-		head := nodeHead(rest, 2000)
+		head := nodeHeadCost(rest, maxBytes, cost)
 		rest = strings.TrimLeft(rest[len(head):], "\n")
 		if head = strings.TrimRight(head, "\n"); head != "" {
 			out = append(out, head)
 		}
 	}
 	return out
+}
+
+// splitLongMessage 把一条普通消息里超过 maxBytes 的文字按 splitText 的切法拆成几条依次发（ADR-391）：
+// 切点照节点规则（空行、换行、句末，不切 URL 和多字节字符）；后面的消息不重复前面的头部；
+// 图、视频等按原顺序留在它们所在的那一条里，引用只挂在第一条。没超限原样返回。
+func splitLongMessage(p types.Part, maxBytes int) []types.Part {
+	if p.Kind != types.PartMessage {
+		return []types.Part{p}
+	}
+	if maxBytes <= 0 {
+		maxBytes = linktemplate.DefaultForwardOverBytes
+	}
+	var batches [][]types.BodySegment
+	var cur []types.BodySegment
+	textBytes := 0
+	flush := func() {
+		if len(cur) > 0 {
+			batches = append(batches, cur)
+			cur, textBytes = nil, 0
+		}
+	}
+	appendText := func(s string) {
+		if s == "" {
+			return
+		}
+		add := len(s)
+		if len(cur) > 0 && cur[len(cur)-1].Kind == types.BodyText {
+			add++ // 和上一段文字之间会补一个换行
+		}
+		if textBytes > 0 && textBytes+add > maxBytes {
+			flush()
+		}
+		if len(cur) > 0 && cur[len(cur)-1].Kind == types.BodyText {
+			cur[len(cur)-1].Text += "\n" + s
+			textBytes += 1 + len(s)
+			return
+		}
+		cur = append(cur, types.BodySegment{Kind: types.BodyText, Text: s})
+		textBytes += len(s)
+	}
+	for _, s := range p.Body {
+		if s.Kind != types.BodyText {
+			cur = append(cur, s)
+			continue
+		}
+		if len(s.Text) <= maxBytes {
+			appendText(s.Text)
+			continue
+		}
+		for _, piece := range splitText(s.Text, maxBytes) {
+			appendText(piece)
+		}
+	}
+	flush()
+	if len(batches) <= 1 {
+		return []types.Part{p}
+	}
+	out := make([]types.Part, 0, len(batches))
+	for i, b := range batches {
+		q := ""
+		if i == 0 {
+			q = p.Quote
+		}
+		out = append(out, types.Part{Kind: types.PartMessage, Quote: q, Body: b})
+	}
+	return out
+}
+
+// markSplitPieces 给同一条原文拆出来的几条打上同一组标记：发送时某条被拒，后面的不再发（B16）。
+// 只有真的拆成多条时才有标记；没拆的原样。
+func markSplitPieces(parts []types.Part) {
+	if len(parts) < 2 {
+		return
+	}
+	g := &types.SplitGroup{}
+	for i := range parts {
+		parts[i].Split = &types.SplitPart{Group: g, Index: i + 1, Total: len(parts)}
+	}
 }
 
 // joinTexts 把几段文字接成一段（一段一行），空的跳过。
@@ -113,8 +199,8 @@ func joinTexts(texts []string) string {
 }
 
 // itemsToNodes 把一条直接发的消息改成合并转发的节点：全部文字（按原顺序接起来，干净链接也在里面）排在最前，图跟在文字后面放同一个节点（packNodes），
-// 视频、卡片等其它项各自一节点。
-func itemsToNodes(items []Item) []Node {
+// 视频、卡片等其它项各自一节点。maxBytes 和转发门槛是同一个配置值（ADR-391）。
+func itemsToNodes(items []Item, maxBytes int) []Node {
 	var texts []string
 	var rest []Item
 	for _, it := range items {
@@ -125,7 +211,7 @@ func itemsToNodes(items []Item) []Node {
 		it.PanoramaN, it.PanoramaKeep, it.Standalone = 0, false, false
 		rest = append(rest, it)
 	}
-	nodes := toNodes(append([]Item{text(joinTexts(texts))}, rest...))
+	nodes := toNodes(append([]Item{text(joinTexts(texts))}, rest...), maxBytes)
 	markNoteEnd(nodes)
 	return nodes
 }
@@ -204,7 +290,7 @@ func overCap(p Part, got types.Part) []types.Part {
 		}
 		items = append([]types.BodySegment{{Kind: types.BodyText, Text: joinTexts(texts)}}, items...)
 		isText := func(s types.BodySegment) bool { return s.Kind == types.BodyText }
-		for _, body := range packNodes(items, isText, func(s types.BodySegment) string { return s.Text }, func(t string) types.BodySegment { return types.BodySegment{Kind: types.BodyText, Text: t} }, visualSeg) {
+		for _, body := range packNodes(items, isText, func(s types.BodySegment) string { return s.Text }, func(t string) types.BodySegment { return types.BodySegment{Kind: types.BodyText, Text: t} }, visualSeg, p.nodeBytes) {
 			out.Nodes = append(out.Nodes, types.ForwardNode{Name: p.capNode.Name, Self: !p.capNode.Fixed, Body: body})
 		}
 		return []types.Part{out}

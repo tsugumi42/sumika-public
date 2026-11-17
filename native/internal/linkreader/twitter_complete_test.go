@@ -13,20 +13,20 @@ import (
 
 func TestXCompletePublicReplay(t *testing.T) {
 	for _, c := range []struct {
-		id, types, expansion string
+		id, types            string
 		chars, articleBlocks int
 	}{
-		{"1900000000000000024", "video", "short", 163, 0},
-		{"1900000000000000022", "image", "short", 29, 0},
-		{"1900000000000000023", "image,image", "long", 4, 0},
-		{"1900000000000000021", "", "long", 255, 0},
-		{"1900000000000000020", "image,video,image", "long", 566, 0},
-		{"1900000000000000019", "", "long", 1805, 0},
-		{"1900000000000000016", "video", "long", 28, 0},
-		{"1900000000000000017", "", "short", 226, 0},
-		{"1900000000000000015", "video,video", "long", 51, 0},
-		{"1900000000000000018", "", "long", 43, 172},
-		{"1900000000000000006", "", "long", 126, 286},
+		{"1900000000000000024", "video", 163, 0},
+		{"1900000000000000022", "image", 29, 0},
+		{"1900000000000000023", "image,image", 4, 0},
+		{"1900000000000000021", "", 255, 0},
+		{"1900000000000000020", "image,video,image", 566, 0},
+		{"1900000000000000019", "", 1805, 0},
+		{"1900000000000000016", "video", 28, 0},
+		{"1900000000000000017", "", 226, 0},
+		{"1900000000000000015", "video,video", 51, 0},
+		{"1900000000000000018", "", 43, 172},
+		{"1900000000000000006", "", 126, 286},
 	} {
 		t.Run(c.id, func(t *testing.T) {
 			f := testFetcher(t, fxOnly(func(req *http.Request) (*http.Response, error) {
@@ -49,7 +49,7 @@ func TestXCompletePublicReplay(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if r.CleanURL != "https://x.com/example/status/"+c.id || r.Author.Avatar.State != "available" || r.Author.Account.State != "available" || r.Published.State != "available" || utf8.RuneCountInString(r.Text.Value) != c.chars || r.Text.Truncated || r.Expansion.Value != c.expansion {
+			if r.CleanURL != "https://x.com/example/status/"+c.id || r.Author.Avatar.State != "available" || r.Author.Account.State != "available" || r.Published.State != "available" || utf8.RuneCountInString(r.Text.Value) != c.chars || r.Text.Truncated {
 				t.Fatalf("post fields: %+v", r)
 			}
 			for _, key := range []string{"likes", "reposts", "replies", "views", "bookmarks"} {
@@ -152,32 +152,6 @@ func TestXArticleEntityOrderAndFailures(t *testing.T) {
 	}
 }
 
-func TestXExpansionBoundaries(t *testing.T) {
-	for _, c := range []struct{ name, text, media, extra, want string }{
-		{"edge", strings.Repeat("😀", 300), `[{"type":"photo"},{"type":"photo"},{"type":"video"}]`, "", "short"},
-		{"long_text", strings.Repeat("字", 301), `[]`, "", "long"},
-		{"three_images", "x", `[{"type":"photo"},{"type":"photo"},{"type":"photo"}]`, "", "long"},
-		{"two_videos", "x", `[{"type":"gif"},{"type":"video"}]`, "", "long"},
-		{"gif", "x", `[{"type":"gif"}]`, "", "short"},
-		{"quote", "x", `[]`, `,"quote":{"id":"90002","text":"q","quote":{"id":"90003","text":"deep"}}`, "long"},
-		{"preview_article", "x", `[]`, `,"article":{"title":"只有标题"}`, "long"},
-	} {
-		t.Run(c.name, func(t *testing.T) {
-			body := `{"code":200,"status":{"id":"90001","text":` + strconvQuote(c.text) + `,"media":{"all":` + c.media + `}` + c.extra + `}}`
-			f := testFetcher(t, func(*http.Request) (*http.Response, error) { return response(200, body), nil })
-			r, err := f.Fetch(context.Background(), link(t, "https://x.com/example/status/90001"))
-			if err != nil || r.Expansion.Value != c.want {
-				t.Fatal(r.Expansion, err)
-			}
-			if c.name == "quote" && (!r.Quote.Value.MoreQuotes.Value || r.Quote.Value.Quote.Value != nil || r.Quote.Value.Quote.Reason != "deeper_quote_omitted") {
-				t.Fatal("deep quote retained")
-			}
-			if c.name == "preview_article" && (r.Article.State != "not_returned" || r.Article.Reason != "article_body_omitted") {
-				t.Fatal("preview is not body")
-			}
-		})
-	}
-}
 func strconvQuote(s string) string { b, _ := json.Marshal(s); return string(b) }
 
 func TestXNewMediaBoundaries(t *testing.T) {

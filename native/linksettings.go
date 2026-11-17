@@ -330,6 +330,8 @@ func (a *app) linkDialogs(c *ui.Context) {
 				limit = 600
 			} else if s.editKey == config.LinkTranslateTimeout {
 				limit = 60
+			} else if s.editKey == config.LinkSiteForwardBytes {
+				limit = 17500
 			} else if s.editSite != "" {
 				limit = 100000
 			}

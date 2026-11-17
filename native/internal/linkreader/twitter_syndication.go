@@ -332,7 +332,6 @@ func mapSyndication(l Link, p *syndTweet, depth int) (Result, error) {
 	if len(p.Article) > 0 && string(p.Article) != "null" {
 		mapSyndArticle(&r, p.Article, depth)
 	}
-	classifyX(&r)
 	return r, nil
 }
 

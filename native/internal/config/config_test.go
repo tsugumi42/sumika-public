@@ -510,7 +510,7 @@ func TestMemoryWriteConfigDefaults(t *testing.T) {
 	if w.ConfirmOccasions != 3 || len(w.ConfirmKinds) != 2 || w.ConfirmKinds[0] != "fact" || w.ConfirmKinds[1] != "preference" {
 		t.Fatalf("confirmOccasions 默认 3、confirmKinds 默认 [fact, preference]：%+v", w)
 	}
-	if err := Defaults().check(); err != nil {
+	if err := Defaults().check(nil); err != nil {
 		t.Fatalf("默认配置该通过自己的检查：%v", err)
 	}
 }

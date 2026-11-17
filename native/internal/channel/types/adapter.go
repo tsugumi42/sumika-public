@@ -34,6 +34,20 @@ type Part struct {
 	Unset bool
 	// SourceSeq 仅供注册自动化的最新发送检查，不进入协议段。
 	SourceSeq int64
+	// Split 标出这条普通消息是同一条原文按字节上限拆出来的第几条（规格-链接发送改版 B16）：
+	// Group 指针相同的是同一组；发送时同组某条被拒，后面的不再发（linkplugin 用，进协议段前不保留）。nil 表示不是拆出来的。
+	Split *SplitPart
+}
+
+// SplitGroup 是同一条原文拆出来的几条共用的身份（指针相同即同一组）。
+// 必须不是零大小：Go 规范允许不同的零大小对象共用同一个地址，空结构体做身份会让不同组串成一组（2026-11-18 复核查出）
+type SplitGroup struct{ _ byte }
+
+// SplitPart 是拆条里的一条：Index 从 1 起，Total 是这一组共几条
+type SplitPart struct {
+	Group *SplitGroup
+	Index int
+	Total int
 }
 
 // 节点身份由适配器固定为连接自己的号，外部数据只能提供显示名和内容。

@@ -4,63 +4,14 @@ import (
 	"strings"
 	"testing"
 
+	"sumika-native/internal/channel/types"
 	"sumika-native/internal/linkreader"
 )
 
-// 推特官方加权长度（twitter-text 配置 v3）：U+0000–U+10FF、U+2000–U+200D、U+2010–U+201F、U+2032–U+2037 算 1，其余算 2；
-// 表情序列算 2；http(s) 链接固定 23。
-func TestWeightedLength(t *testing.T) {
-	for _, c := range []struct {
-		name, in string
-		want     int
-	}{
-		{"空", "", 0},
-		{"纯英文", "Hello rockets", 13},
-		{"纯中文", "你好火箭和月亮", 14},
-		{"日文假名和汉字", "ありがとう、世界", 16},
-		{"片假名", "ロケット", 8},
-		{"中英混排", "Hello 世界", 6 + 4},
-		{"拉丁扩展和希腊字母算 1", "café Ωμέγα", 10},
-		{"西里尔字母算 1", "Привет", 6},
-		{"韩文算 2", "안녕", 4},
-		{"全角标点算 2", "你好，。！", 10},
-		{"弯引号和破折号算 1", "“quote” — it’s", 14}, // U+201C/201D/2019 在 0x2010–0x201F，U+2014 也在
-		{"省略号 U+2026 算 2", "wait…", 4 + 2},
-		{"单个表情算 2", "😀", 2},
-		{"带肤色的表情算 2", "👍🏽", 2},
-		{"零宽连接的家庭表情算 2", "👨‍👩‍👧", 2},
-		{"国旗算 2", "🇯🇵", 2},
-		{"表情夹在英文里", "ok 😀 ok", 3 + 2 + 3},
-		{"链接固定 23", "https://example.invalid/a/very/long/path/that/goes/on/and/on?x=1&y=2", 23},
-		{"链接前后的字", "看 https://example.invalid/abc 这个", 2 + 1 + 23 + 1 + 4},
-		{"链接后紧跟句号不算进链接", "见https://example.invalid/abc。", 2 + 23 + 2},
-		{"两条链接", "https://a.invalid/1 https://b.invalid/2", 23 + 1 + 23},
-		{"换行算 1", "a\nb", 3},
-	} {
-		if got := WeightedLength(c.in); got != c.want {
-			t.Errorf("%s：%q → %d，要 %d", c.name, c.in, got, c.want)
-		}
-	}
-}
-
-// 区间边界：每个区间的首尾码点和紧挨着的外面一个码点。
-func TestWeightedLengthRangeEdges(t *testing.T) {
-	for r, want := range map[rune]int{
-		0x0000: 1, 0x10FF: 1, 0x1100: 2, // 谚文字母 U+1100 起是 2
-		0x1FFF: 2, 0x2000: 1, 0x200D: 1, 0x200E: 2,
-		0x200F: 2, 0x2010: 1, 0x201F: 1, 0x2020: 2,
-		0x2031: 2, 0x2032: 1, 0x2037: 1, 0x2038: 2,
-	} {
-		if got := runesWeight(string(r)); got != want {
-			t.Errorf("U+%04X：%d，要 %d", r, got, want)
-		}
-	}
-}
-
-// 帖子长短判断（x、telegram 的 forwardOver 默认 600，按加权长度比）：
-// 400 个汉字（加权 800）是长，400 个英文字母（400）是短，700 个英文字母是长，300 个汉字（600）刚好是短；B 站动态仍按字数。
-func TestAutoForwardUsesWeightedLength(t *testing.T) {
-	shape := func(key string, text string) string {
+// 帖子长短按实际会发出去的文字字节数判断（ADR-391），x、telegram 都是；B 站动态仍按字数。
+// 用自定义直发模板 $正文文字，数出来的就是正文本身的字节，免得被链接、作者行、时间干扰。
+func TestAutoForwardUsesSentBytes(t *testing.T) {
+	shape := func(key, text string, over int) string {
 		var r linkreader.Result
 		if key == "telegram" {
 			r = tgResult(text, 0)
@@ -69,30 +20,36 @@ func TestAutoForwardUsesWeightedLength(t *testing.T) {
 			r.Text = av(text)
 			r.Blocks = []linkreader.Block{{Type: "text", Text: text}}
 		}
-		d := build(r, Options{})
-		return strings.Join(kinds(d), ",")
+		o := Options{Sites: map[string]SiteSetting{key: {ForwardOverBytes: intp(over)}}, Templates: map[string]string{key: "$正文文字"}}
+		return strings.Join(kinds(build(r, o)), ",")
 	}
 	for _, key := range []string{"x", "telegram"} {
 		for _, c := range []struct {
-			name, text, want string
+			name, text string
+			over       int
+			want       string
 		}{
-			{"400 个汉字是长", strings.Repeat("字", 400), "forward"},
-			{"400 个英文字母是短", strings.Repeat("a", 400), "message"},
-			{"600 个英文字母刚好是短", strings.Repeat("a", 600), "message"},
-			{"601 个英文字母是长", strings.Repeat("a", 601), "forward"},
-			{"700 个英文字母是长", strings.Repeat("a", 700), "forward"},
-			{"300 个汉字刚好是短", strings.Repeat("字", 300), "message"},
-			{"301 个汉字是长", strings.Repeat("字", 301), "forward"},
-			{"一条长链接只算 23", "https://example.invalid/" + strings.Repeat("p/", 400), "message"},
+			{"恰好等于门槛直发", strings.Repeat("a", 100), 100, "message"},
+			{"超出一个字节转发", strings.Repeat("a", 101), 100, "forward"},
+			{"多字节字符按字节算恰好等于", strings.Repeat("字", 33), 99, "message"},
+			{"多字节字符超出一个字转发", strings.Repeat("字", 34), 99, "forward"},
+			{"老规则 300 字不再影响容器", strings.Repeat("字", 301), 16500, "message"},
 		} {
-			if got := shape(key, c.text); got != c.want {
+			if got := shape(key, c.text, c.over); got != c.want {
 				t.Errorf("%s %s：%s，要 %s", key, c.name, got, c.want)
 			}
 		}
 	}
+	// 默认门槛 16500 字节：5400 个汉字（16200 字节）直发，5600 个（16800 字节）转发
+	if got := shape("x", strings.Repeat("字", 5400), 16500); got != "message" {
+		t.Errorf("5400 个汉字应直发：%s", got)
+	}
+	if got := shape("x", strings.Repeat("字", 5600), 16500); got != "forward" {
+		t.Errorf("5600 个汉字应转发：%s", got)
+	}
 	// B 站动态不变：按字数，默认 100 字
 	dyn := caseNamed(t, "bili-dynamic")
-	dyn.Text = av(strings.Repeat("字", 60)) // 60 个汉字：按字数是 60 ≤ 100 短；若误用加权长度是 120 > 100 就成了长
+	dyn.Text = av(strings.Repeat("字", 60))
 	dyn.Blocks = []linkreader.Block{{Type: "text", Text: dyn.Text.Value}}
 	if got := strings.Join(kinds(build(dyn, Options{})), ","); got != "message" {
 		t.Errorf("B 站动态 60 个汉字应仍是短：%s", got)
@@ -101,5 +58,134 @@ func TestAutoForwardUsesWeightedLength(t *testing.T) {
 	dyn.Blocks = []linkreader.Block{{Type: "text", Text: dyn.Text.Value}}
 	if got := strings.Join(kinds(build(dyn, Options{})), ","); got != "forward" {
 		t.Errorf("B 站动态 101 个汉字应是长：%s", got)
+	}
+}
+
+// 301 个汉字的老“长帖”标记（classifyX 的 >300）不再让 X 直发被拒；按实发字节远低于默认门槛（ADR-391）。
+// 旧代码在这条上会进合并转发。
+func TestXLongPostOver300CharsStaysDirect(t *testing.T) {
+	r := xImages(0)
+	r.Text = av(strings.Repeat("乙", 301))
+	r.Blocks = []linkreader.Block{{Type: "text", Text: r.Text.Value}}
+	if got := strings.Join(kinds(build(r, Options{})), ","); got != "message" {
+		t.Fatalf("301 个汉字应直发：%s", got)
+	}
+}
+
+// 只放译文时按译文字节算：短原文长译文转发，长原文短译文直发（ADR-391）。
+func TestAutoForwardCountsTranslationOnly(t *testing.T) {
+	r := xImages(0)
+	r.Author.Name, r.Author.Account = av("纸云"), av("paper_cloud")
+	r.Text = av("short source")
+	r.Blocks = []linkreader.Block{{Type: "text", Text: "short source"}}
+	o := Options{Sites: map[string]SiteSetting{"x": {ForwardOverBytes: intp(160)}}, Templates: map[string]string{"x": "$链接$正文文字"}}
+	long := strings.Repeat("译", 60) // 180 字节
+	d := build(r, o)
+	if got := strings.Join(kinds(d), ","); got != "message" {
+		t.Fatalf("没有译文时按原文：%s", got)
+	}
+	o.Translation = long
+	if got := strings.Join(kinds(build(r, o)), ","); got != "forward" {
+		t.Fatalf("短原文长译文应转发：%s", got)
+	}
+	r.Text = av(strings.Repeat("源", 100)) // 300 字节
+	r.Blocks = []linkreader.Block{{Type: "text", Text: r.Text.Value}}
+	o.Translation = "短译文" // 9 字节
+	if got := strings.Join(kinds(build(r, o)), ","); got != "message" {
+		t.Fatalf("长原文短译文应直发：%s", got)
+	}
+}
+
+// directTextOf 数一条直发草稿里所有文字项的字节（不数图、视频、卡片）。
+func directTextOf(d Draft) int {
+	n := 0
+	for _, p := range d.Parts {
+		if p.Kind != types.PartMessage {
+			continue
+		}
+		for _, it := range p.Body {
+			if it.Kind == types.BodyText {
+				n += len(it.Text)
+			}
+		}
+	}
+	return n
+}
+
+// $正文 槽位带出来的文字也算进直发字节（ADR-391）。旧代码只数 PieceText，模板里只写着 "$链接\n$正文" 时
+// 6000 个汉字（18000 字节）会被当成 30 多字节直发。
+func TestAutoForwardCountsBodySlotText(t *testing.T) {
+	r := xImages(0)
+	r.Text = av(strings.Repeat("纸", 6000))
+	r.Blocks = []linkreader.Block{{Type: "text", Text: r.Text.Value}}
+	tpl := map[string]string{"x": "$链接\n$正文"}
+	n := directTextOf(build(r, Options{Sites: map[string]SiteSetting{"x": {ForwardOverBytes: intp(1 << 30)}}, Templates: tpl}))
+	if n < 18000 {
+		t.Fatalf("$正文 没算进直发字节：%d", n)
+	}
+	for _, c := range []struct {
+		name string
+		over int
+		want string
+	}{
+		{"恰好等于门槛直发", n, "message"},
+		{"少一个字节转发", n - 1, "forward"},
+	} {
+		o := Options{Sites: map[string]SiteSetting{"x": {ForwardOverBytes: intp(c.over)}}, Templates: tpl}
+		if got := strings.Join(kinds(build(r, o)), ","); got != c.want {
+			t.Errorf("%s：%s，要 %s", c.name, got, c.want)
+		}
+	}
+}
+
+// 默认模板也按排出来的全部文字算：门槛等于直发文字字节时直发，少一个字节转发。
+func TestAutoForwardDefaultTemplateBoundary(t *testing.T) {
+	r := xImages(1)
+	r.Text = av("纸船顺着水流慢慢漂过石桥。")
+	r.Blocks = []linkreader.Block{{Type: "text", Text: r.Text.Value}, {Type: "image", Media: &r.Media.Value[0]}}
+	n := directTextOf(build(r, Options{Sites: map[string]SiteSetting{"x": {Forward: "never"}}}))
+	if n <= 0 {
+		t.Fatal("没数到直发文字")
+	}
+	for _, c := range []struct {
+		name string
+		over int
+		want string
+	}{
+		{"恰好等于门槛直发", n, "message"},
+		{"少一个字节转发", n - 1, "forward"},
+	} {
+		o := Options{Sites: map[string]SiteSetting{"x": {ForwardOverBytes: intp(c.over)}}}
+		if got := strings.Join(kinds(build(r, o)), ","); got != c.want {
+			t.Errorf("%s：%s，要 %s", c.name, got, c.want)
+		}
+	}
+}
+
+// 原来 TestXExpansionBoundaries 里的边界在 autoForward 这边补回来：两条视频、有引用、只有标题的文章仍进合并转发。
+func TestAutoForwardXBoundaries(t *testing.T) {
+	twoVideos := withVideoBlock(withVideoBlock(xImages(0)))
+	quoting := xImages(0)
+	q := xImages(0)
+	quoting.Quote = av(&q)
+	article := xImages(0)
+	article.Article = linkreader.Field[string]{State: "not_returned", Reason: "article_body_omitted"}
+	for name, r := range map[string]linkreader.Result{"两条视频": twoVideos, "有引用": quoting, "只有标题的文章": article} {
+		if got := strings.Join(kinds(build(r, Options{ForwardVideo: true})), ","); got != "forward" {
+			t.Errorf("%s 应进合并转发：%s", name, got)
+		}
+	}
+}
+
+// 被引推文取数失败：保持直发，但正文里要有一句“引用的推文没取到，看原文”（删 classifyX 后的行为，ADR-391）。
+func TestXQuoteFetchFailedStaysDirectWithNote(t *testing.T) {
+	r := xImages(0)
+	r.Quote = linkreader.Field[*linkreader.Result]{State: "failed", Reason: "timeout"}
+	d := build(r, Options{})
+	if got := strings.Join(kinds(d), ","); got != "message" {
+		t.Fatalf("引用取数失败应直发：%s", got)
+	}
+	if !strings.Contains(d.Semantic(), "引用的推文没取到，看原文") {
+		t.Fatalf("直发文字里缺说明：%q", d.Semantic())
 	}
 }

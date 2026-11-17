@@ -51,14 +51,15 @@ type LinkTemplates struct {
 
 // LinkSiteInfo 是一个站点的当前设置。
 type LinkSiteInfo struct {
-	Key          string      `json:"key"`
-	Label        string      `json:"label"`
-	Direct       string      `json:"direct"`            // 当前生效的直发模板原文
-	Forward      string      `json:"forward,omitempty"` // 当前生效的转发模板原文；没有转发形态为空
-	ForwardMode  string      `json:"forwardMode,omitempty"`
-	ForwardOver  int         `json:"forwardOver,omitempty"`
-	DescLimit    int         `json:"descLimit,omitempty"`
-	Placeholders []LinkField `json:"placeholders,omitempty"` // 只在指定站点时列出
+	Key              string      `json:"key"`
+	Label            string      `json:"label"`
+	Direct           string      `json:"direct"`            // 当前生效的直发模板原文
+	Forward          string      `json:"forward,omitempty"` // 当前生效的转发模板原文；没有转发形态为空
+	ForwardMode      string      `json:"forwardMode,omitempty"`
+	ForwardOver      int         `json:"forwardOver,omitempty"`
+	ForwardOverBytes int         `json:"forwardOverBytes,omitempty"`
+	DescLimit        int         `json:"descLimit,omitempty"`
+	Placeholders     []LinkField `json:"placeholders,omitempty"` // 只在指定站点时列出
 }
 
 // LinkField 是一个占位符。

@@ -224,9 +224,11 @@ type Config struct {
 	// RemovedKeys 是配置里还写着、但已经删掉的键（现在只有 embed.python、embed.serverDir）。读配置不因此失败，
 	// 启动时由宿主各警告一次（规格-嵌入不依赖外部程序 第 2 条）；未知键照旧静默忽略
 	RemovedKeys []string `yaml:"-"`
-	Source      string   `yaml:"-"`
-	Version     string   `yaml:"-"`
-	Memory      struct {
+	// Notices 是读配置时要告诉用户的提示（不影响加载）：现在只有 providers.magpie 和 magpie.baseUrl 并存
+	Notices []string `yaml:"-"`
+	Source  string   `yaml:"-"`
+	Version string   `yaml:"-"`
+	Memory  struct {
 		IdleMinutes float64 `yaml:"idleMinutes"`
 		BatchEvents int     `yaml:"batchEvents"`
 		TopK        int     `yaml:"topK"`
@@ -282,10 +284,15 @@ type Config struct {
 	Magpie struct {
 		BaseURL string `yaml:"baseUrl"`
 	} `yaml:"magpie"`
-	DataDir       string                     `yaml:"dataDir"`
-	CharactersDir string                     `yaml:"charactersDir"`
-	Characters    map[string]CharacterModels `yaml:"characters"`
-	Defaults      struct {
+	// Providers 是模型服务商（规格-模型配置，ADR-390）。读配置时没有 magpie 就在内存里补一条，
+	// 不写回文件；M1 只读形状，请求仍走合成出来的 magpie
+	Providers map[string]Provider `yaml:"providers"`
+	// DefaultProvider 是裸模型引用归谁（规范写法是 服务商ID/模型ID）；没写就是 magpie
+	DefaultProvider string                     `yaml:"defaultProvider"`
+	DataDir         string                     `yaml:"dataDir"`
+	CharactersDir   string                     `yaml:"charactersDir"`
+	Characters      map[string]CharacterModels `yaml:"characters"`
+	Defaults        struct {
 		BackgroundModel    string   `yaml:"backgroundModel"`
 		BackgroundThinking Thinking `yaml:"backgroundThinking"`
 		FallbackModels     []string `yaml:"fallbackModels"`
@@ -502,6 +509,7 @@ func LoadIn(root, data string) (Config, error) {
 	}
 	b, err := os.ReadFile(file)
 	if errors.Is(err, os.ErrNotExist) {
+		c.prepareProviders(nil)
 		return c, nil
 	}
 	if err != nil {
@@ -580,7 +588,8 @@ func Parse(b []byte, file string) (Config, error) {
 	if c.Characters == nil {
 		c.Characters = map[string]CharacterModels{}
 	}
-	return c, c.check()
+	c.prepareProviders(raw)
+	return c, c.check(raw)
 }
 
 // explicitNull：raw 里这个点分路径存在、且值是 YAML 的 null（`key:` 后面留空或 `~`）。
@@ -599,8 +608,9 @@ func explicitNull(raw map[string]any, path ...string) bool {
 	return cur == nil
 }
 
-// check：只查第 0 步用到的几项，规则和 zod 一样
-func (c Config) check() error {
+// check：只查第 0 步用到的几项，规则和 zod 一样。raw 是原始 YAML，用来区分
+// providers.magpie 是配置里写的还是内存里合成的、以及看有没有明文 key 这类不认识的字段
+func (c Config) check(raw map[string]any) error {
 	var bad []string
 	if err := c.Agent.ReviewConfig.Check(); err != nil {
 		bad = append(bad, err.Error())
@@ -608,9 +618,14 @@ func (c Config) check() error {
 	if c.Console.Port < 1 || c.Console.Port > 65535 {
 		bad = append(bad, fmt.Sprintf("console.port：%d 不在 1～65535", c.Console.Port))
 	}
-	if !strings.HasPrefix(c.Magpie.BaseURL, "http://") && !strings.HasPrefix(c.Magpie.BaseURL, "https://") {
+	// providers.magpie 一旦存在，magpie.baseUrl 就被取代（规格-模型配置 第四节第 1 条）：
+	// 不拿被忽略的旧地址挡加载，改由 providerIssues 查 providers.magpie.baseUrl
+	_, magpieDeclared := providerEntry(raw, "magpie")
+	if !magpieDeclared && !strings.HasPrefix(c.Magpie.BaseURL, "http://") && !strings.HasPrefix(c.Magpie.BaseURL, "https://") {
 		bad = append(bad, "magpie.baseUrl：不是网址")
 	}
+	bad = append(bad, c.providerIssues(magpieDeclared)...)
+	bad = append(bad, providerRawIssues(raw)...)
 	for name, t := range map[string]Thinking{"defaults.backgroundThinking": c.Defaults.BackgroundThinking, "agent.thinking.local": c.Agent.Thinking.Local, "agent.thinking.private": c.Agent.Thinking.Private, "agent.thinking.group": c.Agent.Thinking.Group} {
 		if !thinkingLevels[t] {
 			bad = append(bad, fmt.Sprintf("%s：%q 不是认识的思考档位", name, t))

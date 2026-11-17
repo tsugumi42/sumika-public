@@ -60,11 +60,7 @@ func (a *app) linkSitePage(c *ui.Context, e config.LinkExpand) {
 	}
 	a.linkForwardModeRow(c, e, site)
 	if site.HasForward() {
-		over := site.ForwardOver
-		if v := e.Sites[site.Key].ForwardOver; v != nil {
-			over = *v
-		}
-		a.linkSiteNumber(c, site, "超过多少字折成合并转发（0 不按字数）", config.LinkSiteForwardOver, over)
+		a.linkForwardLimitRow(c, e, site)
 	}
 	if hasDescription(site) {
 		a.linkShowDescRow(c, e, site)
@@ -125,6 +121,32 @@ func (a *app) linkSiteNumber(c *ui.Context, site linktemplate.Site, title string
 		s.editError = ""
 		s.editBox.Open = true
 	}})
+}
+
+// forwardBytesTitle 是 x、telegram 的“超过多少字节折成合并转发”一行：这两个站自 ADR-391 起按实发字节判断，
+// 不再显示已失效的 forwardOver 字数。三个英文字节左右等于一个汉字，标签里写清楚。
+const forwardBytesTitle = "超过多少字节折成合并转发（约三个字节一个汉字）"
+
+// forwardBytesHint 是这一行下面的常驻说明（设计语言第十一节：常驻最多一行）。
+const forwardBytesHint = "按实际会发出去的文字算，链接、作者、时间也算；到点就折成合并转发。"
+
+// linkForwardLimitRow 按站点的判断方式放“超过多少字/字节折成合并转发”：x、telegram 编辑 forwardOverBytes，
+// 其余站（B 站等）照旧编辑 forwardOver。
+func (a *app) linkForwardLimitRow(c *ui.Context, e config.LinkExpand, site linktemplate.Site) {
+	if site.ForwardOverBytes > 0 {
+		v := site.ForwardOverBytes
+		if got := e.Sites[site.Key].ForwardOverBytes; got != nil {
+			v = *got
+		}
+		a.linkSiteNumber(c, site, forwardBytesTitle, config.LinkSiteForwardBytes, v)
+		a.modelNote(c, forwardBytesHint, false)
+		return
+	}
+	over := site.ForwardOver
+	if v := e.Sites[site.Key].ForwardOver; v != nil {
+		over = *v
+	}
+	a.linkSiteNumber(c, site, "超过多少字折成合并转发（0 不按字数）", config.LinkSiteForwardOver, over)
 }
 
 func (a *app) linkTemplateRow(c *ui.Context, e config.LinkExpand, site linktemplate.Site, forward bool) {

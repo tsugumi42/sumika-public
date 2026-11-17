@@ -28,6 +28,13 @@ func (a *App) warnRemovedConfigKeys() {
 		strings.Join(a.cfg.RemovedKeys, "、"))
 }
 
+// warnConfigNotices 把读配置时留下的提示各记一次（现在只有 providers.magpie 和 magpie.baseUrl 并存）。
+func (a *App) warnConfigNotices() {
+	for _, notice := range a.cfg.Notices {
+		a.logf("%s", notice)
+	}
+}
+
 // LocalEmbedding 是 receive 持有的本地嵌入；记忆只用 Embedder，宿主管起停和提醒。
 type LocalEmbedding interface {
 	embed.Embedder

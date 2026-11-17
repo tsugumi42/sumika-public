@@ -1,0 +1,30 @@
+{
+  "method": "POST",
+  "path": "/v1/chat/completions",
+  "host": "127.0.0.1:PORT",
+  "contentLength": 305,
+  "headers": {
+    "Accept": [
+      "text/event-stream"
+    ],
+    "Accept-Encoding": [
+      "gzip"
+    ],
+    "Authorization": [
+      "Bearer magpie-sumika"
+    ],
+    "Content-Length": [
+      "305"
+    ],
+    "Content-Type": [
+      "application/json"
+    ],
+    "User-Agent": [
+      "sumika"
+    ],
+    "X-Test": [
+      "值"
+    ]
+  },
+  "body": "{\"model\":\"group/auto-test\",\"messages\":[{\"role\":\"developer\",\"content\":\"系统 \u003c\u0026\u003e\"},{\"role\":\"user\",\"content\":\"你好\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"prompt_cache_key\":\"p2-7:bytes\",\"reasoning_effort\":\"high\",\"max_completion_tokens\":1234,\"prompt_cache_retention\":\"24h\",\"store\":false}"
+}

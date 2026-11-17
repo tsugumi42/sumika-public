@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"unicode/utf8"
 
 	"sumika-native/internal/channel/types"
 	"sumika-native/internal/linkreader"
@@ -17,7 +16,7 @@ func inlineImg(i int) Item {
 // 图文混排（用户 2026-11-14）：文字后面的图留在同一个节点里；视频单独成节点，视频后面接着的文字和图又是新节点。
 func TestToNodesKeepsImagesWithText(t *testing.T) {
 	video := Item{Kind: types.BodyVideo}
-	nodes := toNodes([]Item{text("甲"), text("乙"), inlineImg(1), inlineImg(2), video, text("丙"), inlineImg(3)})
+	nodes := toNodes([]Item{text("甲"), text("乙"), inlineImg(1), inlineImg(2), video, text("丙"), inlineImg(3)}, 0)
 	var got []string
 	for _, n := range nodes {
 		got = append(got, itemKinds(n.Body))
@@ -36,11 +35,11 @@ func TestToNodesImageOnlyGroupStaysOnePerNode(t *testing.T) {
 	for i := 1; i <= 4; i++ {
 		items = append(items, inlineImg(i))
 	}
-	if nodes := toNodes(items); len(nodes) != 4 {
+	if nodes := toNodes(items, 0); len(nodes) != 4 {
 		t.Fatalf("纯图一图一节点：%d", len(nodes))
 	}
 	card := Item{Kind: "card"}
-	nodes := toNodes([]Item{text("文"), card, inlineImg(1)})
+	nodes := toNodes([]Item{text("文"), card, inlineImg(1)}, 0)
 	if len(nodes) != 3 || itemKinds(nodes[1].Body) != "card" {
 		t.Fatalf("卡片单独成节点：%d", len(nodes))
 	}
@@ -53,7 +52,7 @@ func TestToNodesImageLimitStartsNewNode(t *testing.T) {
 	for i := 1; i <= total; i++ {
 		items = append(items, inlineImg(i))
 	}
-	nodes := toNodes(items)
+	nodes := toNodes(items, 0)
 	if len(nodes) != 3 {
 		t.Fatalf("应是 3 个节点：%d", len(nodes))
 	}
@@ -78,10 +77,10 @@ func TestToNodesImageLimitStartsNewNode(t *testing.T) {
 	}
 }
 
-// 文字超过 2000 字要切开时，图留在原来的位置：切出来的前几块各占一个节点，最后一块带着后面的图；切点前的图、切点后的图都不丢。
+// 文字超过节点字节上限要切开时，图留在原来的位置：切出来的前几块各占一个节点，最后一块带着后面的图；切点前的图、切点后的图都不丢。
 func TestToNodesTextSplitKeepsImagePosition(t *testing.T) {
-	long := strings.Repeat("这是一行编的文字，用来凑够字数。\n", 200) // 远超 2000 字
-	nodes := toNodes([]Item{text("开头"), inlineImg(1), text(long), inlineImg(2), inlineImg(3)})
+	long := strings.Repeat("这是一行编的文字，用来凑够字数。\n", 200) // 约一万字节，远超节点上限
+	nodes := toNodes([]Item{text("开头"), inlineImg(1), text(long), inlineImg(2), inlineImg(3)}, 300)
 	if len(nodes) < 2 {
 		t.Fatalf("应切成多个节点：%d", len(nodes))
 	}
@@ -90,17 +89,17 @@ func TestToNodesTextSplitKeepsImagePosition(t *testing.T) {
 	}
 	var imgs []string
 	for _, n := range nodes {
-		runes := 0
+		bytes := 0
 		for _, it := range n.Body {
 			switch it.Kind {
 			case types.BodyText:
-				runes += utf8.RuneCountInString(it.Text)
+				bytes += len(it.Text)
 			case types.BodyImage:
 				imgs = append(imgs, it.Media.URL.Value[strings.LastIndex(it.Media.URL.Value, "n-"):])
 			}
 		}
-		if runes > 2000 {
-			t.Fatalf("一个节点的文字 %d 字", runes)
+		if bytes > 300 {
+			t.Fatalf("一个节点的文字 %d 字节", bytes)
 		}
 	}
 	if strings.Join(imgs, ",") != "n-1.png,n-2.png,n-3.png" {
@@ -114,7 +113,7 @@ func TestToNodesTextSplitKeepsImagePosition(t *testing.T) {
 
 // 提示（“发过 N 次”之类）接在头部节点开头那段文字后面，在图前面，不接在图后面。
 func TestNoteGoesBeforeInlineImages(t *testing.T) {
-	nodes := toNodes([]Item{text("头部"), inlineImg(1)})
+	nodes := toNodes([]Item{text("头部"), inlineImg(1)}, 0)
 	markNoteEnd(nodes)
 	p := Part{Kind: types.PartForward, Nodes: nodes}
 	appendToForward(&p, "发过 2 次")

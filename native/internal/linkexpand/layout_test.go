@@ -164,7 +164,6 @@ func xImages(n int) linkreader.Result {
 	r.Author.Name, r.Author.Account = av("纸云"), av("paper_cloud")
 	r.Published = av(time.Date(nowFunc().Year(), 11, 7, 15, 28, 0, 0, time.UTC)) // 北京时间 23:28
 	r.Text = av("第一行\n第二行")
-	r.Expansion = av("short")
 	r = withStats(r, map[string]int64{"likes": 1005, "reposts": 140, "replies": 81, "quotes": 3, "bookmarks": 9, "views": 366_000})
 	r.Blocks = []linkreader.Block{{Type: "text", Text: "第一行\n第二行"}}
 	var ms []linkreader.Media

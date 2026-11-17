@@ -195,11 +195,13 @@ func (c LinkExpand) KindEnabled(platform, kind string) bool {
 }
 
 // LinkSite 是一个站点的发送设置：Forward 为 auto / always / never（空按 auto），
-// ForwardOver 是超过多少字折成合并转发，DescLimit 是简介最多多少字；两个数没写就用站点的内置默认，0 表示不限。
+// ForwardOver 是超过多少字折成合并转发（B 站等按字数的站点），ForwardOverBytes 是实际发出的文字超过多少 UTF-8 字节折成合并转发（x、telegram），
+// DescLimit 是简介最多多少字；没写就用站点的内置默认，0 表示不限。
 type LinkSite struct {
-	Forward     string `yaml:"forward"`
-	ForwardOver *int   `yaml:"forwardOver"`
-	DescLimit   *int   `yaml:"descLimit"`
+	Forward          string `yaml:"forward"`
+	ForwardOver      *int   `yaml:"forwardOver"`
+	ForwardOverBytes *int   `yaml:"forwardOverBytes"`
+	DescLimit        *int   `yaml:"descLimit"`
 	// ShowDesc 为真时内置默认模板带上简介那一行（默认关；只有内置默认去掉过简介的站点能开，R-219）
 	ShowDesc bool `yaml:"showDesc"`
 }
@@ -252,6 +254,10 @@ func (c LinkExpand) checkTemplates() []string {
 			bad = append(bad, "linkReader.expand.sites."+key+".forward：这个站点没有合并转发形态，只能写 auto 或 never")
 		case v.ForwardOver != nil && (*v.ForwardOver < 0 || *v.ForwardOver > 100000):
 			bad = append(bad, "linkReader.expand.sites."+key+".forwardOver：须在 0～100000")
+		case v.ForwardOverBytes != nil && (*v.ForwardOverBytes < 1000 || *v.ForwardOverBytes > 17500):
+			bad = append(bad, "linkReader.expand.sites."+key+".forwardOverBytes：须在 1000～17500 字节（0 不按长度折已取消：过小的值会让节点封顶 80 个、正文被截）")
+		case v.ForwardOverBytes != nil && site.ForwardOverBytes == 0:
+			bad = append(bad, "linkReader.expand.sites."+key+".forwardOverBytes：这个站点按字数判断（用 forwardOver），只有 x 和 telegram 按字节")
 		case v.ShowDesc && !site.HasDescOption():
 			bad = append(bad, "linkReader.expand.sites."+key+".showDesc：这个站点的默认模板本来就没有简介那一行（可以开的站点见 sumika.example.yml）")
 		case v.DescLimit != nil && (*v.DescLimit < 0 || *v.DescLimit > 100000):

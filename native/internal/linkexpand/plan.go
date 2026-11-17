@@ -4,6 +4,7 @@ package linkexpand
 import (
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -42,10 +43,17 @@ type Options struct {
 	// ArticleTranslation 是 X 长文的译文（2026-11-14）：长文的文字块和小标题按顺序用 linktranslate.SectionMarker 单独一行隔开，整段送去翻译，
 	// 回复原样放这里；段数和原来对不上就整篇不用（articleTranslated）。空串表示没有。
 	ArticleTranslation string
+	// QuoteArticleTranslation 是被引的 X 长文（推文引用了 Article）的译文，格式同 ArticleTranslation（ADR-391）。
+	QuoteArticleTranslation string
+	// Translations 由宿主从翻译结果填进来（ADR-391）：主文、引用、长文、被引长文、嵌入推文各段。
+	// 旧字段 Translation / QuoteTranslation / ArticleTranslation 非空时优先（测试和预览直接填它们）。
+	Translations Translations
 	// pollLabels 是投票选项的译文，和 pollKey 那个投票的 Choices 一一对应（空串表示这个选项没有译文）；Build 开头从 Translation 里拆出来。
 	// 只对 pollKey 指向的主推文投票生效，被引推文自己的投票不动。
 	pollLabels []string
 	pollKey    *linkreader.PollInfo
+	// embeds 是嵌入推文和被引推文的译文表（tweetKey → 译文），Build 开头从 Translations 建好；不导出、不进 JSON。
+	embeds map[string]Embedded
 	// KeepTrailingHashtags：不去帖子结尾的 hashtag 块（各平台）（linkReader.expand.text.stripTrailingHashtags 关掉时为真）。
 	// 零值是默认的“去掉”，所以没接配置的调用方（预览、测试）和线上默认一致。
 	KeepTrailingHashtags bool
@@ -103,7 +111,7 @@ type Node struct {
 	// QuoteOf 是这个节点引用的同一转发里另一节点的下标加 1（引用推文，规格-链接发送改版 A7）；0 表示没有，零值即旧行为
 	QuoteOf int `json:",omitempty"`
 	// noteEnd 标出转发里头部那组文字拆完后的最后一个节点：“发过 N 次”“还有 N 条没处理”这类提示接在它后面。
-	// 只在 Build 到 AppendNote 之间的内存里用，不进 JSON；头部正文超过 2000 字拆成几个节点时，提示不会落进正文中间
+	// 只在 Build 到 AppendNote 之间的内存里用，不进 JSON；头部正文超过节点字节上限拆成几个节点时，提示不会落进正文中间
 	noteEnd bool
 }
 type Part struct {
@@ -122,12 +130,16 @@ type Part struct {
 	fitDirect  bool
 	capNode    Node
 	capCard    *types.ForwardCard
+	// nodeBytes 是 Prepare 阶段重新排节点时的文字上限（字节，和转发门槛同一个配置值，ADR-391）；0 按默认 16500
+	nodeBytes int
 }
 type Draft struct {
 	Parts    []Part
 	CleanURL string
 	// NoContent 为真表示取到了页面但标题、正文都没有可发的内容：不发任何文字，调用方当失败处理（群里换失败表情）
 	NoContent bool `json:",omitempty"`
+	// nodeBytes 是合并转发一个节点的文字上限（UTF-8 字节，ADR-391），AppendNote 拆节点时用；0 按默认 16500
+	nodeBytes int
 }
 
 func flagBool(r *linkreader.Result, key string) (bool, bool) {
@@ -362,44 +374,48 @@ func inlineImage(it Item) bool {
 }
 
 // toNodes 把一组内容排成节点（用户 2026-11-14：帖子信息、正文、图片放同一个节点，只有视频等单独成节点），规则见 packNodes。
-func toNodes(items []Item) []Node {
+func toNodes(items []Item, maxBytes int) []Node {
 	var nodes []Node
-	for _, body := range packNodes(items, func(it Item) bool { return it.Kind == types.BodyText }, func(it Item) string { return it.Text }, text, inlineImage) {
+	for _, body := range packNodes(items, func(it Item) bool { return it.Kind == types.BodyText }, func(it Item) string { return it.Text }, text, inlineImage, maxBytes) {
 		nodes = append(nodes, Node{Name: NodeName, Body: body})
 	}
 	return nodes
 }
 
 // packNodes 是排节点的唯一一份规则，Item（Build 阶段）和 types.BodySegment（Prepare 阶段的 overCap）共用：
-//   - 文字按原顺序接起来；一个节点的文字最多 2000 字，切点落在链接中间时整条链接挪到下一个节点（splitText）；
+//   - 文字按原顺序接起来；一个节点的文字最多 maxBytes 个 UTF-8 字节（ADR-391，默认 16500，多字节字符不切坏），
+//     切点落在链接中间时整条链接挪到下一个节点（splitText）；
 //   - 文字之后的图（inline 为真的项）留在同一个节点里，图文按原顺序混排，一个节点最多 NodeImageMax 张图，超了另起一个节点接着放；
 //   - 一组开头就是图（前面没有文字）时仍一图一节点（pixiv 的“链接一个节点、后面一图一节点”）；
 //   - 视频、卡片等其它项各自成节点。
-func packNodes[T any](items []T, isText func(T) bool, textOf func(T) string, mkText func(string) T, inline func(T) bool) [][]T {
+func packNodes[T any](items []T, isText func(T) bool, textOf func(T) string, mkText func(string) T, inline func(T) bool, maxBytes int) [][]T {
+	if maxBytes <= 0 {
+		maxBytes = linktemplate.DefaultForwardOverBytes
+	}
 	var nodes [][]T
 	var cur []T
-	runes, imgs := 0, 0
+	bytes, imgs := 0, 0
 	textLed := false // 当前这段是文字起头的：后面的图可以接进节点
 	pending := ""
 	closeCur := func() {
 		if len(cur) > 0 {
 			nodes = append(nodes, cur)
 		}
-		cur, runes, imgs = nil, 0, 0
+		cur, bytes, imgs = nil, 0, 0
 	}
 	flushText := func() {
 		if pending == "" {
 			return
 		}
-		chunks := splitText(pending)
+		chunks := splitText(pending, maxBytes)
 		pending = ""
 		for i, s := range chunks {
-			n := utf8.RuneCountInString(s)
-			if len(cur) > 0 && runes+n > 2000 {
+			n := len(s)
+			if len(cur) > 0 && bytes+n > maxBytes {
 				closeCur()
 			}
 			cur = append(cur, mkText(s))
-			runes += n
+			bytes += n
 			textLed = true
 			if i < len(chunks)-1 {
 				closeCur() // 同一段文字切出来的前几块各占一个节点，最后一块留着接后面的图
@@ -577,7 +593,11 @@ func contentsSeen(r *linkreader.Result, o Options, media bool, depth int, quotes
 			head = "引用 " + who.text + "："
 		}
 		out = append(out, text(head))
-		out = append(out, contentsSeen(q, o, media, depth+1, true, seen)...)
+		shown, note := o.translatedEmbed(q) // 长文正文里嵌的推文原位换成译文（ADR-391）
+		out = append(out, contentsSeen(shown, o, media, depth+1, true, seen)...)
+		if note != "" {
+			out = append(out, text("（"+note+"）"))
+		}
 	}
 	hasText, hasQuote := false, false
 	for _, b := range r.Blocks {
@@ -650,28 +670,51 @@ func contentsSeen(r *linkreader.Result, o Options, media bool, depth int, quotes
 	return out
 }
 
-// nodeHead 取 rest 作为一个节点的开头，最多 max 个字。超长时优先在空行切，其次换行，再其次句末标点；
-// 都找不到才在上限处切。任何切点都不落在链接、@用户名、#话题 中间（整条挪到下一个节点）；
+// linkCost 统计一次拆节点的链接保护工作量（测试用来盯住“每个候选切点不再从头扫链接”，不靠墙钟）。
+type linkCost struct {
+	scans      int // 调了几次 URLSpans（每个节点只该一次）
+	scanBytes  int // URLSpans 一共扫了多少字节
+	candidates int // 试过多少个候选切点
+}
+
+// nodeHead 取 rest 作为一个节点的开头，最多 maxBytes 个 UTF-8 字节（多字节字符不切坏）。超长时优先在空行切，
+// 其次换行，再其次句末标点；都找不到才在上限附近切。任何切点都不落在链接、@用户名、#话题 中间（整条挪到下一个节点）；
 // 单个链接自己就超过上限时整条放进一个节点。
-func nodeHead(rest string, max int) string {
-	if utf8.RuneCountInString(rest) <= max {
+func nodeHead(rest string, maxBytes int) string { return nodeHeadCost(rest, maxBytes, nil) }
+
+// nodeHeadCost 是 nodeHead 的可计数版本；cost 非空时累计链接区间扫描和候选切点检查的次数。
+func nodeHeadCost(rest string, maxBytes int, cost *linkCost) string {
+	if maxBytes <= 0 || len(rest) <= maxBytes {
 		return rest
 	}
-	at := 0
-	for i := 0; i < max; i++ {
-		_, w := utf8.DecodeRuneInString(rest[at:])
-		at += w
+	at := maxBytes
+	for at > 0 && !utf8.RuneStart(rest[at]) {
+		at--
+	}
+	if at == 0 {
+		_, at = utf8.DecodeRuneInString(rest)
 	}
 	floor := at / 2 // 不为了好看切得太短
+	// 链接区间只算一次（URLSpans 整段扫一遍），之后每个候选切点二分查一次位置。
+	// 以前每个候选都调 SafeSplit 从头扫剩余文字，2 万字的单段要十几秒。
+	spans := linkreader.URLSpans(rest)
+	if cost != nil {
+		cost.scans++
+		cost.scanBytes += len(rest)
+	}
+	insideLink := func(i int) bool {
+		k := sort.Search(len(spans), func(j int) bool { return spans[j][0] >= i }) - 1
+		return k >= 0 && i > spans[k][0] && i < spans[k][1]
+	}
 	pick := func(ok func(string) int) int {
 		for i := at; i > floor; i-- {
-			if !utf8.RuneStart(rest[i-1]) && i < len(rest) && !utf8.RuneStart(rest[i]) {
+			if cost != nil {
+				cost.candidates++
+			}
+			if !utf8.RuneStart(rest[i]) {
 				continue
 			}
-			if i < len(rest) && !utf8.RuneStart(rest[i]) {
-				continue
-			}
-			if linkreader.SafeSplit(rest, i) != i || insideToken(rest, i) {
+			if insideLink(i) || insideToken(rest, i) {
 				continue
 			}
 			if ok(rest[:i]) > 0 {
@@ -704,16 +747,20 @@ func nodeHead(rest string, max int) string {
 		})
 	}
 	if cutAt == 0 {
-		cutAt = linkreader.SafeSplit(rest, at)
+		// 和 SafeSplit 同义：落在链接里就退到链接开头，链接从 0 开头就进到链接结尾。
+		cutAt = at
+		if k := sort.Search(len(spans), func(j int) bool { return spans[j][0] >= at }) - 1; k >= 0 && at < spans[k][1] {
+			cutAt = spans[k][0]
+			if cutAt == 0 {
+				cutAt = spans[k][1]
+			}
+		}
 		for insideToken(rest, cutAt) {
 			cutAt = tokenStart(rest, cutAt)
 		}
 	}
 	if cutAt <= 0 { // 开头就是一条超长链接：整条放进一个节点
 		cutAt = at
-		if end := linkreader.SafeSplit(rest, at); end > at {
-			cutAt = end
-		}
 	}
 	return rest[:cutAt]
 }
@@ -740,7 +787,14 @@ func insideToken(s string, i int) bool {
 	if unicode.IsSpace(before) || unicode.IsSpace(after) {
 		return false
 	}
-	start := tokenStart(s, i)
+	start := i
+	for start > 0 && i-start <= 60 {
+		r, w := utf8.DecodeLastRuneInString(s[:start])
+		if unicode.IsSpace(r) {
+			break
+		}
+		start -= w
+	}
 	if i-start > 60 || start == i {
 		return false
 	}

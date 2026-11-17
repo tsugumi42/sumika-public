@@ -39,7 +39,7 @@ type CatalogRetry struct {
 // 末尾斜杠不算变（同一个地址）
 func (a *App) catalogSource() string {
 	if a.llm == nil {
-		return strings.TrimRight(a.cfg.Magpie.BaseURL, "/")
+		return strings.TrimRight(a.cfg.MagpieBaseURL(), "/")
 	}
 	return strings.TrimRight(a.llm.Source().BaseURL, "/")
 }

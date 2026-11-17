@@ -14,6 +14,7 @@ import (
 	"sumika-native/internal/channel/types"
 	"sumika-native/internal/linkcard"
 	"sumika-native/internal/linkreader"
+	"sumika-native/internal/linktemplate"
 	"sumika-native/internal/taskrun"
 )
 
@@ -454,6 +455,19 @@ func (p *Preparer) Prepare(ctx context.Context, r *linkreader.Result, d *Draft) 
 	if err = p.Check(ctx); err != nil {
 		return prepared, err
 	}
+	// 普通消息也要守住平台的单条文字上限（ADR-391）：never、画师推文、文字版路径都从 Prepare 出去，
+	// 超了就按节点同一套切法拆成几条依次发，引用只挂第一条。
+	maxBytes := d.nodeBytes
+	if maxBytes <= 0 {
+		maxBytes = linktemplate.DefaultForwardOverBytes
+	}
+	var split []types.Part
+	for _, part := range prepared.Parts {
+		pieces := splitLongMessage(part, maxBytes)
+		markSplitPieces(pieces)
+		split = append(split, pieces...)
+	}
+	prepared.Parts = split
 	return prepared, nil
 }
 

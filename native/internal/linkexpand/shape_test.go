@@ -52,6 +52,52 @@ func segKinds(body []types.BodySegment) string {
 	return strings.Join(out, ",")
 }
 
+// 站点设成 never、画师推文这类直发路径也要守住单条文字上限（ADR-391）：超过就拆成几条依次发，
+// 第二条起不重复头部，引用只挂第一条。旧代码 Prepare 不拆，6000 汉字会留在一条消息里。
+func TestPrepareSplitsLongDirectMessage(t *testing.T) {
+	r := xImages(0)
+	r.Text = av("纸船\n" + strings.Repeat("字", 2000))
+	r.Blocks = []linkreader.Block{{Type: "text", Text: r.Text.Value}}
+	d := build(r, Options{Sites: map[string]SiteSetting{"x": {Forward: "never", ForwardOverBytes: intp(600)}}})
+	parts := prepareShape(t, r, d, mediaLoader{})
+	if len(parts) < 2 {
+		t.Fatalf("应拆成多条，实际 %d", len(parts))
+	}
+	head := "纸船"
+	total := 0
+	for i, p := range parts {
+		if p.Kind != types.PartMessage || len(p.Nodes) > 0 {
+			t.Fatalf("第 %d 条不是普通消息：%+v", i+1, p)
+		}
+		n := 0
+		for _, s := range p.Body {
+			if s.Kind != types.BodyText {
+				t.Fatalf("第 %d 条出现了媒体：%s", i+1, segKinds(p.Body))
+			}
+			n += len(s.Text)
+			total += strings.Count(s.Text, "字")
+		}
+		if n > 600 {
+			t.Fatalf("第 %d 条 %d 字节，超过 600", i+1, n)
+		}
+		if i == 0 && p.Quote != "-71" {
+			t.Fatalf("第一条要带引用：%q", p.Quote)
+		}
+		if i > 0 && p.Quote != "" {
+			t.Fatalf("第 %d 条不该重复引用：%q", i+1, p.Quote)
+		}
+		if i > 0 && strings.HasPrefix(p.Body[0].Text, head) {
+			t.Fatalf("第 %d 条重复了头部：%q", i+1, p.Body[0].Text)
+		}
+		if p.Split == nil || p.Split.Index != i+1 || p.Split.Total != len(parts) || p.Split.Group != parts[0].Split.Group {
+			t.Fatalf("第 %d 条没打上同一拆条组的标记：%+v", i+1, p.Split)
+		}
+	}
+	if total != 2000 {
+		t.Fatalf("正文丢了：%d 个字", total)
+	}
+}
+
 // blueskyImages 是一条带 n 张图的 Bluesky 帖子（没有转发模板的站点）。
 func blueskyImages(n int) linkreader.Result {
 	r := siteResult("bluesky", "post", "90041/bbbbbbbbbbbbb")
@@ -299,7 +345,7 @@ func TestForwardByImagesCollapsesWhenFewPrepared(t *testing.T) {
 	}
 	// 长推文（因为字多进的转发）图没下下来也不收回
 	long := xImages(1)
-	long.Text = av(strings.Repeat("长", 400))
+	long.Text = av(strings.Repeat("长", 5600)) // 16800 字节，超过默认门槛
 	long.Blocks[0].Text = long.Text.Value
 	d = build(long, Options{})
 	if parts = prepareShape(t, long, d, mediaLoader{}); parts[0].Kind != types.PartForward {

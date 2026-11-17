@@ -1,5 +1,8 @@
 {
   "names": {
+    "MagpieLabel": {
+      "docs/规格-模型配置.md": 3
+    },
     "memory.confirmOccasions": {
       "docs/subsystems/memory.md": 1,
       "docs/规格-记忆-v2.md": 2,

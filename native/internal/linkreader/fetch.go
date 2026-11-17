@@ -439,9 +439,6 @@ func (f *Fetcher) fetch(ctx context.Context, l Link, metadata bool) (Result, err
 		return Result{}, err
 	}
 	f.inspectMedia(ctx, &r)
-	if r.Mosaic.State == "available" {
-		classifyX(&r) // 拼图地址没通过检查时，多图帖要回到“长帖”
-	}
 	// 直接调 Fetch 的入口（样张、link-probe）也拿到展示链接；经 Service.Get 的按每次用户原文重写
 	r.DisplayURL = githubDisplay(raw, l)
 	return r, nil

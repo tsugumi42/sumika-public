@@ -183,3 +183,50 @@ func TestSiteShowDescSavedAndValidated(t *testing.T) {
 		t.Fatalf("bluesky 手写 showDesc 应被拒：%v", bad)
 	}
 }
+
+// forwardOverBytes 只给按字节判断的站点（x、telegram），范围 1000～17500；0 和过小的值拒收，别的站点写了报错，
+// 旧 forwardOver 照样读得进来。
+func TestForwardOverBytesValidated(t *testing.T) {
+	n := func(v int) *int { return &v }
+	for _, key := range []string{"x", "telegram"} {
+		for _, v := range []int{1000, 16500, 17500} {
+			e := LinkExpand{Sites: map[string]LinkSite{key: {ForwardOverBytes: n(v)}}}
+			if bad := e.checkTemplates(); len(bad) != 0 {
+				t.Errorf("%s=%d 应通过：%v", key, v, bad)
+			}
+		}
+		for _, v := range []int{0, 999} {
+			bad := (LinkExpand{Sites: map[string]LinkSite{key: {ForwardOverBytes: n(v)}}}).checkTemplates()
+			if len(bad) != 1 || !strings.Contains(bad[0], "1000～17500") || !strings.Contains(bad[0], "0 不按长度折已取消") {
+				t.Errorf("%s=%d 应被拒并提示范围：%v", key, v, bad)
+			}
+		}
+		if bad := (LinkExpand{Sites: map[string]LinkSite{key: {ForwardOverBytes: n(17501)}}}).checkTemplates(); len(bad) != 1 || !strings.Contains(bad[0], "17500") {
+			t.Errorf("%s 超过范围应被拒：%v", key, bad)
+		}
+	}
+	if bad := (LinkExpand{Sites: map[string]LinkSite{"bilibili-dynamic": {ForwardOverBytes: n(1000)}}}).checkTemplates(); len(bad) != 1 || !strings.Contains(bad[0], "按字数") {
+		t.Errorf("B 站写了字节门槛应被拒：%v", bad)
+	}
+	// 旧键不报错：x 还写着 forwardOver 的旧配置读得进来（插件会提示一次不再生效）
+	e := LinkExpand{Sites: map[string]LinkSite{"x": {ForwardOver: n(600)}}}
+	if bad := e.checkTemplates(); len(bad) != 0 {
+		t.Errorf("旧 forwardOver 应照旧通过：%v", bad)
+	}
+}
+
+// 设置界面写 x 的字节门槛：落到 sites.x.forwardOverBytes；范围外和不按字节判断的站点被拒（ADR-391）。
+func TestSiteForwardBytesChange(t *testing.T) {
+	edits, err := (LinkChange{Key: LinkSiteForwardBytes, Site: "x", Int: 16000}).targets()
+	if err != nil || len(edits) != 1 || strings.Join(edits[0].path, ".") != "linkReader.expand.sites.x.forwardOverBytes" || edits[0].value != 16000 {
+		t.Fatalf("写入路径不对：%+v %v", edits, err)
+	}
+	for _, v := range []int{0, 999, 17501} {
+		if _, err := (LinkChange{Key: LinkSiteForwardBytes, Site: "telegram", Int: v}).targets(); err == nil {
+			t.Errorf("%d 应被拒", v)
+		}
+	}
+	if _, err := (LinkChange{Key: LinkSiteForwardBytes, Site: "bilibili-dynamic", Int: 16000}).targets(); err == nil || !strings.Contains(err.Error(), "按字数") {
+		t.Fatalf("B 站没有字节门槛，应被拒：%v", err)
+	}
+}

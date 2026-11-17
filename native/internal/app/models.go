@@ -288,11 +288,11 @@ func (a *App) modelSettingsView(ctx context.Context) (api.ModelSettingsView, err
 		v.Characters = append(v.Characters, api.ModelCharacterSettings{ID: id, ConfiguredModel: ch.Model, ConfiguredBackground: ch.Background, RunningModel: actual, RunningBackground: s.Values.Background(id), ModelMissing: !s.ReadAt.IsZero() && !listed[ch.Model] && ch.Model != "", BackgroundMissing: !s.ReadAt.IsZero() && !listed[v.Configured.Background(id)] && v.Configured.Background(id) != ""})
 		v.ReadOnly = append(v.ReadOnly, api.ModelReadOnly{Key: "characters." + id + ".topic", Value: ch.Topic, Reason: "话题还没做"})
 	}
-	v.ReadOnly = append(v.ReadOnly, api.ModelReadOnly{Key: "agent.context.topicCompactAt", Value: fmt.Sprint(c.Agent.Context.TopicCompactAt), Reason: "话题还没做"}, api.ModelReadOnly{Key: "vision.model", Value: c.Vision.Model, Reason: "Go 还没做识图"}, api.ModelReadOnly{Key: "magpie.baseUrl", Value: c.Magpie.BaseURL, Reason: "模型页只读；连接结果见 ModelsError / ModelsReadAt"})
+	v.ReadOnly = append(v.ReadOnly, api.ModelReadOnly{Key: "agent.context.topicCompactAt", Value: fmt.Sprint(c.Agent.Context.TopicCompactAt), Reason: "话题还没做"}, api.ModelReadOnly{Key: "vision.model", Value: c.Vision.Model, Reason: "Go 还没做识图"}, api.ModelReadOnly{Key: "magpie.baseUrl", Value: c.MagpieBaseURL(), Reason: "模型页只读；连接结果见 ModelsError / ModelsReadAt"})
 	return v, nil
 }
 func modelOption(m llm.Model) api.ModelOption {
-	o := api.ModelOption{ID: m.ID, Name: m.DisplayName, Provider: m.OwnedBy, Label: m.MagpieLabel, ContextWindow: m.Window(), ContextReported: m.WindowSource() != llm.SourceDefault, ReasoningLevels: slices.Clone(m.ReasoningLevels)}
+	o := api.ModelOption{ID: m.ID, Name: m.DisplayName, Provider: m.OwnedBy, Label: m.Label, ContextWindow: m.Window(), ContextReported: m.WindowSource() != llm.SourceDefault, ReasoningLevels: slices.Clone(m.ReasoningLevels)}
 	o.MaxOutput, o.WindowSource, o.OutputSource = m.OutputLimit(), string(m.WindowSource()), string(m.OutputSource())
 	l := m.Limits
 	o.ProviderWindow, o.ProviderOutput, o.DevWindow, o.DevOutput, o.UserWindow, o.UserOutput, o.DevMixed = l.ProviderWindow, l.ProviderOutput, l.DevWindow, l.DevOutput, l.UserWindow, l.UserOutput, l.DevMixed

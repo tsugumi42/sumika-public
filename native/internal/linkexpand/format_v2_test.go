@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"unicode/utf8"
 
 	"sumika-native/internal/channel/types"
 	"sumika-native/internal/linkreader"
@@ -226,15 +225,18 @@ func TestStripTrailingHashtags(t *testing.T) {
 	if got := TranslationSource(&r, keep); got != "Hello rockets #space #moon" {
 		t.Fatalf("关掉开关送去翻译的原文：%q", got)
 	}
-	// 去 hashtag 后不超过 300 字：直发
-	long := xPost(strings.Repeat("字", 290) + " #一号标签 #二号标签 #三号标签")
-	long.Expansion = av("short")
+	// 去 hashtag 后不超过字节门槛：直发；不去时超过，转发（ADR-391：按实际发出的文字字节算）
+	body := strings.Repeat("字", 290)
+	long := xPost(body + " #一号标签 #二号标签 #三号标签")
 	long.Media = av([]linkreader.Media{})
-	if d := Build(&long, "", Options{}, 0); len(d.Parts) != 1 || d.Parts[0].Kind != "message" {
+	capOpt := Options{Templates: map[string]string{"x": "$正文文字"}, Sites: map[string]SiteSetting{"x": {ForwardOverBytes: intp(len(body))}}}
+	if d := Build(&long, "", capOpt, 0); len(d.Parts) != 1 || d.Parts[0].Kind != "message" {
 		t.Fatalf("字数按去过 hashtag 的算：%v", kinds(d))
 	}
-	if d := Build(&long, "", Options{KeepTrailingHashtags: true}, 0); d.Parts[0].Kind != "forward" {
-		t.Fatalf("不去 hashtag 时超过 300 字应进合并转发：%v", kinds(d))
+	keepBytes := capOpt
+	keepBytes.KeepTrailingHashtags = true
+	if d := Build(&long, "", keepBytes, 0); d.Parts[0].Kind != "forward" {
+		t.Fatalf("不去 hashtag 时超过字节门槛应进合并转发：%v", kinds(d))
 	}
 }
 
@@ -464,10 +466,10 @@ func TestNonTweetTranslationOnly(t *testing.T) {
 }
 
 // 超长推文进转发：“发过 N 次”“还有 N 条没处理”接在主推文正文（拆成几个节点）的末尾，不落进正文中间，
-// 每个节点不超过 2000 字，被引推文的 QuoteOf 不变。bug：提示接在第一个节点后面，落在正文中间、那个节点超过 2000 字
+// 每个节点不超过节点的字节上限，被引推文的 QuoteOf 不变。bug：提示接在第一个节点后面，落在正文中间、那个节点超过上限
 func TestLongTweetNoteAfterBody(t *testing.T) {
 	r := caseNamed(t, "x-quote")
-	long := strings.Repeat("甲", 2500)
+	long := strings.Repeat("甲", 5600) // 16800 字节，要拆成两个 node
 	r.Text = av(long)
 	r.Blocks[0].Text = long
 	plain := Build(&r, "-71", Options{ForwardVideo: true}, 0)
@@ -483,8 +485,8 @@ func TestLongTweetNoteAfterBody(t *testing.T) {
 			if it.Kind != types.BodyText {
 				continue
 			}
-			if c := utf8.RuneCountInString(it.Text); c > 2000 {
-				t.Fatalf("第 %d 个节点 %d 字，超过 2000", i, c)
+			if c := len(it.Text); c > linktemplate.DefaultForwardOverBytes {
+				t.Fatalf("第 %d 个节点 %d 字节，超过 %d", i, c, linktemplate.DefaultForwardOverBytes)
 			}
 			if strings.Contains(it.Text, "甲\n发过") {
 				t.Fatalf("提示落进正文中间：第 %d 个节点", i)
@@ -515,15 +517,15 @@ func TestLongTweetNoteAfterBody(t *testing.T) {
 	}
 }
 
-// 提示接上会超过 2000 字：在头部末尾的节点后面另起一个节点，后面节点的 QuoteOf 跟着挪，下一句接在新节点后面
+// 提示接上会超过节点的字节上限：在头部末尾的节点后面另起一个节点，后面节点的 QuoteOf 跟着挪，下一句接在新节点后面
 func TestForwardNoteOverflowNewNode(t *testing.T) {
-	full := strings.Repeat("乙", 1995)
+	full := strings.Repeat("乙", 1999) // 5997 字节
 	d := Draft{Parts: []Part{{Kind: types.PartForward, Nodes: []Node{
 		{Name: NodeName, Body: []Item{text("头")}, QuoteOf: 4},
 		{Name: NodeName, Body: []Item{text(full)}},
 		{Name: NodeName, Body: []Item{{Kind: types.BodyImage}}},
 		{Name: NodeName, Body: []Item{text("被引")}},
-	}}}}
+	}}}, nodeBytes: 6000}
 	markNoteEnd(d.Parts[0].Nodes[:2])
 	d.AppendNote("发过 1 次")
 	d.AppendNote("还有 1 条没处理")

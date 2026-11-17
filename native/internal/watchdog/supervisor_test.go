@@ -2,6 +2,7 @@ package watchdog
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -20,9 +21,23 @@ func eventually(t *testing.T, what string, cond func() bool) {
 	}
 }
 
+// waitIncidents 等到至少 n 份事件记录写完。writeIncident 先独占建文件、再写内容（同名要加后缀，靠 O_EXCL 抢名字），
+// 只等“文件出现”会在两步之间读到空文件：负载下的合并队列里红过一次（2026-11-18，TestStuckChildIsKilledAfterTwoFailedProbes）。
+// 内容是一次 WriteString 写进去的，读到非空就是写完了
 func (h *harness) waitIncidents(n int) {
 	h.t.Helper()
-	eventually(h.t, "事件记录出现", func() bool { return len(h.incidents()) >= n })
+	eventually(h.t, "事件记录写完", func() bool {
+		files := h.incidents()
+		if len(files) < n {
+			return false
+		}
+		for _, f := range files {
+			if b, err := os.ReadFile(f); err != nil || len(b) == 0 {
+				return false
+			}
+		}
+		return true
+	})
 }
 
 // 正常退出（退出码 0）：不拉起、不通知、不留事件记录，守护进程跟着结束

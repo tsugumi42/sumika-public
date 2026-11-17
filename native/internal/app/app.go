@@ -367,6 +367,7 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 	a.initLinkRuntime()
 	a.logf = a.newLogf()
 	a.warnRemovedConfigKeys()
+	a.warnConfigNotices()
 	a.selfcheck.counters = selfcheck.NewCounters() // 先于渠道建好：入库一站、适配器往里数
 	if opt.LocalOwner != "" && opt.LocalOwner != cfg.Backend.Local {
 		a.logf("本地私聊：sumika.yml 的 backend.local 现在是 %s，和启动时的决定（%s）不一样；这次照启动时的走，重启 sumika.exe 才生效", cfg.Backend.Local, opt.LocalOwner)
@@ -470,7 +471,7 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 	go func() { shellCh <- detect(ctx) }()
 	client := opt.LLM
 	if client == nil {
-		client = llm.New(llm.Magpie(cfg.Magpie.BaseURL))
+		client = llm.New(llm.Magpie(cfg.MagpieBaseURL()))
 		// 内容空闲时限（agent.firstContentSeconds、contentIdleSeconds；0 = 不管）；测试给的假客户端自己定
 		client.FirstContent = time.Duration(cfg.Agent.FirstContentSeconds * float64(time.Second))
 		client.ContentIdle = time.Duration(cfg.Agent.ContentIdleSeconds * float64(time.Second))

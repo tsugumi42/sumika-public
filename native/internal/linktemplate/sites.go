@@ -19,9 +19,11 @@ type Site struct {
 	Direct  string // 直发模板的内置默认（可写 @预设名）
 	Forward string // 转发模板的内置默认；空表示这个站点没有转发形态
 	Presets []Preset
-	// ForwardOver 默认的“超过多少字折成合并转发”（0 不按长度折）；DescLimit 默认的简介截断字数（0 不截）
-	ForwardOver int
-	DescLimit   int
+	// ForwardOver 默认的“超过多少字折成合并转发”（0 不按长度折）；只有还按字数的站点（B 站）用它。
+	// ForwardOverBytes 默认的“实际发出的文字超过多少 UTF-8 字节折成合并转发”（0 这个站点不按字节判断），x、telegram 用（ADR-391）。
+	ForwardOver      int
+	ForwardOverBytes int
+	DescLimit        int
 }
 
 // HasForward 说这个站点有没有合并转发形态。
@@ -134,6 +136,10 @@ func join(parts ...[]Field) []Field {
 	return out
 }
 
+// DefaultForwardOverBytes 是“实际发出的文字超过多少 UTF-8 字节折成合并转发”的默认值：实测 QQ 群单条纯文字上限约 18.4 KB，
+// 按 90% 取 16500 字节（ADR-391，2026-11-18 实测）。
+const DefaultForwardOverBytes = 16500
+
 const (
 	// B 站视频（规格-链接发送改版 B8）：封面、标题（分 P 的名字或列表接在标题下）、“UP主 | 时长”、“播放 | 点赞”、投稿时间、干净链接，
 	// 行间不空行、不带简介；链接在投稿时间底下（用户 2026-11-12）。UP主缺了那一行只剩时长。简介、充电、热评的字段还在，模板里写上就有。
@@ -230,7 +236,7 @@ func buildSites() []Site {
 			}, biliStats, []Field{slot("body", "正文", "正文", "body"), slot("images", "图片", "图片", "images"), slot("extra", "其余内容", "其余内容", "extra")})...),
 			Direct:  biliDynamicText,
 			Forward: "$合并转发" + biliHead + "$节点$正文"},
-		{Key: "x", Label: "X / 推特", ForwardOver: 600,
+		{Key: "x", Label: "X / 推特", ForwardOverBytes: DefaultForwardOverBytes,
 			Set: NewSet(join(common("X 推文"), []Field{
 				txt("author", "纸云 @paper_cloud", "作者", "author"), txt("name", "纸云", "昵称", "name"), txt("account", "paper_cloud", "账号", "account"),
 				txt("published", "11-01 18:30", "发布时间", "published"), txt("text", "这是一条编的推文正文。", "简介", "text"),
@@ -353,7 +359,7 @@ func buildSites() []Site {
 				slot("body", "正文", "正文", "body"), slot("images", "图片", "图片", "images"), slot("video", "视频", "视频", "video"),
 			})...),
 			Direct: postHead + "[\n$发布时间][\n注册：$注册时间][\n敏感内容：$敏感][\n$统计]$图片$视频"},
-		{Key: "telegram", Label: "Telegram", ForwardOver: 600,
+		{Key: "telegram", Label: "Telegram", ForwardOverBytes: DefaultForwardOverBytes,
 			Set: NewSet(join(common("Telegram 帖子"), []Field{
 				txt("author", "纸云频道 @paper_cloud", "作者", "author"), txt("name", "纸云频道", "频道名", "name", "昵称"), txt("account", "paper_cloud", "账号", "account"),
 				txt("published", "11-01 18:30", "发布时间", "published"), txt("text", "这是一条编的频道帖子正文。", "简介", "text"), txt("bodytext", "这是一条编的频道帖子正文。", "正文文字", "bodytext"), txt("colon", "：", "冒号", "colon"),

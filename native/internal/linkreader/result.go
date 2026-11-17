@@ -136,7 +136,6 @@ type Result struct {
 	Article       Field[string]               `json:"article"`
 	Links         Field[[]ExternalLink]       `json:"links"`
 	LinkCard      Field[LinkPreview]          `json:"link_card"`
-	Expansion     Field[string]               `json:"expansion"`
 	MoreQuotes    Field[bool]                 `json:"more_quotes"`
 	Category      Field[string]               `json:"category"`
 	Tags          Field[[]string]             `json:"tags"`
@@ -294,7 +293,7 @@ func newResult(l Link, source string) Result {
 		Published: missing[time.Time]("interface_omitted"), Title: missing[string]("interface_omitted"), Text: missing[string]("interface_omitted"),
 		Media: missing[[]Media]("interface_omitted"), Mosaic: missing[Media]("not_applicable"), Quote: missing[*Result]("interface_omitted"), ReplyTo: missing[string]("interface_omitted"),
 		Thread: Field[[]string]{State: "unsupported", Reason: "single_post_only"}, Article: missing[string]("not_applicable"),
-		Links: missing[[]ExternalLink]("interface_omitted"), LinkCard: missing[LinkPreview]("interface_omitted"), Expansion: missing[string]("not_applicable"), MoreQuotes: missing[bool]("not_applicable"),
+		Links: missing[[]ExternalLink]("interface_omitted"), LinkCard: missing[LinkPreview]("interface_omitted"), MoreQuotes: missing[bool]("not_applicable"),
 		Category: missing[string]("interface_omitted"), Tags: missing[[]string]("interface_omitted"), Parts: missing[[]VideoPart]("interface_omitted"), SelectedPart: missing[VideoPart]("interface_omitted"),
 		DynamicType: missing[int]("not_applicable"), PublishedText: missing[string]("interface_omitted"),
 		Stats: map[string]Field[int64]{}, Flags: map[string]Field[jsonValue]{}}

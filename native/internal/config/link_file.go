@@ -28,6 +28,7 @@ const (
 	LinkTemplate          LinkKey = "template"
 	LinkSiteForward       LinkKey = "siteForward"
 	LinkSiteForwardOver   LinkKey = "siteForwardOver"
+	LinkSiteForwardBytes  LinkKey = "siteForwardBytes"
 	LinkSiteDescLimit     LinkKey = "siteDescLimit"
 	LinkSiteShowDesc      LinkKey = "siteShowDesc"    // Site 填站点键，Bool 是“显示简介”开关（R-219）
 	LinkSiteStyle         LinkKey = "siteStyle"       // Site 填模板站点键，Text 填样式 ID（default / card / text / mixed）；一次写模板和合并转发两项
@@ -110,7 +111,7 @@ func (ch LinkChange) targets() ([]configEdit, error) {
 		}
 		path = append(path, "templates", ch.Site)
 		value = ch.Text
-	case LinkSiteForward, LinkSiteForwardOver, LinkSiteDescLimit:
+	case LinkSiteForward, LinkSiteForwardOver, LinkSiteForwardBytes, LinkSiteDescLimit:
 		site, forward, ok := linktemplate.SiteByKey(ch.Site)
 		if !ok || forward {
 			return nil, errors.New("不认识的站点")
@@ -125,6 +126,15 @@ func (ch LinkChange) targets() ([]configEdit, error) {
 			}
 			path = append(path, "sites", ch.Site, "forward")
 			value = ch.Text
+		case LinkSiteForwardBytes:
+			if site.ForwardOverBytes == 0 {
+				return nil, errors.New("这个站点按字数判断，用 forwardOver")
+			}
+			if ch.Int < 1000 || ch.Int > 17500 {
+				return nil, errors.New("字节门槛须在 1000～17500")
+			}
+			path = append(path, "sites", ch.Site, "forwardOverBytes")
+			value = ch.Int
 		default:
 			if ch.Int < 0 || ch.Int > 100000 {
 				return nil, errors.New("数值须在 0～100000")

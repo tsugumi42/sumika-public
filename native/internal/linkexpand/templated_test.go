@@ -7,6 +7,7 @@ import (
 
 	"sumika-native/internal/channel/types"
 	"sumika-native/internal/linkreader"
+	"sumika-native/internal/linktemplate"
 )
 
 func caseNamed(t *testing.T, name string) linkreader.Result {
@@ -49,10 +50,10 @@ func TestForwardSettingsDecideShape(t *testing.T) {
 		{"短帖 always 转发", short, SiteSetting{Forward: "always"}, "forward"},
 		{"长帖 auto 转发", long, SiteSetting{}, "forward"},
 		{"长帖 never 直发", long, SiteSetting{Forward: "never"}, "message"},
-		{"301 个汉字（加权 602）默认超过 600 转发", over, SiteSetting{}, "forward"},
-		{"301 个汉字把阈值放到 700 直发", over, SiteSetting{ForwardOver: intp(700)}, "message"},
-		{"阈值 0 不按字数折", over, SiteSetting{ForwardOver: intp(0)}, "message"},
-		{"短帖阈值调到 2 个字转发", short, SiteSetting{ForwardOver: intp(2)}, "forward"},
+		{"301 个汉字按实发字节仍直发", over, SiteSetting{}, "message"},
+		{"301 个汉字把门槛调到 100 字节转发", over, SiteSetting{ForwardOverBytes: intp(100)}, "forward"},
+		{"门槛 0 不按字节折", over, SiteSetting{ForwardOverBytes: intp(0)}, "message"},
+		{"短帖门槛调到 50 字节转发", short, SiteSetting{ForwardOverBytes: intp(50)}, "forward"},
 	}
 	for _, c := range cases {
 		d := build(c.r, Options{Sites: map[string]SiteSetting{"x": c.set}})
@@ -147,7 +148,7 @@ func TestBrokenTemplateFallsBackToBuiltin(t *testing.T) {
 	}
 }
 
-// 转发的节点上限、2000 字拆节点不受模板影响：自定义转发模板也封顶 80 节点
+// 转发的节点上限、按字节拆节点不受模板影响：自定义转发模板也封顶 80 节点
 func TestForwardCapsHoldWithCustomTemplate(t *testing.T) {
 	r := caseNamed(t, "x-long")
 	for i := 0; i < 120; i++ {
@@ -160,8 +161,8 @@ func TestForwardCapsHoldWithCustomTemplate(t *testing.T) {
 	}
 	for _, n := range last.Nodes {
 		for _, it := range n.Body {
-			if it.Kind == types.BodyText && len([]rune(it.Text)) > 2000 {
-				t.Fatal("文字节点超过 2000 字")
+			if it.Kind == types.BodyText && len(it.Text) > linktemplate.DefaultForwardOverBytes {
+				t.Fatal("文字节点超过字节上限")
 			}
 		}
 	}

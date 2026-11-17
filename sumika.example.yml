@@ -8,6 +8,20 @@ console:
 magpie:
   baseUrl: http://127.0.0.1:3425/v1
 
+# 模型服务商（ADR-390，规格-模型配置）。不写这一节时，读配置会在内存里按 magpie.baseUrl 补一条 magpie，
+# 行为不变；写了 providers.magpie 就以它为准，magpie.baseUrl 被忽略。
+# providers:
+#   magpie:
+#     preset: magpie
+#     kind: openai-compatible          # 目前只有这一种线路
+#     baseUrl: http://127.0.0.1:3425/v1
+#   ollama:
+#     name: Ollama
+#     baseUrl: http://127.0.0.1:11434/v1
+#     keyRef: ${env:OLLAMA_API_KEY}    # 只放引用：${secret:名字}（密钥库）或 ${env:名字}；明文 key 不收
+#     compat: { cacheKey: false }      # 兼容开关，按服务商单独开
+# defaultProvider: magpie              # 裸模型引用归哪个服务商；不写 = magpie
+
 dataDir: data
 charactersDir: characters
 
@@ -93,9 +107,10 @@ linkReader:
     # templates:
     #   bilibili-video: "@封面文字"   # 封面 + 文字（默认 @卡片）
     # sites:
-    #   x: {forward: auto, forwardOver: 600}   # forwardOver：x、telegram 按推特官方加权字数（中日韩一字算 2、字母算 1、链接算 23，默认 600，约 300 个汉字或 600 个字母）；B 站按字数； forward: auto / always / never（never：图多于 directImageMax 时只发前几张，文字末尾标（发出/总数）；没有合并转发形态的站点只能写 auto / never）
+    #   x: {forward: auto, forwardOverBytes: 16500}   # forwardOverBytes：x、telegram 按实际会发出去的文字 UTF-8 字节数判断（只放译文时算译文，作者、时间、翻译自都算），超过就合并转发；默认 16500（实测 QQ 群单条上限约 18.4 KB 的 90%），范围 1000～17500，0 拒收（过小会让节点封顶 80 个、正文被截）。旧的 forwardOver（加权字数）在这两个站不再生效，旧配置照样读得进来。forward: auto / always / never（never：图多于 directImageMax 时只发前几张，文字末尾标（发出/总数）；没有合并转发形态的站点只能写 auto / never）
+    #   telegram: {forwardOverBytes: 16500}   # 同 x；合并不受模板影响，每个节点的文字也按这个字节数拆
     #   github: {showDesc: true, descLimit: 200}   # showDesc：内置默认模板多一行简介（默认关）；只有默认去掉过简介的站点能开（B 站视频、直播、番剧、课程、音频、合集、小店，pixiv 小说、系列，GitHub，小黑盒，BOOTH，Steam，爱发电）；descLimit 截字，截在最近的标点后补“……”和“完整内容见原文”
-    #   bilibili-article: {forwardOver: 100}   # B 站专栏正文不超过这么多字、图不超过 directImageMax 张就直接发；0 不按字数（一律转发用 forward: always）
+    #   bilibili-article: {forwardOver: 100}   # B 站等按字数的站点仍用 forwardOver：正文不超过这么多字、图不超过 directImageMax 张就直接发；0 不按字数（一律转发用 forward: always）。forwardOverBytes 只认 x、telegram
     # 合并转发的节点名和卡片外面的文字（docs/规格-链接解析模板.md 第十四节）。全不写就是 QQ 默认：节点名用她自己的 QQ 昵称，头像永远是她自己的号。
     # 后四项是模板，占位符：$标题 $字数 $图片数 $UP主（同 $作者） $站点；超过显示长度自动用省略号截断，字段取不到整项退回 QQ 默认。
     # forward:

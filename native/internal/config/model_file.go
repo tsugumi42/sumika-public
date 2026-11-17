@@ -508,7 +508,9 @@ func patchMapping(raw []byte, node ast.Node, path []string, literal string, remo
 	} else if m.IsFlowStyle {
 		p := m.Start.Position
 		at = byteAt(raw, p.Line, p.Column)
-		end := byteAt(raw, m.End.Position.Line, m.End.Position.Column) + 1
+		// 只有 \r 换行的文件里 goccy 的行号和 byteAt 的 \n 定位对不上，End 会落到文件末尾之后；
+		// 夹到末尾，按空映射替换，别让 patchMapping panic（fuzz 输入 "{\r}"）。
+		end := min(byteAt(raw, m.End.Position.Line, m.End.Position.Column)+1, len(raw))
 		// 冒号后的空映射不保留花括号，行尾注释留在父键上。
 		lineStart := byteAt(raw, p.Line, 1)
 		indent = 0
@@ -536,6 +538,9 @@ func patchMapping(raw []byte, node ast.Node, path []string, literal string, remo
 		}
 		if tail < len(raw) {
 			tail++
+		}
+		if prefix < 0 || prefix > tail || tail > len(raw) {
+			return nil, modelError(path)
 		}
 		return splice(raw, prefix, tail, text), nil
 	}

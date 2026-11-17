@@ -28,20 +28,32 @@ type Source struct {
 	BaseURL string
 	APIKey  string // 本机网关不查 key 也要给一个
 	Hint    string // 连不上时报错后面接的一句
+	Dialect Dialect
 }
+
+// Dialect 是一个服务商在 OpenAI 兼容线上的专属行为（规格-模型配置 3.1）：通用结构只放各家的共同字段，
+// 多给的和专属的开关放这里，按服务商打开。零值就是纯 OpenAI 兼容，不读别家多给的东西。
+type Dialect struct {
+	// RouteHeaders：响应头 x-magpie-provider / x-magpie-model 表示网关实际落到的渠道和模型
+	RouteHeaders bool
+}
+
+// MagpieDialect 是 Magpie 网关的方言：读 x-magpie-* 响应头，别的服务商不读
+var MagpieDialect = Dialect{RouteHeaders: true}
 
 // Magpie 是本机模型网关（127.0.0.1:3425），不查 key；但它按 key 里 "magpie-" 后面那段认客户端
 // （Magpie gateway.go 的 agentOf），写成 magpie-sumika 用量页才记成 sumika，不是 local
 func Magpie(baseURL string) Source {
-	return Source{Name: "Magpie", BaseURL: baseURL, APIKey: "magpie-sumika", Hint: "请确认 Magpie 已经打开。"}
+	return Source{Name: "Magpie", BaseURL: baseURL, APIKey: "magpie-sumika", Hint: "请确认 Magpie 已经打开。", Dialect: MagpieDialect}
 }
 
-// Model 是 /models 列表里的一项：OpenAI 兼容的字段，加上 Magpie 这类网关多给的长度、能不能看图、思考档位
+// Model 是 /models 列表里的一项：OpenAI 兼容的字段，加上服务商（例如 Magpie）多给的长度、能不能看图、思考档位
 type Model struct {
-	ID              string   `json:"id"`
-	OwnedBy         string   `json:"owned_by"`
-	DisplayName     string   `json:"display_name"`
-	MagpieLabel     string   `json:"magpie_label"`
+	ID          string `json:"id"`
+	OwnedBy     string `json:"owned_by"`
+	DisplayName string `json:"display_name"`
+	// Label 是服务商多给的显示名/渠道标签（Magpie 的 magpie_label）；别家没有就是空。对所有服务商都可读
+	Label           string   `json:"magpie_label"`
 	ReasoningLevels []string `json:"reasoning_levels"`
 	ContextLength   int      `json:"context_length"`
 	ContextWindow   int      `json:"context_window"`
@@ -446,7 +458,9 @@ func (c *Client) stream(ctx context.Context, sr streamRequest, onEvent func(Even
 	}
 	res.Total = elapsedSince(start)
 	res.applyDecoded(out, r.Model)
-	res.Route = Route{Provider: resp.Header.Get("x-magpie-provider"), Model: resp.Header.Get("x-magpie-model")}
+	if c.src.Dialect.RouteHeaders {
+		res.Route = Route{Provider: resp.Header.Get("x-magpie-provider"), Model: resp.Header.Get("x-magpie-model")}
+	}
 	// 流读完了才发现被停下（pi 读完以后还看一次 signal.aborted）：照样算停下
 	if ctx.Err() != nil {
 		return res, ctx.Err()

@@ -52,7 +52,7 @@ func TestTelegramShortPostDirect(t *testing.T) {
 func TestTelegramLongPostForwardKeepsLinks(t *testing.T) {
 	var b strings.Builder
 	var links []string
-	for i := 1; i <= 50; i++ {
+	for i := 1; i <= 200; i++ {
 		link := fmt.Sprintf("https://example-lab.github.io/Fable-Files/%03d-jelly-alphabet-%s.html", i, strings.Repeat("k", 20))
 		links = append(links, link)
 		fmt.Fprintf(&b, "%03d 编造的标题\n%s\n\n", i, link)
@@ -63,7 +63,7 @@ func TestTelegramLongPostForwardKeepsLinks(t *testing.T) {
 	for _, p := range d.Parts {
 		nodes = append(nodes, p.Nodes...)
 	}
-	if len(nodes) < 3 {
+	if len(nodes) < 2 {
 		t.Fatalf("长文应进合并转发并拆成多个节点: parts=%d nodes=%d", len(d.Parts), len(nodes))
 	}
 	for _, l := range links {

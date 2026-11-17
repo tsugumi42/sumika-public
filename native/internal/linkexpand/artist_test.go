@@ -259,8 +259,7 @@ func TestArtistPreviousNoteStillAppended(t *testing.T) {
 // 正文很长（本来要进合并转发）、带被引推文：画师的推文仍是直发的卡片或原图，不进转发（规格第一节取舍 1）。
 func TestArtistLongTextAndQuoteStillDirect(t *testing.T) {
 	r := xImages(2)
-	r.Text = av(strings.Repeat("长", 400))
-	r.Expansion = av("long")
+	r.Text = av(strings.Repeat("长", 5600)) // 16800 字节，超过默认门槛
 	q := xImages(0)
 	r.Quote = av(&q)
 	if d := build(r, Options{}); d.Parts[0].Kind != types.PartForward {

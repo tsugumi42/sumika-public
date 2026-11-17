@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 func TestNeeds(t *testing.T) {
@@ -35,7 +36,7 @@ func TestNeeds(t *testing.T) {
 		{"目标英文不本地判", "今日はいい天気ですね。", "English", true, ""},
 		{"目标英文遇英文也交给模型", "Artemis II has completed its lunar flyby.", "English", true, ""},
 		{"目标繁体", "今天天氣很好，我去散步了。", "繁體中文", false, SkipAlreadyTarget},
-		{"超长", strings.Repeat("a", MaxRunes+1), "简体中文", false, SkipTooLong},
+		{"超长交给分段翻", strings.Repeat("a", MaxRunes+1), "简体中文", true, ""},
 	}
 	for _, c := range cases {
 		need, why := Needs(c.text, c.target)
@@ -263,18 +264,19 @@ func TestInjectionPostStaysInsideData(t *testing.T) {
 
 func TestCacheLRU(t *testing.T) {
 	c := NewCache(2)
-	c.Put("a", "1")
-	c.Put("b", "2")
-	c.Get("a")
-	c.Put("c", "3")
-	if _, ok := c.Get("b"); ok {
+	now := time.Now()
+	c.Put("a", "1", now)
+	c.Put("b", "2", now)
+	c.Get("a", now)
+	c.Put("c", "3", now)
+	if _, ok := c.Get("b", now); ok {
 		t.Fatal("b 应被挤掉")
 	}
-	if v, ok := c.Get("a"); !ok || v != "1" {
+	if v, ok := c.Get("a", now); !ok || v != "1" {
 		t.Fatal("a 应还在")
 	}
-	if Key("u", "t", "x") == Key("u", "t", "y") || Key("u", "t", "x") == Key("u", "s", "x") || Key("u", "t", "x") == Key("v", "t", "x") {
-		t.Fatal("键要区分链接、语言、原文")
+	if Key("u", "t", "m", "x") == Key("u", "t", "m", "y") || Key("u", "t", "m", "x") == Key("u", "s", "m", "x") || Key("u", "t", "m", "x") == Key("v", "t", "m", "x") || Key("u", "t", "m", "x") == Key("u", "t", "n", "x") {
+		t.Fatal("键要区分链接、语言、模型、原文")
 	}
 }
 
@@ -298,6 +300,210 @@ func TestTranslateEmptyOrTooLongRetriesNotCached(t *testing.T) {
 		o = tr.Translate(context.Background(), "u", en, "简体中文")
 		if o.Status != StatusOK || o.Text != good || n.Load() != 2 {
 			t.Fatalf("%s：第二次应重新调模型：%+v，调用 %d 次", name, o, n.Load())
+		}
+	}
+}
+
+// 缓存键里有翻译模型：只换模型不命中旧译文（ADR-391）。
+func TestTranslateCacheKeyIncludesModel(t *testing.T) {
+	var n atomic.Int32
+	tr := newTr(func(context.Context, string, string) (string, error) {
+		n.Add(1)
+		return "译文：阿尔忒弥斯二号完成了绕月飞行。", nil
+	})
+	tr.Model = "model-a"
+	if o := tr.Translate(context.Background(), "u", en, "简体中文"); o.Status != StatusOK {
+		t.Fatalf("第一次：%+v", o)
+	}
+	tr.Model = "model-b"
+	if o := tr.Translate(context.Background(), "u", en, "简体中文"); o.Status != StatusOK || n.Load() != 2 {
+		t.Fatalf("换模型应重新翻：%+v，调用 %d 次", o, n.Load())
+	}
+}
+
+// “不用翻”只保留 24 小时；成功译文不过期（ADR-391，假时钟）。
+func TestUnneededCacheExpiresAfterDay(t *testing.T) {
+	var n atomic.Int32
+	now := time.Unix(1_800_000_000, 0)
+	tr := &Translator{Call: func(context.Context, string, string) (string, error) { n.Add(1); return NoTranslation, nil },
+		Cache: NewCache(10), Now: func() time.Time { return now }, Timeout: time.Second}
+	if o := tr.Translate(context.Background(), "u", en, "简体中文"); o.Status != StatusUnneeded || n.Load() != 1 {
+		t.Fatalf("第一次：%+v，调用 %d 次", o, n.Load())
+	}
+	now = now.Add(23 * time.Hour)
+	if o := tr.Translate(context.Background(), "u", en, "简体中文"); o.Status != StatusUnneeded || o.Reason != "cached" || n.Load() != 1 {
+		t.Fatalf("23 小时内应命中缓存：%+v，调用 %d 次", o, n.Load())
+	}
+	now = now.Add(2 * time.Hour)
+	if o := tr.Translate(context.Background(), "u", en, "简体中文"); o.Status != StatusUnneeded || o.Reason != WhyUnneeded || n.Load() != 2 {
+		t.Fatalf("过 24 小时应重新问模型：%+v，调用 %d 次", o, n.Load())
+	}
+	// 成功译文不过期
+	ok := &Translator{Call: func(context.Context, string, string) (string, error) {
+		n.Add(1)
+		return "译文：阿尔忒弥斯二号完成了绕月飞行。", nil
+	},
+		Cache: NewCache(10), Now: func() time.Time { return now }, Timeout: time.Second}
+	if o := ok.Translate(context.Background(), "v", en, "简体中文"); o.Status != StatusOK {
+		t.Fatalf("先成功：%+v", o)
+	}
+	before := n.Load()
+	now = now.Add(48 * time.Hour)
+	if o := ok.Translate(context.Background(), "v", en, "简体中文"); o.Status != StatusCached || n.Load() != before {
+		t.Fatalf("成功译文不该过期：%+v，调用 %d 次", o, n.Load())
+	}
+}
+
+// 测试用的“翻译”：把英文词换成中文，保留换行、%% 和其余字符（不改长度结构）。
+func fakeTranslate(user string) string {
+	src := postText(user)
+	src = strings.ReplaceAll(src, "English", "英语")
+	src = strings.ReplaceAll(src, "paragraph", "段落")
+	return src
+}
+
+// postText 取 User 消息里 <post> 包着的正文。
+func postText(user string) string {
+	const open = "<post>\n"
+	i := strings.Index(user, open)
+	if i < 0 {
+		return user
+	}
+	src := user[i+len(open):]
+	return strings.TrimSuffix(src, "\n</post>")
+}
+
+// 超过 4000 字的原文按段落分段翻，译文按原顺序拼回；Article 的 %% 分隔行数量、位置不变（ADR-391）。
+func TestTranslateLongTextSegments(t *testing.T) {
+	var calls atomic.Int32
+	tr := newTr(func(_ context.Context, _, user string) (string, error) {
+		calls.Add(1)
+		return fakeTranslate(user), nil
+	})
+	block := strings.Repeat("English paragraph text for the long article test.\n", 50) // 约 2700 字符
+	text := block + "\n%%\n" + block + "\n%%\n" + block
+	if utf8.RuneCountInString(text) <= MaxRunes {
+		t.Fatal("样本要超过一次上限")
+	}
+	o := tr.Translate(context.Background(), "u", text, "简体中文")
+	if o.Status != StatusOK || o.Text == "" {
+		t.Fatalf("分段翻译失败：%+v", o)
+	}
+	if calls.Load() < 2 {
+		t.Fatalf("超过上限应分几次调用，实际 %d 次", calls.Load())
+	}
+	if got, want := strings.Count(o.Text, "%%"), strings.Count(text, "%%"); got != want {
+		t.Fatalf("%% 行丢了：%d，要 %d", got, want)
+	}
+	if strings.Count(o.Text, "English") != 0 || !strings.Contains(o.Text, "英语") {
+		t.Fatalf("译文没换掉原文：%q", o.Text)
+	}
+	// 译文进缓存，第二次不再调模型
+	before := calls.Load()
+	if got := tr.Translate(context.Background(), "u", text, "简体中文"); got.Status != StatusCached || calls.Load() != before {
+		t.Fatalf("长文译文应缓存：%+v，调用 %d 次", got, calls.Load())
+	}
+}
+
+// 任一段失败整篇退回原文，原因记 segment_failed，不缓存半篇（ADR-391）。
+func TestTranslateSegmentFailureFallsBack(t *testing.T) {
+	var n atomic.Int32
+	tr := newTr(func(_ context.Context, _, user string) (string, error) {
+		if strings.Contains(postText(user), "second") {
+			return "", errors.New("网关 502")
+		}
+		n.Add(1)
+		return fakeTranslate(user), nil
+	})
+	block := strings.Repeat("English paragraph text for the long article test.\n", 50)
+	text := block + "\nsecond block starts here\n" + block
+	o := tr.Translate(context.Background(), "u", text, "简体中文")
+	if o.Status != StatusFailed || o.Reason != SegmentFailure || o.Text != "" {
+		t.Fatalf("得到 %+v", o)
+	}
+	if tr.Cache.Len() != 0 {
+		t.Fatal("失败的整篇不进缓存")
+	}
+}
+
+// 段数超过上限不翻（too_long），一次模型都不调。
+func TestTranslateTooManySegmentsSkips(t *testing.T) {
+	tr := newTr(func(context.Context, string, string) (string, error) { t.Fatal("不该调模型"); return "", nil })
+	text := strings.Repeat("a", MaxRunes*MaxSegments+1) // 一行，硬切成 9 段
+	o := tr.Translate(context.Background(), "u", text, "简体中文")
+	if o.Status != StatusSkipped || o.Reason != SkipTooLong || o.Text != "" {
+		t.Fatalf("得到 %+v", o)
+	}
+}
+
+// 分段翻译里调用方说没有模型：和单段一致返回 no_model、不缓存、不算失败（ADR-391）。
+func TestTranslateSegmentsNoModel(t *testing.T) {
+	tr := newTr(func(context.Context, string, string) (string, error) {
+		return "", fmt.Errorf("包了一层：%w", ErrNoModel)
+	})
+	text := strings.Repeat("English paragraph text for the long article test.\n", 200)
+	o := tr.Translate(context.Background(), "u", text, "简体中文")
+	if o.Status != StatusSkipped || o.Reason != "no_model" || o.Text != "" || tr.Cache.Len() != 0 {
+		t.Fatalf("得到 %+v，缓存 %d", o, tr.Cache.Len())
+	}
+}
+
+// 分段翻译时外层 ctx 已经取消：标签和单段一致记 canceled，不当成某一段翻译失败（ADR-391）。
+func TestTranslateSegmentsParentCanceled(t *testing.T) {
+	tr := newTr(func(ctx context.Context, _, _ string) (string, error) { <-ctx.Done(); return "", ctx.Err() })
+	text := strings.Repeat("English paragraph text for the long article test.\n", 200)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	o := tr.Translate(ctx, "u", text, "简体中文")
+	if o.Status != StatusFailed || o.Reason != "canceled" || o.Text != "" {
+		t.Fatalf("得到 %+v", o)
+	}
+}
+
+// splitSource 保证 %% 行不在段首、段尾（归到相邻段内部），长文分段后仍是完整的分隔行。
+func TestSplitSourceKeepsMarkersInterior(t *testing.T) {
+	block := strings.Repeat("English paragraph text.\n", 20) // 约 480 字符
+	text := block + "%%\n" + block + "%%\n" + block
+	chunks, ok := splitSource(text, 500, 8)
+	if !ok || len(chunks) < 2 {
+		t.Fatalf("应分段：%d %v", len(chunks), ok)
+	}
+	markers := 0
+	for i, c := range chunks {
+		if strings.HasPrefix(c.text, SectionMarker) {
+			t.Fatalf("第 %d 段以 %% 开头：%q", i+1, c.text[:20])
+		}
+		if strings.HasSuffix(c.text, SectionMarker) {
+			t.Fatalf("第 %d 段以 %% 结尾：%q", i+1, c.text[len(c.text)-20:])
+		}
+		markers += strings.Count(c.text, SectionMarker)
+	}
+	if markers != 2 {
+		t.Fatalf("%% 数量变了：%d", markers)
+	}
+}
+
+// 分段翻译拼回后 %% 的顺序和每段内容位置不变，不只是数量对（ADR-391）。
+func TestTranslateKeepsSectionPositions(t *testing.T) {
+	tr := newTr(func(_ context.Context, _, user string) (string, error) { return fakeTranslate(user), nil })
+	block := strings.Repeat("English paragraph text for the long article test.\n", 50)
+	text := "Alpha title\n" + block + "\n%%\nBeta title\n" + block + "\n%%\nGamma title\n" + block
+	o := tr.Translate(context.Background(), "u", text, "简体中文")
+	if o.Status != StatusOK {
+		t.Fatalf("分段翻译失败：%+v", o)
+	}
+	want := strings.TrimSpace(fakeTranslate(text))
+	if o.Text != want {
+		t.Fatalf("拼回位置变了：\n得到 %q\n要   %q", o.Text, want)
+	}
+	gotSections := strings.Split(o.Text, "\n"+SectionMarker+"\n")
+	wantSections := strings.Split(want, "\n"+SectionMarker+"\n")
+	if len(gotSections) != 3 {
+		t.Fatalf("段数：%d", len(gotSections))
+	}
+	for i := range wantSections {
+		if gotSections[i] != wantSections[i] {
+			t.Fatalf("第 %d 段内容位置变了：%q / %q", i+1, gotSections[i], wantSections[i])
 		}
 	}
 }

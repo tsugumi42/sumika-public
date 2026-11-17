@@ -257,6 +257,7 @@ func (f *linkFlow) deliverOne(result fetched, i int) bool {
 	}
 	began := p.opt.Now()
 	o := j.snapshot.Settings.Expand
+	p.noteLegacyForwardOver(o)
 	var draft linkexpand.Draft
 	if kindOff(o, result.link) {
 		// 带“给她看”的任务里关掉的链接也取了数（给她看不受展开开关管）；展开这边按链接本身的网站和类型跳过，失败也不回失败文字
@@ -282,9 +283,10 @@ func (f *linkFlow) deliverOne(result fetched, i int) bool {
 	} else {
 		bo := BuildOptions(o)
 		bo.ForwardVideo = p.forwardVideoOn(o.Send.ForwardVideo, j.run.source.Inbound.Conv) // 这个会话退回过就按旧排法（规格-链接发送改版 A6）
-		bo.Translation, bo.QuoteTranslation, bo.ArticleTranslation = p.takeTranslations(j.run, result.trans)
+		bo.Translations = p.takeTranslations(j.run, result.trans)
 		for _, why := range linkexpand.TranslationProblems(&result.result, bo) {
-			p.warnf("译文有一段用不上，那一段发原文（%s）", why) // 投票选项、长文的行数或段数和原文对不上
+			// 译文有一段用不上（投票选项、长文或被引长文的段数对不上）：记一行带原因标签，那一段发原文
+			p.opt.Degrade.Degrade(taskrun.ModuleLink, taskrun.ClassTranslate, nil, taskrun.Opts{Outcome: taskrun.OutcomeSkipped, Tag: why})
 		}
 		// 先按表里现有的行定这一次的发法，再按需判断：新记的 pending 不影响这一次
 		if p.opt.Expand.Artists != nil {

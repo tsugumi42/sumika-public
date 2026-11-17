@@ -21,8 +21,11 @@ const MinLetters = 4
 // MinLatin 是“拉丁字母为主”时至少要有的字母数。
 const MinLatin = 8
 
-// MaxRunes 是一次翻译的原文上限；更长的（X 长文）不翻，不截断后翻一半。
+// MaxRunes 是一次模型调用的原文上限；更长的按段落分段翻译（最多 MaxSegments 段，ADR-391）。
 const MaxRunes = 4000
+
+// MaxSegments 是一篇长文最多分几段：再多就整篇不翻（记 too_long），不无限拆。
+const MaxSegments = 8
 
 var (
 	urlRe     = regexp.MustCompile(`(?i)(?:https?://|www\.)\S+`)
@@ -96,10 +99,8 @@ func (c scriptCount) isJapanese() bool {
 
 // Needs 说这段文字要不要翻成 target；不用翻时第二个返回值是原因类别。
 // 只看文字种类：目标是中文、日文、韩文时能本地判断；别的目标语言（拉丁字母分不出英法西）本地只挡太短的，其余交给模型的哨兵。
+// 长度不在这里挡：超过 MaxRunes 的由 Translate 分段（ADR-391）。
 func Needs(text, target string) (bool, string) {
-	if len([]rune(text)) > MaxRunes {
-		return false, SkipTooLong
-	}
 	c := count(text)
 	if c.total < MinLetters {
 		return false, SkipTooShort

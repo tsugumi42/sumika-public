@@ -210,11 +210,7 @@ func (a *app) linkKindPanel(c *ui.Context, k *winshell.Kit, e config.LinkExpand,
 		a.modelNote(c, hint, false)
 		a.linkForwardModeRow(c, e, site)
 		if site.HasForward() {
-			over := site.ForwardOver
-			if v := cfg.ForwardOver; v != nil {
-				over = *v
-			}
-			a.linkSiteNumber(c, site, "超过多少字折成合并转发（0 不按字数）", config.LinkSiteForwardOver, over)
+			a.linkForwardLimitRow(c, e, site)
 		}
 		if hasDescription(site) {
 			a.linkShowDescRow(c, e, site)

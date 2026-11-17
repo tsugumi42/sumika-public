@@ -262,6 +262,33 @@ func TestFinishReason(t *testing.T) {
 	}
 }
 
+// 方言：x-magpie-* 只有 Magpie 来源读；通用 OpenAI 兼容来源不把别家多给的头当成实际渠道
+func TestRouteHeadersOnlyMagpieDialect(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("x-magpie-provider", "别家渠道")
+		w.Header().Set("x-magpie-model", "m1-真身")
+		fmt.Fprint(w, "data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"好\"},\"finish_reason\":\"stop\"}]}\n\n")
+		fmt.Fprint(w, "data: [DONE]\n\n")
+	}))
+	defer srv.Close()
+	plain := Source{Name: "通用", BaseURL: srv.URL + "/v1", APIKey: "k"}
+	res, err := New(plain).StreamChat(context.Background(), chatReq("m1", msg(chat.RoleUser, "x")), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Route != (Route{}) {
+		t.Fatalf("通用来源不该读 x-magpie-*：%+v", res.Route)
+	}
+	res, err = New(Magpie(srv.URL+"/v1")).StreamChat(context.Background(), chatReq("m1", msg(chat.RoleUser, "x")), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Route != (Route{Provider: "别家渠道", Model: "m1-真身"}) {
+		t.Fatalf("Magpie 方言该读 x-magpie-*：%+v", res.Route)
+	}
+}
+
 // Magpie 按 key 认客户端：magpie-local 会让用量页把 Sumika 记成 local
 func TestMagpieKeyNamesSumika(t *testing.T) {
 	if k := Magpie("http://127.0.0.1:3425/v1").APIKey; k != "magpie-sumika" {

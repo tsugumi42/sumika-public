@@ -218,6 +218,52 @@ func TestLinkTemplateEditor(t *testing.T) {
 	}
 }
 
+// x、telegram 的“超过多少字节折成合并转发”显示字节门槛，别的站点仍显示字数；改了能写回配置（ADR-391）。
+func TestLinkForwardLimitShowsBytesForX(t *testing.T) {
+	h := newLinkHarness(t, 2048, 1500, 20)
+	h.click(t, "链接解析（link-reader）")
+	h.click(t, "站点")
+	h.click(t, "X / 推特")
+	if _, ok := h.tt.Find(forwardBytesTitle); !ok {
+		t.Fatalf("X 没有字节门槛这一行：%v", h.tt.Texts())
+	}
+	if !h.tt.HasText(forwardBytesHint) {
+		t.Fatal("字节门槛下面缺一行说明", h.tt.Texts())
+	}
+	if h.tt.HasText("超过多少字折成合并转发（0 不按字数）") {
+		t.Fatal("X 不该再显示已失效的字数门槛")
+	}
+	if !h.tt.HasText("16500") {
+		t.Fatalf("X 没显示默认 16500：%v", h.tt.Texts())
+	}
+	h.click(t, forwardBytesTitle)
+	h.click(t, "编辑插件数值")
+	h.tt.Key(ui.Cmd, ui.KeyA)
+	h.tt.Type("16000")
+	h.tt.Key(0, ui.KeyEnter)
+	h.tt.Frame()
+	h.wait(t)
+	if got := h.a.linkSettings.view.Configured.Expand.Sites["x"].ForwardOverBytes; got == nil || *got != 16000 {
+		t.Fatalf("字节门槛没写回配置：%+v，提示：%q", got, h.a.linkSettings.note)
+	}
+	// B 站仍按字数：没有字节那一行，有字数那一行
+	h.click(t, "站点")
+	h.click(t, "B站动态")
+	for range 10 {
+		if _, ok := h.tt.Find("超过多少字折成合并转发（0 不按字数）"); ok {
+			break
+		}
+		h.tt.Scroll(1000, 500, 0, 400)
+		h.tt.Frame()
+	}
+	if _, ok := h.tt.Find(forwardBytesTitle); ok {
+		t.Fatalf("B 站不该出现字节门槛：%v", h.tt.Texts())
+	}
+	if _, ok := h.tt.Find("超过多少字折成合并转发（0 不按字数）"); !ok {
+		t.Fatalf("B 站仍应显示字数门槛：%v", h.tt.Texts())
+	}
+}
+
 // saveLinkShot 把当前画面存成 PNG（环境变量 LINK_SHOT_DIR 指向的目录）；没设就什么也不做。
 func saveLinkShot(t *testing.T, h *linkHarness, name string) {
 	dir := os.Getenv("LINK_SHOT_DIR")

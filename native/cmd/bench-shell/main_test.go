@@ -228,7 +228,7 @@ func TestShellApproveInWorkdir(t *testing.T) {
 				t.Fatalf("四个工具后应继续请求：%+v，请求 %d 次", res, len(bodies))
 			}
 			u := res.Steps[0].Tools
-			status, reason, second := "cancelled", "操作被取消了（主人发了新消息或对话被中止），没有执行。", "cancelled"
+			status, reason, second := "cancelled", "操作被取消了（所有者发了新消息或对话被中止），没有执行。", "cancelled"
 			if on {
 				status, reason, second = "denied", bench.WorkdirDenied, "done"
 			}

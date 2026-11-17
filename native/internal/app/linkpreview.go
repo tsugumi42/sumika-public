@@ -29,7 +29,7 @@ type LinkPreviewOut struct {
 }
 type LinkSiteState struct {
 	Key, Label, Direct, Forward, ForwardMode string
-	ForwardOver, DescLimit                   int
+	ForwardOver, ForwardOverBytes, DescLimit int
 	Fields                                   []linktemplate.Field
 }
 
@@ -137,10 +137,13 @@ func (r *DesktopReader) LinkTemplates(ctx context.Context, siteKey string) ([]Li
 		if siteKey != "" && s.Key != siteKey {
 			continue
 		}
-		st := LinkSiteState{Key: s.Key, Label: s.Label, Direct: effectiveTemplate(s, expand, false), DescLimit: s.DescLimit, ForwardOver: s.ForwardOver}
+		st := LinkSiteState{Key: s.Key, Label: s.Label, Direct: effectiveTemplate(s, expand, false), DescLimit: s.DescLimit, ForwardOver: s.ForwardOver, ForwardOverBytes: s.ForwardOverBytes}
 		set := expand.Sites[s.Key]
 		if set.ForwardOver != nil {
 			st.ForwardOver = *set.ForwardOver
+		}
+		if set.ForwardOverBytes != nil {
+			st.ForwardOverBytes = *set.ForwardOverBytes
 		}
 		if set.DescLimit != nil {
 			st.DescLimit = *set.DescLimit

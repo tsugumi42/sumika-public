@@ -372,10 +372,9 @@ func markGIF(t *testing.T, w int) []byte {
 
 // picsFetcher 回一条带若干张图的 X 短帖；图的网址里带宽度（-w3.png），假传输据此造图。.gif 结尾的造动图
 type picsFetcher struct {
-	names     []string
-	byID      map[string][]string // 某条帖子单独的图
-	expansion string              // 空为 short（一条消息）；long 是导语加合并转发
-	noText    bool                // 帖子没有正文，只有图
+	names  []string
+	byID   map[string][]string // 某条帖子单独的图
+	noText bool                // 帖子没有正文，只有图
 }
 
 func pics(names ...string) picsFetcher { return picsFetcher{names: names} }
@@ -397,7 +396,6 @@ func (f picsFetcher) Fetch(_ context.Context, l linkreader.Link) (linkreader.Res
 	if f.noText {
 		r.Text = avail("")
 	}
-	r.Expansion = avail(cmpOr(f.expansion, "short"))
 	r.Article = linkreader.Field[string]{State: "not_returned", Reason: "not_applicable"}
 	var media []linkreader.Media
 	names := f.names

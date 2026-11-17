@@ -164,6 +164,9 @@ func (p *Plugin) traceDelivered(l linkreader.Link, r *linkreader.Result, began t
 		e.Result = plugintrace.OK
 	case rep.broken:
 		e.Result, e.Kind, e.Error = plugintrace.Fail, "aborted", rep.why
+	case rep.partial:
+		// 有一部分确认送到、另一部分没送到：贴失败表情，但日志里看得出不是全失败
+		e.Result, e.Kind, e.Note, e.Error = plugintrace.Fail, "partial", "部分送到", rep.why
 	default:
 		e.Result, e.Kind, e.Error = plugintrace.Fail, "rejected", rep.why
 	}

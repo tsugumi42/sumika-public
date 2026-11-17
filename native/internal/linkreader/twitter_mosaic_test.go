@@ -29,18 +29,14 @@ func TestXMosaicIsParsed(t *testing.T) {
 	if err != nil || r.Mosaic.State != "available" || r.Mosaic.Value.URL.Value != mosaicJPEG || r.Mosaic.Value.Type != "image" {
 		t.Fatalf("%+v %v", r.Mosaic, err)
 	}
-	// 有拼图的多图帖不再是“多图长帖”：一条消息就能发
-	if r.Expansion.Value != "short" {
-		t.Fatalf("有拼图的四图帖：%+v", r.Expansion)
-	}
 }
 
-func TestXWithoutMosaicStaysLong(t *testing.T) {
+func TestXMosaicUntrustedNotUsed(t *testing.T) {
 	for _, c := range []struct{ name, body string }{{"fx 没给拼图", mosaicBody(4, "")}, {"拼图主机不在名单里", mosaicBody(4, "https://evil.example/jpeg/90001")}} {
 		f := testFetcher(t, func(*http.Request) (*http.Response, error) { return response(200, c.body), nil })
 		r, err := f.Fetch(context.Background(), link(t, "https://x.com/example/status/90001"))
-		if err != nil || r.Expansion.Value != "long" {
-			t.Fatalf("%s：%+v %v", c.name, r.Expansion, err)
+		if err != nil {
+			t.Fatalf("%s：%v", c.name, err)
 		}
 		if r.Mosaic.State == "available" && r.Mosaic.Value.URL.State == "available" {
 			t.Fatalf("%s：拼图地址不该被接受", c.name)

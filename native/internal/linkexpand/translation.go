@@ -1,6 +1,7 @@
 package linkexpand
 
 import (
+	"maps"
 	"regexp"
 	"strings"
 	"unicode"
@@ -25,12 +26,33 @@ func TranslationSource(r *linkreader.Result, o Options) string { return Translat
 
 // Sources 是一条结果里要送去翻译的几段文字，各自一次独立的调用、并发去翻、各自失败各自退回原文。空串表示这一段不翻。
 type Sources struct {
-	Main    string // 帖子自己的正文，后面接投票选项（一个选项一行）；X 长文这里是空，长文走 Article
-	Quote   string // 被引推文的正文（2026-11-14 用户：被引推文也翻，同样只放译文）
-	Article string // X 长文：文字块和小标题按顺序，用 linktranslate.SectionMarker 单独一行隔开
+	Main         string // 帖子自己的正文，后面接投票选项（一个选项一行）；X 长文这里是空，长文走 Article
+	Quote        string // 被引推文的正文（2026-11-14 用户：被引推文也翻，同样只放译文）
+	Article      string // X 长文：文字块和小标题按顺序，用 linktranslate.SectionMarker 单独一行隔开
+	QuoteArticle string // 被引的 X 长文：格式同 Article
+	Embeds       []EmbedSource
 }
 
-// TranslationSources 同上，一次给出主推文、被引推文、长文三段。送去翻译的和发出去的正文是同一份：都清理过、去过结尾的 hashtag。
+// EmbedSource 是主长文正文里嵌的一条推文：键是 tweetKey（平台加 ID），Text 是它自己的正文。
+type EmbedSource struct {
+	Key  string
+	Text string
+}
+
+// Embedded 是一条嵌入推文（或被引长文）的译文：Article 为真说明 Text 是带 %% 分段的长文译文，否则是普通正文译文。
+type Embedded struct {
+	Text    string
+	Article bool
+}
+
+// Translations 是宿主拿回来的各段译文；键是 tweetKey。
+type Translations struct {
+	Main, Quote, Article, QuoteArticle string
+	Embeds                             map[string]Embedded
+}
+
+// TranslationSources 同上，一次给出主推文、被引推文、长文、被引长文和长文里嵌的推文。
+// 送去翻译的和发出去的正文是同一份：都清理过、去过结尾的 hashtag。
 // 被引推文要不要翻看模板里有没有 $被引推文（或画卡片的 $卡片），和主推文要不要翻互不影响。
 func TranslationSources(r *linkreader.Result, o Options) Sources {
 	key := linktemplate.SiteKey(r.Platform, r.Kind)
@@ -51,16 +73,170 @@ func TranslationSources(r *linkreader.Result, o Options) Sources {
 	if useBody {
 		if xArticle(r) {
 			s.Article = articleSource(r)
+			s.Embeds = articleEmbeds(r)
 		} else {
 			s.Main = mainSource(r)
 		}
 	}
 	if useQuote {
-		if q := quotedTweet(r); q != nil {
-			s.Quote = ownText(q)
+		if q := quoteForTranslation(r); q != nil {
+			if xArticle(q) {
+				s.QuoteArticle = articleSource(q)
+			} else {
+				s.Quote = ownText(q)
+			}
+			s.Embeds = dropEmbed(s.Embeds, tweetKey(q))
 		}
 	}
 	return s
+}
+
+// quoteForTranslation 是这条结果里“推文自己引用的那条”：长文正文里的 quote 块是嵌在正文里的推文，
+// 不算帖子的被引推文（它们的翻译走 Embeds，ADR-391）；其它帖子照 quotedTweet 取。
+func quoteForTranslation(r *linkreader.Result) *linkreader.Result {
+	if xArticle(r) {
+		if r.Quote.State == "available" {
+			return r.Quote.Value
+		}
+		return nil
+	}
+	return quotedTweet(r)
+}
+
+// tweetKey 是一条推文在译文表里的键：平台加 ID；没有 ID（编的样本、旧缓存）返回空串，这种不接嵌入译文。
+func tweetKey(r *linkreader.Result) string {
+	if r == nil || r.ID == "" {
+		return ""
+	}
+	return r.Platform + "\x00" + r.ID
+}
+
+// articleEmbeds 是长文正文里嵌的推文，按出现顺序；帖子自己引用的那条（r.Quote）不算“嵌在正文里”。
+func articleEmbeds(r *linkreader.Result) []EmbedSource {
+	var own *linkreader.Result
+	if r.Quote.State == "available" {
+		own = r.Quote.Value
+	}
+	seen := map[string]bool{}
+	var out []EmbedSource
+	for _, b := range r.Blocks {
+		if b.Type != "quote" || b.Quote == nil || b.Quote == own {
+			continue
+		}
+		key := tweetKey(b.Quote)
+		if key == "" || seen[key] {
+			continue
+		}
+		if text := ownText(b.Quote); strings.TrimSpace(text) != "" {
+			seen[key] = true
+			out = append(out, EmbedSource{Key: key, Text: text})
+		}
+	}
+	return out
+}
+
+// dropEmbed 去掉和 key 相同的那条嵌入推文（它已经作为被引推文单独送了）。
+func dropEmbed(list []EmbedSource, key string) []EmbedSource {
+	if key == "" {
+		return list
+	}
+	out := list[:0]
+	for _, e := range list {
+		if e.Key != key {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// withTranslations 在 Build 开头把宿主给的 Translations 接到旧的几个字段上（旧字段非空时优先），
+// 并建好嵌入推文的译文表：被引推文自己的译文也按同一把键放进去，长文正文里那一条会原地换掉（ADR-391）。
+func (o Options) withTranslations(r *linkreader.Result) Options {
+	t := o.Translations
+	if o.Translation == "" {
+		o.Translation = t.Main
+	}
+	if o.QuoteTranslation == "" {
+		o.QuoteTranslation = t.Quote
+	}
+	if o.ArticleTranslation == "" {
+		o.ArticleTranslation = t.Article
+	}
+	if o.QuoteArticleTranslation == "" {
+		o.QuoteArticleTranslation = t.QuoteArticle
+	}
+	m := make(map[string]Embedded, len(t.Embeds)+1)
+	maps.Copy(m, t.Embeds)
+	if q := quoteForTranslation(r); q != nil {
+		if key := tweetKey(q); key != "" {
+			if strings.TrimSpace(o.QuoteArticleTranslation) != "" && xArticle(q) {
+				m[key] = Embedded{Text: o.QuoteArticleTranslation, Article: true}
+			} else if strings.TrimSpace(o.QuoteTranslation) != "" {
+				m[key] = Embedded{Text: o.QuoteTranslation}
+			}
+		}
+	}
+	if len(m) > 0 {
+		o.embeds = m
+	}
+	return o
+}
+
+// embedFor 取 q 这条推文的嵌入译文（已经补回丢的链接）；没有或和原文一样返回假。
+func (o Options) embedFor(q *linkreader.Result) (Embedded, bool) {
+	key := tweetKey(q)
+	if key == "" {
+		return Embedded{}, false
+	}
+	e, ok := o.embeds[key]
+	if !ok || strings.TrimSpace(e.Text) == "" {
+		return Embedded{}, false
+	}
+	if e.Article {
+		return e, true
+	}
+	own := ownText(q)
+	text := keepOriginalLinks(strings.TrimSpace(e.Text), own)
+	if text == strings.TrimSpace(own) {
+		return Embedded{}, false
+	}
+	return Embedded{Text: text}, true
+}
+
+// translatedEmbed 是长文正文里嵌的推文换成译文后的副本和“翻译自……”：长文按 %% 分段填回，
+// 普通推文换掉自己的正文；没有译文返回原样和空串。
+func (o Options) translatedEmbed(q *linkreader.Result) (*linkreader.Result, string) {
+	e, ok := o.embedFor(q)
+	if !ok {
+		return q, ""
+	}
+	if e.Article {
+		if q2, good := articleTranslated(q, e.Text); good {
+			return q2, articleFrom(q)
+		}
+		return q, ""
+	}
+	return withOwnText(q, e.Text), translatedFrom(q)
+}
+
+// withOwnText 返回把帖子自己正文换成 t 的副本（别的块原位不动，后面的正文块清空免得重复）；图片、引用留着。
+func withOwnText(r *linkreader.Result, t string) *linkreader.Result {
+	c := *r
+	c.Text = linkreader.Field[string]{State: "available", Value: t}
+	c.Blocks = append([]linkreader.Block(nil), r.Blocks...)
+	placed := false
+	for i := range c.Blocks {
+		if c.Blocks[i].Type != "text" {
+			continue
+		}
+		if !placed {
+			c.Blocks[i].Text = t
+			placed = true
+			continue
+		}
+		c.Blocks[i].Text = ""
+	}
+	return &c
 }
 
 func usesAny(low string, tokens ...string) bool {
@@ -171,6 +347,7 @@ func (o Options) untranslated() Options {
 func TranslationProblems(r *linkreader.Result, o Options) []string {
 	var out []string
 	r = cleanResult(r, o)
+	o = o.withTranslations(r)
 	if strings.TrimSpace(o.Translation) != "" {
 		if _, _, ok := splitPollTranslation(r, o.Translation); !ok {
 			out = append(out, "poll_lines")
@@ -179,6 +356,13 @@ func TranslationProblems(r *linkreader.Result, o Options) []string {
 	if strings.TrimSpace(o.ArticleTranslation) != "" && xArticle(r) {
 		if _, ok := articleTranslated(r, o.ArticleTranslation); !ok {
 			out = append(out, "article_sections")
+		}
+	}
+	if strings.TrimSpace(o.QuoteArticleTranslation) != "" {
+		if q := quotedTweet(r); q != nil && xArticle(q) {
+			if _, ok := articleTranslated(q, o.QuoteArticleTranslation); !ok {
+				out = append(out, "quote_article_sections")
+			}
 		}
 	}
 	return out
@@ -261,7 +445,16 @@ func quotedTweet(r *linkreader.Result) *linkreader.Result {
 }
 
 // quoteTranslated 是被引推文 q 的译文（已补回丢的链接）：没有译文或和原文一样返回空串。
+// q 是被引的 X 长文时用 QuoteArticleTranslation 按段填回，卡片引用框写标题和正文（ADR-391）。
 func (b *builder) quoteTranslated(q *linkreader.Result) string {
+	if xArticle(q) && strings.TrimSpace(b.o.QuoteArticleTranslation) != "" {
+		if q2, ok := articleTranslated(q, b.o.QuoteArticleTranslation); ok {
+			if v := xOwnText(q2, b.o); v.ok {
+				return v.text
+			}
+		}
+		return ""
+	}
 	t := strings.TrimSpace(b.o.QuoteTranslation)
 	own := ownText(q)
 	if t == "" || strings.TrimSpace(own) == "" {
@@ -480,6 +673,9 @@ func keepOriginalLinks(translation, original string) string {
 }
 
 var linkTokenRe = regexp.MustCompile(`https?://\S+`)
+
+// asciiURLRe 认链接：http(s):// 后面连着的可打印 ASCII；遇到空白或中日文就停（“见https://x.invalid/a，后面的字”不把后面的字吞进链接）。
+var asciiURLRe = regexp.MustCompile(`https?://[!-~]+`)
 
 // linkPunct 是紧贴在链接后面、不属于链接的标点（中英文句读、括号引号）。
 const linkPunct = "。，、；：！？.,;:!?)）]】」』》〉”’\"'"

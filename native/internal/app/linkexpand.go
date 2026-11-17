@@ -128,6 +128,7 @@ func (a *App) translateLink(ctx context.Context, cleanURL, text string, ex confi
 			return a.translateCall(ctx, ex.Model, system, user)
 		},
 		Cache:   a.linkTransCache,
+		Model:   a.translateModel(ex.Model),
 		Timeout: time.Duration(ex.TimeoutSeconds) * time.Second,
 		Retries: ex.Retries,
 		Now:     a.now,

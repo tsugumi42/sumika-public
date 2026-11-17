@@ -40,7 +40,7 @@ func shapeField[T any](v T) linkreader.Field[T] {
 	return linkreader.Field[T]{State: "available", Value: v}
 }
 func shapeResult(platform, kind string) linkreader.Result {
-	r := linkreader.Result{Platform: platform, Kind: kind, ID: "70001", CleanURL: "https://example.invalid/fiction", Source: "fixture", FetchedAt: time.Unix(1, 0), Flags: map[string]linkreader.Field[any]{"possibly_sensitive": shapeField[any](false), "x_restrict": shapeField[any](0)}, Stats: map[string]linkreader.Field[int64]{"likes": shapeField[int64](0)}, Title: shapeField("纸船试航"), Text: shapeField("段首甲"), Media: shapeField([]linkreader.Media{}), Expansion: shapeField("short"), Article: linkreader.Field[string]{State: "not_returned", Reason: "not_applicable"}}
+	r := linkreader.Result{Platform: platform, Kind: kind, ID: "70001", CleanURL: "https://example.invalid/fiction", Source: "fixture", FetchedAt: time.Unix(1, 0), Flags: map[string]linkreader.Field[any]{"possibly_sensitive": shapeField[any](false), "x_restrict": shapeField[any](0)}, Stats: map[string]linkreader.Field[int64]{"likes": shapeField[int64](0)}, Title: shapeField("纸船试航"), Text: shapeField("段首甲"), Media: shapeField([]linkreader.Media{}), Article: linkreader.Field[string]{State: "not_returned", Reason: "not_applicable"}}
 	r.Author.Name = shapeField("纸云")
 	r.Author.Account = shapeField("paper_cloud")
 	r.Published = shapeField(time.Unix(1, 0))
@@ -68,11 +68,10 @@ func TestExpandMessageShapes(t *testing.T) {
 		{"bili-dynamic-long", "bilibili", "dynamic", true, func(r *linkreader.Result) { r.Text = shapeField(strings.Repeat("甲", 101)) }},
 		{"x-short", "x", "post", false, nil},
 		{"x-long", "x", "post", true, func(r *linkreader.Result) {
-			r.Expansion = shapeField("long")
-			r.Text = shapeField(strings.Repeat("甲", 2001))
+			r.Text = shapeField(strings.Repeat("甲", 5600)) // 16800 字节，超过 16500 的门槛
 			r.Blocks = []linkreader.Block{{Type: "text", Text: r.Text.Value}, {Type: "image", Media: new(shapeImage(1))}, {Type: "text", Text: "段尾丙"}}
 		}},
-		{"x-article", "x", "post", true, func(r *linkreader.Result) { r.Article = shapeField("长文章"); r.Expansion = shapeField("long") }},
+		{"x-article", "x", "post", true, func(r *linkreader.Result) { r.Article = shapeField("长文章") }},
 		{"github", "github", "repository", false, nil},
 		{"youtube", "youtube", "video", false, nil},
 		{"douyin-gallery", "douyin", "note", true, nil},

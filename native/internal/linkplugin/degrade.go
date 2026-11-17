@@ -10,6 +10,7 @@ import (
 	"sumika-native/internal/config"
 	"sumika-native/internal/linkexpand"
 	"sumika-native/internal/linkreader"
+	"sumika-native/internal/linktemplate"
 	"sumika-native/internal/taskrun"
 )
 
@@ -76,6 +77,10 @@ type delivery struct {
 	textOdd  bool            // 文字版结果不明
 	// textLanded 是文字版确认送到了
 	textLanded bool
+	// splitStop 记同一条原文拆出来的几条里哪一条被拒：后面的不再发，只记部分送到（B16）。
+	// 键是拆条组的指针；splitOrder 保留记下的顺序，写原因时按顺序。
+	splitStop  map[*types.SplitGroup]*splitStop
+	splitOrder []*splitStop
 	// guard 是正在替哪个大图原段（等不到回声、已按没送到换形式）补发：补发出去并确认的份记在它名下，原段的回声晚到就撤这些份（late.go）。
 	// 只在 settle 处理那一段失败的这一小段时有值，别的段的确认不当补发份
 	guard *lateGuard
@@ -86,6 +91,7 @@ type delivery struct {
 // sendReport 是一条展开发完的结论（写插件日志用）
 type sendReport struct {
 	delivered bool   // 没有硬失败（全部确认，或补发的文字版确认；结果不明也不算失败，见 landed）
+	partial   bool   // 有一部分确认送到、另一部分明确没送到：贴失败表情（和直发路径部分送到一样），不是全失败
 	landed    bool   // 至少有一段、或补发的文字版确认送到了：群里确实有东西。只有结果不明、没有一段确认时不贴“完成”表情（B15）
 	unsure    bool   // 有段结果不明
 	fallback  bool   // 有媒体没发出去，退了文字版
@@ -98,6 +104,48 @@ func (d *delivery) failWhy(format string, args ...any) {
 	if len(d.why) < 4 {
 		d.why = append(d.why, fmt.Sprintf(format, args...))
 	}
+}
+
+// splitStop 记一个拆条组里第一条被拒的序号，和因此没发的后面条数
+type splitStop struct {
+	at      int // 被拒的是第几条（1 起）
+	skipped int // 后面没发的条数
+}
+
+// stopSplit 记下这个拆条组里有一条被拒：同组后面的不再发。只记第一次。
+func (d *delivery) stopSplit(p types.Part) {
+	if p.Split == nil || p.Split.Group == nil {
+		return
+	}
+	if d.splitStop == nil {
+		d.splitStop = map[*types.SplitGroup]*splitStop{}
+	}
+	if _, ok := d.splitStop[p.Split.Group]; ok {
+		return
+	}
+	st := &splitStop{at: p.Split.Index}
+	d.splitStop[p.Split.Group] = st
+	d.splitOrder = append(d.splitOrder, st)
+}
+
+// splitStopped 说这一段是不是在已经有一条被拒的拆条组里、排在它后面
+func (d *delivery) splitStopped(p types.Part) bool {
+	if p.Split == nil || p.Split.Group == nil {
+		return false
+	}
+	st := d.splitStop[p.Split.Group]
+	return st != nil && p.Split.Index > st.at
+}
+
+// skipSplit 记下这一段因为同组前面一条被拒而不发；返回真表示要跳过它。
+// 有内容因此没发出去，整个结果就不再是“全部送到”，贴失败表情（部分送到）。
+func (d *delivery) skipSplit(p types.Part) bool {
+	if !d.splitStopped(p) {
+		return false
+	}
+	d.splitStop[p.Split.Group].skipped++
+	d.hardFail = true
+	return true
 }
 
 func (d *delivery) logf(format string, args ...any) {
@@ -134,7 +182,18 @@ func (p *Plugin) deliver(run *expansionRun, rt retryInput, parts []types.Part, r
 
 // report 是发完以后的结论；fallback 是有没有退文字版
 func (d *delivery) report(fallback bool) sendReport {
-	return sendReport{delivered: !d.hardFail && !d.broken, landed: len(d.known) > 0 || d.textLanded, unsure: len(d.unsure) > 0 || d.textOdd, fallback: fallback, broken: d.broken, why: strings.Join(d.why, "；")}
+	delivered := !d.hardFail && !d.broken
+	landed := len(d.known) > 0 || d.textLanded
+	var why []string
+	for _, st := range d.splitOrder {
+		if st.skipped > 0 {
+			why = append(why, fmt.Sprintf("第 %d 条被拒，后面 %d 条没发", st.at, st.skipped))
+		} else {
+			why = append(why, fmt.Sprintf("第 %d 条被拒", st.at))
+		}
+	}
+	why = append(why, d.why...)
+	return sendReport{delivered: delivered, partial: !delivered && landed, landed: landed, unsure: len(d.unsure) > 0 || d.textOdd, fallback: fallback, broken: d.broken, why: strings.Join(why, "；")}
 }
 
 func nodeName(r *linkreader.Result) string {
@@ -180,6 +239,12 @@ func (d *delivery) firstItems(parts []types.Part, resources []*types.MediaResour
 // first 为真时，第一个计划没能入队就返回错误（这时还没有任何东西发出去）。
 func (d *delivery) runParts(items []sendItem, depth int, first bool) error {
 	for i := 0; i < len(items) && !d.broken; {
+		if d.skipSplit(items[i].backup) {
+			d.logf("第 %d 段属于已有一条被拒的拆条组，后面的不再发", i+1)
+			first = false
+			i++
+			continue
+		}
 		if d.moded(items[i].backup) {
 			d.logf("第 %d 段按这个网站的发图方式（%s）从「%s」起发", i+1, d.mode, d.startForm(items[i].backup))
 			releaseItem(items[i])
@@ -189,7 +254,7 @@ func (d *delivery) runParts(items []sendItem, depth int, first bool) error {
 			continue
 		}
 		k := i
-		for k < len(items) && !d.preRejected(items[k].backup) && !d.moded(items[k].backup) {
+		for k < len(items) && !d.splitStopped(items[k].backup) && !d.preRejected(items[k].backup) && !d.moded(items[k].backup) {
 			k++
 		}
 		if k > i {
@@ -308,14 +373,20 @@ func (d *delivery) settle(group []sendItem, planID string, outcomes []PartOutcom
 			d.logf("第 %d 段结果不明（可能已经发出去了），不换形式、不补发", o.Index+1)
 			d.step(formOf(it.backup), "结果不明", taskrun.OutcomeDegraded, nil)
 		case OutcomeFailed:
+			// 拆条组的停发不在这里记：带图的条还要走阶梯，转图救回来就不缺这一段；真没送到时 failedPart / 阶梯末尾再记
 			outer := d.guard
 			d.guard = o.guard // 大图等不到回声退下来的：补发的份记在这个看守名下；别的失败不带看守
 			d.failedPart(it.backup, o.Category, o.Index, explicit)
 			d.guard = outer
 		case OutcomeAborted:
 			// 只有前面有段没发出去（失败或不明）时的中止才是“被连累”，要原样补发；
-			// 其余中止（展开关了、切档、计划被取消）是别的原因，不补发
+			// 其余中止（展开关了、切档、计划被取消）是别的原因，不补发。
+			// 同一条原文拆出来的几条里前面一条被拒的：后面的不再发（B16），只记进部分送到。
 			if firstBad >= 0 && o.Index > firstBad {
+				if d.skipSplit(it.backup) {
+					d.logf("第 %d 段属于已有一条被拒的拆条组，后面的不再补发", o.Index+1)
+					continue
+				}
 				tail = append(tail, sendItem{backup: it.backup})
 			}
 		default:
@@ -376,13 +447,20 @@ func (d *delivery) failedPart(orig types.Part, category string, idx int, explici
 		return
 	}
 	if !hasMedia(orig) {
-		d.warnf("第 %d 段（纯文字）没发出去（%s），没有可换的形式", idx+1, category)
-		d.failWhy("第 %d 段（纯文字）没发出去（%s）", idx+1, category)
+		if orig.Split == nil {
+			d.warnf("第 %d 段（纯文字）没发出去（%s），没有可换的形式", idx+1, category)
+			d.failWhy("第 %d 段（纯文字）没发出去（%s）", idx+1, category)
+		} else {
+			// 拆条组的原因统一写成“第 N 条被拒，后面 M 条没发”（report 里补），这里不写段序
+			d.warnf("第 %d 条（纯文字）没发出去（%s），拆条组后面的不再发", orig.Split.Index, category)
+		}
+		d.stopSplit(orig)
 		d.hardFail = true
 		return
 	}
 	if category == CategoryOther {
 		d.warnf("第 %d 段的媒体没发出去（%s，不是协议端拒收），不换形式，并进文字版", idx+1, category)
+		d.stopSplit(orig)
 		d.items = append(d.items, textItem{part: orig, category: category, guard: d.guard})
 		return
 	}
@@ -688,6 +766,7 @@ func (d *delivery) ladder(part types.Part, category string, idx, minRank int, fr
 		// 每一级都是能力缺失：文字版确认后，记下这个场合发不了这些形式
 		d.blocks = append(d.blocks, unsupported...)
 	}
+	d.stopSplit(part)
 	d.items = append(d.items, item)
 }
 
@@ -820,6 +899,110 @@ func (d *delivery) replyBack(orig types.Part, idx int) {
 
 // ---- 文字版 ----
 
+// textBatchResult 是文字版这一批的终态条数：一条一条算，被中止后又补发的也算进去。
+type textBatchResult struct {
+	confirmed int
+	failed    int
+	unknown   int
+}
+
+// sendTextParts 发文字版的几条并收尾：第一个没确认的条之后、被出口中止的条原样补发，
+// 和直发路径 settle 是同一条收尾规则（同一条不重发）。每条确认送到的交给 got，供调用方登记补发份。
+// nums[i] 是 parts[i] 在整份文字版里的序号（从 1 起）：补发的那一批报原因时仍用原来的序号。nil 按 1..n。
+func (d *delivery) sendTextParts(parts []types.Part, nums []int, depth int, got func(planID string, o PartOutcome), res *textBatchResult) {
+	if len(parts) == 0 || d.broken {
+		return
+	}
+	if nums == nil {
+		nums = make([]int, len(parts))
+		for i := range nums {
+			nums[i] = i + 1
+		}
+	}
+	planID, err := d.submit(parts, nil)
+	if err != nil {
+		d.errorf("文字版未入队（%s）", reason(err))
+		d.failWhy("文字版没能入队（%s）", reason(err))
+		d.hardFail = true
+		res.failed += len(parts)
+		return
+	}
+	outs, err := d.p.opt.Expand.Outcomes(d.conv, planID)
+	if err != nil || len(outs) == 0 {
+		// 读不到回执（含回执是空的）：文字版可能已经发出去了，不补发；按结果不明记
+		d.warnf("读文字版的回执失败（%s），按结果不明处理", receiptWhy(err))
+		d.textOdd = true
+		res.unknown += len(parts)
+		return
+	}
+	firstBad, firstRejected, aborted := -1, false, 0
+	seen := make([]bool, len(parts))
+	var tail []types.Part
+	var tailNums []int
+	for _, o := range outs {
+		if o.Index < 0 || o.Index >= len(parts) || seen[o.Index] {
+			continue
+		}
+		seen[o.Index] = true
+		switch o.State {
+		case OutcomeConfirmed:
+			res.confirmed++
+			if got != nil {
+				got(planID, o)
+			}
+		case OutcomeFailed:
+			res.failed++
+			if firstBad < 0 {
+				firstBad, firstRejected = o.Index, true
+			}
+		case OutcomeUnknown:
+			res.unknown++
+			d.textOdd = true
+			if firstBad < 0 {
+				firstBad = o.Index
+			}
+		case OutcomeAborted:
+			aborted++
+			if firstBad >= 0 && o.Index > firstBad {
+				tail = append(tail, parts[o.Index])
+				tailNums = append(tailNums, nums[o.Index])
+			}
+		default:
+			// 还在发送、重试等不该出现的终态：不知道发没发出去，按结果不明办
+			res.unknown++
+			d.textOdd = true
+			d.logf("文字版的回执不是终态（%s），按结果不明处理", o.State)
+			if firstBad < 0 {
+				firstBad = o.Index
+			}
+		}
+	}
+	for i := range parts {
+		if !seen[i] {
+			res.unknown++
+			d.textOdd = true
+		}
+	}
+	// 和直发拆条同一条规则：同一组里有一条被拒，后面的不再发（补发了群里会看到缺中间一段的长文），记部分送到；
+	// 只有第一个没确认的条是“结果不明”时，后面被中止的条才原样补发
+	if firstRejected && len(tail) > 0 {
+		d.failWhy("文字版第 %d 条被拒，后面 %d 条没发", nums[firstBad], len(tail))
+		tail = nil
+	}
+	// 第一个没确认的条之前被中止的、或整批被取消的条没有人会再发：算没送到
+	res.failed += aborted - len(tail)
+	if len(tail) == 0 || d.broken {
+		return
+	}
+	if depth >= maxSettleDepth || d.run.ctx.Err() != nil {
+		d.failWhy("文字版后面被中止的 %d 条没能补发", len(tail))
+		res.failed += len(tail)
+		return
+	}
+	d.logf("文字版前面有段没发出去，后面被中止的 %d 条原样补发（它们从没发出过）", len(tail))
+	d.sendTextParts(tail, tailNums, depth+1, got, res)
+}
+
 // finishText 把所有退文字的块合成一条文字版补发；文字版确认了，才记能力缺失的组合
 func (d *delivery) finishText() {
 	if len(d.items) == 0 {
@@ -854,54 +1037,59 @@ func (d *delivery) finishText() {
 			notes = append(notes, note)
 		}
 	}
-	text, ok := linkexpand.TextFallbacks(src, d.known, d.quote, d.link, notes...)
+	limit := 0
+	if d.result != nil {
+		limit = BuildOptions(d.snap.Settings.Expand).NodeBytes(linktemplate.SiteKey(d.result.Platform, d.result.Kind))
+	}
+	texts, ok := linkexpand.TextFallbacks(src, d.known, d.quote, d.link, limit, notes...)
 	if !ok {
 		d.failWhy("媒体没发出去，文字版也拼不出来")
 		d.hardFail = true
 		return
 	}
-	d.warnf("%d 块媒体没能以任何形式发出去，补发一条不带媒体的文字版（写明原因并附原链接）", len(d.items))
-	planID, err := d.submit([]types.Part{text}, nil)
-	if err != nil {
-		d.errorf("文字版未入队（%s）", reason(err))
-		d.failWhy("文字版没能入队（%s）", reason(err))
-		d.hardFail = true
-		return
+	d.warnf("%d 块媒体没能以任何形式发出去，补发不带媒体的文字版（写明原因并附原链接），共 %d 条", len(d.items), len(texts))
+	// 文字版也是“后发的那份”：它装着的大图原段的回声都到了才撤（有别的内容的块不撤，免得撤掉还有用的）
+	needs, guarded := make([]*lateGuard, len(d.items)), false
+	for i, it := range d.items {
+		needs[i], guarded = it.guard, guarded || it.guard != nil
 	}
-	outs, err := d.p.opt.Expand.Outcomes(d.conv, planID)
-	if err != nil {
-		// 读不到回执：文字版可能已经发出去了，不补发；按结果不明记
-		d.warnf("读文字版的回执失败（%s），按结果不明处理", reason(err))
-		d.textOdd = true
-		return
-	}
-	switch {
-	case allConfirmed(outs):
-		d.textLanded = true
-		d.p.opt.Degrade.Degrade(taskrun.ModuleLink, taskrun.ClassFormDegrade, nil, taskrun.Opts{Outcome: taskrun.OutcomeDegraded, Tag: "文字版：成功"})
-		// 文字版也是“后发的那份”：它装着的大图原段的回声都到了才撤（有别的内容的块不撤，免得撤掉还有用的）
-		needs, guarded := make([]*lateGuard, len(d.items)), false
-		for i, it := range d.items {
-			needs[i], guarded = it.guard, guarded || it.guard != nil
-		}
+	res := textBatchResult{}
+	d.sendTextParts(texts, nil, 0, func(planID string, o PartOutcome) {
 		if guarded {
-			d.attachReplacement(planID, outs[0], needs)
+			d.attachReplacement(planID, o, needs)
 		}
-		for _, part := range d.blocks {
-			d.p.opt.Expand.Block(d.conv, part, CategoryUnsupported)
-		}
-	case len(outs) == 1 && outs[0].State == OutcomeUnknown:
-		d.logf("文字版结果不明，不补发")
-		d.textOdd = true
+	}, &res)
+	if res.unknown > 0 {
 		for _, it := range d.items {
 			if it.guard != nil {
 				it.guard.noteUnsure()
 			}
 		}
-	default:
-		d.p.opt.Degrade.Degrade(taskrun.ModuleLink, taskrun.ClassFormDegrade, nil, taskrun.Opts{Outcome: taskrun.OutcomeFailed, Tag: "文字版：没发出去"})
+	}
+	switch {
+	case res.confirmed == len(texts) && res.failed == 0 && res.unknown == 0:
+		// 全部确认才算“全部送到”
+		d.textLanded = true
+		d.p.opt.Degrade.Degrade(taskrun.ModuleLink, taskrun.ClassFormDegrade, nil, taskrun.Opts{Outcome: taskrun.OutcomeDegraded, Tag: "文字版：全部送到"})
+		for _, part := range d.blocks {
+			d.p.opt.Expand.Block(d.conv, part, CategoryUnsupported)
+		}
+	case res.confirmed > 0:
+		// 任一条确认送到就算 landed；有一部分没送到就贴失败表情（和直发路径部分送到一样）
+		d.textLanded = true
+		outcome := taskrun.OutcomeDegraded
+		if res.failed > 0 {
+			outcome, d.hardFail = taskrun.OutcomeFailed, true
+			d.failWhy("文字版只送到 %d/%d 条", res.confirmed, len(texts))
+		}
+		d.p.opt.Degrade.Degrade(taskrun.ModuleLink, taskrun.ClassFormDegrade, nil, taskrun.Opts{Outcome: outcome, Tag: "文字版：部分送到"})
+	case res.failed > 0:
+		d.p.opt.Degrade.Degrade(taskrun.ModuleLink, taskrun.ClassFormDegrade, nil, taskrun.Opts{Outcome: taskrun.OutcomeFailed, Tag: "文字版：没送到"})
 		d.failWhy("媒体没发出去，文字版也没发出去")
 		d.hardFail = true
+	default:
+		d.logf("文字版结果不明，不补发")
+		d.textOdd = true
 	}
 }
 

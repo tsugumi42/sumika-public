@@ -281,20 +281,85 @@ func TestXArticleTranslationSectionMismatchFallsBack(t *testing.T) {
 	}
 }
 
-// 长文超过上限（linktranslate.MaxRunes）不翻、不截断后翻一半：来源照给，Translator 在 Needs 这一层挡掉并记 too_long，这里查那一道门。
-func TestXArticleOverLimitIsNotTranslated(t *testing.T) {
+// 长文超过一次上限（linktranslate.MaxRunes）仍送去翻，由 Translator 分段（ADR-391）；来源照给、不再在 Needs 这一层挡掉。
+func TestXArticleOverLimitSegmented(t *testing.T) {
 	r := articlePost()
 	r.Blocks[1].Text = strings.Repeat("Paper boats float because of the air that is trapped inside them. ", 140) // 约 4800 字
 	src := TranslationSources(&r, Options{})
 	if src.Article == "" {
-		t.Fatal("来源照给，由 Needs 判上限")
+		t.Fatal("来源照给，由 Translator 分段")
 	}
-	if ok, why := linktranslate.Needs(src.Article, "简体中文"); ok || why != linktranslate.SkipTooLong {
-		t.Fatalf("超过上限该是 too_long：%v %q", ok, why)
+	if ok, why := linktranslate.Needs(src.Article, "简体中文"); !ok {
+		t.Fatalf("超过一次上限也要翻（分段）：%v %q", ok, why)
 	}
 	// 来源里的分隔行不是字母，不影响语种判断：短的长文照样是“要翻”
 	short := articlePost()
 	if ok, _ := linktranslate.Needs(TranslationSources(&short, Options{}).Article, "简体中文"); !ok {
 		t.Fatal("英文长文该翻")
+	}
+}
+
+// 被引的 X 长文：标题和正文块按 %% 分段送翻，译文在原位填回，原文不出现（ADR-391）。
+func TestQuotedArticleTranslated(t *testing.T) {
+	r := goldenBase("x", "post", "80010")
+	r.Author.Name, r.Author.Account = av("纸云"), av("paper_cloud")
+	r.Text = av("看这篇长文")
+	r.Blocks = []linkreader.Block{{Type: "text", Text: r.Text.Value}}
+	q := articlePost()
+	q.ID = "80011"
+	q.Author.Name, q.Author.Account = av("纸灯"), av("paper_lamp")
+	r.Quote = av(&q)
+	r.Blocks = append(r.Blocks, linkreader.Block{Type: "quote", Quote: &q})
+
+	src := TranslationSources(&r, Options{})
+	if src.Quote != "" || src.QuoteArticle == "" {
+		t.Fatalf("被引长文要走 QuoteArticle：%+v", src)
+	}
+	want := "How paper boats float\n%%\nPaper boats float because of the air that is trapped inside them.\n%%\nFolding matters too, and that is the part of the craft that you learn first."
+	if src.QuoteArticle != want {
+		t.Fatalf("被引长文送去翻译的：%q", src.QuoteArticle)
+	}
+	tr := "纸船为什么能浮起来\n%%\n纸船能浮起来是因为里面困住了空气。\n%%\n折法也很重要。"
+	all := strings.Join(nodeTexts(Build(&r, "", Options{QuoteArticleTranslation: tr}, 0)), "\n")
+	for _, orig := range []string{"Paper boats float", "How paper boats", "Folding matters"} {
+		if strings.Contains(all, orig) {
+			t.Fatalf("被引长文只放译文，%q 不该出现：%q", orig, all)
+		}
+	}
+	for _, want := range []string{"《纸船为什么能浮起来》", "纸船能浮起来是因为里面困住了空气。", "折法也很重要。", "（翻译自英语）"} {
+		if !strings.Contains(all, want) {
+			t.Fatalf("缺 %q：%q", want, all)
+		}
+	}
+	// 段数对不上整篇用原文并记账
+	bad := Options{QuoteArticleTranslation: "只有一段"}
+	if probs := TranslationProblems(&r, bad); len(probs) != 1 || probs[0] != "quote_article_sections" {
+		t.Fatalf("段数对不上该报 quote_article_sections：%v", probs)
+	}
+}
+
+// 主长文正文里嵌的推文逐条送翻，并在原位换成译文（ADR-391）。
+func TestArticleEmbeddedTweetTranslated(t *testing.T) {
+	r := articlePost()
+	e := goldenBase("x", "post", "80012")
+	e.Author.Name, e.Author.Account = av("被引的人"), av("quoted_one")
+	e.Text = av("This embedded tweet is in English.")
+	e.Blocks = []linkreader.Block{{Type: "text", Text: e.Text.Value}}
+	r.Blocks = append(r.Blocks, linkreader.Block{Type: "quote", Quote: &e})
+
+	src := TranslationSources(&r, Options{})
+	if len(src.Embeds) != 1 || src.Embeds[0].Key != tweetKey(&e) || !strings.Contains(src.Embeds[0].Text, "embedded tweet") {
+		t.Fatalf("正文里嵌的推文要单独送翻：%+v", src.Embeds)
+	}
+	tr := "纸船为什么能浮起来\n%%\n纸船能浮起来是因为里面困住了空气。\n%%\n折法也很重要。"
+	all := strings.Join(nodeTexts(Build(&r, "", Options{Translations: Translations{
+		Article: tr,
+		Embeds:  map[string]Embedded{tweetKey(&e): {Text: "这是嵌入推文的译文。"}},
+	}}, 0)), "\n")
+	if !strings.Contains(all, "这是嵌入推文的译文。") || strings.Contains(all, "This embedded tweet") {
+		t.Fatalf("嵌入推文要原位换成译文：%q", all)
+	}
+	if !strings.Contains(all, "引用 被引的人") || !strings.Contains(all, "（翻译自英语）") {
+		t.Fatalf("嵌入推文该有引用头和翻译说明：%q", all)
 	}
 }

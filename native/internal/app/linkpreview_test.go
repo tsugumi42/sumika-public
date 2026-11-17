@@ -34,7 +34,7 @@ func TestLinkPreviewAndTemplates(t *testing.T) {
 		}
 	}
 	sites, err := d.LinkTemplates(ctx, "x")
-	if err != nil || len(sites) != 1 || sites[0].Direct != xDefault() || sites[0].ForwardMode != "auto" || sites[0].ForwardOver != 600 || len(sites[0].Fields) == 0 {
+	if err != nil || len(sites) != 1 || sites[0].Direct != xDefault() || sites[0].ForwardMode != "auto" || sites[0].ForwardOverBytes != 16500 || len(sites[0].Fields) == 0 {
 		t.Fatalf("link template：%v %+v", err, sites)
 	}
 	if all, err := d.LinkTemplates(ctx, ""); err != nil || len(all) < 10 || len(all[0].Fields) != 0 {

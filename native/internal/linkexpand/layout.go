@@ -258,8 +258,6 @@ func tweetTextWith(r *linkreader.Result, o Options, translated, note string) str
 		} else {
 			note = ""
 		}
-	} else {
-		note = ""
 	}
 	if who != "" {
 		if body.ok {
@@ -294,17 +292,25 @@ func (b *builder) xQuoteItems() []Item {
 	switch {
 	case q != nil:
 		b.quotedTweet = true
-		note := ""
-		qt := b.quoteTranslated(q)
-		if qt != "" {
-			note = translatedFrom(q)
+		note, qt := "", ""
+		shown := q
+		if xArticle(q) && strings.TrimSpace(b.o.QuoteArticleTranslation) != "" {
+			// 被引的是 X 长文：标题和正文块照主长文那样按 %% 分段填回，原文不出现（ADR-391）
+			if q2, ok := articleTranslated(q, b.o.QuoteArticleTranslation); ok {
+				shown, note = q2, articleFrom(q)
+			}
 		}
-		out = append(out, text(tweetTextWith(q, b.o, qt, note)))
+		if shown == q {
+			if qt = b.quoteTranslated(q); qt != "" {
+				note = translatedFrom(q)
+			}
+		}
+		out = append(out, text(tweetTextWith(shown, b.o, qt, note)))
 		if q.MoreQuotes.Value || q.Quote.State == "available" {
 			// 紧跟被引推文的文字，在它的图和视频前面：放在媒体后面会夹在被引推文和主推文之间，读起来像是在说主推文（新 2-3 X-21）
 			out = append(out, text("还有更深引用，看原文"))
 		}
-		for _, it := range contentsOf(q, b.o, true, 1, false) {
+		for _, it := range contentsOf(shown, b.o, true, 1, false) {
 			if it.Kind == types.BodyText {
 				continue
 			}
@@ -315,6 +321,9 @@ func (b *builder) xQuoteItems() []Item {
 		}
 	case gone != "":
 		out = append(out, text(gone))
+	case r.Quote.State == "failed":
+		// 取数失败不再让整条进合并转发（classifyX 删除后统一按 autoForward）；直发时也要说明引用的那条没取到。
+		out = append(out, text("引用的推文没取到，看原文"))
 	case r.MoreQuotes.Value:
 		out = append(out, text("还有更深引用，看原文"))
 	}

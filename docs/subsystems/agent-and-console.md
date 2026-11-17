@@ -264,6 +264,15 @@ WebSocket 下行的消息类型（`type`）：
 | `trace.debug` | 调试记录，每次模型调用存完整请求和回复 |
 
 - 写回 `sumika.yml` 用 `setConfigValue`，保留文件里的注释和其他项。
+
+Go 侧已读、设置页还没开放的模型键（ADR-390，规格-模型配置 M1；只读和校验，请求仍走合成出来的 magpie）：
+
+| 键 | 说明 |
+|---|---|
+| `providers.<id>` | 模型服务商：`kind`（只认 `openai-compatible`）、`name`、`baseUrl`、`keyRef`（`${secret:名字}` 或 `${env:名字}`，明文拒收）、`compat`（占位，还没接到请求上）。ID 用小写字母、数字、`-`、`_`，不含 `/ # :` |
+| `defaultProvider` | 裸模型引用归哪个服务商；不写 = `magpie` |
+
+- 读配置时没有 `providers.magpie` 就在内存里按 `magpie.baseUrl` 补一条，不写回文件；`providers.magpie` 存在时 `magpie.baseUrl` 被忽略，加载时日志提示一次。
 - **改完马上生效（`LIVE`）的 10 项**：`defaults.backgroundModel`（改到记忆、学说法、话题三个插件上）、`defaults.backgroundThinking`、`vision.model`、`expression.reviewHours`、`agent.thinking.local` / `private` / `group`、`agent.context.window`、`agent.context.topicCompactAt`、`agent.context.autoCompactChat`——这些插件每次调用时才读配置，设置页直接改到运行中的插件上，下一句话就用新值。
 - **其余 4 项重启后台才生效**：返回里的 `restart` 列出改过的项，页面照实说。这个列表只在内存里，后台重启就清了。
 - 审批模式（`tools.approvalMode`）不在这里，走 WebSocket 的 `mode`，见[工具与审批](tools.md)；角色用的模型走 `PUT /api/characters/:id/model`。

@@ -30,7 +30,6 @@ func goldenBase(platform, kind, id string) linkreader.Result {
 	r.Author.Name, r.Author.Account = av("纸灯实验室"), av("paper_lab")
 	r.Published = av(time.Date(2026, 11, 1, 10, 30, 0, 0, time.UTC))
 	r.Article = linkreader.Field[string]{State: "not_returned", Reason: "not_applicable"}
-	r.Expansion = linkreader.Field[string]{State: "not_returned", Reason: "not_applicable"}
 	return r
 }
 func goldenImage(n int) linkreader.Media {
@@ -116,7 +115,6 @@ func goldenCases() []goldenCase {
 	xShort := func() linkreader.Result {
 		r := goldenBase("x", "post", "80001")
 		r.Text = av("短帖正文")
-		r.Expansion = av("short")
 		r.Media = av([]linkreader.Media{goldenImage(1)})
 		r = withStats(r, map[string]int64{"likes": 5, "reposts": 1, "replies": 2, "quotes": 0, "bookmarks": 3, "views": 900})
 		r.Blocks = []linkreader.Block{{Type: "text", Text: "短帖正文"}, {Type: "image", Media: new(goldenImage(1))}}
@@ -141,20 +139,20 @@ func goldenCases() []goldenCase {
 	})
 	add("x-long", func(*testing.T) linkreader.Result {
 		r := xShort()
-		r.Expansion = av("long")
-		r.Text = av(strings.Repeat("甲", 2001))
+		r.Text = av(strings.Repeat("甲", 5600)) // 16800 字节，超过默认 16500
 		r.Blocks = []linkreader.Block{{Type: "text", Text: r.Text.Value}, {Type: "image", Media: new(goldenImage(1))}, {Type: "text", Text: "段尾丙"}}
 		return r
 	})
+	// 301 个字按字数的老规则会进合并转发；现在按实发字节，远低于 16500，直发（ADR-391）
 	add("x-over300", func(*testing.T) linkreader.Result {
 		r := xShort()
 		r.Text = av(strings.Repeat("乙", 301))
+		r.Blocks = []linkreader.Block{{Type: "text", Text: r.Text.Value}, {Type: "image", Media: new(goldenImage(1))}}
 		return r
 	})
 	add("x-article", func(*testing.T) linkreader.Result {
 		r := xShort()
 		r.Article = av("长文章")
-		r.Expansion = av("long")
 		return r
 	})
 	add("x-quote", func(*testing.T) linkreader.Result {

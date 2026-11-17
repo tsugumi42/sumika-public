@@ -40,8 +40,7 @@ type artistFetcher struct {
 func (f *artistFetcher) Fetch(_ context.Context, l linkreader.Link) (linkreader.Result, error) {
 	f.calls++
 	av := func(s string) linkreader.Field[string] { return linkreader.Field[string]{State: "available", Value: s} }
-	r := linkreader.Result{Platform: "x", Kind: "post", ID: l.ID, CleanURL: l.Clean, Source: "fake", FetchedAt: time.Now().UTC(), Stats: map[string]linkreader.Field[int64]{},
-		Expansion: av("short")}
+	r := linkreader.Result{Platform: "x", Kind: "post", ID: l.ID, CleanURL: l.Clean, Source: "fake", FetchedAt: time.Now().UTC(), Stats: map[string]linkreader.Field[int64]{}}
 	r.Author.Name, r.Author.Account = av(artistName), av(f.account)
 	if f.id != "" {
 		r.Author.ID = av(f.id)

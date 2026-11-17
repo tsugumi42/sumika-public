@@ -17,13 +17,39 @@ import (
 )
 
 // SiteSetting 是一个站点的发送设置（配置里 linkReader.expand.sites.<站点>）。
-// Forward 为空按 auto；ForwardOver、DescLimit 为 nil 用站点的内置默认。
+// Forward 为空按 auto；ForwardOver、ForwardOverBytes、DescLimit 为 nil 用站点的内置默认。
 type SiteSetting struct {
 	Forward     string
 	ForwardOver *int
-	DescLimit   *int
+	// ForwardOverBytes 是实际发出的文字超过多少 UTF-8 字节折成合并转发（x、telegram，ADR-391）；配置只收 1000～17500
+	ForwardOverBytes *int
+	DescLimit        *int
 	// ShowDesc 为真时内置默认模板带上简介那一行（用户 2026-11-13，R-219）；用户自己写的模板不受它影响
 	ShowDesc bool
+}
+
+// forwardBytes 是这个站点“直发文字超过多少字节就改合并转发”的门槛：配置优先，没配用站点默认（配置层只收 1000～17500；0 只会来自没有字节门槛的站点）。
+func (o Options) forwardBytes(key string) int {
+	if v := o.Sites[key].ForwardOverBytes; v != nil {
+		return *v
+	}
+	if site, _, ok := linktemplate.SiteByKey(key); ok {
+		return site.ForwardOverBytes
+	}
+	return 0
+}
+
+// NodeBytes 是合并转发一个节点的文字上限（UTF-8 字节）：和转发门槛同一个配置值（ADR-391）。
+// 门槛配成 0（不按长度折）或这个站点没有字节门槛时，节点仍按默认 16500 字节拆。
+// 普通消息（never、画师推文、文字版）也按这个上限拆多条，宿主用它拿上限。
+func (o Options) NodeBytes(key string) int {
+	if v := o.Sites[key].ForwardOverBytes; v != nil && *v > 0 {
+		return *v
+	}
+	if site, _, ok := linktemplate.SiteByKey(key); ok && site.ForwardOverBytes > 0 {
+		return site.ForwardOverBytes
+	}
+	return linktemplate.DefaultForwardOverBytes
 }
 
 type val struct {
@@ -93,11 +119,13 @@ type builder struct {
 	moreImages string
 	// articleNote：X 长文的正文已经换成译文时的“翻译自日语”（$翻译说明）；空串是没换
 	articleNote string
+	// nodeBytes 是转发节点文字上限（字节，ADR-391）；Build 开始时按站点设置填
+	nodeBytes int
 }
 
 // Build 只构建语义计划。媒体槽位由后续受限下载器准备，再由唯一 Outlet 发送。
 // 每个站点的排版由模板决定（规格-链接解析模板）：字段、图片位置、分段和合并转发都在模板里；
-// 合并转发一层、80 节点封顶、文字 2000 字拆节点这些边界由代码保证。
+// 合并转发一层、80 节点封顶、节点文字按字节上限拆这些边界由代码保证。
 func Build(r *linkreader.Result, quote string, o Options, previous int) Draft {
 	d := Draft{CleanURL: r.ShareURL()}
 	if !Supports(r.Platform, r.Kind) {
@@ -114,6 +142,7 @@ func Build(r *linkreader.Result, quote string, o Options, previous int) Draft {
 	key := linktemplate.SiteKey(r.Platform, r.Kind)
 	site, _, _ := linktemplate.SiteByKey(key)
 	r = cleanResult(r, o)
+	o = o.withTranslations(r)     // 宿主拿回来的各段译文接到旧字段和嵌入推文表上（ADR-391）
 	o = o.withSplitTranslation(r) // 译文末尾的投票选项行拆走：Translation 只剩正文，选项译文放 pollLabels
 	articleNote := ""
 	if key == "x" && strings.TrimSpace(o.ArticleTranslation) != "" && xArticle(r) {
@@ -137,6 +166,9 @@ func Build(r *linkreader.Result, quote string, o Options, previous int) Draft {
 		desc = *setting.DescLimit
 	}
 	b.desc = desc
+	b.nodeBytes = o.NodeBytes(key)
+	d.nodeBytes = b.nodeBytes
+	overBytes := o.forwardBytes(key)
 	byImages := false                        // 只因为图多才进合并转发（shape.go 第 4 条）
 	if site.HasForward() && b.artist == "" { // 画师的推文只直发，图太多由 shapeDirect 按通用规则改转发或截断
 		switch setting.Forward {
@@ -144,11 +176,14 @@ func Build(r *linkreader.Result, quote string, o Options, previous int) Draft {
 			b.forwd = true
 		case linktemplate.ForwardNever:
 		default:
-			b.forwd, byImages = b.autoForward(key, over)
+			b.forwd, byImages = b.autoForward(key, over, overBytes)
 		}
 	}
 	tpl := b.template(key)
 	d.Parts = b.assemble(tpl.Render(b), quote)
+	for i := range d.Parts {
+		d.Parts[i].nodeBytes = b.nodeBytes
+	}
 	limit := o.directImageMax()
 	shapeDirect(&d, limit, setting.Forward != linktemplate.ForwardNever)
 	if byImages {
@@ -191,6 +226,9 @@ func (d *Draft) AppendNote(s string) {
 func appendNote(d *Draft, s, quote string) {
 	switch {
 	case len(d.Parts) > 0 && d.Parts[0].Kind == types.PartForward && len(d.Parts[0].Nodes) > 0:
+		if d.Parts[0].nodeBytes == 0 {
+			d.Parts[0].nodeBytes = d.nodeBytes
+		}
 		appendToForward(&d.Parts[0], s)
 	default:
 		if len(d.Parts) == 0 || d.Parts[0].Kind != types.PartMessage {
@@ -239,8 +277,8 @@ func noteText(n *Node) int {
 	return -1
 }
 
-// appendToForward 把提示接在转发头部那组的末尾（没标过就是第一个节点）；接上后超过 2000 字就在它后面另起一个节点，
-// 后面节点的 QuoteOf 跟着挪，标记移到新节点上（下一句提示接在它后面）
+// appendToForward 把提示接在转发头部那组的末尾（没标过就是第一个节点）；接上后超过节点的字节上限（ADR-391，默认 16500）
+// 就在它后面另起一个节点，后面节点的 QuoteOf 跟着挪，标记移到新节点上（下一句提示接在它后面）
 func appendToForward(p *Part, s string) {
 	at := 0
 	for i, n := range p.Nodes {
@@ -249,8 +287,12 @@ func appendToForward(p *Part, s string) {
 			break
 		}
 	}
+	maxBytes := p.nodeBytes
+	if maxBytes <= 0 {
+		maxBytes = linktemplate.DefaultForwardOverBytes
+	}
 	n := &p.Nodes[at]
-	if t := noteText(n); t < 0 || nodeTextRunes(n)+1+utf8.RuneCountInString(s) <= 2000 {
+	if t := noteText(n); t < 0 || nodeTextBytes(n)+1+len(s) <= maxBytes {
 		appendToNode(n, s)
 		return
 	}
@@ -273,12 +315,12 @@ func appendToNode(n *Node, s string) {
 	n.Body = append(n.Body, text(s))
 }
 
-// nodeTextRunes 数节点里文字的总字数（一个节点的文字最多 2000 字）
-func nodeTextRunes(n *Node) int {
+// nodeTextBytes 数节点里文字的总字节数（一个节点的文字最多 forwardOverBytes 字节，ADR-391）
+func nodeTextBytes(n *Node) int {
 	total := 0
 	for _, it := range n.Body {
 		if it.Kind == types.BodyText {
-			total += utf8.RuneCountInString(it.Text)
+			total += len(it.Text)
 		}
 	}
 	return total
@@ -319,8 +361,9 @@ func (b *builder) template(key string) *linktemplate.Template {
 
 // autoForward 是 auto 下“这条帖子走直发还是合并转发”的代码规则。图数上限各站统一是 directImageMax
 // （默认 3，规格-链接发送改版 B3），其余判断保持重构前的样子。byImages：除了图多，别的条件都够直发
-// （Prepare 后图没那么多就收回成一条消息，shape.go 第 4 条）。
-func (b *builder) autoForward(key string, over int) (forward, byImages bool) {
+// （Prepare 后图没那么多就收回成一条消息，shape.go 第 4 条）。x、telegram 的长度门槛按按实际会发出去的文字字节数算
+// （ADR-391：只放译文算译文，模板拼出的作者、时间、翻译自都算进去）；B 站等仍按字数 over。
+func (b *builder) autoForward(key string, over, overBytes int) (forward, byImages bool) {
 	r := b.r
 	maxImages := b.o.directImageMax()
 	switch key {
@@ -343,7 +386,7 @@ func (b *builder) autoForward(key string, over int) (forward, byImages bool) {
 		}
 		return pages > int64(maxImages), pages > int64(maxImages)
 	case "telegram":
-		// 文字不超过 over 字、图不超过 directImageMax 张、至多 1 个视频且不和图混着，才一条消息直发；其余进合并转发
+		// 文字不超过门槛、图不超过 directImageMax 张、至多 1 个视频且不和图混着，才一条消息直发；其余进合并转发
 		images, videos := 0, 0
 		for _, m := range r.Media.Value {
 			switch m.Type {
@@ -353,7 +396,8 @@ func (b *builder) autoForward(key string, over int) (forward, byImages bool) {
 				videos++
 			}
 		}
-		rest := (over <= 0 || WeightedLength(r.Text.Value) <= over) && !r.Media.Truncated && videos <= 1 && !(images > 0 && videos > 0)
+		rest := !r.Media.Truncated && videos <= 1 && !(images > 0 && videos > 0) &&
+			(overBytes <= 0 || b.directTextBytes(key) <= overBytes)
 		return !rest || images > maxImages, rest && images > maxImages
 	case "x":
 		images, videos := 0, 0
@@ -379,11 +423,31 @@ func (b *builder) autoForward(key string, over int) (forward, byImages bool) {
 		} else if b.mosaic && xMosaicUsable(r) && len(xOwnImages(r)) >= 3 {
 			images -= len(xOwnImages(r)) // 自定义模板写了 $拼图：三张及以上的图发拼图，一条消息就够
 		}
-		rest := r.Expansion.State == "available" && r.Expansion.Value == "short" && r.Text.State == "available" && !r.Text.Truncated && r.Media.State == "available" && !r.Media.Truncated &&
-			(over <= 0 || WeightedLength(r.Text.Value) <= over) && videos <= 1 && !hasQuote && r.Article.Reason == "not_applicable" && !(images > 0 && videos > 0)
+		rest := r.Text.State == "available" && !r.Text.Truncated && r.Media.State == "available" && !r.Media.Truncated &&
+			videos <= 1 && !hasQuote && r.Article.Reason == "not_applicable" && !(images > 0 && videos > 0) &&
+			(overBytes <= 0 || b.directTextBytes(key) <= overBytes)
 		return !rest || images > maxImages, rest && images > maxImages
 	}
 	return false, false
+}
+
+// directTextBytes 是按直发模板排出来、会拼进这一条消息的全部文字片段的 UTF-8 字节数（ADR-391）：
+// 只放译文时模板读到的就是译文，作者行、时间、“翻译自”这些模板文字也都算；$正文 这类槽位带出来的文字也算
+// （只数 PieceText 会漏掉正文）。图片、视频、卡片不算文字。
+// 只在 autoForward 里 b.forwd 还是假的时候调，读到的就是直发模板。
+func (b *builder) directTextBytes(key string) int {
+	n := 0
+	for _, p := range b.assemble(b.template(key).Render(b), "") {
+		if p.Kind != types.PartMessage {
+			continue
+		}
+		for _, it := range p.Body {
+			if it.Kind == types.BodyText {
+				n += len(it.Text)
+			}
+		}
+	}
+	return n
 }
 
 // articleShort 说一篇 B 站专栏够不够短：正文没被截断、文字不超过 over 字（over 为 0 不按字数）、没有视频；images 是正文里的图数。
@@ -1178,7 +1242,7 @@ func (b *builder) assemble(pieces []linktemplate.Piece, quote string) []Part {
 				if i == quotedGroup {
 					quotedAt = len(nodes)
 				}
-				gn := toNodes(g)
+				gn := toNodes(g, b.nodeBytes)
 				if len(nodes) == 0 {
 					markNoteEnd(gn)
 				}

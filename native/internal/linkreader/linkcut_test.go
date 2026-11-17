@@ -32,6 +32,52 @@ func TestSafeSplitNeverCutsInsideLink(t *testing.T) {
 	}
 }
 
+// URLSpans 一次算好的链接区间和 SafeSplit 逐点切的结果必须一致：URL、紧贴的 @/#、全角 ＠＃、
+// 超过 60 字节的 token 都按同一条扫描规则护住，两种切法不能一个护一个不护。
+func TestURLSpansMatchSafeSplit(t *testing.T) {
+	cases := []string{
+		"前文 https://example.invalid/a/b?x=1 后文",
+		"https://example.invalid/one 和 https://example.invalid/two",
+		"xhttps://example.invalid/glued@user",
+		"@abchttp://example.invalid/path#话题",
+		"＠名字 ｈｔｔｐｓ：／／example.invalid／路径？x＝1",
+		"https://example.invalid/a(b)c 后文",
+		"https://example.invalid/" + strings.Repeat("p", 200) + "尾巴",
+		"＃话题＠名字 https://example.invalid/x",
+		"https://example.invalid/x#话题",
+		"https://example.invalid/x@用户",
+		"https://example.invalid/x，中文",
+		"@" + strings.Repeat("长", 40) + " " + "https://example.invalid/y",
+		strings.Repeat("没有链接的长token", 10),
+	}
+	for _, text := range cases {
+		spans := URLSpans(text)
+		for i, sp := range spans {
+			if sp[0] < 0 || sp[0] >= sp[1] || sp[1] > len(text) {
+				t.Fatalf("%q 的区间 %d 越界：%v", text, i, sp)
+			}
+			if i > 0 && sp[0] < spans[i-1][1] {
+				t.Fatalf("%q 的区间重叠或乱序：%v", text, spans)
+			}
+		}
+		for at := 1; at < len(text); at++ {
+			want := at
+			for _, sp := range spans {
+				if at > sp[0] && at < sp[1] {
+					want = sp[0]
+					if want == 0 {
+						want = sp[1]
+					}
+					break
+				}
+			}
+			if got := SafeSplit(text, at); got != want {
+				t.Fatalf("%q 在 %d：SafeSplit=%d，URLSpans 算出来是 %d（%v）", text, at, got, want, spans)
+			}
+		}
+	}
+}
+
 func TestCutRunesKeepsLinkWhole(t *testing.T) {
 	link := "https://example.com/" + strings.Repeat("p", 60)
 	text := strings.Repeat("字", 795) + link

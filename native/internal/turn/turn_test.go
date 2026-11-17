@@ -567,6 +567,10 @@ func runCase(t *testing.T, name string) {
 	if c.ExpectNoRequest {
 		want = 0
 	}
+	// 登记过的场景请求数由登记定（trim：冷启动超硬门槛多一次压缩请求，ADR-377）
+	if intended && c.Replies == nil && !c.ExpectNoRequest {
+		want = len(golden.Requests)
+	}
 	if len(bodies) != want || len(golden.Requests) != want {
 		t.Fatalf("应该发 %d 次请求：Go 发了 %d 次，golden 里 %d 次", want, len(bodies), len(golden.Requests))
 	}
@@ -640,6 +644,10 @@ func runCase(t *testing.T, name string) {
 				for _, r := range rs {
 					for _, col := range []string{"sections_json", "context_json", "request_json"} {
 						delete(r, col)
+					}
+					// 压缩新铸的快照 id 每次随机（时间部分之外），不固定；预置的快照 id 照旧逐字比
+					if r["stage"] == "compact" && r["epoch_id"] != nil {
+						r["epoch_id"] = "<新快照>"
 					}
 				}
 			}

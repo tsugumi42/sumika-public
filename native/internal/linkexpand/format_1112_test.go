@@ -543,8 +543,8 @@ func TestQuietFailureDropsEmptyForwardNode(t *testing.T) {
 
 // 回归（#38）：长推文在空行处切成几个节点时，空行不留在前一个节点末尾。
 func TestNodeSplitTrimsBlankLines(t *testing.T) {
-	para := strings.Repeat("纸", 1500)
-	nodes := toNodes([]Item{text(para + "\n\n" + para)})
+	para := strings.Repeat("纸", 1500) // 4500 字节
+	nodes := toNodes([]Item{text(para + "\n\n" + para)}, 5000)
 	if len(nodes) != 2 {
 		t.Fatalf("应切成两个节点：%d", len(nodes))
 	}

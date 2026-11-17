@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 )
 
 type xAuthor struct {
@@ -420,7 +419,6 @@ func mapX(l Link, p *xPost, depth int, seen map[string]bool) (Result, error) {
 			return Result{}, err
 		}
 	}
-	classifyX(&r)
 	return r, nil
 }
 func originalImage(raw string) string {
@@ -479,27 +477,7 @@ func mapXMedia(m xMedia) Media {
 	return item
 }
 
-// 缺媒体清单时无法证明是短帖；已知任一长帖条件则不依赖其他缺项。
-func classifyX(r *Result) {
-	images, videos := 0, 0
-	for _, m := range r.Media.Value {
-		if m.Type == "image" {
-			images++
-		} else if m.Type == "video" || m.Type == "gif" {
-			videos++
-		}
-	}
-	// 三张及以上的图，取数端给了拼图（发一张拼图就够）时不算“多图长帖”；没有拼图（vx 线路、旧缓存）还是长帖。
-	manyImages := images > 2 && !(r.Mosaic.State == "available" && r.Mosaic.Value.URL.State == "available" && videos == 0)
-	if utf8.RuneCountInString(r.Text.Value) > 300 || manyImages || videos > 1 || r.Quote.State != "not_returned" || r.MoreQuotes.Value || r.Article.Reason != "not_applicable" {
-		r.Expansion = available("long")
-	} else if r.Text.State != "available" || r.Text.Truncated || r.Media.State != "available" {
-		r.Expansion = missing[string]("incomplete_content")
-	} else {
-		r.Expansion = available("short")
-	}
-}
-
+// 数字标识允许平台 JSON 的整数或字符串；不经过 float64。
 type vxPost struct {
 	ID        string  `json:"tweetID"`
 	Text      *string `json:"text"`
@@ -637,7 +615,6 @@ func mapVX(l Link, p *vxPost, depth int, seen map[string]bool) (Result, error) {
 			}
 		}
 	}
-	classifyX(&r)
 	return r, nil
 }
 

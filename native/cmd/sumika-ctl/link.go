@@ -43,7 +43,11 @@ func renderLink(w, stderr io.Writer, req ctlproto.Request, r ctlproto.Reply) {
 		for _, s := range v.Sites {
 			fmt.Fprintf(w, "%s（%s）\n  直发：%s\n", s.Key, s.Label, strconv.Quote(s.Direct))
 			if s.Forward != "" {
-				fmt.Fprintf(w, "  转发：%s\n  合并转发：%s，超过 %d 字折叠\n", strconv.Quote(s.Forward), s.ForwardMode, s.ForwardOver)
+				if s.ForwardOverBytes > 0 {
+					fmt.Fprintf(w, "  转发：%s\n  合并转发：%s，实际发出的文字超过 %d 字节折叠\n", strconv.Quote(s.Forward), s.ForwardMode, s.ForwardOverBytes)
+				} else {
+					fmt.Fprintf(w, "  转发：%s\n  合并转发：%s，超过 %d 字折叠\n", strconv.Quote(s.Forward), s.ForwardMode, s.ForwardOver)
+				}
 			}
 			if s.DescLimit > 0 {
 				fmt.Fprintf(w, "  简介最多 %d 字\n", s.DescLimit)

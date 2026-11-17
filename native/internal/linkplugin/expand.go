@@ -269,13 +269,19 @@ func (p *Plugin) run(j job) {
 	f.run()
 }
 
+// maxEmbedTranslations 是长文里嵌入推文同时送翻的上限（ADR-391）：再多就排队，和分段翻译共用任务时限。
+const maxEmbedTranslations = 4
+
 // translating 是一条链接正在进行的几次翻译：帖子正文（含投票选项）、被引推文、X 长文各一次独立的调用，同时发出，
 // 各自有自己的时限、缓存和失败退回：一段翻不出来只有那一段发原文（2026-11-14）。某一段不翻就是 nil。
 type translating struct {
-	main, quote, article <-chan linktranslate.Outcome
+	main, quote, article, quoteArticle <-chan linktranslate.Outcome
+	embeds                             []<-chan linktranslate.Outcome
+	embedKeys                          []string
 }
 
-// startTranslate 在取到数据后立刻开始翻译帖子正文、被引推文和长文，和别的链接取数、媒体下载重叠；不该翻（没接翻译、开关关、模板没用译文、没有可翻的正文）返回 nil。
+// startTranslate 在取到数据后立刻开始翻译帖子正文、被引推文、长文、被引长文和长文里嵌的推文，和别的链接取数、媒体下载重叠；
+// 不该翻（没接翻译、开关关、模板没用译文、没有可翻的正文）返回 nil。
 func (p *Plugin) startTranslate(j job, r *linkreader.Result, fetchErr error) *translating {
 	if p.opt.Expand == nil || p.opt.Expand.Translate == nil || j.run == nil || fetchErr != nil {
 		return nil
@@ -294,22 +300,56 @@ func (p *Plugin) startTranslate(j job, r *linkreader.Result, fetchErr error) *tr
 		go func() { ch <- p.opt.Expand.Translate(ctx, url, text, ex) }()
 		return ch
 	}
-	t := &translating{main: start(src.Main), quote: start(src.Quote), article: start(src.Article)}
-	if t.main == nil && t.quote == nil && t.article == nil {
+	t := &translating{main: start(src.Main), quote: start(src.Quote), article: start(src.Article), quoteArticle: start(src.QuoteArticle)}
+	// 长文里嵌的推文可能很多：最多 4 条同时翻，超过的排队；和分段翻译共用同一份任务时限（j.run.ctx）。
+	sem := make(chan struct{}, maxEmbedTranslations)
+	for _, e := range src.Embeds {
+		text := e.Text
+		ch := make(chan linktranslate.Outcome, 1)
+		go func() {
+			select {
+			case sem <- struct{}{}:
+			case <-ctx.Done():
+				ch <- linktranslate.Outcome{Status: linktranslate.StatusFailed, Reason: "canceled"}
+				return
+			}
+			defer func() { <-sem }()
+			ch <- p.opt.Expand.Translate(ctx, url, text, ex)
+		}()
+		t.embeds = append(t.embeds, ch)
+		t.embedKeys = append(t.embedKeys, e.Key)
+	}
+	if t.main == nil && t.quote == nil && t.article == nil && t.quoteArticle == nil && len(t.embeds) == 0 {
 		return nil
 	}
 	return t
 }
 
-// takeTranslations 等三段翻译的结果（几次调用是并发的，各有时限）；每一段没出译文就只发那一段的原文。
-func (p *Plugin) takeTranslations(run *expansionRun, t *translating) (main, quote, article string) {
+// takeTranslations 等各段翻译的结果（几次调用是并发的，各有时限）；每一段没出译文就只发那一段的原文。
+func (p *Plugin) takeTranslations(run *expansionRun, t *translating) linkexpand.Translations {
 	if t == nil {
-		return "", "", ""
+		return linkexpand.Translations{}
 	}
-	return p.takeTranslation(run, t.main, ""), p.takeTranslation(run, t.quote, "quote:"), p.takeTranslation(run, t.article, "article:")
+	tr := linkexpand.Translations{
+		Main:         p.takeTranslation(run, t.main, ""),
+		Quote:        p.takeTranslation(run, t.quote, "quote:"),
+		Article:      p.takeTranslation(run, t.article, "article:"),
+		QuoteArticle: p.takeTranslation(run, t.quoteArticle, "quote_article:"),
+	}
+	for i, ch := range t.embeds {
+		if text := p.takeTranslation(run, ch, "embed:"); text != "" {
+			if tr.Embeds == nil {
+				tr.Embeds = map[string]linkexpand.Embedded{}
+			}
+			tr.Embeds[t.embedKeys[i]] = linkexpand.Embedded{Text: text}
+		}
+	}
+	return tr
 }
 
-// takeTranslation 等一次翻译结果（翻译自己有时限，到点就回空结果）；没出译文只发原文，运行页留一行，不写错误文案。tagPrefix 区分是哪一段（空是帖子正文）。
+// takeTranslation 等一次翻译结果（翻译自己有时限，到点就回空结果）；没出译文只发原文，运行页留一行，不写错误文案。
+// 每次没用上译文都记一行（ADR-391）：太短、已是目标语言、太长、模型说不用翻、命中“不用翻”缓存、失败、超时、分段失败
+// 都带原因标签；没配模型不算（运行页不记）。tagPrefix 区分是哪一段（空是帖子正文）。
 func (p *Plugin) takeTranslation(run *expansionRun, ch <-chan linktranslate.Outcome, tagPrefix string) string {
 	if ch == nil {
 		return ""
@@ -321,9 +361,12 @@ func (p *Plugin) takeTranslation(run *expansionRun, ch <-chan linktranslate.Outc
 		return ""
 	}
 	if out.Text == "" {
-		if out.Status == linktranslate.StatusFailed || out.Status == linktranslate.StatusTimeout {
-			outcome := taskrun.OutcomeFailed
-			if out.Status == linktranslate.StatusTimeout {
+		if out.Reason != "no_model" {
+			outcome := taskrun.OutcomeSkipped
+			switch out.Status {
+			case linktranslate.StatusFailed:
+				outcome = taskrun.OutcomeFailed
+			case linktranslate.StatusTimeout:
 				outcome = taskrun.OutcomeTimeout
 			}
 			p.opt.Degrade.Degrade(taskrun.ModuleLink, taskrun.ClassTranslate, nil, taskrun.Opts{Outcome: outcome, Ms: out.Took.Milliseconds(), Tag: tagPrefix + out.Reason})
@@ -331,6 +374,19 @@ func (p *Plugin) takeTranslation(run *expansionRun, ch <-chan linktranslate.Outc
 		return ""
 	}
 	return out.Text
+}
+
+// noteLegacyForwardOver 在 x、telegram 的旧键 forwardOver 还写着值时提示一次：这两个站点已按实际发出的字节数判断，
+// 旧值不生效、也不自动迁移（ADR-391）；旧配置照样读得进来，不报配置错。
+func (p *Plugin) noteLegacyForwardOver(o config.LinkExpand) {
+	for _, key := range []string{"x", "telegram"} {
+		if o.Sites[key].ForwardOver != nil {
+			p.legacyOverOnce.Do(func() {
+				p.warnf("linkReader.expand.sites.%s.forwardOver 已不生效：x、telegram 改按实际发出的字节数判断，请改用 forwardOverBytes（默认 16500）", key)
+			})
+			return
+		}
+	}
 }
 
 // kindOff 说一条链接的网站或页面类型在设置里关了。短链要解析后才知道页面类型，这里只看网站开关。
@@ -387,7 +443,7 @@ func BuildOptions(o config.LinkExpand) linkexpand.Options {
 func siteSettings(in map[string]config.LinkSite) map[string]linkexpand.SiteSetting {
 	out := make(map[string]linkexpand.SiteSetting, len(in))
 	for k, v := range in {
-		out[k] = linkexpand.SiteSetting{Forward: v.Forward, ForwardOver: v.ForwardOver, DescLimit: v.DescLimit, ShowDesc: v.ShowDesc}
+		out[k] = linkexpand.SiteSetting{Forward: v.Forward, ForwardOver: v.ForwardOver, ForwardOverBytes: v.ForwardOverBytes, DescLimit: v.DescLimit, ShowDesc: v.ShowDesc}
 	}
 	return out
 }

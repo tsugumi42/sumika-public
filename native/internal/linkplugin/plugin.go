@@ -103,6 +103,8 @@ type Plugin struct {
 	lateWG   sync.WaitGroup // 晚到回声触发的撤回协程，Close 等它们退出
 	// tracer 是宿主给的插件日志（Setup 时换上，停掉时清掉）；nil 不记。取数和发送都在队列的协程里，所以要原子地换
 	tracer atomic.Pointer[func(plugintrace.Event)]
+	// legacyOverOnce 只提示一次“站点还写着 forwardOver（x、telegram 已改按字节）”
+	legacyOverOnce sync.Once
 }
 
 type pend struct {

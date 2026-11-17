@@ -54,10 +54,9 @@ func TestTranslatedBodyReplacesEveryOriginalShape(t *testing.T) {
 
 // 链接后面紧跟中日文（没有空格）：链接只算到 ASCII 结束；译文里丢了链接补回时，补的只是链接本身，不带原文的尾巴。
 func TestLinkFollowedByCJKIsNotSwallowed(t *testing.T) {
-	// 加权长度：链接 23 + 全角逗号 2 + 400 个汉字 800，远超 600，是长
-	long := "见https://example.invalid/abc，" + strings.Repeat("字", 400)
-	if n := WeightedLength(long); n != 2+23+2+800 {
-		t.Fatalf("加权长度 %d，链接后的汉字被吞进链接了", n)
+	long := "见https://example.invalid/abc，" + strings.Repeat("字", 5600) // 16800 多字节，超过默认门槛
+	if got := asciiURLRe.FindAllString(long, -1); len(got) != 1 || got[0] != "https://example.invalid/abc" {
+		t.Fatalf("链接后的汉字被吞进链接了：%q", got)
 	}
 	for _, key := range []string{"x", "telegram"} {
 		var r linkreader.Result

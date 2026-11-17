@@ -44,7 +44,7 @@ func (b *ctlBackend) LinkTemplates(ctx context.Context, site string) (ctlproto.L
 	}
 	var res ctlproto.LinkTemplates
 	for _, s := range states {
-		info := ctlproto.LinkSiteInfo{Key: s.Key, Label: s.Label, Direct: s.Direct, Forward: s.Forward, ForwardMode: s.ForwardMode, ForwardOver: s.ForwardOver, DescLimit: s.DescLimit}
+		info := ctlproto.LinkSiteInfo{Key: s.Key, Label: s.Label, Direct: s.Direct, Forward: s.Forward, ForwardMode: s.ForwardMode, ForwardOver: s.ForwardOver, ForwardOverBytes: s.ForwardOverBytes, DescLimit: s.DescLimit}
 		for _, f := range s.Fields {
 			kind := "text"
 			switch f.Kind {

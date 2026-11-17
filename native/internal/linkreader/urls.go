@@ -79,6 +79,30 @@ func scanURLEnd(text string, from int) int {
 	return end
 }
 
+// URLSpans 返回 text 里每一段“长得像链接”的字节区间 [start,end)：只要以 http(s):// 开头就护住，不校验是否合法，
+// 和 SafeSplit 用的是同一条扫描规则。整段文字都扫，不受 FindURLs 的 64 KB / 20 条上限影响。
+// 调用方在长文里一次算好、反复查切点，避免每个候选切点都从头扫一遍。
+func URLSpans(text string) [][2]int {
+	var out [][2]int
+	for off := 0; off < len(text); {
+		m := urlStart.FindStringIndex(text[off:])
+		if m == nil {
+			break
+		}
+		start := off + m[0]
+		end := scanURLEnd(text, off+m[1])
+		if end <= start {
+			end = start + 1
+		}
+		if end > len(text) {
+			end = len(text)
+		}
+		out = append(out, [2]int{start, end})
+		off = max(end, start+1)
+	}
+	return out
+}
+
 // SafeSplit 把 text 在字节位置 at 附近切开，保证不切在链接中间：at 落在某条链接里，就退到这条链接开头（整条链接留给后一段）；
 // 链接从 0 开头且一直跨过 at，退不了就进到链接结尾（整条留在前一段）。at 不在链接里原样返回。
 // 不看链接是否合法：只要长得像（http(s):// 开头）就护住，宁可少切。
