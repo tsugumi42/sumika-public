@@ -202,7 +202,7 @@ func TestStoredLineBackfillRecallSelf(t *testing.T) {
 		}
 	}
 	// 补录的：行头用平台时间（48 小时前），不是入库的时间
-	if want := lineTime(t0, nil); !strings.HasPrefix(byText["补录来的"], "["+want+"] 昵称"+friend+"(群友)：") {
+	if want := lineTime(t0, lineHook().Location); !strings.HasPrefix(byText["补录来的"], "["+want+"] 昵称"+friend+"(群友)：") {
 		t.Errorf("补录的行头不对：%q，时间要 %s", byText["补录来的"], want)
 	}
 	// 撤回的：撤回通知不改原来那一行

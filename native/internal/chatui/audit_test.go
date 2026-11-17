@@ -11,9 +11,10 @@ import (
 func TestAuditSpacing(t *testing.T) {
 	tk := Derive(DefaultSettings())
 	at := time.Date(2026, 11, 6, 12, 0, 0, 0, time.Local)
-	host := Host{T: tk, SelfChar: CharColors[0], NoEnter: true, Column: 600}
+	// 字形四边量的是墨迹，系统兜底字体每台机器不一样（CI 上就量歪过）：用仓库里的测试字体，单行气泡只写它有的字
+	host := Host{T: tk, Font: registerTinyTestFont(t), SelfChar: CharColors[0], NoEnter: true, Column: 600}
 	msgs := []*Msg{
-		{ID: "a", Sender: "r1", Char: CharColors[0], Text: "我也在这里呀"},
+		{ID: "a", Sender: "r1", Char: CharColors[0], Text: "你好 hello"},
 		{ID: "b", Sender: "r2", Char: CharColors[1], At: at, Text: "比如这个。", Quote: &Quote{Name: "雾栞", Text: "昨天说好的纸灯"}, Reactions: []Reaction{{Emoji: "👍", Count: 5}}},
 		{ID: "c", Sender: "self", Self: true, Text: "这是一条发送失败的消息。", State: Failed},
 	}

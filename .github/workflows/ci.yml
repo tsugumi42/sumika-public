@@ -56,6 +56,19 @@ jobs:
         if: runner.os == 'Linux'
         run: bun run check:docs
 
+      # Windows runner 的 TEMP 是 8.3 短名（C:\Users\RUNNER~1\…），系统按句柄取回的却是长名：检查点、项目说明这些
+      # “路径必须就是它自己”的检查会把整片测试判成走了链接（第一次 CI，2026-11-18）。临时目录换成 runner 自带的长路径；
+      # 产品代码遇到短名会拒绝（往安全那边错），挂在待办里单独修。
+      - name: 临时目录用长路径
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $t = Join-Path $env:RUNNER_TEMP 'gotmp'
+          New-Item -ItemType Directory -Force $t | Out-Null
+          $t = (Get-Item $t).FullName
+          "TEMP=$t" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          "TMP=$t" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
       - name: go vet
         working-directory: native
         run: go vet ./...

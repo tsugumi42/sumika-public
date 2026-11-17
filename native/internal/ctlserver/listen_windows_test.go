@@ -75,7 +75,17 @@ func TestLivePipeDACLIsCurrentUserOnly(t *testing.T) {
 	sdd := sd.String()
 	t.Logf("管道的 DACL：%s", sdd)
 	sid, _ := ctlproto.CurrentSID()
-	if !regexp.MustCompile(`^D:P?(AR)?\(A;;[A-Z0-9x]+;;;` + regexp.QuoteMeta(sid) + `\)$`).MatchString(sdd) {
+	// 当前用户若是众所周知的账号（比如 CI 机器上的内置管理员，RID 500），SDDL 会印成缩写 LA 而不是 S-1-5-…：
+	// 让系统自己把这个 SID 印一遍，拿它印出来的写法比
+	ref, err := windows.SecurityDescriptorFromString("D:(A;;FA;;;" + sid + ")")
+	if err != nil {
+		t.Fatal(err)
+	}
+	printed := regexp.MustCompile(`;;;([^)]+)\)`).FindStringSubmatch(ref.String())
+	if printed == nil {
+		t.Fatalf("参照的安全描述读不出 SID：%s", ref.String())
+	}
+	if !regexp.MustCompile(`^D:P?(AR)?\(A;;[A-Z0-9x]+;;;` + regexp.QuoteMeta(printed[1]) + `\)$`).MatchString(sdd) {
 		t.Errorf("管道的 DACL 不是「只有当前用户一条允许项」：%s", sdd)
 	}
 }

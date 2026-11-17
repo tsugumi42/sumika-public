@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 	"time"
+	"unicode"
 
 	"sumika-native/internal/jsjson"
 )
@@ -73,6 +74,31 @@ func sameAnalysis(got, want *Analysis) bool {
 	return reflect.DeepEqual(got, want)
 }
 
+// sameExceptErrorLanguage：pwsh 的解析报错跟着系统界面语言走。基线是中文报错、这次一条中文都没有时，
+// 只要求条数一样，其余字段照旧逐项比；两边都是中文（或基线不是中文）时不放宽。
+func sameExceptErrorLanguage(got, want *Analysis) bool {
+	if got == nil || want == nil || len(got.Errors) == 0 || len(got.Errors) != len(want.Errors) {
+		return false
+	}
+	for i := range want.Errors {
+		if !hasHan(want.Errors[i]) || hasHan(got.Errors[i]) {
+			return false
+		}
+	}
+	g, w := *got, *want
+	g.Errors, w.Errors = nil, nil
+	return reflect.DeepEqual(&g, &w)
+}
+
+func hasHan(s string) bool {
+	for _, r := range s {
+		if unicode.Is(unicode.Han, r) {
+			return true
+		}
+	}
+	return false
+}
+
 // 对拍不能把同样条数的另一种解析错误当成相同。
 func TestAnalyzerComparisonRejectsChangedError(t *testing.T) {
 	var cases []shellGolden
@@ -102,6 +128,10 @@ func TestAnalyzerSameAsBun(t *testing.T) {
 	for _, c := range g {
 		got := a.Analyze(c.Cmd, time.Minute) // 比的是拆出来的内容；时限只防卡死，机器忙时冷启动也要十几秒
 		equal := sameAnalysis(got, c.Analysis)
+		if !equal && sameExceptErrorLanguage(got, c.Analysis) {
+			t.Logf("%q 只有解析报错的语言不同（基线是中文 pwsh 录的，这台机器的 pwsh 报别的语言），条数一样，算相同", c.Cmd)
+			equal = true
+		}
 		if !equal {
 			bad++
 			gj, _ := json.Marshal(got)
@@ -201,4 +231,24 @@ func TestDecideSameAsBun(t *testing.T) {
 		}
 	}
 	t.Logf("%d 组，不一样的 %d 组，只比判定等四项的有意不同 %d 组", len(g.Out), bad, intended)
+}
+
+// 放宽只认“基线中文、这次没中文、条数一样、其余字段相同”：哪一条不满足都还是不一样
+func TestSameExceptErrorLanguage(t *testing.T) {
+	zh := &Analysis{Errors: []string{"表达式中缺少右括号“)”。"}}
+	en := &Analysis{Errors: []string{"Missing closing ')' in expression."}}
+	if !sameExceptErrorLanguage(en, zh) {
+		t.Error("只有报错语言不同，该算相同")
+	}
+	if sameExceptErrorLanguage(&Analysis{Errors: []string{"表达式中缺少别的"}}, zh) {
+		t.Error("两边都是中文但报错不同，不能放过")
+	}
+	if sameExceptErrorLanguage(&Analysis{Errors: []string{"a", "b"}}, zh) {
+		t.Error("条数不同，不能放过")
+	}
+	other := *en
+	other.Commands = []Command{{}}
+	if sameExceptErrorLanguage(&other, zh) {
+		t.Error("报错以外的字段不同，不能放过")
+	}
 }

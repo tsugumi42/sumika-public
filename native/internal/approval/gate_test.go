@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unicode"
 
 	"sumika-native/internal/jsjson"
 	"sumika-native/internal/kernel"
@@ -169,7 +170,9 @@ func TestGateSameAsBun(t *testing.T) {
 				dropApprovalSubject(gv)
 				dropApprovalSubject(golden[i])
 			}
-			if !reflect.DeepEqual(gv, any(golden[i])) {
+			if !reflect.DeepEqual(gv, any(golden[i])) && sameExceptParseLanguage(gv, golden[i]) {
+				t.Logf("只有 pwsh 解析报错的语言不同（基线是中文 pwsh 录的），算相同")
+			} else if !reflect.DeepEqual(gv, any(golden[i])) {
 				want, _ := json.Marshal(golden[i])
 				t.Errorf("不一样\n Go：%s\n基线：%s", s, want)
 			}
@@ -197,4 +200,41 @@ func dropApprovalSubject(v any) {
 			delete(a, "subject")
 		}
 	}
+}
+
+// sameExceptParseLanguage：卡片 notes 里「看不清：语法有问题：…」后半句是 pwsh 的原话，跟着系统界面语言走。
+// 基线那句是中文、这次一个汉字都没有时，把这两句都截成前缀再比；别的字段、别的 notes 照旧逐字比。
+func sameExceptParseLanguage(got any, want map[string]any) bool {
+	const prefix = "看不清：语法有问题："
+	notesOf := func(v any) []any {
+		m, _ := v.(map[string]any)
+		ap, _ := m["approval"].(map[string]any)
+		n, _ := ap["notes"].([]any)
+		return n
+	}
+	gn, wn := notesOf(got), notesOf(any(want))
+	if len(gn) == 0 || len(gn) != len(wn) {
+		return false
+	}
+	han := func(s string) bool {
+		for _, r := range s {
+			if unicode.Is(unicode.Han, r) {
+				return true
+			}
+		}
+		return false
+	}
+	changed := false
+	for i := range wn {
+		g, _ := gn[i].(string)
+		w, _ := wn[i].(string)
+		if strings.HasPrefix(g, prefix) && strings.HasPrefix(w, prefix) && han(w[len(prefix):]) && !han(g[len(prefix):]) {
+			gn[i], wn[i], changed = prefix, prefix, true
+		}
+	}
+	if !changed {
+		return false
+	}
+	equal := reflect.DeepEqual(got, any(want))
+	return equal
 }
