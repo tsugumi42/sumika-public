@@ -4,15 +4,16 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { describePick, pick, readGraph } from './go-affected'
+import { devEnv, devExe } from './lib/sumika-dev'
 import { cleanTree, needsRunPlanned, PLANNED_PATHS, plan, runPlanned } from './server-verify'
 import { git, goEnv, goFingerprint, goTree, loadVerified, uncovered, verify, verifyMygo, when } from './go-verify'
 
 const ZERO = /^0+$/
 const env = goEnv()
 const root = process.cwd()
-const run = (cmd: string[], cwd?: string) => {
+const run = (cmd: string[], cwd?: string, runEnv = env) => {
   const t = Date.now()
-  const p = Bun.spawnSync(cmd, { cwd, env, stdout: 'inherit', stderr: 'inherit' })
+  const p = Bun.spawnSync(cmd, { cwd, env: runEnv, stdout: 'inherit', stderr: 'inherit' })
   console.log(`  ${p.exitCode === 0 ? '过' : '红'}（退出码 ${p.exitCode}，${((Date.now() - t) / 1000).toFixed(1)} 秒）：${cmd.join(' ')}`)
   return p.exitCode === 0
 }
@@ -27,7 +28,7 @@ for (const line of input.split(/\r?\n/).filter(Boolean)) {
   const range = `${base}..${local}`
   const files = git(['diff', '--name-only', '--no-renames', base, local]).split(/\r?\n/).filter(Boolean)
   console.log(`推送前检查：${range}，${git(['rev-list', '--count', range])} 个提交、${files.length} 个文件`)
-  ok = run(['bun', 'scripts/scan-private.ts', '--range', range]) && ok
+  ok = run([devExe(root), 'check', 'private', '--range', range], undefined, devEnv(undefined, env)) && ok
   // 按改了哪些路径挑 Bun 后台和协议的检查（规格-Bun后台第1批 第八节）；只改 server/ 时不跑 Go
   const pl = plan(files)
   if (needsRunPlanned(pl)) {

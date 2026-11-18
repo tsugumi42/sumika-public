@@ -300,7 +300,7 @@ func (h Host) partAtt(c *ui.Context, a PartAtt) {
 	if a.Image {
 		icon = "pic"
 	}
-	ui.Row(c).Label("附件："+a.Name).Height(t.HSm).Padding(0, t.S2).Gap(t.S1).AlignItems(ui.Center).Radius(t.RInnerMin).Background(t.C.Hover).Children(func() {
+	ui.Row(c).Label("附件："+a.Name).Height(t.HSm).Padding(0, t.S2).Gap(t.S1).AlignItems(ui.Center).Radius(t.HSm / 2).Background(t.C.Hover).Children(func() {
 		ui.Icon(c.Key("icon"), Icon(icon, false)).Size(t.FS[2], t.FS[2]).Shrink(0).TextColor(t.C.Text3)
 		ui.Text(c.Key("name"), a.Name).Font(h.Font).FontSize(t.FS[2]).TextColor(t.C.Text2).MaxWidth(attName).SingleLine()
 	})

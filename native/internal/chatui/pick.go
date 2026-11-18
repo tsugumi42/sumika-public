@@ -180,7 +180,7 @@ func (h ComposerHost) PickBar(c *ui.Context, pk *Picker, targets []WhisperTarget
 					if m.Item(WhisperAll).ID("to:*").Chosen() {
 						onQuote(nil, true)
 					}
-				})
+				}, t.MenuButton(c))
 			}
 			btn("cancel", "取消", "").OnClick(onCancel)
 		})

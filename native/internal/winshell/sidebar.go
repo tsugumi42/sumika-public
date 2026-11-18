@@ -73,7 +73,7 @@ func (k *Kit) Sidebar(c *ui.Context, s *State, sp *SidebarSpec, narrow bool) {
 				defer k.WindowButtons(c)
 			}
 			// 搜索框最左边一个放大镜（主人 2026-11-09）
-			k.searchShaped(c, "search", sp.Search, sp.Hint, &s.SearchField, g.SearchHeight, g.SearchInset, g.RadiusBar).Grow(1)
+			k.searchShaped(c, "search", sp.Search, sp.Hint, &s.SearchField, g.SearchHeight, g.SearchInset).Grow(1)
 			if len(sp.Menu) > 0 {
 				k.plusMenu(c, s, sp)
 			}
@@ -88,7 +88,10 @@ func (k *Kit) Sidebar(c *ui.Context, s *State, sp *SidebarSpec, narrow bool) {
 				})
 			}
 			s.Convs.Key = func(i int) any { return sp.At(i).ID }
-			ui.List(c.Key("conversation-list"), &s.Convs, sp.Count, func(i int) { k.conversationRow(c, s, sp, i) }).Grow(1).MinHeight(0).ScrollbarInsets(0, ListGrab/2, 0, 0).Label("会话条目")
+			st := k.slides("conversations")
+			own := true // 选中行要不要自己画底：滑动期间由列表画那一块，滑完交还给行（行跟着滚动走）
+			list := ui.List(c.Key("conversation-list"), &s.Convs, sp.Count, func(i int) { k.conversationRow(c, s, sp, i, st, &own) }).Grow(1).MinHeight(0).ScrollbarInsets(0, ListGrab/2, 0, 0).Label("会话条目")
+			own = k.SlideIndicator(c, list, st, sp.Selected, SlideOptions{Radius: g.RadiusRow, OwnWhenSettled: true})
 			if sp.Count == 0 {
 				if sp.Placeholder != nil {
 					sp.Placeholder(c)
@@ -108,24 +111,35 @@ func (k *Kit) visible(s *State, sp *SidebarSpec) {
 	}
 }
 
-// conversationRow 是一行：两边离栏边一个 ListInset，圆角，选中是浮起的一块、字色不变（Lift，照 Bun .su-conv，主人 2026-11-09 定，改 ADR-284）；
-// 选中块画在行自己身上，滚动时不会和行脱开。悬停和按下各一层浅底。名字 600、选中 700，预览用第三级灰。
-func (k *Kit) conversationRow(c *ui.Context, s *State, sp *SidebarSpec, i int) {
+// conversationRow 是一行：两边离栏边一个 ListInset，圆角，选中是浮起的一块、字色不变（Raised，照 Bun .su-conv，主人 2026-11-09 定，改 ADR-284）；
+// 选中块画在行自己身上，滚动时不会和行脱开。悬停和按下各一层浅底。名字常规字重、只有选中的一行 700（2026-11-17 体检 C2：
+// 一列全是粗体就分不出哪行要紧），预览用第三级灰。
+func (k *Kit) conversationRow(c *ui.Context, s *State, sp *SidebarSpec, i int, st *SlideState, own *bool) {
 	g, p := k.G, k.P
 	cv := sp.At(i)
 	id := cv.ID
 	selected := sp.Selected == id
+	st.FillKey(id, selected)
 	b := ui.ButtonBase(c.Key("conversation-"+id)).Label(cv.Name).Margin(1, g.ListInset).MinHeight(g.ConversationAvatar + g.BarInset*2).Padding(g.BarInset).Gap(g.SpaceMedium).AlignItems(ui.Center).Radius(g.RadiusRow).Selected(selected).OnClick(func() { sp.OnSelect(id) })
-	weight := g.StrongWeight
+	b.Bind(st.Item(id))
+	weight := g.NormalWeight
 	if selected {
 		weight = g.BoldWeight
-		k.Lift(b)
-	} else if b.Pressed() {
-		b.Background(p.Press)
-	} else if b.Hovered() {
-		b.Background(p.Hover)
+		if *own {
+			k.selectBg(b, selMode) // 选中行自己画底：和滑动的块同色同圆角，不带淡变
+		} else {
+			b.Background(ui.Transparent) // 滑动期间块由列表画；不写的话按钮基座会按“选中”自己上一层主题色
+		}
+	} else {
+		// 悬停、按下的底 140 毫秒淡变；不挂 Transition，选中行和刚取消选中的行的底都不淡，和滑动的那一块交接时不闪
+		bg := ui.Transparent
+		if b.Pressed() {
+			bg = p.Press
+		} else if b.Hovered() {
+			bg = p.Hover
+		}
+		b.Background(b.AnimateColor(st.FillKey(id, false), bg, ControlFade))
 	}
-	b.Transition(SelectFade) // 选中块、悬停、按下的底都 140 毫秒淡变（行里的 Transition 只管底色和阴影，位置不动）
 	// 时间和未读角标一上一下，中线对齐（主人 2026-11-09）：谁窄谁往里让半个差值
 	measure := func(text string) float32 {
 		w, _ := c.MeasureText(1e6, ui.Span{Text: text, Size: g.MetaSize, Font: c.Theme().Font, Features: chatui.Tabular})
@@ -170,13 +184,17 @@ func (k *Kit) rowMenu(c *ui.Context, row ui.Element, sp *SidebarSpec, id string)
 	if sp.RowMenu == nil {
 		return
 	}
-	items := sp.RowMenu(id)
+	k.ContextMenu(c, row, "row-menu", sp.RowMenu(id))
+}
+
+// ContextMenu 给 target 接上右键菜单（Shift+F10、菜单键也开）：和别的手画菜单同一个面板、同一套项、同一种展开收起。没有项就不接。
+func (k *Kit) ContextMenu(c *ui.Context, target ui.Element, key string, items []MenuItem) {
 	if len(items) == 0 {
 		return
 	}
-	open := ui.Local(row, "row-menu-open", func() bool { return false })
-	m := ui.ContextMenuBase(c, row, open)
-	m.Popup(func(panel ui.Element) { k.menuPanel(c, m, panel, "row-menu", items) })
+	open := ui.Local(target, key+"-open", func() bool { return false })
+	m := ui.ContextMenuBase(c, target, open)
+	m.Popup(func(panel ui.Element) { k.menuPanel(c, m, panel, key, items) })
 }
 
 // conversationAvatar 按会话是角色还是人选头像形状。
@@ -207,19 +225,30 @@ func (k *Kit) compactSidebar(c *ui.Context, s *State, sp *SidebarSpec) {
 			})
 		})
 		s.Convs.Key = func(i int) any { return sp.At(i).ID }
-		ui.List(c.Key("conversation-list"), &s.Convs, sp.Count, func(i int) {
+		st := k.slides("conversations-compact")
+		own := true
+		list := ui.List(c.Key("conversation-list"), &s.Convs, sp.Count, func(i int) {
 			cv := sp.At(i)
 			id := cv.ID
 			selected := sp.Selected == id
+			st.FillKey(id, selected)
 			b := ui.ButtonBase(c.Key("conversation-"+id)).Label(cv.Name).Size(g.ConversationAvatar+2*g.BarInset, g.ConversationAvatar+2*g.BarInset).AlignSelf(ui.Center).Center().Radius(g.RadiusRow).Selected(selected).OnClick(func() { sp.OnSelect(id) })
+			b.Bind(st.Item(id))
 			if selected {
-				k.Lift(b)
-			} else if b.Pressed() {
-				b.Background(p.Press)
-			} else if b.Hovered() {
-				b.Background(p.Hover)
+				if own {
+					k.selectBg(b, selMode)
+				} else {
+					b.Background(ui.Transparent)
+				}
+			} else {
+				bg := ui.Transparent
+				if b.Pressed() {
+					bg = p.Press
+				} else if b.Hovered() {
+					bg = p.Hover
+				}
+				b.Background(b.AnimateColor(st.FillKey(id, false), bg, ControlFade))
 			}
-			b.Transition(SelectFade)
 			b.Children(func() {
 				k.conversationAvatar(c, cv, g.ConversationAvatar)
 				if cv.Unread > 0 { // 照 Telegram 小列（dialogs_layout.cpp:304 PaintNarrowCounter）：未读数贴在头像右上
@@ -231,6 +260,7 @@ func (k *Kit) compactSidebar(c *ui.Context, s *State, sp *SidebarSpec) {
 			k.surface(c, b, "conversation-"+id, "conversation", g.RadiusRow, g.BarInset)
 			k.rowMenu(c, b, sp, id)
 		}).Grow(1).MinHeight(0).ScrollbarInsets(0, ListGrab/2, 0, 0).Label("会话条目")
+		own = k.SlideIndicator(c, list, st, sp.Selected, SlideOptions{Radius: g.RadiusRow, OwnWhenSettled: true})
 	})
 	k.visible(s, sp)
 }
@@ -262,7 +292,7 @@ func (k *Kit) plusMenu(c *ui.Context, s *State, sp *SidebarSpec) {
 func (k *Kit) menuPanel(c *ui.Context, m ui.MenuParts, panel ui.Element, key string, items []MenuItem) {
 	g := k.G
 	panel.Padding(g.SpaceTight).Gap(g.SpaceTight).Radius(g.RadiusControl)
-	k.FloatMenu(panel)
+	k.FloatMenu(c, panel)
 	k.surface(c, panel, key+"-popup", "menu-popup", g.RadiusControl, g.SpaceTight)
 	k.menuItems(c, m, key, items)
 }
@@ -345,14 +375,14 @@ func (k *Kit) PillMenu(c *ui.Context, key, label, hint string, icon *ui.SVG, ope
 	if len(items) == 0 { // 没有可选的：只显示，但悬停还能看说明（禁用的按钮没有悬停提示）
 		pill := ui.Row(c.Key(key)).Label(hint).Height(g.HitSmall).Shrink(1).MinWidth(0).Padding(g.ControlInset).Gap(g.SpaceTight).AlignItems(ui.Center).TextColor(p.Muted)
 		k.Tip(c, pill, hint)
-		k.surface(c, pill, key, "pill", g.RadiusControl, g.ControlInset).Children(func() {
+		k.surface(c, pill, key, "pill", g.Pill(g.HitSmall), g.ControlInset).Children(func() {
 			ui.Icon(c, icon).Size(g.IconSmall, g.IconSmall).Shrink(0)
 			ui.Text(c, label).FontSize(g.MetaSize).FixedLineHeight(g.MetaLine).SingleLine().MinWidth(0)
 		})
 		return
 	}
 	m := ui.MenuBase(c.Key(key), open)
-	trigger := m.Trigger.Label(hint).Height(g.HitSmall).Shrink(1).MinWidth(0).Padding(g.ControlInset).Gap(g.SpaceTight).AlignItems(ui.Center).Radius(g.RadiusControl).TextColor(p.Muted)
+	trigger := m.Trigger.Label(hint).Height(g.HitSmall).Shrink(1).MinWidth(0).Padding(g.ControlInset).Gap(g.SpaceTight).AlignItems(ui.Center).Radius(g.Pill(g.HitSmall)).TextColor(p.Muted)
 	k.Tip(c, trigger, hint)
 	bg := ui.Transparent
 	if *open || trigger.Pressed() {
@@ -364,7 +394,7 @@ func (k *Kit) PillMenu(c *ui.Context, key, label, hint string, icon *ui.SVG, ope
 		ui.Icon(c, icon).Size(g.IconSmall, g.IconSmall).Shrink(0)
 		ui.Text(c, label).FontSize(g.MetaSize).FixedLineHeight(g.MetaLine).SingleLine().MinWidth(0)
 	})
-	k.surface(c, trigger, key, "pill", g.RadiusControl, g.ControlInset)
+	k.surface(c, trigger, key, "pill", g.Pill(g.HitSmall), g.ControlInset)
 	m.Popup(func(panel ui.Element) {
 		panel.MinWidth(g.ControlWide).MaxHeight(g.ControlWide * 1.4)
 		ui.Scroll(c.Key(key + "-scroll")).FillWidth().Children(func() {

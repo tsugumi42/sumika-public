@@ -166,7 +166,7 @@ func viewerContent(c *ui.Context, state *ViewerState, items []ViewerItem, o View
 	iw, ih := naturalW*scale, naturalH*scale
 	clampPan(state, iw, ih, vw, vh)
 	ui.Overlay(c, func() {
-		back := ui.Box(c).Key(viewerKey{root.ID()}).Absolute().Left(0).Top(0).Right(0).Bottom(0).Modal().Clip().Role(ui.RoleDialog).Label(item.Title).Background(t.Colors().Viewer().Background())
+		back := ui.Box(c.Key(viewerKey{root.ID()})).Absolute().Left(0).Top(0).Right(0).Bottom(0).Modal().Clip().Role(ui.RoleDialog).Label(item.Title).Background(t.Colors().Viewer().Background())
 		x, y, _ := back.PointerPosition()
 		pointer := ui.Point{X: x, Y: y}
 		if pointer != local.pointer {
@@ -214,7 +214,7 @@ func viewerContent(c *ui.Context, state *ViewerState, items []ViewerItem, o View
 		back.HandleInput(gesture)
 		back.Children(func() {
 			if item.Phase == ViewerReady {
-				image := ui.Image(c, item.Image).Key(item.ID).Label("Viewer image").Size(iw, ih).Attach(ui.AnchorCenter, ui.AnchorCenter).Translate(state.Pan.X, state.Pan.Y).Focusable()
+				image := ui.Image(c.Key(item.ID), item.Image).Label("Viewer image").Size(iw, ih).Attach(ui.AnchorCenter, ui.AnchorCenter).Translate(state.Pan.X, state.Pan.Y).Focusable()
 				imageX, imageY := (vw-iw)/2+state.Pan.X, (vh-ih)/2+state.Pan.Y
 				image.HandleInput(func(ev ui.InputEvent) bool {
 					// Mygo sends pinches only to the innermost handler; preserve its window anchor.
@@ -295,7 +295,7 @@ func viewerContent(c *ui.Context, state *ViewerState, items []ViewerItem, o View
 				to        int
 				right     bool
 			}{{"previous", previous, left, index - 1, false}, {"next", next, right, index + 1, true}} {
-				b := ui.ButtonBase(c).Key(nav.id).Label(nav.label).Absolute().Top(m.HeaderOffset()).Bottom(m.HeaderOffset()).Width(m.ControlWidth()).Disabled(nav.to < 0 || nav.to >= len(items)).Opacity(alpha)
+				b := ui.ButtonBase(c.Key(nav.id)).Label(nav.label).Absolute().Top(m.HeaderOffset()).Bottom(m.HeaderOffset()).Width(m.ControlWidth()).Disabled(nav.to < 0 || nav.to >= len(items)).Opacity(alpha)
 				if nav.right {
 					b.Right(0)
 				} else {
@@ -330,7 +330,7 @@ func viewerContent(c *ui.Context, state *ViewerState, items []ViewerItem, o View
 					icon  *ui.SVG
 					fn    func()
 				}{{outLabel, zoomOutIcon, func() { zoom(-1, ui.Point{X: vw / 2, Y: vh / 2}) }}, {inLabel, zoomInIcon, func() { zoom(1, ui.Point{X: vw / 2, Y: vh / 2}) }}} {
-					b := ui.ButtonBase(c).Key(action.label).Label(action.label).Size(m.ActionWidth(), m.ActionHeight()).Disabled(item.Phase != ViewerReady)
+					b := ui.ButtonBase(c.Key(action.label)).Label(action.label).Size(m.ActionWidth(), m.ActionHeight()).Disabled(item.Phase != ViewerReady)
 					viewerButton(c, b, action.icon)
 					b.OnClick(action.fn)
 				}
@@ -422,7 +422,7 @@ func viewerLoading(c *ui.Context, s *viewerLoadingVisual, loading bool, target f
 		c.AnimationFrame()
 	}
 	rtl := c.Direction() == ui.RightToLeft
-	ui.Box(c).Key("viewer-loading").Attach(ui.AnchorCenter, ui.AnchorCenter).Size(size, size).Label(label).Role(ui.RoleProgress).Range(0, 1, float64(target)).Opacity(alpha).IgnoreInput(true).Draw(func(p *ui.Painter, r ui.Rect) {
+	ui.Box(c.Key("viewer-loading")).Attach(ui.AnchorCenter, ui.AnchorCenter).Size(size, size).Label(label).Role(ui.RoleProgress).Range(0, 1, float64(target)).Opacity(alpha).IgnoreInput(true).Draw(func(p *ui.Painter, r ui.Rect) {
 		draw.Radial(p, r, &s.path, stroke, -90+360*(turn-length), t.Colors().Control().RadialBackground(), t.Colors().Control().RadialForeground(), rtl)
 	})
 }

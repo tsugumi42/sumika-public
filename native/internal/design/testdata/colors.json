@@ -139,7 +139,7 @@
    "SunkenHover": "#dfe3e9ff",
    "Surface": "#fcfdfeff",
    "Text": "#1b222aff",
-   "Text2": "#545c64ff",
+   "Text2": "#3c434bff",
    "Text3": "#646a70ff"
   },
   "diff-tint": 0.15
@@ -284,7 +284,7 @@
    "SunkenHover": "#dfe3e9ff",
    "Surface": "#fcfdfeff",
    "Text": "#1b222aff",
-   "Text2": "#545c64ff",
+   "Text2": "#3c434bff",
    "Text3": "#646a70ff"
   },
   "diff-tint": 0.15
@@ -429,7 +429,7 @@
    "SunkenHover": "#e2e3e4ff",
    "Surface": "#fcfdfdff",
    "Text": "#202224ff",
-   "Text2": "#595b5dff",
+   "Text2": "#414344ff",
    "Text3": "#67696bff"
   },
   "diff-tint": 0.15
@@ -574,7 +574,7 @@
    "SunkenHover": "#e2e3e4ff",
    "Surface": "#fcfdfdff",
    "Text": "#202224ff",
-   "Text2": "#595b5dff",
+   "Text2": "#414344ff",
    "Text3": "#67696bff"
   },
   "diff-tint": 0.15
@@ -719,7 +719,7 @@
    "SunkenHover": "#e7e2ddff",
    "Surface": "#fefcfbff",
    "Text": "#272019ff",
-   "Text2": "#615951ff",
+   "Text2": "#484139ff",
    "Text3": "#6e6861ff"
   },
   "diff-tint": 0.15
@@ -864,7 +864,7 @@
    "SunkenHover": "#e7e2ddff",
    "Surface": "#fefcfbff",
    "Text": "#272019ff",
-   "Text2": "#615951ff",
+   "Text2": "#484139ff",
    "Text3": "#6e6861ff"
   },
   "diff-tint": 0.15
@@ -1009,7 +1009,7 @@
    "SunkenHover": "#303539ff",
    "Surface": "#202327ff",
    "Text": "#e8ecefff",
-   "Text2": "#afb5bbff",
+   "Text2": "#bcc2c8ff",
    "Text3": "#93999fff"
   },
   "diff-tint": 0.23
@@ -1154,7 +1154,7 @@
    "SunkenHover": "#303539ff",
    "Surface": "#202327ff",
    "Text": "#e8ecefff",
-   "Text2": "#afb5bbff",
+   "Text2": "#bcc2c8ff",
    "Text3": "#93999fff"
   },
   "diff-tint": 0.23
@@ -1299,7 +1299,7 @@
    "SunkenHover": "#333435ff",
    "Surface": "#222324ff",
    "Text": "#eaebecff",
-   "Text2": "#b3b4b6ff",
+   "Text2": "#bfc1c3ff",
    "Text3": "#97989aff"
   },
   "diff-tint": 0.23
@@ -1444,7 +1444,7 @@
    "SunkenHover": "#333435ff",
    "Surface": "#222324ff",
    "Text": "#eaebecff",
-   "Text2": "#b3b4b6ff",
+   "Text2": "#bfc1c3ff",
    "Text3": "#97989aff"
   },
   "diff-tint": 0.23
@@ -1589,7 +1589,7 @@
    "SunkenHover": "#37332fff",
    "Surface": "#25221fff",
    "Text": "#eeeae7ff",
-   "Text2": "#b9b3adff",
+   "Text2": "#c6c0b9ff",
    "Text3": "#9d9791ff"
   },
   "diff-tint": 0.23
@@ -1734,7 +1734,7 @@
    "SunkenHover": "#37332fff",
    "Surface": "#25221fff",
    "Text": "#eeeae7ff",
-   "Text2": "#b9b3adff",
+   "Text2": "#c6c0b9ff",
    "Text3": "#9d9791ff"
   },
   "diff-tint": 0.23

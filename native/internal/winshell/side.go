@@ -81,7 +81,7 @@ func (k *Kit) side(c *ui.Context, s *State, sp *SideSpec, style sideStyle, onBac
 			if sp.Tabs != nil {
 				inset = (pillH - g.HitSmall) / 2
 			}
-			pill := ui.Row(c.Key("side-tabs")).Grow(1).MinWidth(0).Height(pillH).Padding(inset).AlignItems(ui.Center).Radius(pillH / 2).Background(p.Bubble)
+			pill := ui.Row(c.Key("side-tabs")).Grow(1).MinWidth(0).Height(pillH).Padding(inset).AlignItems(ui.Center).Radius(pillH / 2).Background(p.Track)
 			k.surface(c, pill, "side-tabs", "tabs", pillH/2, inset).Children(func() {
 				if sp.Tabs != nil {
 					sp.Tabs()
@@ -163,7 +163,7 @@ func (k *Kit) SideTabs(c *ui.Context, key string, value *int, names []string) (c
 			b.Transition(SelectFade) // 选中块、悬停、按下的底和字色 140 毫秒淡变，和导航、会话行同一族（规格 B8）
 			switch {
 			case i == *value:
-				b.Background(p.Selected).TextColor(p.Ink)
+				k.selectBg(b, selMode).TextColor(p.Ink)
 			case b.Pressed():
 				b.Background(p.Press)
 			case b.Hovered():

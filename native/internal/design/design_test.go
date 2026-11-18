@@ -271,3 +271,29 @@ func TestVectors(t *testing.T) {
 		t.Fatalf("标准答案太少：颜色类 %d 组、缩放 %d 组，各要至少 20 组", n, len(got.Scale))
 	}
 }
+
+// 弹簧预设：位移、尺寸、缩放只从这几根里挑（照 Fluid 的 w、z 换算）。“利落”不回弹（高度永不过冲靠它）；回弹封顶 0.3，
+// 再大阻尼比就低于 0.7，Fluid 的经验是人会把晃当成 bug；拉伸的前缘一定比后缘快，块才会先被拉长。
+func TestSpringPresets(t *testing.T) {
+	s := design.Derive(design.DefaultSettings()).Springs()
+	want := map[string][2]float64{
+		"Firm": {200, 0}, "Snappy": {290, 0.2}, "Soft": {480, 0.14}, "Bouncy": {370, 0.3},
+		"StretchLead": {210, 0.2}, "StretchTrail": {390, 0.2},
+	}
+	got := map[string]ui.SpringOptions{"Firm": s.Firm, "Snappy": s.Snappy, "Soft": s.Soft, "Bouncy": s.Bouncy, "StretchLead": s.StretchLead, "StretchTrail": s.StretchTrail}
+	for name, w := range want {
+		g := got[name]
+		if g.Duration != time.Duration(w[0])*time.Millisecond || math.Abs(g.Bounce-w[1]) > 1e-9 {
+			t.Errorf("%s = %v / %v，应为 %vms / %v", name, g.Duration, g.Bounce, w[0], w[1])
+		}
+		if g.Bounce > 0.3 || g.Stiffness != 0 || g.Damping != 0 {
+			t.Errorf("%s 回弹 %v 超过 0.3，或者混用了刚度阻尼", name, g.Bounce)
+		}
+	}
+	if s.Firm.Bounce != 0 {
+		t.Error("“利落”必须不回弹：宽高和展开收起的高度靠它不过冲")
+	}
+	if s.StretchLead.Duration >= s.StretchTrail.Duration {
+		t.Error("拉伸的前缘要比后缘快")
+	}
+}

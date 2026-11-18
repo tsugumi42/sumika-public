@@ -92,6 +92,7 @@ type Composer struct {
 	sent    []string // 本次运行里这个会话发出过的话（历史回忆用）
 	recall  recall
 	slash   slashState
+	act     IconMorph // 右下角圆键的图标：发送 ↔ 停止 之间轮廓流过去
 }
 
 // NewComposer 建一个只有主输入框的草稿。
@@ -800,47 +801,42 @@ func (h ComposerHost) field(c *ui.Context, p *Composer, b *Block, label string) 
 	return f
 }
 
-// action 是右下角的圆键：平时发送，她在回复时停止。
+// action 是右下角的圆键：平时发送，她在回复时停止，回复时输入框里有字就是插话的发送。
+// 三种是同一颗钮（主人 2026-11-15“输入框按钮”这批）：换状态时图标的轮廓从纸飞机流到停止的方块、底色淡变，不是换掉一颗钮。
 func (h ComposerHost) action(c *ui.Context, p *Composer) {
 	t := h.T
 	size := ComposerSend(t)
 	icon := ComposerSendIcon(t)
-	if h.Busy && h.OnSteer != nil && p.Sendable() && !h.Stop {
+	label, glyph := "发送", MorphGlyph("send", false)
+	var click func()
+	off := false
+	bg, ink := h.C.Accent, h.C.OnAccent
+	switch {
+	case h.Busy && h.OnSteer != nil && p.Sendable() && !h.Stop:
 		// 回复时输入框里有字：键是"发送"（插话）；清空了才回到"停止"
-		b := ui.ButtonBase(c.Key("send")).Label("发送（插话）").Size(size, size).Shrink(0).AlignSelf(ui.End).Radius(size / 2).Center().
-			TextColor(h.C.OnAccent).Disabled(h.Locked).OnClick(func() { h.OnSteer() })
-		b.Background(h.T.Fill(b, h.solid(b, h.C.Accent))).Children(func() { ui.Icon(c, Icon("send", false)).Size(icon, icon) })
-		return
-	}
-	if h.Busy {
-		label := "停止生成"
+		label, click, off = "发送（插话）", h.OnSteer, h.Locked
+	case h.Busy:
+		label, glyph, click, off = "停止生成", MorphGlyph("stop", true), h.OnStop, h.Stop
 		if h.Stop {
 			label = "正在停止"
 		}
-		b := ui.ButtonBase(c.Key("stop")).Label(label).Size(size, size).Shrink(0).AlignSelf(ui.End).Radius(size / 2).Center().
-			TextColor(h.C.OnAccent).Disabled(h.Stop).OnClick(func() {
-			if h.OnStop != nil {
-				h.OnStop()
-			}
-		})
-		b.Background(h.T.Fill(b, h.solid(b, h.C.Accent))).Children(func() { ui.Icon(c, Icon("stop", true)).Size(icon, icon) })
-		return
+	default:
+		click, off = h.OnSend, !p.Sendable() || h.Locked
+		if off {
+			bg, ink = h.C.Line, h.C.Muted
+		}
 	}
-	off := !p.Sendable() || h.Locked
-	bg, ink := h.C.Accent, h.C.OnAccent
-	if off {
-		bg, ink = h.C.Line, h.C.Muted
-	}
-	b := ui.ButtonBase(c.Key("send")).Label("发送").Size(size, size).Shrink(0).AlignSelf(ui.End).Radius(size / 2).Center().
+	b := ui.ButtonBase(c.Key("send")).Label(label).Size(size, size).Shrink(0).AlignSelf(ui.End).Radius(size / 2).Center().
 		TextColor(ink).Disabled(off).OnClick(func() {
-		if h.OnSend != nil {
-			h.OnSend()
+		if click != nil {
+			click()
 		}
 	})
-	if !off {
+	if !(off && !h.Busy) { // 发不了的灰底不加按下、悬停的深浅；停止中也还是强调色（只是不响应）
 		bg = h.solid(b, bg)
 	}
-	b.Background(h.T.Fill(b, bg)).Children(func() { ui.Icon(c, Icon("send", false)).Size(icon, icon) })
+	ink = b.AnimateColor("ink", ink, t.Fade()) // 图标颜色和底色一起淡变，不先跳成灰的
+	b.Background(t.Fill(b, bg)).TextColor(ink).Children(func() { p.act.Show(c, "icon", glyph, icon, ink, t.Spring.Snappy) })
 }
 
 // handoffRow 是 QQ 场合卡下面的一行：固定说明在左，"交给她"键在右。

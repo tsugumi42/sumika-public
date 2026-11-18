@@ -240,10 +240,12 @@ type LinkButtonOptions struct {
 }
 
 // LinkButton has a natural text hit box and an immediate hover underline.
+// It is an action button drawn as a link, so it keeps the button role: since
+// mygo 0.8.0 a RoleLink takes Enter only and leaves Space to scrolling.
 func LinkButton(c *ui.Context, label string, o LinkButtonOptions) ui.Element {
 	t := theme.T(c)
 	w, h := measure(c, label, t.Typography().Body(), 0)
-	b := ui.ButtonBase(c).Label(label).Role(ui.RoleLink).Width(w).MaxWidth(w).Height(h).Disabled(o.Disabled).OnClick(o.OnActivate)
+	b := ui.ButtonBase(c).Label(label).Width(w).MaxWidth(w).Height(h).Disabled(o.Disabled).OnClick(o.OnActivate)
 	ink := t.Colors().Window().ActiveTextForeground()
 	if o.Foreground != nil {
 		ink = *o.Foreground

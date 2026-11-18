@@ -24,14 +24,15 @@
 - 写新测试照[规范-测试耗时](docs/规范-测试耗时.md)：一个包不超过一分钟，慢的交每日整套；`bun scripts/go-test-times.ts` 量。
 - **测试超时不靠放宽了事**：固定毫秒等待改成事件同步，同包同类写法一起查；测试碰到时限的，先查是不是等错了东西（只等了写入没等界面空闲、被整次 watch 的时限盖住这类）；确实是纯计算或读文件、没有事件可等的才放宽上限，提交说明写依据，并在负载下试跑留输出。墙钟等待会把机器负载误判成行为失败（11-04、11-12、11-13 三个日子，主人 2026-11-14 确认升级）。
 - 间接导入方、根包、导入方的扩展测试、慢对拍、压力测试交每日整套；手动整套用 `SUMIKA_PUSH_FULL=1` 或 `go-verify --full`。`go test`、`bun test` 分两档全机名额（`SUMIKA_TEST_LANE`）：队列、推送钩子、每日整套用 `verify`（独占一个），代理和会话开发中用 `dev`（一个，`go test` 自动 `-p` 限到核数一半）。**名额只有经 `scripts/run-low.ps1` 才生效，直接敲 `go test` / `bun test` 等于绕开**：开发中一律 `bun ../scripts/slot.ts go test …`（在 native/ 里）、`bun ../scripts/slot.ts bun test …`（在 server/ 里），给代理派活也照这样写。直接跑整套用 `$env:SUMIKA_TEST_LANE='verify'; powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-low.ps1 go test ./...`，不用会丢退出码的 `cmd /c start /low /wait /b`。已知红灯先修测试数据，不带着提交；新 worktree 从主工作区拷 `vendor/bin` 的 rg、fd。
-- `lefthook.yml` 按改动挑提交、推送检查；红了改代码或补基线，**不得 `--no-verify`**。钩子只管快检查，Go 验收仍按上条；提交、推送及 `check:docs` 需要 Bun。
+- 文本文件一律 LF，由 `.gitattributes` 的 `eol=lf` 管，不随本机 `core.autocrlf`；只有必须逐字节一致的快照、题库才加 `-text`，批处理是 `eol=crlf`。别为了绕开换行问题去改测试正则或关掉这条（11-16、11-17、11-18 三个日子 CRLF 写进库，主人 2026-11-19 要求从工具上堵）。
+- `lefthook.yml` 按改动挑提交、推送检查；红了改代码或补基线，**不得 `--no-verify`**。钩子只管快检查，Go 验收仍按上条；提交、推送需要 Bun；文档检查是 `native/bin/sumika-dev.exe check docs`（只要 Go，钩子里程序不在会先编一次）。
 - 新页面、组件按[设计自查](docs/设计自查.md)验收，不过项写提交说明；新页面、模块试十个角色、上万条消息和长历史，报告元素数、卡顿、跳变等实测数（ADR-056）。
 - mygo 用 `ui.NewTester` 量布局、状态，`MYGO_FRAME_STATS` 量帧耗时（`native/README.md`），手试照对应清单。截图只给用户看，截组件区域，不整页缩小；屏幕 2560×1440、125%，逻辑 2048×1030、像素比 1.25。
 - 已开的线做到能天天用再开新线，新想法记待办；一次多项先做透最重要的两三项，其余明确排后（ADR-056）。
 
 ## 定时任务
 
-复盘 23:30、巡检 12:00，由 Claude 应用的 Sonnet 只读执行，报告在 `data/reports/`。错题经主人确认后先入证据存档，再提炼 LESSONS；异常进待办。复盘检查 ADR 影响清单是否漏改；巡检跑 `bun run check:docs`，读每日整套的结论（`merge-queue status` 前两行、`nightly.ts --status`），不自己跑整套。每日整套由任务计划 `SumikaNightly` 每天 04:30 跑 `scripts/nightly.ts`（只在登录时运行，[规格](docs/规格-每日整套.md)）。
+复盘 23:30、巡检 12:00，由 Claude 应用的 Sonnet 只读执行，报告在 `data/reports/`。错题经主人确认后先入证据存档，再提炼 LESSONS；异常进待办。复盘检查 ADR 影响清单是否漏改；巡检跑 `native/bin/sumika-dev.exe check docs`，读每日整套的结论（`merge-queue status` 前两行、`nightly.ts --status`），不自己跑整套。每日整套由任务计划 `SumikaNightly` 每天 04:30 跑 `scripts/nightly.ts`（只在登录时运行，[规格](docs/规格-每日整套.md)）。
 
 每周一查[同类界面 / 动效库](docs/notes/对照-同类界面动效库-2026-10-20.md)；每天跑 code-rules 仓库的 `_tools/check-updates.ps1`。正式小版本发布满一天就升，跨大版本先读更新说明；mygo、CrychicUI 不用等（ADR-173、176、213）。报告末尾保留“## 给主会话”（无事项写“没有”），`scripts/report-notice.ts` 随用户消息通知；收到后核对，做完手上一段再处理。
 
@@ -45,7 +46,7 @@
 | 改了什么 | 同一个提交里还要改 |
 |---|---|
 | 新 ADR 推翻 / 修正旧的 | 旧 ADR 标题注明；被改规格该节写“已被 ADR-NNN 改为……” |
-| 改名（页面、功能、概念） | ADR 写“旧名 → 新名”；全仓文档、注释、脚本、提示词、角色卡扫旧名 |
+| 改名（页面、功能、概念） | ADR 写“旧名 → 新名”；全仓文档、注释、脚本、提示词、角色卡扫旧名，中文名之外还扫英文代号、配置键、接口路径、登记表和检查里写死的预期，并登记 `check docs` 的旧名表（10-23、11-16、11-18 三个日子漏过，主人 2026-11-19 确认升级） |
 | 配置键或默认值 | `native/internal/config` → `sumika.example.yml` → 参考页 → 规格默认值；同提交要有读它的代码和一个“改了它行为会变”的测试，没人读的键标“尚未生效” |
 | 加 / 改插件、接口、表 | 参考页插件表、接口表、表结构 |
 | 换选型、加减依赖 | ADR、`package.json`、参考页 |

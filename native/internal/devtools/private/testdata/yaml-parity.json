@@ -1,0 +1,252 @@
+[
+ {
+  "name": "0b 二进制按字符串收",
+  "yaml": "qq:\n  a: 0b10101010\n",
+  "numbers": [
+   "10101010"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "下划线按字符串收",
+  "yaml": "qq:\n  a: 1234567_8\n",
+  "numbers": [
+   "1234567"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "1_000_000 下划线",
+  "yaml": "qq:\n  a: 1_000_000\n  b: 24681357\n",
+  "numbers": [
+   "24681357"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "0o 八进制读成数字",
+  "yaml": "qq:\n  a: 0o7654321\n",
+  "numbers": [
+   "2054353"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "小写 0x 十六进制读成数字",
+  "yaml": "qq:\n  a: 0x1F90A1\n",
+  "numbers": [
+   "2068641"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "大写 0X、0B、0O 是字符串",
+  "yaml": "qq:\n  a: 0X1F90A1\n  b: 0B1111111\n  c: 0O7654321\n",
+  "numbers": [
+   "1111111",
+   "7654321"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "指数写法",
+  "yaml": "qq:\n  a: 1e7\n  b: 1E7\n  c: 1.5e8\n  d: 1e+7\n",
+  "numbers": [
+   "10000000",
+   "150000000"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "前导加号和零",
+  "yaml": "qq:\n  a: +24681357\n  b: 012345678\n  c: -24681357\n",
+  "numbers": [
+   "24681357",
+   "12345678"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "末尾小数点",
+  "yaml": "qq:\n  a: 24681357.\n  b: 24681357.0\n  c: .5\n",
+  "numbers": [
+   "24681357"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "版本号和日期时间",
+  "yaml": "qq:\n  a: 0.1.2\n  b: 2026-11-18\n  c: 1:30:00\n  d: 1,000,000\n",
+  "numbers": [],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "带引号的数字",
+  "yaml": "qq:\n  a: '24681357'\n  b: \"2468135\"\n",
+  "numbers": [
+   "24681357",
+   "2468135"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "超大整数",
+  "yaml": "qq:\n  a: 123456789012345678901\n",
+  "numbers": [],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "布尔空值无穷",
+  "yaml": "qq:\n  a: yes\n  b: ~\n  c: .inf\n  d: -.inf\n  e: .nan\n  f: 24681357\n",
+  "numbers": [
+   "24681357"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "块字面量",
+  "yaml": "qq:\n  a: |\n    24681357\n    1234567\n",
+  "numbers": [
+   "24681357",
+   "1234567"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "块折叠",
+  "yaml": "qq:\n  a: >\n    24681357\n    1234567\n",
+  "numbers": [
+   "24681357",
+   "1234567"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "标签",
+  "yaml": "qq:\n  a: !!str 24681357\n  b: !!int \"2468135\"\n",
+  "numbers": [
+   "24681357",
+   "2468135"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "锚点别名在 qq 下",
+  "yaml": "base: &b 24681357\nqq:\n  x: *b\n",
+  "numbers": [
+   "24681357"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "锚点别名在非 qq 下不收",
+  "yaml": "qq: &a 24681357\nother:\n  x: *a\n  y: 11223344\n",
+  "numbers": [
+   "24681357"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "合并键",
+  "yaml": "base: &b {x: 11223344}\nqq:\n  <<: *b\n  y: 55667788\n",
+  "numbers": [
+   "11223344",
+   "55667788"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "多文档都收",
+  "yaml": "---\nqq:\n  a: 11111111\n---\nqq:\n  b: 22222222\n---\nother: 33333333\n",
+  "numbers": [
+   "11111111",
+   "22222222"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "顶层数组",
+  "yaml": "- qq:\n    a: 11111111\n- other: 22222222\n",
+  "numbers": [
+   "11111111"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "键是数字",
+  "yaml": "qq:\n  0x10: 77777777\n  1234567: z\n",
+  "numbers": [
+   "77777777"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "qq 相关键",
+  "yaml": "group_x: 3030303\nplain: 8080808\nowner: 5656565\nconversations: [\"a:6464646\"]\n",
+  "numbers": [
+   "3030303",
+   "5656565",
+   "6464646"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "notID 键",
+  "yaml": "qq:\n  port: 30010\n  maxCount: 99999999\n  retryCount: 77777777\n  myMs: 55555555\n  accounts: 4242424\n",
+  "numbers": [
+   "4242424"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "流式写法",
+  "yaml": "qq:\n  {a: 24681357, b: [11223344, 55667788]}\n",
+  "numbers": [
+   "24681357",
+   "11223344",
+   "55667788"
+  ],
+  "strict": false,
+  "oldErr": false
+ },
+ {
+  "name": "重复键（新版更严，退出 2）",
+  "yaml": "qq:\n  a: 11111111\n  a: 22222222\n",
+  "numbers": [
+   "22222222"
+  ],
+  "strict": true,
+  "oldErr": false
+ },
+ {
+  "name": "复杂键（新版更严，退出 2）",
+  "yaml": "? [a, b]\n: 33333333\n",
+  "numbers": [],
+  "strict": true,
+  "oldErr": false
+ }
+]

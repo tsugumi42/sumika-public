@@ -36,7 +36,7 @@ func (a *app) modelLimitInline(c *ui.Context, k *winshell.Kit, m api.ModelOption
 	open := s.limitOpen[m.ID]
 	// 行名用模型 ID：覆盖按它记，也和角色行上显示的名字分得开
 	k.DisclosureRow(c, "model-limit-"+m.ID, m.ID, modelLimitValue(m), open, false, func() { s.limitOpen[m.ID] = !open }, nil)
-	if open {
+	k.Disclose(c, "model-limit-disc-"+m.ID, open, g.PaneInset, func() { // 展开收起：高度弹簧加淡变
 		inset := g.IconSmall + g.SpaceSmall
 		// 缩进用一块定宽的空位而不是左内距：四边内距要相等，左边多一块会过不了几何检查
 		ui.Row(c.Key("model-limit-indent-" + m.ID)).FillWidth().Children(func() {
@@ -46,7 +46,7 @@ func (a *app) modelLimitInline(c *ui.Context, k *winshell.Kit, m api.ModelOption
 				a.modelLimitField(c, k, m, "单次输出上限", config.ModelOutputOverride, m.MaxOutput, m.UserOutput, m.OutputSource, 1000)
 			})
 		})
-	}
+	})
 	if !s.view.ModelsEditable {
 		a.modelNote(c, s.view.ModelsDisabledReason, false)
 	}
@@ -66,7 +66,7 @@ func (a *app) modelLimitField(c *ui.Context, k *winshell.Kit, m api.ModelOption,
 	k.Row(c, key+"-row", name, "现在的数："+limitSourceText(source), func() {
 		ui.Row(c.Key(key + "-controls")).Gap(g.SpaceSmall).Shrink(0).AlignItems(ui.Center).Children(func() {
 			if user > 0 {
-				k.Button(c, key+"-reset", "恢复", false, busy, func() {
+				k.FieldButton(c, key+"-reset", "恢复", false, busy, func() {
 					zero := 0
 					a.modelJob(target, &api.ModelSettingsChange{Field: field, Model: m.ID, Int: &zero}, false)
 				}).Tooltip("去掉手填的 " + limitCount(user) + "，回到服务商或资料库的数")

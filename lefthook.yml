@@ -7,14 +7,19 @@ pre-commit:
   parallel: true
   commands:
     隐私扫描:
-      run: bun scripts/scan-private.ts --staged
+      # 和文档检查同一个写法（理由见下），另外清掉 SUMIKA_SCAN_DATA、SUMIKA_SCAN_MAIBOT（前者能把名单改指到别的目录，后者能把 MaiBot 那份名单改指别处，都只给测试用，带进钩子会少读真实名单）；名单和误报登记在主工作区的 data/ 里，程序按 git 的 common dir 去找
+      run: "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT -u SUMIKA_SCAN_DATA -u SUMIKA_SCAN_MAIBOT native/bin/sumika-dev.exe check private --staged"
     文档检查:
       # 读暂存区的版本：别的会话改了一半、没暂存的文件不拦这次提交（2026-10-26）
-      run: bun scripts/check-docs.ts --staged
+      # 程序不在或是 0 字节（-s：0 字节的文件会被 sh 当空脚本执行、退出 0，钩子就静默放行了）先 go build 一次；
+      # 先编到 sumika-dev.exe.new.$$ 再 mv 成正式名，编到一半被打断不会留下半截程序。已经在的由程序自己核对源码摘要、改过就重编（规格-脚本迁Go「落点」）。
+      # env -u：钩子里不认这几个会跳过检查或改指仓库的变量（SUMIKA_DEV_NO_REBUILD 不重编、SUMIKA_DEV_REEXEC_DONE 防重编循环、SUMIKA_DEV_ROOT 改指别的树），手敲带进来的不该影响提交检查。
+      # 用 && 连：编不过就红，不放行。写成一行、命令本身不含 shell 引号（Windows 上 lefthook 会拆坏 shell 引号；外面这层是 YAML 的引号）
+      run: "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT native/bin/sumika-dev.exe check docs --staged"
     扫描自测:
-      # 隐私扫描是检查本身，改了它就跑它的测试（2026-11-11 复核：这些测试以前没有任何检查会跑）；scripts/ 整个跑要一分半、还混着基准题库，不整个挂
-      glob: "scripts/{scan-private,friction-report}*.ts"
-      run: bun test ./scripts/scan-private.test.ts ./scripts/friction-report.test.ts
+      # 隐私扫描的测试现在是 Go 测试（native/internal/devtools/private），由 Go检查 管不到测试结果，走合并队列和推送钩子的 go test；这里只剩 friction-report 的 TS 测试
+      glob: "scripts/friction-report*.ts"
+      run: bun test ./scripts/friction-report.test.ts
     冲突标记:
       # 合并时漏解决的冲突连标记一起提交过（2026-10-30，80062b2c），check:docs 不查这种标记
       run: bun scripts/check-conflict-markers.ts
@@ -31,11 +36,6 @@ pre-commit:
       # 只改 server/src 不改测试时提交不跑测试，只有类型检查——这是有意的取舍（scripts/precommit-fast.ts 开头，2026-11-12 复核）
       glob: "server/test/**/*.{ts,tsx}"
       run: bun scripts/precommit-fast.ts server-tests {staged_files}
-    Desktop检查:
-      # 主窗口（ADR-353）：类型、测试、令牌 CSS 是不是最新的。在仓库根跑（脚本自己进 desktop/）；要 HUTCH_HOME 或 PATH 里有 hutch
-      # server/src 是主窗口引的代码和类型，改了也查（推送和队列另按 server-verify 的 plan 跑）
-      glob: ["desktop/**/*.{ts,tsx,css,json,html,lock}", "native/internal/design/**", "native/cmd/tokens-css/**", "native/internal/chatui/tokens.go", "server/src/**/*.ts", "protocol/**"]
-      run: bun scripts/desktop-check.ts
     协议生成检查:
       # 定义、生成器或任一生成文件被暂存：生成文件过期就红（退出码 1）
       glob: ["protocol/**", "scripts/gen-rpc.ts", "native/internal/rpcwire/wire_gen.go", "server/src/protocol/gen.ts"]

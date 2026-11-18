@@ -140,7 +140,7 @@ func TestPickBar(t *testing.T) {
 	if err := tt.Click("引用"); err != nil {
 		t.Fatal(err)
 	}
-	tt.Frame()
+	settle(t, tt, nil) // 菜单从按钮那条边长开（MenuMorph），没露出来的部分不收点击：等它长完
 	if err := tt.Click("所有人"); err != nil {
 		t.Fatalf("%v %v", err, tt.Texts())
 	}

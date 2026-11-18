@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,6 +18,7 @@ import (
 
 	"sumika-native/internal/channel/types"
 	"sumika-native/internal/mediastore"
+	"sumika-native/internal/netsafe"
 	"sumika-native/internal/store"
 )
 
@@ -519,35 +521,48 @@ func TestHostileURLs(t *testing.T) {
 			return []net.IP{net.ParseIP("240.0.0.5")}
 		case "fakeip.example.test":
 			return []net.IP{net.ParseIP("198.18.0.7")} // 代理的假地址，要放行
+		case "fakeip6.example.test": // 2026-11-18 真实形状：订阅把 fake-ip-range6 设成 2001:2::/64 后，QQ 图片主机解析出一个 IPv4、一个 IPv6 假地址
+			return []net.IP{net.ParseIP("198.18.16.232"), net.ParseIP("2001:2::94")}
+		case "fakeula.example.test":
+			return []net.IP{net.ParseIP("fdfe:dcba:9876::5")} // Clash Verge 默认的 IPv6 假地址段
+		case "fakemix.example.test":
+			return []net.IP{net.ParseIP("2001:2::94"), net.ParseIP("10.0.0.5")} // 假地址混了私网：整个不连
+		case "bench6out.example.test":
+			return []net.IP{net.ParseIP("2001:2:1::1")} // 2001:2::/48 外面一点：仍是保留段，不放行
+		case "ulaother.example.test":
+			return []net.IP{net.ParseIP("fdfe:dcba:9877::1")} // 和 Clash 默认段只差一位的真 ULA：不放行
 		}
 		return []net.IP{net.ParseIP("8.8.8.8")}
 	}
 	e.mu.Unlock()
-	e.f.dl.hosts.Exact = append(e.f.dl.hosts.Exact, "private.example.test", "mixed.example.test", "linklocal.example.test", "v6loop.example.test", "ula.example.test", "cgnat.example.test", "nat64.example.test", "reserved.example.test", "fakeip.example.test")
+	e.f.dl.hosts.Exact = append(e.f.dl.hosts.Exact, "private.example.test", "mixed.example.test", "linklocal.example.test", "v6loop.example.test", "ula.example.test", "cgnat.example.test", "nat64.example.test", "reserved.example.test", "fakeip.example.test", "fakeip6.example.test", "fakeula.example.test", "fakemix.example.test", "bench6out.example.test", "ulaother.example.test")
 
 	blocked := map[string]string{
-		"不在白名单的主机":    "http://evil.example.test/ok",
-		"回环地址":        "http://127.0.0.1:" + portOf(e.srv.URL) + "/ok",
-		"本机名":         "http://localhost/ok",
-		"内网地址":        "http://10.1.2.3/ok",
-		"解析到私网":       "http://private.example.test/ok",
-		"解析里混了回环":     "http://mixed.example.test/ok",
-		"解析到链路本地":     "http://linklocal.example.test/ok",
-		"解析到 IPv6 回环": "http://v6loop.example.test/ok",
-		"解析到 IPv6 私网": "http://ula.example.test/ok",
-		"解析到 CGNAT":   "http://cgnat.example.test/ok",
-		"解析到 NAT64":   "http://nat64.example.test/ok",
-		"解析到保留段":      "http://reserved.example.test/ok",
-		"file":        "file:///C:/Windows/win.ini",
-		"ftp":         "ftp://" + testHost + "/ok",
-		"data":        "data:image/png;base64,AAAA",
-		"带用户名":        "http://user:pw@" + testHost + "/ok",
-		"非默认端口":       "http://" + testHost + ":8080/ok",
-		"后缀冒充":        "http://" + testHost + ".evil.test/ok",
-		"主机名带下划线":     "http://bad_host.example.test/ok",
-		"跳转到回环":       "http://" + testHost + "/to-loopback",
-		"跳转到别的协议":     "http://" + testHost + "/to-other-scheme",
-		"跳转太多":        "http://" + testHost + "/loop",
+		"不在白名单的主机":        "http://evil.example.test/ok",
+		"回环地址":            "http://127.0.0.1:" + portOf(e.srv.URL) + "/ok",
+		"本机名":             "http://localhost/ok",
+		"内网地址":            "http://10.1.2.3/ok",
+		"解析到私网":           "http://private.example.test/ok",
+		"解析里混了回环":         "http://mixed.example.test/ok",
+		"解析到链路本地":         "http://linklocal.example.test/ok",
+		"解析到 IPv6 回环":     "http://v6loop.example.test/ok",
+		"解析到 IPv6 私网":     "http://ula.example.test/ok",
+		"解析到 CGNAT":       "http://cgnat.example.test/ok",
+		"解析到 NAT64":       "http://nat64.example.test/ok",
+		"解析到保留段":          "http://reserved.example.test/ok",
+		"假地址混了私网":         "http://fakemix.example.test/ok",
+		"假地址段外的 IPv6 保留段": "http://bench6out.example.test/ok",
+		"差一位的真 ULA":       "http://ulaother.example.test/ok",
+		"file":            "file:///C:/Windows/win.ini",
+		"ftp":             "ftp://" + testHost + "/ok",
+		"data":            "data:image/png;base64,AAAA",
+		"带用户名":            "http://user:pw@" + testHost + "/ok",
+		"非默认端口":           "http://" + testHost + ":8080/ok",
+		"后缀冒充":            "http://" + testHost + ".evil.test/ok",
+		"主机名带下划线":         "http://bad_host.example.test/ok",
+		"跳转到回环":           "http://" + testHost + "/to-loopback",
+		"跳转到别的协议":         "http://" + testHost + "/to-other-scheme",
+		"跳转太多":            "http://" + testHost + "/loop",
 	}
 	for name, raw := range blocked {
 		t.Run(name, func(t *testing.T) {
@@ -581,8 +596,8 @@ func TestHostileURLs(t *testing.T) {
 			}
 		})
 	}
-	// 198.18.0.0/15（代理的假地址）放行；大小写不敏感
-	for _, raw := range []string{"http://fakeip.example.test/ok", "http://" + strings.ToUpper(testHost) + "/ok"} {
+	// 代理的假地址（IPv4 198.18.0.0/15、IPv6 2001:2::/48 和 Clash 默认 ULA 段）放行；大小写不敏感
+	for _, raw := range []string{"http://fakeip.example.test/ok", "http://fakeip6.example.test/ok", "http://fakeula.example.test/ok", "http://" + strings.ToUpper(testHost) + "/ok"} {
 		hash, _, err := e.f.dl.Download(context.Background(), raw, e.f.put)
 		if err != nil || hash != sha(png("ok")) {
 			t.Fatalf("%s 该放行：%v", raw, err)
@@ -613,10 +628,18 @@ func TestHostRule(t *testing.T) {
 		"224.0.0.1": true, "255.255.255.255": true, "::1": true, "fe80::1": true, "fc00::1": true, "::ffff:10.0.0.1": true, "::ffff:127.0.0.1": true,
 		"100.64.0.1": true, "100.127.255.254": true, "192.0.0.8": true, "240.0.0.1": true, "203.0.113.7": true, "2001:db8::1": true, "64:ff9b::7f00:1": true, "64:ff9b::a00:1": true, "2002:7f00:1::1": true,
 		"198.18.0.1": false, "198.19.255.255": false, "::ffff:198.18.0.1": false, "8.8.8.8": false, "172.32.0.1": false, "2606:4700:4700::1111": false,
+		"2001:2::94": false, "2001:2:0:ffff::1": false, "fdfe:dcba:9876::5": false, "fdfe:dcba:9876:ffff::1": false,
+		"2001:2:1::1": true, "2001:3::1": true, "fdfe:dcba:9877::1": true, "fd00::1": true, "2001::1": true,
 		"": true,
 	} {
-		if blockedIP(net.ParseIP(ip)) != want {
+		if blockedIP(netsafe.DefaultFakeIPPrefixes(), net.ParseIP(ip)) != want {
 			t.Errorf("%s：blocked=%v，要 %v", ip, !want, want)
+		}
+	}
+	// 配置写 []（没有假地址段）：假地址也一律不连
+	for _, ip := range []string{"198.18.0.1", "2001:2::94", "fdfe:dcba:9876::5"} {
+		if !blockedIP([]netip.Prefix{}, net.ParseIP(ip)) {
+			t.Errorf("没有假地址段时 %s 也该挡", ip)
 		}
 	}
 }
@@ -986,5 +1009,26 @@ func TestBackfillConditionsNotMet(t *testing.T) {
 				t.Fatalf("文件该留着：%v", files)
 			}
 		})
+	}
+}
+
+// 配置写 []（没有假地址段）经构造函数传进来：名单内主机解析到假地址也拒，不拨号（空切片不能被当成 nil 走默认段）
+func TestDownloaderEmptyFakeIPRangesBlocks(t *testing.T) {
+	for _, addr := range []string{"198.18.0.7", "2001:2::94"} {
+		dials := 0
+		d := NewDownloader(DownloadOptions{
+			Hosts:        HostRule{Exact: []string{"img.example.test"}},
+			FakeIPRanges: []netip.Prefix{},
+			LookupIP:     func(context.Context, string) ([]net.IP, error) { return []net.IP{net.ParseIP(addr)}, nil },
+			Dial: func(context.Context, string, string) (net.Conn, error) {
+				dials++
+				return nil, errors.New("不该拨号")
+			},
+		})
+		_, _, err := d.Download(context.Background(), "http://img.example.test/a.png", func(io.Reader, int64) (string, int64, error) { return "", 0, nil })
+		var de *Error
+		if !errors.As(err, &de) || de.State != StateBlocked || dials != 0 {
+			t.Fatalf("%s：要 blocked 且不拨号：%v，拨号 %d 次", addr, err, dials)
+		}
 	}
 }

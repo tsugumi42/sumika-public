@@ -40,13 +40,23 @@ type rippleKey struct{}
 
 // The effect keeps only transient pointer state. Its drawing requests frames only
 // while visible and moving; release fades the current circle without restarting it.
-func ripple(c *ui.Context, e ui.Element, color ui.Color) {
+//
+// A row of a mygo list takes the click itself, so it passes the pointer state
+// from ui.ListRow; for any other element it reads it from e, which then takes
+// the press.
+func ripple(c *ui.Context, e ui.Element, color ui.Color, lr *ui.ListRow) {
 	s := ui.Local(e, rippleKey{}, func() rippleState { return rippleState{} })
-	held := e.Pressed()
+	var held bool
+	var pos func() (float32, float32, bool)
+	if lr != nil {
+		held, pos = lr.Pressed(), lr.PointerPosition
+	} else {
+		held, pos = e.Pressed(), e.PointerPosition
+	}
 	if held && !s.held {
 		s.start = c.Now()
 		s.released = time.Time{}
-		s.x, s.y, _ = e.PointerPosition()
+		s.x, s.y, _ = pos()
 	}
 	if !held && s.held {
 		s.released = c.Now()

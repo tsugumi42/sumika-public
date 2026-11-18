@@ -74,7 +74,7 @@ func (a *app) read(id string) *reading {
 		r.List.FollowEnd = true
 		// 新消息从下面升上来（mygo 给聊天列表的做法，ListState.FollowAnimation）；位移用回弹（ADR-285 第 6 条）。
 		// 消息行自己的进场动画在虚拟列表里不触发，所以工作台的"出现"靠这个；减少动态效果时 mygo 直接到底。
-		r.List.FollowAnimation = &ui.Animation{Spring: chatui.Derive(chatui.DefaultSettings()).Bouncy}
+		r.List.FollowAnimation = &ui.Animation{Spring: chatui.Derive(chatui.DefaultSettings()).Spring.Snappy}
 		r.List.Key = func(i int) any { return a.E.conv(id).Messages[i].ID }
 		a.Reads[id] = r
 	}
@@ -129,8 +129,8 @@ func (a *app) segment(c *ui.Context, key string, value *int, names []string) {
 	if measured {
 		// 选中块画在轨道背景上（Draw 在背景之后、子元素之前），不做成单独的元素，免得盖住格子里的字
 		// 位置回弹、宽度平滑；减少动态效果时 mygo 的弹簧直接给终点（ui/motion.go:300）
-		x := parts.Track.Spring("ind-x", cell.X-track.X, a.T.Bouncy)
-		w := parts.Track.Spring("ind-w", cell.W, a.T.Smooth)
+		x := parts.Track.Spring("ind-x", cell.X-track.X, a.T.Spring.Snappy)
+		w := parts.Track.Spring("ind-w", cell.W, a.T.Spring.Firm)
 		hs.IndX, hs.IndW = x, w
 		parts.Track.Draw(func(p *ui.Painter, r ui.Rect) {
 			p.Fill(ui.Rect{X: r.X + x, Y: r.Y + spaceTight, W: w, H: hitSmall}, fill, radiusSegment)

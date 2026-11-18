@@ -88,7 +88,7 @@ func Toast(c *ui.Context, state *ToastState, message string, o ToastOptions) ui.
 		height = max(height, m.IconSize()+m.IconPaddingY()*2+m.PaddingTop()+m.PaddingBottom())
 	}
 	ui.Overlay(c, func() {
-		panel := ui.Row(c).Key(toastKey{root.ID()}).Size(width, height).Radius(m.Radius()).Background(t.Colors().Toast().Background()).Role(ui.RoleStatus).Label(message).AlignItems(ui.Center).
+		panel := ui.Row(c.Key(toastKey{root.ID()})).Size(width, height).Radius(m.Radius()).Background(t.Colors().Toast().Background()).Role(ui.RoleStatus).Label(message).AlignItems(ui.Center).
 			Padding(m.PaddingTop(), m.PaddingRight(), m.PaddingBottom(), m.PaddingLeft())
 		if o.Center {
 			panel.Attach(ui.AnchorCenter, ui.AnchorCenter).Opacity(shown)

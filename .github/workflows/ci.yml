@@ -26,6 +26,8 @@ permissions:
 
 jobs:
   test:
+    # 只在公开仓库跑：公开仓库的 Actions 不计分钟，私有仓库按免费额度扣（Windows 按 2 倍）、推 main 时两边各跑一遍是重复（2026-11-18 免费 2000 分钟快用完）
+    if: github.event.repository.private == false
     name: test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     # Linux 这一格先只当参考、红了不挡（2026-11-18）：产品现在只支持 Windows，第四轮 Linux 红了二十多个包，
@@ -58,7 +60,10 @@ jobs:
       # 只在 Linux 跑一次：不依赖系统，Win 上再跑一遍只是多花时间
       - name: 文档检查
         if: runner.os == 'Linux'
-        run: bun run check:docs
+        run: |
+          go build -o bin/sumika-dev ./cmd/sumika-dev
+          bin/sumika-dev check docs
+        working-directory: ./native
 
       # Windows runner 的 TEMP 是 8.3 短名（C:\Users\RUNNER~1\…），系统按句柄取回的却是长名：检查点、项目说明这些
       # “路径必须就是它自己”的检查会把整片测试判成走了链接（第一次 CI，2026-11-18）。临时目录换成 runner 自带的长路径；

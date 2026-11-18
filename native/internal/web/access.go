@@ -10,6 +10,8 @@ import (
 	"unicode"
 
 	"golang.org/x/net/idna"
+
+	"sumika-native/internal/netsafe"
 )
 
 type Resolver interface {
@@ -30,11 +32,12 @@ var blockedPrefixes = []netip.Prefix{
 	netip.MustParsePrefix("::/96"), netip.MustParsePrefix("64:ff9b::/96"), netip.MustParsePrefix("64:ff9b:1::/48"), netip.MustParsePrefix("100::/64"), netip.PrefixFrom(netip.AddrFrom16([16]byte{0x20, 1}), 23), netip.MustParsePrefix("2001:db8::/32"), netip.PrefixFrom(netip.AddrFrom16([16]byte{0x20, 2}), 16), netip.PrefixFrom(netip.AddrFrom16([16]byte{0x3f, 0xff}), 20), netip.MustParsePrefix("fc00::/7"), netip.MustParsePrefix("fe80::/10"), netip.MustParsePrefix("ff00::/8"),
 }
 
-// fakeIPRange 是 Clash 等代理 fake-ip 模式给外网域名分配的假地址段；真正的目的地由代理按域名决定。
-var fakeIPRange = netip.MustParsePrefix("198.18.0.0/15")
+// fakeIPRanges 是 Clash 等代理 fake-ip 模式给外网域名分配的假地址段（IPv4、IPv6 都有，和收图下载、链接取数的默认段同一份）；
+// 真正的目的地由代理按域名决定。
+var fakeIPRanges = netsafe.DefaultFakeIPPrefixes()
 
 // IsFakeIP 判断是否代理的假地址（IPv4 映射写法先还原）。
-func IsFakeIP(ip netip.Addr) bool { return fakeIPRange.Contains(ip.Unmap()) }
+func IsFakeIP(ip netip.Addr) bool { return netsafe.InFakeRanges(fakeIPRanges, ip) }
 
 // HasFakeIP 说明解析结果里有没有假地址。
 func HasFakeIP(ips []netip.Addr) bool {
@@ -133,6 +136,10 @@ func (p URLPolicy) Check(ctx context.Context, raw string) (Target, error) {
 	}
 	var ips []netip.Addr
 	if ip, err := netip.ParseAddr(host); err == nil {
+		// 直接写成 IP 的地址必须是真公网：假地址只该来自域名解析（代理据此映射回域名），调用方直接指定假地址一律拒（ADR-392 复核）
+		if !PublicIP(ip) {
+			return Target{}, fmt.Errorf("WEB_ADDRESS_BLOCKED")
+		}
 		ips = []netip.Addr{ip}
 	} else {
 		if !strings.Contains(host, ".") {

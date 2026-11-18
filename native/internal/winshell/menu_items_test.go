@@ -194,8 +194,8 @@ func TestSidebarRowContextMenu(t *testing.T) {
 	if err := tt.RightClick("甲会话"); err != nil {
 		t.Fatal(err)
 	}
-	tt.Frame()
-	tt.Frame()
+	settle(tt) // 菜单长开（MenuMorph）以后再点
+
 	if !tt.HasText("标为已读") || !tt.HasText("还没有这个功能") {
 		t.Fatalf("右键该出菜单：%q", tt.Texts())
 	}

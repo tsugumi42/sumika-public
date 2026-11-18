@@ -1,6 +1,8 @@
 package winshell
 
 import (
+	"time"
+
 	"github.com/egoist/mygo/ui"
 
 	"sumika-native/internal/chatui"
@@ -91,24 +93,92 @@ func (k *Kit) ActionDialog(c *ui.Context, key string, open *bool, sp DialogSpec,
 	})
 }
 
+// dialogMorph 是一个对话框的展开收起（主人 2026-11-15“对话框”这批，照 Fluid MorphDialog）：
+// 打开时从打开它的那颗按钮长出来（一秒内按下过的 Kit 按钮；没有就是从面板中间），关掉时缩回去。
+// 关掉以后对话框还多画一小段（closing），这段里整块不收点击、焦点和按键，缩完才真的拿掉。
+type dialogMorph struct {
+	from    ui.Rect   // 打开它的按钮（窗口坐标）；W 为 0 时从面板中间长出来
+	at      time.Time // 打开的时刻
+	closing bool
+	done    bool // 缩完了：下一帧不再画
+}
+
+// dialogFrom 是面板长出来的起点：按钮的框；没有按钮时是面板中间九成大小的一块（只是轻轻放大，不飞）。
+func dialogFrom(from, r ui.Rect) ui.Rect {
+	if from.W > 0 && from.H > 0 {
+		return from
+	}
+	return ui.Rect{X: r.X + r.W*.05, Y: r.Y + r.H*.05, W: r.W * .9, H: r.H * .9}
+}
+
+func lerp(a, b, t float32) float32 { return a + (b-a)*t }
+
 func (k *Kit) dialogShell(c *ui.Context, open *bool, locked bool, title, closeLabel string, width float32, body func()) {
 	g, p := k.G, k.P
-	if !*open {
-		k.forgetPop(open)
+	if k.dialogs == nil {
+		k.dialogs = map[*bool]*dialogMorph{}
 	}
-	// DialogBase 点遮罩、按 Esc 就写 *open=false；锁住时给它一份拷贝，这两下只改拷贝，
-	// 下一帧仍按调用方真正的开关画出来，只有按钮（写 *open）关得掉。
-	dismiss := open
-	if locked {
-		v := *open
-		dismiss = &v
+	st := k.dialogs[open]
+	switch {
+	case *open && (st == nil || st.done):
+		st = &dialogMorph{at: c.Now()}
+		k.dialogs[open] = st
+	case *open:
+		st.closing = false // 收到一半又打开：从当时的样子接着长回去
+	case st == nil || st.done:
+		delete(k.dialogs, open)
+		return
+	default:
+		st.closing = true
 	}
-	ui.DialogBase(c, dismiss, func(backdrop ui.Element, panel ui.Element) {
-		// 遮罩（连同里面的面板）220 进 / 160 出，退场拷贝保留最后的内容、不收点击和 Esc；面板另加上移 10、缩放 .985
-		backdrop.Background(p.Ink.Alpha(ScrimAlpha)).Transition(DialogFade)
+	// 起点：打开前一秒内按下、点到的那颗 Kit 按钮。对话框可能比按钮先建（同一帧里按钮还没记下），所以打开后 0.1 秒内还没起点就再取一次
+	if st.from.W == 0 && !k.lastPressAt.IsZero() && k.lastPressAt.After(st.at.Add(-time.Second)) && c.Now().Sub(st.at) < 100*time.Millisecond {
+		st.from, k.lastPressAt = k.lastPress, time.Time{}
+	}
+	show := true
+	ui.DialogBase(c, &show, func(backdrop ui.Element, panel ui.Element) {
 		panel.Width(width).Padding(g.SpacePanel).Gap(g.SpacePanel).Radius(g.RadiusPanel)
 		k.FloatPanel(panel)
-		k.popIn(panel, open, float32(k.T.D.Num.TravelDialog), float32(k.T.D.Num.ScaleDialog))
+		// 两根通道：morph 是位置和露出来的大小（“柔和”弹簧，减少动态效果时直接到位），fade 是遮罩和面板的透明度（时长淡变，减少动态照常）
+		seen := ui.Local(panel, "morph-seen", func() bool { return false })
+		if !*seen {
+			*seen = true
+			panel.Jump("morph", 0)
+			panel.Jump("fade", 0)
+		}
+		target, fadeFor, spring := float32(1), slowDur(k.T.D.Motion.MotionDialogIn), k.soft()
+		if st.closing {
+			target, fadeFor, spring = 0, slowDur(k.T.D.Motion.MotionDialogOut), k.firm() // 退场用“利落”：不回弹、快一点
+		}
+		reduce := c.Preferences().ReduceMotion
+		v := panel.AnimateTo("morph", target, ui.Animation{Spring: spring})
+		f := max(0, min(1, panel.AnimateTo("fade", target, ui.Animation{Duration: fadeFor, Ease: ui.EaseOut, NonMotion: true})))
+		scrim, op := f, f
+		if st.closing && !reduce {
+			// 收起时跟着收的进度走：遮罩一路变亮，面板缩到快贴着按钮才淡掉。单用 160 毫秒的淡出，人还没缩回去就看不见了，像飘走
+			scrim, op = max(0, min(1, v)), max(0, min(1, v*4))
+			f = op
+		}
+		backdrop.Background(p.Ink.Alpha(ScrimAlpha * scrim))
+		if op < 1 {
+			panel.Opacity(op)
+		}
+		// 面板在布局里一直是全尺寸、在正中；露出来的那块从按钮的框走到面板的框：整块平移到那块的中心，四边按大小裁，里面的字不缩放
+		if r := panel.Bounds(); v != 1 && r.W > 0 && !reduce {
+			s := dialogFrom(st.from, r)
+			w, h := lerp(s.W, r.W, v), lerp(s.H, r.H, v)
+			cx, cy := lerp(s.X+s.W/2, r.X+r.W/2, v), lerp(s.Y+s.H/2, r.Y+r.H/2, v)
+			ix, iy := max(0, (r.W-w)/2), max(0, (r.H-h)/2)
+			radius := lerp(min(s.W, s.H)/2, g.RadiusPanel, max(0, min(v, 1)))
+			panel.Translate(cx-(r.X+r.W/2), cy-(r.Y+r.H/2)).ClipInset(iy, ix, iy, ix, radius)
+		}
+		if st.closing {
+			panel.Disabled(true).DimDisabled(false) // 缩回去的这段不收点击、焦点和按键（Esc、回车）
+			if v <= .001 && f <= .001 {
+				st.done = true
+				c.After(time.Millisecond) // 要下一帧把它拿掉
+			}
+		}
 
 		k.surface(c, panel, "dialog", "dialog", g.RadiusPanel, g.SpacePanel)
 		panel.Children(func() {
@@ -121,6 +191,10 @@ func (k *Kit) dialogShell(c *ui.Context, open *bool, locked bool, title, closeLa
 			body()
 		})
 	})
+	// DialogBase 收到 Esc 或点了遮罩：照常关，下一帧开始缩回去。锁住时（恢复码这种只显示一次的）不理，只有按钮关得掉
+	if !show && *open && !locked {
+		*open = false
+	}
 }
 
 // Check 是一行勾选：左边方框（圆角取分段选中块那一档），右边文字，整行都是点击区。

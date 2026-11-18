@@ -171,3 +171,37 @@ func TestWebLocalQuotasAreOptional(t *testing.T) {
 		}
 	}
 }
+
+// 2026-11-18：订阅把 fake-ip-range6 设成 2001:2::/64 后，域名同时解析出 IPv4、IPv6 两个假地址；两个都要认成假地址，交给代理。
+// 假地址里混了私网的，照旧拒。
+func TestFetchIPv6FakeIPGoesToProxy(t *testing.T) {
+	proxy := func(*http.Request) (*url.URL, error) { return url.Parse("http://127.0.0.1:7897") }
+	for name, addrs := range map[string][]netip.Addr{
+		"IPv4 加 IPv6 假地址": {fakeAddr, netip.MustParseAddr("2001:2::94")},
+		"只有 IPv6 假地址":     {netip.MustParseAddr("2001:2::94")},
+		"Clash 默认 ULA 段":  {netip.MustParseAddr("fdfe:dcba:9876::5")},
+	} {
+		h := newFetchHarness(t, hostResolver{"example.com": addrs}, func(w http.ResponseWriter, req *http.Request) { page(w, "via-proxy") }, proxy)
+		res, err := h.service.Fetch(t.Context(), h.access, web.FetchRequest{URL: "http://example.com/x", Format: "text"})
+		if err != nil || res.Content != "via-proxy" {
+			t.Fatalf("%s：该走代理取到：%+v %v", name, res, err)
+		}
+	}
+	for name, addrs := range map[string][]netip.Addr{
+		"假地址混了私网":   {netip.MustParseAddr("2001:2::94"), netip.MustParseAddr("10.0.0.5")},
+		"假地址段外的保留段": {netip.MustParseAddr("2001:2:1::1")},
+		"差一位的真 ULA": {netip.MustParseAddr("fdfe:dcba:9877::1")},
+	} {
+		h := newFetchHarness(t, hostResolver{"example.com": addrs}, func(w http.ResponseWriter, req *http.Request) { page(w, "x") }, proxy)
+		if _, err := h.service.Fetch(t.Context(), h.access, web.FetchRequest{URL: "http://example.com/x"}); err == nil || !strings.Contains(err.Error(), "WEB_ADDRESS_BLOCKED") {
+			t.Fatalf("%s：该拒：%v", name, err)
+		}
+	}
+	// 直接写成 IP 的假地址：不是域名解析来的，一律拒（IPv4、IPv6、IPv4 映射写法）
+	h := newFetchHarness(t, hostResolver{}, func(w http.ResponseWriter, req *http.Request) { page(w, "x") }, proxy)
+	for _, raw := range []string{"http://198.18.0.5/", "http://[2001:2::5]/", "http://[fdfe:dcba:9876::5]/", "http://[::ffff:198.18.0.5]/"} {
+		if _, err := h.service.Fetch(t.Context(), h.access, web.FetchRequest{URL: raw}); err == nil || !strings.Contains(err.Error(), "WEB_ADDRESS_BLOCKED") {
+			t.Fatalf("%s：字面量假地址该拒：%v", raw, err)
+		}
+	}
+}

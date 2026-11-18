@@ -57,6 +57,7 @@ func TestShotStates(t *testing.T) {
 		name  string
 		group bool
 		live  bool // 思考进行中边想边展开（ADR-286 的设置）
+		plain bool // 没有壁纸
 		msgs  []*Msg
 		open  map[string]bool
 	}
@@ -87,7 +88,7 @@ func TestShotStates(t *testing.T) {
 		{name: "20-改文件等批准", msgs: []*Msg{proc("p", 0, &Step{ID: "e", Kind: StepEdit, State: StepRunning, Target: "notes/纸灯.md", Diff: diff, Added: 2, Removed: 1, Approval: &Approval{State: ApprovalPending, Reason: "把昨天的笔记补完整。", Remaining: 272 * time.Second}})}},
 		{name: "21-命令等批准-群里谁引起", group: true, msgs: []*Msg{proc("p", 0, &Step{ID: "c", Kind: StepCommand, State: StepRunning, Target: "rm -rf build", Approval: &Approval{State: ApprovalPending, Cause: "雾栞", Reason: "清掉旧的构建，下一步重新编译。", Remaining: 59 * time.Second}})}},
 		{name: "22-审批提交中", msgs: []*Msg{proc("p", 0, &Step{ID: "c", Kind: StepCommand, State: StepRunning, Target: "rm -rf build", Approval: &Approval{State: ApprovalSubmitting, Reason: "清掉旧的构建。", Remaining: 50 * time.Second}})}},
-		{name: "23-审批结果四种", msgs: []*Msg{proc("p", 0,
+		{name: "23-审批结果四种", open: map[string]bool{"p": true}, msgs: []*Msg{proc("p", 0,
 			&Step{ID: "c1", Kind: StepCommand, State: StepDone, Target: "rm -rf build", Seconds: 1, Approval: &Approval{State: ApprovalAllowed}},
 			&Step{ID: "c2", Kind: StepCommand, State: StepDenied, Target: "rm -rf /", Approval: &Approval{State: ApprovalDenied}},
 			&Step{ID: "c3", Kind: StepCommand, State: StepStopped, Target: "make deploy", Approval: &Approval{State: ApprovalExpired}},
@@ -105,16 +106,28 @@ func TestShotStates(t *testing.T) {
 		{name: "30-终端-长命令", open: map[string]bool{"p": true, "c": true}, msgs: []*Msg{proc("p", 0, &Step{ID: "c", Kind: StepCommand, State: StepDone, Seconds: 1, Target: "cat > notes/纸灯.md <<'EOF'\n# 纸灯\n\n窗边的纸灯亮起来了，光是暖黄色的，照在桌上那叠还没拆的信上。\n- 灯罩换成和纸\n- 底座刷一层清漆\nEOF", Output: ""})}},
 		{name: "31-终端-很多行输出", open: map[string]bool{"p": true, "c": true}, msgs: []*Msg{proc("p", 0, &Step{ID: "c", Kind: StepCommand, State: StepDone, Target: "go test -v ./lamp/...", Seconds: 6, Output: logLines(128)})}},
 		{name: "32-终端-失败", open: map[string]bool{"p": true}, msgs: []*Msg{proc("p", 0, &Step{ID: "c", Kind: StepCommand, State: StepFailed, Target: "go test ./lamp/...", HasExit: true, ExitCode: 1, Output: "\x1b[1m=== RUN   TestLamp\x1b[0m\n--- FAIL: TestLamp (0.01s)\n    lamp_test.go:12: 亮度 0.4，期望 0.6，这一行特别长、长到在终端块里要折成两行才放得下\nFAIL"})}},
+		{name: "33-审批结果-单步", open: map[string]bool{"p1": true, "p2": true, "p3": true, "p4": true}, msgs: []*Msg{
+			proc("p1", 0, &Step{ID: "c1", Kind: StepCommand, State: StepDone, Target: "rm -rf build", Seconds: 1, Approval: &Approval{State: ApprovalAllowed}}),
+			proc("p2", 4, &Step{ID: "c2", Kind: StepCommand, State: StepDenied, Target: "rm -rf /", Approval: &Approval{State: ApprovalDenied}}),
+			proc("p3", 8, &Step{ID: "c3", Kind: StepCommand, State: StepStopped, Target: "make deploy", Approval: &Approval{State: ApprovalExpired}}),
+			proc("p4", 12, &Step{ID: "e4", Kind: StepEdit, State: StepStopped, Target: "notes/纸灯.md", Approval: &Approval{State: ApprovalRevoked}})}},
+		{name: "34-气泡两边-有壁纸", msgs: []*Msg{her("a", 0, "窗边的纸灯亮起来了，今天想聊些什么？"), self("b", 30, "先把早上的小事慢慢说一遍。"), her("c", 60, "好呀。")}},
+		{name: "35-气泡两边-没壁纸", plain: true, msgs: []*Msg{her("a", 0, "窗边的纸灯亮起来了，今天想聊些什么？"), self("b", 30, "先把早上的小事慢慢说一遍。"), her("c", 60, "好呀。")}},
+		{name: "36-表格-短表", msgs: []*Msg{her("a", 0, "| 项目 | 状态 |\n|---|---|\n| 纸灯笔记 | 已补完 |\n| 窗边那段 | 进行中 |\n| 测试 | 通过 |\n")}},
+		{name: "37-表格-长文字列", msgs: []*Msg{her("a", 0, "这是今天的进度：\n\n| 文件 | 数量 | 说明 |\n|:--|--:|---|\n| `notes/纸灯.md` | 12 | 把昨天说到一半的窗边那段补完整，再把灯罩换成和纸的那条也记进去，免得下次又忘了从哪里接着写 |\n| `notes/窗边.md` | 3 | 只改了两个错字 |\n| `todo.md` | 128 | **全部**重新排过一遍，按[优先级](http://x)分了三档 |\n\n弄完我们接着聊。")}},
+		{name: "38-表格-列很多横向滚动", msgs: []*Msg{her("a", 0, "| 日期 | 早 | 午 | 晚 | 睡前 | 步数 | 心率 | 体重 | 睡眠 | 备注 |\n|---|--:|--:|--:|--:|--:|--:|--:|--:|---|\n| 11-10 | 6:40 | 12:10 | 19:30 | 23:15 | 8230 | 72 | 58.4 | 7.5 | 晴 |\n| 11-11 | 6:55 | 12:30 | 19:10 | 23:40 | 10412 | 70 | 58.2 | 6.8 | 下雨 |\n| 11-12 | 7:05 | 12:20 | 20:00 | 0:10 | 6120 | 75 | 58.6 | 6.1 | 熬夜 |\n")}},
+		{name: "39-表格-自己的气泡旁", msgs: []*Msg{self("a", 0, "表格能发出来吗"), her("b", 4, "| 项目 | 状态 |\n|---|---|\n| 纸灯笔记 | 已补完 |\n| 窗边那段 | 进行中 |\n| 测试 | 通过 |\n")}},
 		{name: "25-卡片和气泡相贴", open: map[string]bool{"p1": true, "p2": true}, msgs: []*Msg{
 			proc("p1", 0, &Step{ID: "r", Kind: StepRead, State: StepDone, Target: "a.md"}, &Step{ID: "c1", Kind: StepCommand, State: StepFailed, Target: "go test", HasExit: true, ExitCode: 1, Output: "FAIL"}),
 			her("m", 2, "好了，我们接着聊。"),
 			proc("p2", 4, &Step{ID: "e", Kind: StepEdit, State: StepDone, Target: "notes/纸灯.md", Added: 2, Removed: 1, Diff: diff}, &Step{ID: "c2", Kind: StepCommand, State: StepDone, Target: "go test", Seconds: 2})}},
 	}
 	for _, dark := range []bool{false, true} {
-		s := DefaultSettings()
-		s.Dark = dark
-		tk := Derive(s)
 		for _, sc := range scenes {
+			s := DefaultSettings()
+			s.Dark = dark
+			s.Wallpaper = !sc.plain
+			tk := Derive(s)
 			open := map[string]*bool{}
 			for k, v := range sc.open {
 				open[k] = &v

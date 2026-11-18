@@ -39,9 +39,21 @@ func PublicIP(a netip.Addr) bool {
 	return true
 }
 
-// DefaultFakeIPRanges 是代理 fake-ip 模式默认的假地址段（Clash / mihomo 的 fake-ip-range 默认 198.18.0.1/16，落在 RFC 2544
-// 保留段 198.18.0.0/15 里）。解析到这些段的地址不是真地址，真正的目的地只有代理知道
-var DefaultFakeIPRanges = []string{"198.18.0.0/15"}
+// DefaultFakeIPRanges 是代理 fake-ip 模式默认的假地址段。解析到这些段的地址不是真地址，真正的目的地只有代理知道。
+//   - 198.18.0.0/15：IPv4 基准测试保留段（RFC 2544），Clash / mihomo 的 fake-ip-range 默认 198.18.0.1/16 落在这里；
+//   - 2001:2::/48：IPv6 基准测试保留段（RFC 5180），和上一段同一类，不会有真实主机。机场订阅常把 fake-ip-range6 写成 2001:2::/64
+//     （2026-11-18 主人的订阅自动更新后就是这样，QQ 收图因此全被挡）；
+//   - fdfe:dcba:9876::/48：Clash Verge / mihomo 自带 DNS 设置里 fake-ip-range6 的默认段（ULA 里的一个固定前缀，按 minULAFakeBits 收）。
+var DefaultFakeIPRanges = []string{"198.18.0.0/15", "2001:2::/48", "fdfe:dcba:9876::/48"}
+
+// DefaultFakeIPPrefixes 是 DefaultFakeIPRanges 解析好的网段
+func DefaultFakeIPPrefixes() []netip.Prefix {
+	p, err := ParseFakeIPRanges(DefaultFakeIPRanges)
+	if err != nil {
+		panic("netsafe: 默认假地址段不合格：" + err.Error())
+	}
+	return p
+}
 
 // 假地址段配置的上限：条数和最短前缀。前缀太短（0.0.0.0/0 之类）会把真公网地址也当成"假地址"，名单内主机就全走代理
 const (

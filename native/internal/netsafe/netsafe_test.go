@@ -28,7 +28,7 @@ func TestPublicIP(t *testing.T) {
 
 func TestParseFakeIPRanges(t *testing.T) {
 	got, err := ParseFakeIPRanges(DefaultFakeIPRanges)
-	if err != nil || len(got) != 1 || got[0].String() != "198.18.0.0/15" {
+	if err != nil || len(got) != 3 || got[0].String() != "198.18.0.0/15" || got[1].String() != "2001:2::/48" || got[2].String() != "fdfe:dcba:9876::/48" {
 		t.Fatalf("默认段：%v %v", got, err)
 	}
 	if got, err = ParseFakeIPRanges([]string{" 198.18.0.1/16 "}); err != nil || got[0].String() != "198.18.0.0/16" {

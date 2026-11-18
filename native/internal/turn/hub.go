@@ -550,6 +550,7 @@ func (h *Hub) Steer(characterID, text string) (string, bool) {
 // 渠道的回合不由内核写库（ADR-184 第 3 条）：中间件先把这几条存进库，seqs 是它们；送到时内核只登记，前缀也不写"主人亲口说的"。
 // 渠道的不带 seqs 不收（返回 false）。
 // 认"在跑"和收下这句在同一把锁里：这一轮收尾（取走没送到的退回去）也在这把锁里，收下的插话一定有人送到或者退回
+// "收下"（accepted）由 Submit 在受理的那把锁里发，不在这里发：Submit 一放锁，运行循环就可能取走这句并报"送到"
 func (h *Hub) SteerIn(characterID, conversation, text string, seqs []int64) (string, bool) {
 	lc := h.lifecycle
 	lc.mu.Lock()
@@ -569,15 +570,12 @@ func (h *Hub) SteerIn(characterID, conversation, text string, seqs []int64) (str
 	if err != nil {
 		return "", false
 	}
-	rec, err := h.Submit(h.base, Submission{Input: in, Mode: kernel.InputSteer, ClientKey: h.inputClientKey(in), ExpectedRunID: r.input.Identity.RunID})
+	rec, err := h.Submit(h.base, Submission{Input: in, Mode: kernel.InputSteer, ClientKey: h.inputClientKey(in), ExpectedRunID: r.input.Identity.RunID, announceSteer: true})
 	if err != nil {
 		return "", false
 	}
 	if rec.RunID != r.input.Identity.RunID {
 		return "", false
-	}
-	if h.Cfg.OnSteer != nil {
-		h.Cfg.OnSteer(SteerEvent{Phase: "accepted", ID: rec.InputID, Text: text})
 	}
 	return rec.InputID, true
 }

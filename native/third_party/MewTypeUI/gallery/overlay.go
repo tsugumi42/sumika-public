@@ -61,7 +61,7 @@ func overlayTooltip(c *ui.Context) {
 	overlayPage(c, "Tooltip", func() {
 		ui.Text(c, "悬停一秒或按 Tab 获取键盘焦点。Esc 关闭并保留焦点；离开后可再次显示。")
 		for _, item := range []struct{ id, label, tip string }{{"short", "Timestamp", "Tuesday, 3 November 2026 at 10:24"}, {"long", "Long tooltip", "This prepared text wraps inside the source maximum width. It remains readable at larger system text sizes and flips away from the window edge."}, {"disabled", "Disabled target", "Disabled targets do not show a tooltip."}} {
-			ui.Row(c).Key(item.id).Children(func() {
+			ui.Row(c.Key(item.id)).Children(func() {
 				b := ui.Button(c, item.label).Disabled(item.id == "disabled")
 				overlay.Tooltip(c, b, item.tip, overlay.TooltipOptions{})
 			})
@@ -139,7 +139,7 @@ func overlayViewer(c *ui.Context) {
 	overlayPage(c, "Media viewer", func() {
 		ui.Text(c, "Double-click the image, Ctrl+0 or middle-click toggles fit / actual size. Click dismissal starts after 500 ms; Esc closes immediately.")
 		for _, item := range s.items {
-			ui.Button(c, item.Title).Key(item.ID).OnClick(func() { s.state.Show(item.ID) })
+			ui.Button(c.Key(item.ID), item.Title).OnClick(func() { s.state.Show(item.ID) })
 		}
 		ui.Button(c, "Thumbnail with intrinsic 1920 × 1080").OnClick(func() {
 			s.items[0].IntrinsicWidth, s.items[0].IntrinsicHeight = 1920, 1080

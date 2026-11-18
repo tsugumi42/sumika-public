@@ -85,9 +85,9 @@ func (a *app) wbAddApprovalRule(c *ui.Context, kit *winshell.Kit, editor api.App
 	empty := st.adding || strings.TrimSpace(st.draft) == ""
 	kit.Row(c, "rule-add", "写一条规则", "例如 Bash(git status:*) 或 Write(src/**)；拒绝先于“每次问”，“每次问”先于允许", func() {
 		kit.TextField(c, "rule-add-text", &st.draft, "规则").Placeholder("Bash(git status:*)").Disabled(st.adding).Width(260)
-		kit.Button(c, "rule-add-allow", "允许", false, empty, func() { a.addApprovalRule(editor, reader, "allow") })
-		kit.Button(c, "rule-add-ask", "每次问", false, empty, func() { a.addApprovalRule(editor, reader, "ask") })
-		kit.Button(c, "rule-add-deny", "拒绝", false, empty, func() { a.addApprovalRule(editor, reader, "deny") })
+		kit.FieldButton(c, "rule-add-allow", "允许", false, empty, func() { a.addApprovalRule(editor, reader, "allow") })
+		kit.FieldButton(c, "rule-add-ask", "每次问", false, empty, func() { a.addApprovalRule(editor, reader, "ask") })
+		kit.FieldButton(c, "rule-add-deny", "拒绝", false, empty, func() { a.addApprovalRule(editor, reader, "deny") })
 	})
 	kit.Row(c, "rule-add-scope", "作用范围", "允许、每次问可以只对一个项目目录、只对当前对话；都不填是全局。拒绝一律全局", func() {
 		kit.TextField(c, "rule-add-project", &st.project, "项目目录").Placeholder(`D:\Projects\demo`).Disabled(st.adding).Width(220)
