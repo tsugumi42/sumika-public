@@ -69,7 +69,7 @@ func (k *Kit) windowCapsule(c *ui.Context, inset float32) ui.Element {
 	width := k.windowButtonsWidth() + 2*k.windowCapsulePad()
 	fill := ui.Box(c.Key("window-capsule-fill")).Absolute().Right(inset).Top(inset).Size(width, g.BarHeight).Radius(g.RadiusBar)
 	k.Glass(fill, LevelHeader, p.Canvas.Alpha(OverlayAlpha))
-	k.CardShadow(fill)
+	k.RaisedShadow(fill)
 	e := ui.Row(c.Key("window-capsule")).Absolute().Right(inset).Top(inset).Size(width, g.BarHeight).Center().DragWindow()
 	k.surface(c, e, "window-capsule", "header", g.RadiusBar, k.windowCapsulePad()).Children(func() { k.WindowButtons(c) })
 	return e

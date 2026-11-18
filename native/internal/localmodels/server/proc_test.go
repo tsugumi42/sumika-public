@@ -24,6 +24,7 @@ import (
 	"sumika-native/internal/localmodels/engine"
 	"sumika-native/internal/localmodels/ort"
 	"sumika-native/internal/localmodels/pool"
+	"sumika-native/internal/rpcwire"
 )
 
 // 真进程的测试：把测试程序自己当成 sumika-models 再起一遍（TestMain 里看环境变量），所以有自己的 PID、退出码、
@@ -577,14 +578,22 @@ func TestParentKilledExits(t *testing.T) {
 	case <-time.After(15 * time.Second):
 		t.Fatal("辅助进程没有报出子进程的 PID")
 	}
-	child, err := os.FindProcess(childPID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = child.Kill() }) // 万一没退，按 PID 结束
-	time.Sleep(800 * time.Millisecond)     // 让孙进程走到 READY 并开始读 stdin
+	// 万一没退，按 PID 结束。不提前拿着孙进程的句柄：Windows 上有人握着句柄，进程退了也还能 OpenProcess 成功，ProcessAlive 就一直说活着
+	t.Cleanup(func() {
+		if p, err := os.FindProcess(childPID); err == nil {
+			_ = p.Kill()
+			_ = p.Release()
+		}
+	})
+	time.Sleep(800 * time.Millisecond) // 让孙进程走到 READY 并开始读 stdin
+	// 孙进程不是本测试的子进程（是辅助进程的子进程），没法 Wait；两个系统都靠 rpcwire.ProcessAlive 轮询它还在不在
 	childGone := make(chan struct{})
-	go func() { _, _ = child.Wait(); close(childGone) }()
+	go func() {
+		for rpcwire.ProcessAlive(childPID) {
+			time.Sleep(20 * time.Millisecond)
+		}
+		close(childGone)
+	}()
 	select {
 	case <-childGone:
 		t.Fatal("孙进程在父进程被杀之前就退出了")
@@ -592,8 +601,9 @@ func TestParentKilledExits(t *testing.T) {
 	}
 
 	// 强杀辅助进程（不是正常退出）
-	if out, err := exec.Command("taskkill", "/F", "/PID", strconv.Itoa(helperPID)).CombinedOutput(); err != nil {
-		t.Fatalf("taskkill：%v %s", err, out)
+	// Process.Kill 在 Windows 上是 TerminateProcess（和原来的 taskkill /F 一样直接结束），在 Unix 上是 SIGKILL
+	if err := helper.Process.Kill(); err != nil {
+		t.Fatalf("强杀辅助进程 %d：%v", helperPID, err)
 	}
 	<-helperDone
 	t0 := time.Now()

@@ -119,6 +119,7 @@ func countFileAccess(t *testing.T) *[]string {
 
 // 真的分析器拆出来的命令：规整后的文字比对、cd 之后的相对目标、递归搜上级、看不清的路径，在 auto / yolo 下（带一条 Bash(*) 放行规则）也要问
 func TestPowershellProtectedFormsThroughAnalyzer(t *testing.T) {
+	windowsPathsOnly(t)
 	g, work := ruleGate(t, [2]string{"Bash(*)", "allow"})
 	if g.Analyzer.Analyze("Get-Date", 30*time.Second) == nil {
 		t.Skip("这台机器起不来拆命令的 pwsh")

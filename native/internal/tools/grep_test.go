@@ -12,8 +12,7 @@ import (
 // grep 带上下文时从文件读行：文件结尾半截的 UTF-8 要像 JS 的 readFile('utf-8') 一样变成一个 U+FFFD，不能丢掉
 // （以前收尾用的是另一个新的解码器，半截的字节被悄悄丢了）
 func TestGrepContextKeepsBrokenTail(t *testing.T) {
-	vendor, _ := filepath.Abs(filepath.Join("..", "..", "..", "vendor", "bin"))
-	setToolPath(t, vendor+string(os.PathListSeparator)+os.Getenv("PATH"))
+	useVendorBin(t)
 	wd := t.TempDir()
 	if err := os.WriteFile(filepath.Join(wd, "f.txt"), []byte{'m', 'a', 't', 'c', 'h', '\n', 0xE4, 0xB8}, 0o644); err != nil {
 		t.Fatal(err)

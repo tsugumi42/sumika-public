@@ -305,7 +305,9 @@ func (h Host) exploreRow(c *ui.Context, seg Segment, o *bool) {
 			icon = "search"
 		}
 	}
-	ui.Column(c.Key("explore-" + steps[0].ID)).FillWidth().Children(func() {
+	col := ui.Column(c.Key("explore-" + steps[0].ID)).FillWidth()
+	ds := ui.Local(col, "disc", func() discState { return discState{} })
+	col.Children(func() {
 		if !direct {
 			h.processRow(c, "row", o, o != nil && *o, func() {
 				if running {
@@ -322,7 +324,7 @@ func (h Host) exploreRow(c *ui.Context, seg Segment, o *bool) {
 				h.rowText(c, ui.Span{Text: verb}, ui.Span{Text: obj, Font: h.Mono, Features: h.codeFeatures(), Size: t.FS[1]})
 			}, failed)
 		}
-		if direct || (o != nil && *o) {
+		h.disclose(c, col, "steps-box", ds, direct || (o != nil && *o), false, true, func() {
 			ui.Column(c.Key("steps")).FillWidth().Padding(0, 0, 0, t.S3).Children(func() {
 				for _, s := range steps {
 					st := s
@@ -335,7 +337,7 @@ func (h Host) exploreRow(c *ui.Context, seg Segment, o *bool) {
 					})
 				}
 			})
-		}
+		})
 	})
 }
 
@@ -354,7 +356,9 @@ func (h Host) thinkRow(c *ui.Context, s *Step, o *bool) {
 	if s.Thought == "" {
 		show = false
 	}
-	ui.Column(c.Key("think-" + s.ID)).FillWidth().Children(func() {
+	col := ui.Column(c.Key("think-" + s.ID)).FillWidth()
+	ds := ui.Local(col, "disc", func() discState { return discState{} })
+	col.Children(func() {
 		h.processRow(c, "row", o, show, func() {
 			if running {
 				// 三个点按图标格子的宽缩小（打字气泡里的点是 31×TS 宽，放进 rowLine 的格子会压到后面的字）
@@ -373,8 +377,8 @@ func (h Host) thinkRow(c *ui.Context, s *Step, o *bool) {
 				h.rowText(c, ui.Span{Text: "想了一下"})
 			}
 		}, false)
-		if show {
-			h.thoughtBody(c, s)
+		if s.Thought != "" {
+			h.disclose(c, col, "thought-box", ds, show, false, true, func() { h.thoughtBody(c, s) })
 		}
 	})
 }

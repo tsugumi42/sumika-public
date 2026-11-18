@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test'
+import { beforeAll, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -99,11 +99,15 @@ test('提到 sumika.example.yml 的 Go 测试所在的包都在 EXAMPLE_READERS 
   expect(found.size).toBeGreaterThan(0)
   expect([...found].filter((p) => !EXAMPLE_READERS.includes(p)).sort()).toEqual([])
 }, 60_000)   // 要读全部 _test.go，机器忙时超过默认 5 秒（2026-11-13 队列里红过一次）
-test('别的脚本不碰 Go', () => expect(names(['scripts/check-docs.ts'])).toBe(''))
+test('别的脚本不碰 Go', () => expect(names(['scripts/dsh-ask.ts'])).toBe(''))
 
-// go list 整个真实模块要二三十秒，几条用真实依赖图的测试共用一次
+// go list 整个真实模块要二三十秒，几条用真实依赖图的测试共用一次。
+// 这一次放在 beforeAll 里、单独给 3 分钟：原来算在第一条测试头上，两次 go list 在 Windows Defender 实时防护下各约 20 秒，
+// 机器稍忙就超过那条测试的 60 秒（2026-11-19 合并队列、每日整套都红在这里）。纯起进程读文件、没有事件可等，按 AGENTS 验收一节的例外放宽；
+// 三条测试自己的 60 秒不动，它们之后只做计算。
 let cached: Graph | undefined
 const realGraph = () => (cached ??= readGraph(join(import.meta.dir, '..', 'native')))
+beforeAll(() => { realGraph() }, 180_000)
 
 // 真实的依赖图：有内核和模块根；persona 自己没有测试文件，改它会带上引用它的包（ADR-225 的例外）。
 // 原来用 audience，它后来有了测试文件，这条在 main 上红过（2026-11-10 改）

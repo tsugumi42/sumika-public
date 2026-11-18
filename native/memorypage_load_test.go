@@ -13,6 +13,7 @@ import (
 	"sumika-native/internal/api"
 	"sumika-native/internal/loadstate"
 	"sumika-native/internal/loadui"
+	"sumika-native/internal/uitest"
 )
 
 // 记忆页的加载占位（loadstate 的规则）：快（阈值内）全程没有骨架、慢才出骨架且留够时间、刷新时旧行一直在。
@@ -262,6 +263,7 @@ func TestMemoryLoadSlowFirstOpenShowsSkeletonAndHolds(t *testing.T) {
 
 // 骨架第 0 行和真实第 0 行的位置、间距一致：换的时候不跳。用同一个窗口、同一套 ReduceMotion（只画底色）量
 func TestMemoryLoadSkeletonRowsLineUpWithRealRows(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	g := newGatedMemory(memScale)
 	g.hold()
 	h := newMemHarness(t, g, 2048, 1030)

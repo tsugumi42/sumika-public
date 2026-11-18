@@ -17,7 +17,7 @@ description: 写、改或审查 Sumika native/ 的 mygo 界面时使用；先读
 4. [native/README.md](../../../native/README.md) 的「编译和打开」「独立交互原型」「真窗口自动巡视」：启动、`MYGO_FRAME_STATS=all` 量帧、`ui.NewTester`、真窗口巡视。
 5. 本技能 `references/` 只当背景，见文末。
 
-版本以 `native/go.mod` 为准：本页核对 mygo v0.9.1。受控控件在 `internal/winshell`，入口是 `winshell.Kit`。
+版本以 `native/go.mod` 为准：本页核对 mygo v0.10.0。受控控件在 `internal/winshell`，入口是 `winshell.Kit`。
 
 ## 八条短规则
 

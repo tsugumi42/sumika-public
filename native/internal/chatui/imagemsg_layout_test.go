@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/egoist/mygo/ui"
+
+	"sumika-native/internal/uitest"
 )
 
 // 图片消息各种组合的几何不变量（组合清单见 imagemsg_combos_test.go）：
@@ -50,6 +52,7 @@ func hasTextAfterImage(c imgCombo) bool {
 }
 
 func TestImageComboGeometry(t *testing.T) {
+	uitest.RequireWindowsFontMetrics(t, "图片消息里引用卡的位置")
 	for _, c := range imageCombos() {
 		if c.Inset || isBareSticker(c) {
 			continue

@@ -7,6 +7,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 	"sumika-native/internal/chatui"
+	"sumika-native/internal/uitest"
 )
 
 // 外观的字号、圆角、疏密铺满整窗（审查 B1）：拉到最大，导航、顶行、会话行、内距、圆角都比默认大；拉到最小都比默认小。
@@ -58,6 +59,7 @@ func TestDarkWeights(t *testing.T) {
 
 // 会话行按下有自己的底色（审查 B7），按下时预览字仍过 4.5（换第二级灰）。
 func TestConversationRowPressed(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	for _, dark := range []bool{false, true} {
 		a := newApp()
 		a.Dark, a.Group = dark, 1

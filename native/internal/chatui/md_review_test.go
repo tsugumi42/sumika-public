@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
+
+	"sumika-native/internal/uitest"
 )
 
 // renderOne 画一条消息，返回节点树和这条的排版。
@@ -21,6 +23,7 @@ func renderOne(h Host, m *Msg) (*node, layout) {
 
 // 画出来一样的两种写法，量出来要一样宽（mygo 怎么画就怎么量：行内 HTML 标签不出字、公式是等宽小字、图片是 "[说明]"）。
 func TestMarkdownEquivalentWidths(t *testing.T) {
+	uitest.RequireWindowsFontMetrics(t, "markdown 等价写法的量宽")
 	tk := Derive(DefaultSettings())
 	h := Host{T: tk, Column: 720, MD: NewMD()}
 	for _, p := range [][2]string{

@@ -242,7 +242,7 @@ func TestShellListSnapAnimates(t *testing.T) {
 }
 
 // 松手落位用弹簧并带着拖动最后的速度（规格-过渡动画 铁律 1）：往左拖着松手、要落回右边的 260 时，第一步比从静止起步慢得多
-// （临界阻尼弹簧带 -625/s 的初速，16 毫秒后只回了约 2；静止起步约回 7，原来的时长曲线更快）；系统要求减少动态效果时一帧到位。
+// （“利落”预设是 200 毫秒的临界阻尼弹簧：带 -625/s 的初速，16 毫秒后先顺着再往左约 0.8；静止起步约回 5）；系统要求减少动态效果时一帧到位。
 func TestShellListReleaseKeepsVelocity(t *testing.T) {
 	for _, reduce := range []bool{false, true} {
 		a := shellApp()
@@ -269,8 +269,8 @@ func TestShellListReleaseKeepsVelocity(t *testing.T) {
 		switch {
 		case reduce && !closeTo(width(), 260):
 			t.Errorf("减少动态效果时松手应一帧到位：宽 %v", width())
-		case !reduce && (first < 0 || first > 4.5):
-			t.Errorf("松手后第一步回了 %v，带着向左的速度应只回约 2（静止起步约 7）", first)
+		case !reduce && (first < -3 || first > 3):
+			t.Errorf("松手后第一步动了 %v，带着向左的速度应先顺着往左一点或只回一点（不超过 3；静止起步约回 5）", first)
 		}
 		tt.Advance(time.Second)
 		tt.Frame()

@@ -739,7 +739,6 @@ func TestConcurrentCreateSamePath(t *testing.T) {
 	}
 }
 
-
 func TestCreateRebuildsDeletedFile(t *testing.T) {
 	_, path := newVaultEnv(t)
 	s := mustCreate(t, path)
@@ -817,7 +816,6 @@ func TestCreateRecoversAfterLocalPanic(t *testing.T) {
 		t.Errorf("重建后应是空库加新值，得到 %q", names)
 	}
 }
-
 
 func TestSetRejectsInvalidNamesAndValues(t *testing.T) {
 	_, path := newVaultEnv(t)

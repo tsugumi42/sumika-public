@@ -3,12 +3,16 @@ package bench
 import (
 	"encoding/json"
 	"os"
+	"runtime"
 	"testing"
 )
 
 // 用例在 testdata/approve-cases.json（Bun 壳的 approve.test.ts（sumika-bun 仓库的 scripts/bench-t2/）读同一份，两边结论要一样）：
 // B2、B3 批准版里被拦下的真实命令为主，工作目录里的批，指向外面的不批
 func TestApproveInWorkdir(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("原因：用例的工作目录是 Windows 路径（C:/work/run1），ApproveInWorkdir 按本机路径语义处理，Linux 上这些不是绝对路径")
+	}
 	b, err := os.ReadFile("testdata/approve-cases.json")
 	if err != nil {
 		t.Fatal(err)

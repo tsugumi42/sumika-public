@@ -329,3 +329,18 @@ func TestIsBlank(t *testing.T) {
 		}
 	}
 }
+
+// 盘符判断要与本机系统无关：Linux 上 filepath.IsAbs / VolumeName 不认 C:/models/x，靠 hasDriveLetter 拦住
+func TestHasDriveLetter(t *testing.T) {
+	for v, want := range map[string]bool{
+		"C:/models/x": true, `c:\models`: true, "Z:x": true, "d:": true,
+		"models/x": false, "ab:c": false, "1:x": false, ":x": false, "a": false, "": false, "a/b:c": false,
+	} {
+		if got := hasDriveLetter(v); got != want {
+			t.Errorf("hasDriveLetter(%q) = %v，要 %v", v, got, want)
+		}
+		if want && safeRelPath(v) {
+			t.Errorf("safeRelPath(%q) 应当拒绝带盘符的路径", v)
+		}
+	}
+}

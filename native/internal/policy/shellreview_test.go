@@ -130,6 +130,7 @@ func TestComputedReadPathsAskButGrantable(t *testing.T) {
 
 // 展开字符串里能静态知道前缀的：代入 HOME / USERPROFILE / PWD 再判受保护，命中就每次问
 func TestExpandableStringKnownPrefix(t *testing.T) {
+	windowsPathsOnly(t)
 	t.Setenv("USERPROFILE", `C:\Users\x`)
 	t.Setenv("HOME", `C:\Users\x`)
 	prot := []string{`C:\Users\x\.ssh`, `D:\work\proj\data`}
@@ -159,6 +160,7 @@ func TestExpandableStringKnownPrefix(t *testing.T) {
 
 // 按顺序模拟换目录：cd / Set-Location / Push-Location / sl / chdir，含 ..、花括号块里；换到看不清的地方后相对目标当值不确定
 func TestCwdSimulation(t *testing.T) {
+	windowsPathsOnly(t)
 	prot := []string{`D:\work\proj\data`, `D:\work\sdata`}
 	protectedCmds := []string{
 		`cd data; Get-Content x.db`, `Set-Location .\data; gc x.db`, `Push-Location data; Get-Content x.db`, `sl data; cat x.db`, `chdir data; type x.db`,
@@ -196,6 +198,7 @@ func TestCwdSimulation(t *testing.T) {
 
 // 重定向写到哪、按路径运行的程序：并进碰受保护的比较
 func TestRedirectAndRunTargetsProtected(t *testing.T) {
+	windowsPathsOnly(t)
 	prot := []string{`D:\work\proj\data`}
 	for _, c := range []string{
 		`Get-Date > data\x.txt`, `"x" >> .\data\log.txt`, `Get-Date | Out-File data\y.txt`, `.\data\tool.exe`, `& D:\work\proj\data\tool.exe --x`,
@@ -218,6 +221,7 @@ func TestRedirectAndRunTargetsProtected(t *testing.T) {
 
 // 没写路径的递归命令：搜的是当前目录，当前目录是受保护目录或它的上级就要问；grep / findstr 不看只读
 func TestRecursiveWithoutPath(t *testing.T) {
+	windowsPathsOnly(t)
 	inside := []string{`D:\work\proj\data`} // 工作目录是受保护目录的上级
 	for _, c := range []string{
 		`rg foo`, `rg -n foo`, `fd x`, `grep -rn foo`, `grep -R foo`, `findstr /s foo *.txt`, `findstr /s /i foo`, `Get-ChildItem -Recurse`, `gci -r -Filter *.go`,
@@ -251,6 +255,7 @@ func TestRecursiveWithoutPath(t *testing.T) {
 
 // 通配符当目录名：通配之前的目录部分是受保护目录或它的上级才问
 func TestWildcardDirOnlyWhenItCanReachProtected(t *testing.T) {
+	windowsPathsOnly(t)
 	prot := []string{`C:\Users\x\sdata`}
 	for _, c := range []string{
 		`Get-Content 'C:\Users\x\sd?ta\c.yml'`, `Get-Content 'C:\Users\x\[s]data\c.yml'`, `gc C:\Users\x\s*\c.yml`, `gc C:\Users\*\sdata\c.yml`, `gc C:\*\Users\x\sdata\c.yml`,
@@ -288,6 +293,7 @@ func TestDriveRelativeBoundToPathParam(t *testing.T) {
 
 // 外部搜索程序（rg、fd、grep、findstr）的路径位置是展开字符串或变量：和读文件命令一样按代入后判；认识常见带值开关再数位置参数
 func TestNativeSearchersHiddenPaths(t *testing.T) {
+	windowsPathsOnly(t)
 	t.Setenv("USERPROFILE", `C:\Users\x`)
 	t.Setenv("HOME", `C:\Users\x`)
 	prot := []string{`C:\Users\x\.ssh`, `D:\work\data`}
@@ -333,6 +339,7 @@ func TestNativeSearchersHiddenPaths(t *testing.T) {
 
 // 递归搜索的起点用已知值代入（$HOME、$PWD）：代入出来是受保护目录的上级也要问（以前只看“在不在受保护目录里”）
 func TestRecursiveSearchWithKnownVarRoots(t *testing.T) {
+	windowsPathsOnly(t)
 	t.Setenv("USERPROFILE", `C:\Users\x`)
 	t.Setenv("HOME", `C:\Users\x`)
 	cases := []struct {
@@ -377,6 +384,7 @@ func TestRecursiveSearchWithKnownVarRoots(t *testing.T) {
 
 // $PWD 是写这条命令时的当前目录（cd 过就不是工作目录）；当前目录看不清就当值不确定
 func TestPWDFollowsSimulatedCwd(t *testing.T) {
+	windowsPathsOnly(t)
 	prot := []string{`D:\work\proj\sub\data`}
 	c := `cd sub; Get-Content "$PWD\data\x.db"`
 	for _, mode := range []string{"auto", "yolo"} {
@@ -435,6 +443,7 @@ func TestThirdRoundFalsePositives(t *testing.T) {
 
 // 联接指进受保护目录：命令里的目标、open 的 target 过联接解析后的真实路径再比
 func TestLinkedTargetsResolvedBeforeCompare(t *testing.T) {
+	windowsPathsOnly(t)
 	prot := `D:\work\data`
 	cmds := []string{`Get-Content link\x.db`, `Get-Content .\link\x.db`, `Get-ChildItem link -Recurse`, `cd link; Get-Content x.db`}
 	for _, c := range cmds {
@@ -480,6 +489,7 @@ func TestLinkedTargetsResolvedBeforeCompare(t *testing.T) {
 
 // 本机的各种叫法也能还原（拒绝规则用）
 func TestLocalHostAliasesInDenyRule(t *testing.T) {
+	windowsPathsOnly(t)
 	host, _ := os.Hostname()
 	deny := mustRules(t, [2]string{"Read(D:/secret/**)", "deny"})
 	for _, h := range []string{"localhost", "LOCALHOST", "localhost.", "127.0.0.1", "127.0.0.2", "127.1", "127.255.255.254", "::1.ipv6-literal.net", host} {

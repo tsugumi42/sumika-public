@@ -53,7 +53,7 @@ func Box(c *ui.Context, state *BoxState, title string, o BoxOptions, content fun
 		}
 	}
 	ui.Overlay(c, func() {
-		back := ui.Box(c).Key(boxKey{root.ID()}).Absolute().Left(0).Top(0).Right(0).Bottom(0).Center().IgnoreInput(!state.Open)
+		back := ui.Box(c.Key(boxKey{root.ID()})).Absolute().Left(0).Top(0).Right(0).Bottom(0).Center().IgnoreInput(!state.Open)
 		// paint/dropdown.md#交互与提交: a closing visual no longer traps input or focus.
 		if state.Open {
 			back.Modal()
@@ -146,7 +146,7 @@ func boxButton(c *ui.Context, action BoxAction, activate func()) ui.Element {
 	t := theme.T(c)
 	m := t.Metrics().Dialog()
 	// paint/choose-box.md#外壳矩形与绘制层次: buttonRadius is 4, not 3.
-	b := ui.ButtonBase(c).Key(action.ID).Label(action.Label).Height(m.ButtonHeight()).Padding(0, m.ButtonPadding()).Radius(m.ButtonRadius()).Disabled(action.Disabled)
+	b := ui.ButtonBase(c.Key(action.ID)).Label(action.Label).Height(m.ButtonHeight()).Padding(0, m.ButtonPadding()).Radius(m.ButtonRadius()).Disabled(action.Disabled)
 	fg, bg, rippleColor := t.Colors().Control().SurfaceForeground(), t.Colors().Dialog().Background(), t.Colors().Control().SurfaceBackgroundPressed()
 	if b.Hovered() {
 		bg = t.Colors().Control().SurfaceBackgroundHover()

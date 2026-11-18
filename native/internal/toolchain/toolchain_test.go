@@ -72,11 +72,11 @@ func (l layout) env() Env {
 }
 
 func vendorPath(name string) func(layout) string {
-	return func(l layout) string { return filepath.Join(l.root, "vendor", "bin", name+".exe") }
+	return func(l layout) string { return filepath.Join(l.root, "vendor", "bin", exeName(name)) }
 }
 
 func pathPath(name string) func(layout) string {
-	return func(l layout) string { return filepath.Join(l.pathDir, name+".exe") }
+	return func(l layout) string { return filepath.Join(l.pathDir, exeName(name)) }
 }
 
 func populateBundled(t *testing.T, l layout) {
@@ -221,6 +221,10 @@ func TestLookupOrderLayouts(t *testing.T) {
 					}
 					continue
 				}
+				// Git for Windows 的标准安装目录（Git\cmd\git.exe 这类反斜杠写法）只在 Windows 上找，别的系统上系统目录里的 git 不算找到
+				if e.name == "git" && want.source == SourceSystem && runtime.GOOS != "windows" {
+					want.path = nil
+				}
 				if want.path == nil {
 					if got.Found {
 						t.Errorf("%s：这个布局不该找到，却找到 %+v", e.name, got)
@@ -253,10 +257,10 @@ func TestPowerShellBundledFiveOne(t *testing.T) {
 // 有的机器上 fd 装成 fdfind：PATH 里只有 fdfind 也要找到。
 func TestFdAliasFromPath(t *testing.T) {
 	l := newLayout(t)
-	writeFake(t, filepath.Join(l.pathDir, "fdfind.exe"))
+	writeFake(t, filepath.Join(l.pathDir, exeName("fdfind")))
 	got := byName(t, Resolve(l.env()), "fd")
-	if !got.Found || !samePath(got.Path, filepath.Join(l.pathDir, "fdfind.exe")) || got.Source != SourcePath {
-		t.Errorf("fd 应找到 PATH 里的 fdfind.exe：%+v", got)
+	if !got.Found || !samePath(got.Path, filepath.Join(l.pathDir, exeName("fdfind"))) || got.Source != SourcePath {
+		t.Errorf("fd 应找到 PATH 里的 fdfind：%+v", got)
 	}
 }
 
@@ -311,13 +315,13 @@ func TestRegistryShape(t *testing.T) {
 // 配置里写的路径找不到：警告一次，然后继续按 PATH 找。
 func TestConfiguredMissingWarnsOnce(t *testing.T) {
 	l := newLayout(t)
-	writeFake(t, filepath.Join(l.pathDir, "ffmpeg.exe"))
+	writeFake(t, filepath.Join(l.pathDir, exeName("ffmpeg")))
 	env := l.env()
 	env.FFmpeg = filepath.Join(l.configDir, "missing.exe")
 	var warns []string
 	env.Warnf = func(format string, args ...any) { warns = append(warns, fmt.Sprintf(format, args...)) }
 	got := byName(t, Resolve(env), "ffmpeg")
-	if !got.Found || !samePath(got.Path, filepath.Join(l.pathDir, "ffmpeg.exe")) || got.Source != SourcePath {
+	if !got.Found || !samePath(got.Path, filepath.Join(l.pathDir, exeName("ffmpeg"))) || got.Source != SourcePath {
 		t.Errorf("配置写错应退回 PATH：%+v", got)
 	}
 	Resolve(env)
@@ -340,7 +344,7 @@ func resetCache() {
 // 没初始化时 Lookup 现查一次并进缓存；文件没了也还读缓存，Refresh 后才更新。
 func TestLookupLazilyResolvesAndCaches(t *testing.T) {
 	l := newLayout(t)
-	rg := filepath.Join(l.pathDir, "rg.exe")
+	rg := filepath.Join(l.pathDir, exeName("rg"))
 	writeFake(t, rg)
 	resetCache()
 
@@ -375,7 +379,7 @@ func TestLookupLazyDoesNotFetchVersions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rg := filepath.Join(l.pathDir, "rg.exe")
+	rg := filepath.Join(l.pathDir, exeName("rg"))
 	if err := os.WriteFile(rg, data, 0o755); err != nil {
 		t.Fatal(err)
 	}

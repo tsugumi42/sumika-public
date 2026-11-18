@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/egoist/mygo/transfer"
@@ -14,7 +15,12 @@ import (
 func TestDropContentSplitsFilesLinksAndText(t *testing.T) {
 	t.Parallel()
 	file := filepath.Join(t.TempDir(), "资料.txt")
-	fileURL := (&url.URL{Scheme: "file", Path: "/" + filepath.ToSlash(file)}).String()
+	// file URL 的路径以 / 开头：Windows 的 C:/x 要补一个，Linux 的 /tmp/x 已经有了
+	urlPath := filepath.ToSlash(file)
+	if !strings.HasPrefix(urlPath, "/") {
+		urlPath = "/" + urlPath
+	}
+	fileURL := (&url.URL{Scheme: "file", Path: urlPath}).String()
 	link, err := transfer.URLData("https://example.com/a?b=1")
 	if err != nil {
 		t.Fatal(err)

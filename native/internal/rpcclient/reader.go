@@ -3,7 +3,6 @@ package rpcclient
 import (
 	"context"
 	"errors"
-	"os"
 
 	"sumika-native/internal/api"
 	"sumika-native/internal/rpcconv"
@@ -90,17 +89,4 @@ func (r *Reader) WatchRuntime(ctx context.Context) (api.Subscription[api.Runtime
 	return onceSub(ctx, func(ctx context.Context) (api.Result[api.RuntimeView], error) {
 		return read(ctx, r.C, rpcwire.MethodRuntimeRead, rpcwire.Empty{}, rpcconv.RuntimeIn)
 	})
-}
-
-// processAlive：Windows 上 FindProcess 会去开进程句柄，进程不在就失败；别的系统 FindProcess 总成功，只当活着
-func processAlive(pid int) bool {
-	if pid <= 0 {
-		return false
-	}
-	p, err := os.FindProcess(pid)
-	if err != nil {
-		return false
-	}
-	p.Release()
-	return true
 }

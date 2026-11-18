@@ -338,6 +338,9 @@ func TestSummary(t *testing.T) {
 	if got := Summary(dir, clk.Now().Add(16*time.Minute)); !strings.HasPrefix(got, "未更新") {
 		t.Fatalf("超过 15 分钟没更新：%q", got)
 	}
+	// 先把后台循环停掉再写坏文件：循环随时可能重写当天的文件，把这份坏的盖掉（第八轮 CI 的 Windows 一格出过：读到的是“有 1 项无法判定”）。
+	// Close 幂等，上面的 defer 再关一次没有影响
+	r.Close()
 	if err := os.WriteFile(filepath.Join(dir, "2026-11-13.json"), []byte("{坏"), 0o644); err != nil {
 		t.Fatal(err)
 	}

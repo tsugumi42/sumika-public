@@ -5,6 +5,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -17,9 +18,9 @@ import (
 // 独立复核查出的两个洞：grep 的保护只看路径参数自己的文件名，搜索目录下面的 .env 照样读得出来（rg 带 --hidden，用户给的 glob 原样透传）；
 // find、grep 的 limit 不夹，find 的 limit:0 让 fd 不限条数。
 
-// TestMain：测试二进制拷成 rg.exe 放进假的 pi bin 目录时，扮演一个"不听 glob、什么都报"的 rg（测兜底过滤用）
+// TestMain：测试二进制拷成 rg（Windows 上 rg.exe）放进假的 pi bin 目录时，扮演一个"不听 glob、什么都报"的 rg（测兜底过滤用）
 func TestMain(m *testing.M) {
-	if out := os.Getenv("FAKE_RG_OUT"); out != "" && strings.EqualFold(filepath.Base(os.Args[0]), "rg.exe") {
+	if out := os.Getenv("FAKE_RG_OUT"); out != "" && strings.EqualFold(filepath.Base(os.Args[0]), fakeExe("rg")) {
 		os.Stdout.WriteString(out)
 		os.Exit(0)
 	}
@@ -44,7 +45,7 @@ func useFakeRg(t *testing.T, events ...string) {
 	if err := os.MkdirAll(filepath.Join(dir, "vendor", "bin"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "vendor", "bin", "rg.exe"), b, 0o755); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "vendor", "bin", fakeExe("rg")), b, 0o755); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { toolchain.Refresh(toolchain.Env{}) })
@@ -83,6 +84,20 @@ func useVendorBin(t *testing.T) {
 	t.Helper()
 	vendor, _ := filepath.Abs(filepath.Join("..", "..", "..", "vendor", "bin"))
 	setToolPath(t, vendor+string(os.PathListSeparator)+os.Getenv("PATH"))
+	// 这些用例测的是真 ripgrep / fd 的行为；vendor/bin（公开仓库不带）和 PATH 里都没有就跳过并写明，CI 的 Linux 步骤会装
+	for _, n := range []string{"rg", "fd"} {
+		if toolPath(n) == "" {
+			t.Skipf("原因：这条用真 %s 的行为，vendor/bin 和 PATH 里都没有它", n)
+		}
+	}
+}
+
+// fakeExe 是测试里造假程序文件的名字：和 toolchain 登记表找程序的规则一致，Windows 带 .exe，别的系统不带
+func fakeExe(name string) string {
+	if runtime.GOOS == "windows" {
+		return name + ".exe"
+	}
+	return name
 }
 
 func envFixture(t *testing.T) string {

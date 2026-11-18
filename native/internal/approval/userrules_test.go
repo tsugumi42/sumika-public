@@ -95,7 +95,7 @@ func ruleGate(t *testing.T, rules ...[2]string) (*Gate, string) {
 			t.Fatal(err)
 		}
 	}
-	return g, t.TempDir()
+	return g, lowerTempDir(t)
 }
 
 func ruleCheck(t *testing.T, g *Gate, work, conv, tool, args string) (Clearance, int) {

@@ -83,6 +83,9 @@ func newFakePeer(t *testing.T) *fakePeer {
 		for {
 			_, data, err := c.Read(context.Background())
 			if err != nil {
+				// 读出错这里会静默结束、整条连接被关掉（比如帧超过 coder/websocket 默认 32 KiB 的读上限），适配器那边只看到“连接断了”；
+				// 留一条日志好认是谁先关的（测试结束时正常关闭也会有一条，只在失败时才会打出来）
+				t.Logf("假协议端读帧结束，连接随之关闭：%v", err)
 				return
 			}
 			select {

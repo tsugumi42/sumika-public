@@ -170,7 +170,32 @@ func TestSecretsRoundTripWithRealLocalCopy(t *testing.T) {
 }
 
 // 日志里写 qq.<号>.token 时号要照界面规则打码：完整号码不进日志。
+// 打码本身就是 secretLogName 这一个纯函数，不依赖密钥库（也就不依赖 DPAPI），两个系统都直接测它；
+// 下面整条“设密钥、删密钥看日志”的用例要写密钥库，只在 Windows 上跑。
+func TestSecretLogNameMasksQQNumber(t *testing.T) {
+	for in, want := range map[string]string{
+		"qq.100.token":      "qq.***00.token",
+		"qq.10001.token":    "qq.***01.token",
+		"qq.10001.other":    "qq.10001.other", // 不是令牌名，原样
+		"qq..token":         "qq..token",      // 没有号
+		"qq.a.b.token":      "qq.a.b.token",   // 号里带点不是一个号
+		"deepseek.api_key":  "deepseek.api_key",
+		"magpie.token":      "magpie.token",
+		"qq.10001.token.xx": "qq.10001.token.xx",
+	} {
+		if got := secretLogName(in); got != want {
+			t.Errorf("secretLogName(%q) = %q，要 %q", in, got, want)
+		}
+		if strings.Contains(in, "10001") && strings.HasSuffix(in, ".token") && strings.Contains(secretLogName(in), "10001") {
+			t.Errorf("完整号码进了日志名：%q", secretLogName(in))
+		}
+	}
+}
+
 func TestSecretsLogMasksQQNumber(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("原因：写密钥（Set、Delete）每次重新打开库都要“本机副本”可用（secrets.Store.localOpen），本机副本只有 Windows 的 DPAPI；非 Windows 上设了主密码也一样是锁着的，产品现在只支持 Windows，没有非 Windows 的写密钥路径")
+	}
 	var logs []string
 	a := &App{paths: paths.Paths{Root: t.TempDir()}, logf: func(f string, args ...any) {
 		logs = append(logs, fmt.Sprintf(f, args...))

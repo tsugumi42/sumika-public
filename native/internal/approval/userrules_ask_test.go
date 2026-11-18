@@ -129,7 +129,7 @@ func askGate(t *testing.T, mode string, rules ...[4]string) (*Gate, string, *ask
 		cap.options, cap.why = req.Options, req.Why
 		return Decision{Kind: "approved"}
 	}
-	return g, t.TempDir(), cap
+	return g, lowerTempDir(t), cap
 }
 
 func clearWrite(t *testing.T, g *Gate, work, conv string) Clearance {

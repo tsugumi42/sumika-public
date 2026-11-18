@@ -115,7 +115,7 @@ func scanExecCalls(root string) execScan {
 				if !ok {
 					return true
 				}
-				if filepath.IsAbs(arg) {
+				if isAbsoluteAnyOS(arg) {
 					return true
 				}
 				s.hits = append(s.hits, execHit{File: rel, Line: fset.Position(call.Pos()).Line, Call: sel.Sel.Name, Arg: arg})
@@ -128,6 +128,27 @@ func scanExecCalls(root string) execScan {
 		s.problems = append(s.problems, "扫描 "+root+" 失败："+err.Error())
 	}
 	return s
+}
+
+// isAbsoluteAnyOS 说 p 是不是绝对路径，与本机系统无关：filepath.IsAbs 在 Linux 上不认 C:\tools\ffmpeg.exe，
+// 写死的 Windows 绝对路径照样是“写死的程序位置”，不该被当成待登记的按名起程序
+func isAbsoluteAnyOS(p string) bool {
+	if filepath.IsAbs(p) || strings.HasPrefix(p, "/") || strings.HasPrefix(p, `\`) {
+		return true
+	}
+	letter := len(p) >= 1 && (p[0]|0x20 >= 'a' && p[0]|0x20 <= 'z')
+	return letter && len(p) >= 3 && p[1] == ':' && (p[2] == '\\' || p[2] == '/')
+}
+
+func TestIsAbsoluteAnyOS(t *testing.T) {
+	for p, want := range map[string]bool{
+		`C:\tools\ffmpeg.exe`: true, "c:/tools/x": true, "/usr/bin/ffmpeg": true, `\\server\share\x`: true,
+		"ffmpeg": false, "./ffmpeg": false, `tools\ffmpeg`: false, "C:ffmpeg": false, "": false, "ab:/x": false,
+	} {
+		if got := isAbsoluteAnyOS(p); got != want {
+			t.Errorf("isAbsoluteAnyOS(%q) = %v，要 %v", p, got, want)
+		}
+	}
 }
 
 // stringLiteral 取第 i 个参数，必须是解引号成功的字符串字面量。

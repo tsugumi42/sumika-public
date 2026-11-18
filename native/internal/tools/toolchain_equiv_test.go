@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -66,14 +67,14 @@ func TestToolPathUsesRegistry(t *testing.T) {
 		root := t.TempDir()
 		pathDir := filepath.Join(root, "path")
 		for _, name := range []string{"rg", "fd"} {
-			writeToolFile(t, filepath.Join(root, "vendor", "bin", name+".exe"))
-			writeToolFile(t, filepath.Join(pathDir, name+".exe"))
+			writeToolFile(t, filepath.Join(root, "vendor", "bin", fakeExe(name)))
+			writeToolFile(t, filepath.Join(pathDir, fakeExe(name)))
 		}
 		seedTools(t, pathDir, toolEnv(root))
 		for _, name := range []string{"rg", "fd"} {
 			r, ok := toolchain.Lookup(name)
 			if !ok || !sameToolPath(toolPath(name), r.Path) ||
-				!sameToolPath(toolPath(name), filepath.Join(root, "vendor", "bin", name+".exe")) {
+				!sameToolPath(toolPath(name), filepath.Join(root, "vendor", "bin", fakeExe(name))) {
 				t.Errorf("%s：toolPath = %q，登记表 = %+v", name, toolPath(name), r)
 			}
 		}
@@ -83,11 +84,11 @@ func TestToolPathUsesRegistry(t *testing.T) {
 		root := t.TempDir()
 		pathDir := filepath.Join(root, "path")
 		for _, name := range []string{"rg", "fd"} {
-			writeToolFile(t, filepath.Join(pathDir, name+".exe"))
+			writeToolFile(t, filepath.Join(pathDir, fakeExe(name)))
 		}
 		seedTools(t, pathDir, toolchain.Env{})
 		for _, name := range []string{"rg", "fd"} {
-			if got := toolPath(name); !sameToolPath(got, filepath.Join(pathDir, name+".exe")) {
+			if got := toolPath(name); !sameToolPath(got, filepath.Join(pathDir, fakeExe(name))) {
 				t.Errorf("%s：toolPath = %q", name, got)
 			}
 		}
@@ -96,9 +97,9 @@ func TestToolPathUsesRegistry(t *testing.T) {
 	t.Run("fd 装成 fdfind", func(t *testing.T) {
 		root := t.TempDir()
 		pathDir := filepath.Join(root, "path")
-		writeToolFile(t, filepath.Join(pathDir, "fdfind.exe"))
+		writeToolFile(t, filepath.Join(pathDir, fakeExe("fdfind")))
 		seedTools(t, pathDir, toolchain.Env{})
-		if got := toolPath("fd"); !sameToolPath(got, filepath.Join(pathDir, "fdfind.exe")) {
+		if got := toolPath("fd"); !sameToolPath(got, filepath.Join(pathDir, fakeExe("fdfind"))) {
 			t.Errorf("fd：toolPath = %q", got)
 		}
 	})
@@ -113,13 +114,13 @@ func TestFindPowerShellUsesRegistry(t *testing.T) {
 		found bool
 	}{
 		{name: "PATH 里的 pwsh", found: true, setup: func(t *testing.T, pathDir, _, _ string) {
-			writeToolFile(t, filepath.Join(pathDir, "pwsh.exe"))
+			writeToolFile(t, filepath.Join(pathDir, fakeExe("pwsh")))
 		}},
 		{name: "Program Files 里的 pwsh 7", found: true, setup: func(t *testing.T, _, programFiles, _ string) {
 			writeToolFile(t, filepath.Join(programFiles, "PowerShell", "7", "pwsh.exe"))
 		}},
 		{name: "PATH 里的 powershell", found: true, setup: func(t *testing.T, pathDir, _, _ string) {
-			writeToolFile(t, filepath.Join(pathDir, "powershell.exe"))
+			writeToolFile(t, filepath.Join(pathDir, fakeExe("powershell")))
 		}},
 		{name: "System32 里的 5.1", found: true, setup: func(t *testing.T, _, _, systemRoot string) {
 			writeToolFile(t, filepath.Join(systemRoot, "System32", "WindowsPowerShell", "v1.0", "powershell.exe"))
@@ -164,6 +165,9 @@ func TestFindGitBashUsesRegistryGit(t *testing.T) {
 	t.Setenv("PATHEXT", ".COM;.EXE;.BAT;.CMD")
 
 	t.Run("标准安装根", func(t *testing.T) {
+		if runtime.GOOS != "windows" {
+			t.Skip("原因：Git for Windows 的标准安装根（Git/cmd/git.exe 这类写法）只在 Windows 上找")
+		}
 		root := t.TempDir()
 		programFiles := filepath.Join(root, "pf")
 		gitDir := filepath.Join(programFiles, "Git")

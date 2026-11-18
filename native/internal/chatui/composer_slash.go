@@ -127,10 +127,11 @@ func (h ComposerHost) slashPanel(c *ui.Context, p *Composer) {
 	first := min(max(at-slashRows+1, 0), max(len(items)-slashRows, 0)) // 选中项始终在窗口里
 	last := min(first+slashRows, len(items))
 	inner := t.Inner(t.RCtl, t.S1)
-	// 进出场照菜单（motion.menu-in/out、travel.menu、scale.menu）；面板在输入框上方占位，所以高度也收放（Collapse），输入框跟着平滑长高、缩回，不跳。
-	m := ui.Motion{Y: float32(t.D.Num.TravelMenu), Scale: float32(t.D.Num.ScaleMenu), Collapse: true}
+	// 进出场和菜单同一种（MenuMorph 的做法，2026-11-15）：只展开收起高度（Collapse，“利落”弹簧）加淡变，不另外位移缩放；
+	// 面板在输入框上方占位，输入框跟着平滑长高、缩回，不跳。
+	m := ui.Motion{Collapse: true}
 	ui.Column(c.Key("slash")).Label("斜杠命令").FillWidth().Shrink(0).Padding(t.S1).Gap(t.S1).Radius(t.RCtl).Background(t.C.Float).Border(1, t.C.FloatRing).
-		TransformOrigin(.5, 1).Transition(PopTransition(t.D.Motion.MotionMenuIn, t.D.Motion.MotionMenuOut, m)).Children(func() {
+		Transition(ui.ElementTransition{Animation: &ui.Animation{Spring: t.Spring.Firm}, Shadows: true, Enter: &m, Exit: &m}).Children(func() {
 		for i := first; i < last; i++ {
 			it := items[i]
 			row := ui.ButtonBase(c.Key(it.Name)).Label("命令 /"+it.Name).FillWidth().Height(t.HSm).Shrink(0).Padding(0, t.S2).Gap(t.S2).AlignItems(ui.Center).Radius(inner).

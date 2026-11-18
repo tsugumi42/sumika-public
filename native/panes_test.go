@@ -67,10 +67,8 @@ func click(t *testing.T, tt *ui.Tester, label string) {
 }
 
 // clickAt 按元素的位置点，不用 tt.Click。
-// 临时：mygo 0.8 的测试器要求按名字点到的元素自己接住点击，MewTypeUI 有两种结构过不了，真实点击都照样生效（和 0.7.4 一样）：
-// 会话列表、文件夹栏的行外层是带名字的 mygo 列表行，里层为了画悬停底色和按下水波另挂了点击；
-// MewTypeUI 的 TextField 名字挂在外框上，里层输入框接点击，外框没把焦点转给它（mygo 自己的输入框会转）。
-// mygo 开放列表行状态（egoist/mygo#1439）、MewTypeUI 改好以后换回 tt.Click（待办"会话行只走 mygo 列表行"）。
+// 临时：MewTypeUI 的 TextField 名字挂在外框上，里层输入框接点击，外框没把焦点转给它（mygo 自己的输入框会转），tt.Click 点不进去；真实点击照样生效。
+// MewTypeUI 的 TextField 改好以后换回 tt.Click。
 func clickAt(t *testing.T, tt *ui.Tester, label string) {
 	t.Helper()
 	r, ok := tt.Find(label)

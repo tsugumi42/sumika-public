@@ -757,7 +757,10 @@ func TestMemoryPageDropdownPick(t *testing.T) {
 	if err := tt.Click("会话：全部"); err != nil {
 		t.Skipf("下拉的触发器不是这个文字：%v；texts=%v", err, tt.Texts())
 	}
-	tt.Frame()
+	for i := 0; i < 200 && tt.FramePending(); i++ { // 面板从入口展开（ADR-395），等展开放完再点
+		tt.Advance(16 * time.Millisecond)
+		tt.Frame()
+	}
 	if err := tt.Click("群二 · 5"); err != nil {
 		t.Fatalf("选项：%v；texts=%v", err, tt.Texts())
 	}

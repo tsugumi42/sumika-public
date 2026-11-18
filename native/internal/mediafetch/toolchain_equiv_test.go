@@ -4,11 +4,20 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
 	"sumika-native/internal/toolchain"
 )
+
+// fakeExe 是测试里造假程序文件的名字：和 toolchain 登记表找程序的规则一致，Windows 带 .exe，别的系统不带
+func fakeExe(name string) string {
+	if runtime.GOOS == "windows" {
+		return name + ".exe"
+	}
+	return name
+}
 
 func writeVideoTool(t *testing.T, path string) {
 	t.Helper()
@@ -34,8 +43,8 @@ func TestFindVideoToolsUsesRegistry(t *testing.T) {
 	root := t.TempDir()
 	pathDir := filepath.Join(root, "path")
 	vendorDir := filepath.Join(root, "vendor", "bin")
-	writeVideoTool(t, filepath.Join(pathDir, "ffmpeg.exe"))
-	writeVideoTool(t, filepath.Join(pathDir, "ffprobe.exe"))
+	writeVideoTool(t, filepath.Join(pathDir, fakeExe("ffmpeg")))
+	writeVideoTool(t, filepath.Join(pathDir, fakeExe("ffprobe")))
 	t.Setenv("PATH", pathDir)
 
 	check := func(t *testing.T, env toolchain.Env, wantFFmpeg, wantFFprobe string) {
@@ -57,11 +66,11 @@ func TestFindVideoToolsUsesRegistry(t *testing.T) {
 	}
 
 	t.Run("自带优先", func(t *testing.T) {
-		writeVideoTool(t, filepath.Join(vendorDir, "ffmpeg.exe"))
-		writeVideoTool(t, filepath.Join(vendorDir, "ffprobe.exe"))
+		writeVideoTool(t, filepath.Join(vendorDir, fakeExe("ffmpeg")))
+		writeVideoTool(t, filepath.Join(vendorDir, fakeExe("ffprobe")))
 		env := videoEnv()
 		env.ResourceRoot = root
-		check(t, env, filepath.Join(vendorDir, "ffmpeg.exe"), filepath.Join(vendorDir, "ffprobe.exe"))
+		check(t, env, filepath.Join(vendorDir, fakeExe("ffmpeg")), filepath.Join(vendorDir, fakeExe("ffprobe")))
 	})
 
 	t.Run("配置优先于 PATH", func(t *testing.T) {
@@ -69,11 +78,11 @@ func TestFindVideoToolsUsesRegistry(t *testing.T) {
 		writeVideoTool(t, configured)
 		env := videoEnv()
 		env.FFmpeg = configured
-		check(t, env, configured, filepath.Join(pathDir, "ffprobe.exe"))
+		check(t, env, configured, filepath.Join(pathDir, fakeExe("ffprobe")))
 	})
 
 	t.Run("只有 PATH", func(t *testing.T) {
-		check(t, videoEnv(), filepath.Join(pathDir, "ffmpeg.exe"), filepath.Join(pathDir, "ffprobe.exe"))
+		check(t, videoEnv(), filepath.Join(pathDir, fakeExe("ffmpeg")), filepath.Join(pathDir, fakeExe("ffprobe")))
 	})
 
 	t.Run("都没有", func(t *testing.T) {

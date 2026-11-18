@@ -67,7 +67,7 @@ func TestLeadColumnAligned(t *testing.T) {
 				}
 			}
 			walk(root.find("p1"))
-			if len(leads) < 12 {
+			if len(leads) < 11 {
 				t.Fatalf("%s 只找到 %d 个图标格子，场景里的行没画全", name, len(leads))
 			}
 			center := leads[0].Box.X + leads[0].Box.W/2

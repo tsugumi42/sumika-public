@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"sumika-native/internal/assets"
+	"sumika-native/internal/uitest"
 	"testing"
 	"time"
 
@@ -626,6 +627,7 @@ func TestStrongAccentContrast(t *testing.T) {
 // 撤回消息的字要读得清（审查 A1）：Bun 那种整块 opacity 0.55 会把字压到约 2.3:1。
 // 按实际画出来的像素量：字最深的那一点对气泡底色至少 4.5（浅深 × 有无壁纸 × 她的和我的）。
 func TestRecalledReadable(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	for _, dark := range []bool{false, true} {
 		for _, wall := range []bool{false, true} {
 			for _, self := range []bool{false, true} {
@@ -754,6 +756,8 @@ func TestParagraphGap(t *testing.T) {
 // 减少动态效果时消息进场不位移（R067；审查 C3）：这是 mygo 的 Transition 自己保证的（ui/transition.go:85-88），
 // 这条测试钉住它，升级 mygo 后行为变了会红。进场第一帧看得见字时的位置就是停稳后的位置；平时第一帧偏下。
 func TestEnterRespectsReduceMotion(t *testing.T) {
+	uitest.RequireWindowsFontMetrics(t, "进场位移的像素")
+	uitest.RequireGlyphs(t)
 	for _, reduce := range []bool{false, true} {
 		tk := Derive(DefaultSettings())
 		host := Host{T: tk, SelfChar: CharColors[0], Column: 600}

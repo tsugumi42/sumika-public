@@ -3,7 +3,7 @@
 // 不碰仓库里的文件；--out 不存在就建，存在但非空就拒绝。自检红了退出码 1（导出目录留着，不删）。
 import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, posix, resolve } from 'node:path'
-import { allowKey, loadKnown, maskWhere, scan, SourceError, type Hit, type Known } from './scan-private.ts'
+import { devEnv, devExe } from './lib/sumika-dev.ts'
 
 const ROOT = resolve(import.meta.dir, '..')
 const HASH = /(?<![0-9a-fA-F#/])[0-9a-fA-F]{7,40}(?![0-9a-fA-F])/g
@@ -280,15 +280,11 @@ export function checkLinks(out: string): string[] {
   return bad
 }
 
-function scanPrivacy(out: string, known: Known, allowed: Set<string>): Hit[] {
-  const hits: Hit[] = []
-  for (const rel of walk(out)) {
-    const buf = readFileSync(join(out, rel))
-    if (buf.subarray(0, 8192).includes(0)) continue
-    const lines = buf.toString('utf8').split(/\r?\n/).map((text, i) => ({ where: `${rel}:${i + 1}`, text, file: rel }))
-    for (const h of scan(lines, known)) if (!allowed.has(allowKey(h))) hits.push(h)
-  }
-  return hits
+// 隐私扫描交给 sumika-dev check private --tree（和提交钩子、推送钩子同一份实现）：退出码 0 干净或只有提醒、1 有要拦的、2 名单读不了
+export type PrivacyResult = { code: number; output: string }
+function scanPrivacy(root: string, out: string): PrivacyResult {
+  const p = Bun.spawnSync([devExe(root), 'check', 'private', '--tree', out], { cwd: root, env: devEnv(), stdout: 'pipe', stderr: 'pipe' })
+  return { code: p.exitCode ?? 2, output: p.stdout.toString() + p.stderr.toString() }
 }
 
 function scanDrivePaths(out: string): string[] {
@@ -309,8 +305,7 @@ export type ExportOptions = {
   ref?: string
   excludeFile?: string
   env?: Env
-  known?: Known
-  allowed?: Set<string>
+  privacy?: (out: string) => PrivacyResult   // 测试换成指向编造数据目录的版本；平时不传
 }
 
 export type ExportReport = {
@@ -323,34 +318,9 @@ export type ExportReport = {
   rewrites: RewriteCounts
   excludedHits: string[]
   broken: string[]
-  privacy: { blocking: Hit[]; reminders: Hit[] }
+  privacy: PrivacyResult
   drivePaths: string[]
   warnings: string[]
-}
-
-function mainRoot(root: string, env: Env): string {
-  const common = git(root, ['rev-parse', '--git-common-dir'], env).toString().trim()
-  return resolve(root, common, '..')
-}
-
-function loadKnownFor(root: string, env: Env): { known: Known; allowed: Set<string> } {
-  const main = mainRoot(root, env)
-  let loaded: { known: Known; notes: string[] }
-  try {
-    loaded = loadKnown({
-      qqDB: join(main, 'data/go/chat/qq.db'),
-      maibotDB: env.SUMIKA_SCAN_MAIBOT ?? '',
-      groupsJSON: join(main, 'data/dev/human-replies/groups.json'),
-      configYML: join(main, 'data/config/sumika.yml'),
-      privateJSON: join(main, 'data/dev/private-strings.json'),
-    })
-  } catch (e) {
-    throw new ExportError(`隐私名单读不了（${e instanceof SourceError ? e.message : (e as Error).message}），不导出`)
-  }
-  if (loaded.known.numbers.size === 0) throw new ExportError('隐私名单里没有本机号码，认不出真号码，不导出')
-  const f = join(main, 'data/dev/private-scan-allow.json')
-  const allowed = new Set<string>(existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : [])
-  return { known: loaded.known, allowed }
 }
 
 export function runExport(o: ExportOptions): ExportReport {
@@ -405,17 +375,11 @@ export function runExport(o: ExportOptions): ExportReport {
 
   const excludedHits = walk(out).filter((f) => isExcluded(f, rules))
   const broken = checkLinks(out)
-  let known = o.known
-  let allowed = o.allowed ?? new Set<string>()
-  if (!known) { const k = loadKnownFor(root, env); known = k.known; allowed = k.allowed }
-  const privacyHits = scanPrivacy(out, known, allowed)
-  const privacy = {
-    blocking: privacyHits.filter((h) => h.block),
-    reminders: privacyHits.filter((h) => !h.block),
-  }
+  const privacy = (o.privacy ?? ((d) => scanPrivacy(root, d)))(out)
+  if (privacy.code === 2) throw new ExportError(privacy.output.trim())   // 名单读不了：不导出
   const drivePaths = scanDrivePaths(out)
   return {
-    ok: excludedHits.length === 0 && broken.length === 0 && privacy.blocking.length === 0,
+    ok: excludedHits.length === 0 && broken.length === 0 && privacy.code === 0,
     ref, out, files, bytes, excluded, rewrites, excludedHits, broken, privacy, drivePaths, warnings,
   }
 }
@@ -425,12 +389,7 @@ function usage(): void {
   console.log('用法：bun scripts/export-public.ts --out <空目录> [--ref HEAD] [--exclude scripts/public-exclude.txt]')
 }
 
-function maskValue(s: string, keep = 2): string {
-  const chars = [...s]
-  return chars.slice(0, keep).join('') + '＊'.repeat(Math.max(1, chars.length - keep))
-}
-
-function printReport(r: ExportReport, known?: Known): void {
+function printReport(r: ExportReport): void {
   const mb = (r.bytes / 1024 / 1024).toFixed(1)
   console.log(`导出 ${r.ref} -> ${r.out}`)
   console.log(`  文件 ${r.files} 个，共 ${mb} MB；排除 ${r.excluded.length} 个`)
@@ -440,15 +399,7 @@ function printReport(r: ExportReport, known?: Known): void {
   console.log(`  排除表命中：${r.excludedHits.length}${r.excludedHits.length ? '（' + r.excludedHits.slice(0, 10).join('、') + '）' : ''}`)
   console.log(`  相对链接断链：${r.broken.length}`)
   for (const b of r.broken) console.log(`    ${b}`)
-  const groups = new Map<string, Hit[]>()
-  for (const h of r.privacy.blocking) groups.set(allowKey(h), [...(groups.get(allowKey(h)) ?? []), h])
-  console.log(`  隐私扫描：拦 ${groups.size} 组 / ${r.privacy.blocking.length} 处，提醒 ${r.privacy.reminders.length} 处`)
-  for (const [, hs] of groups) {
-    const h = hs[0]!
-    console.log(`    拦 ${h.kind} ${maskValue(h.value)} ${known ? maskWhere(h.where, known) : h.where}（${hs.length} 处）`)
-  }
-  for (const h of r.privacy.reminders.slice(0, 10)) console.log(`    提醒 ${h.kind} ${maskValue(h.value)} ${known ? maskWhere(h.where, known) : h.where}`)
-  if (r.privacy.reminders.length > 10) console.log(`    …还有 ${r.privacy.reminders.length - 10} 处提醒`)
+  process.stdout.write(r.privacy.output)
   console.log(`  盘符绝对路径：${r.drivePaths.length} 行${r.drivePaths.length ? '（只报告，不失败）' : ''}`)
   for (const p of r.drivePaths) console.log(`    ${p}`)
   console.log(r.ok ? '自检通过' : '自检没过：见上面')
@@ -468,8 +419,7 @@ if (import.meta.main) {
   if (!out) { usage(); process.exit(2) }
   try {
     const r = runExport({ root: ROOT, out, ref, excludeFile, env: process.env })
-    const { known } = loadKnownFor(ROOT, process.env)
-    printReport(r, known)
+    printReport(r)
     process.exit(r.ok ? 0 : 1)
   } catch (e) {
     console.error(e instanceof ExportError || e instanceof Error ? e.message : String(e))

@@ -26,6 +26,8 @@ permissions:
 
 jobs:
   test:
+    # 只在公开仓库跑：公开仓库的 Actions 不计分钟，私有仓库按免费额度扣（Windows 按 2 倍）、推 main 时两边各跑一遍是重复（2026-11-18 免费 2000 分钟快用完）
+    if: github.event.repository.private == false
     name: test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     # Linux 这一格先只当参考、红了不挡（2026-11-18）：产品现在只支持 Windows，第四轮 Linux 红了二十多个包，
@@ -58,7 +60,13 @@ jobs:
       # 只在 Linux 跑一次：不依赖系统，Win 上再跑一遍只是多花时间
       - name: 文档检查
         if: runner.os == 'Linux'
-        run: bun run check:docs
+        # “ADR 日期不晚于今天”按本地当天算（AGENTS：日期不用 UTC）；runner 是 UTC，北京时间凌晨会被判成“写了明天”（2026-11-19 第一次碰到）
+        env:
+          TZ: Asia/Shanghai
+        run: |
+          go build -o bin/sumika-dev ./cmd/sumika-dev
+          bin/sumika-dev check docs
+        working-directory: ./native
 
       # Windows runner 的 TEMP 是 8.3 短名（C:\Users\RUNNER~1\…），系统按句柄取回的却是长名：检查点、项目说明这些
       # “路径必须就是它自己”的检查会把整片测试判成走了链接（第一次 CI，2026-11-18）。临时目录换成 runner 自带的长路径；
@@ -72,6 +80,16 @@ jobs:
           $t = (Get-Item $t).FullName
           "TEMP=$t" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
           "TMP=$t" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
+      # grep、find 的测试用真 ripgrep 和 fd（测的是 .env 过滤、截断这类真行为，不是假文件）；Linux runner 自带的镜像里没有。
+      # Ubuntu 仓库里 fd 叫 fdfind，internal/toolchain 的登记表认这个别名（TestFdAliasFromPath）。
+      # 没有这两个时测试自己会跳过并写明，不会红；装上是为了让它们在 Linux 这一格也真跑。
+      # 同一步装中文字体：公开仓库不带 native/fonts/*.ttf，Linux runner 又没有中文字体，字画不出来，对比度、行高这类像素用例量不到。
+      # 装了 fonts-noto-cjk，uitest.RequireGlyphs 判断画得出字，那 13 个用例就在 Linux 这一格真跑；没装或装失败它们会跳过并写明缺什么。
+      # Noto 的字高、行距和文渊圆体不同，字体度量敏感的断言（行高、行距）可能因此露出新的红，那是要追的真实结果，不是装字体的错。
+      - name: 装 ripgrep、fd 和中文字体
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ripgrep fd-find fonts-noto-cjk
 
       - name: go vet
         working-directory: native

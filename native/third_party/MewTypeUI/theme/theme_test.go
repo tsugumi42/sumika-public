@@ -363,6 +363,10 @@ func TestApplyAndWindowIsolation(t *testing.T) {
 	}
 	actual, expected := reflect.ValueOf(*got), reflect.ValueOf(want)
 	for i := range actual.NumField() {
+		// mygo 0.8.0 起 ui.Theme 带未导出的内部字段，reflect 读不了，只比导出的。
+		if !actual.Type().Field(i).IsExported() {
+			continue
+		}
 		check(t, "ui.Theme."+actual.Type().Field(i).Name, reflect.DeepEqual(actual.Field(i).Interface(), expected.Field(i).Interface()))
 	}
 	check(t, "T returns source", current == source)

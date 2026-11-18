@@ -1,7 +1,17 @@
+# 文本文件在库里和检出时一律 LF，不随本机 core.autocrlf 变（2026-11-19）。
+# 这台机器 autocrlf=true，原先每个 worktree 检出都是 CRLF：gofmt -l 误报、测试正则对不上、CRLF 被写进库。
+* text=auto eol=lf
+
+# cmd 遇到 LF 换行时标签跳转会错位，批处理保持 CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
 # bench-t2 题库的文件是判分的一部分，换行不能随检出环境变
 scripts/bench-t2/tasks/** -text
 scripts/bench-t2/ref/** -text
 **/testdata/wire/*.body -text
+# 链接解析的接口快照照抓到的原字节存（有几份是服务端原样返回的 CRLF）
+native/internal/linkreader/testdata/*.json -text
 
 # 测评题库和网页快照是测试数据，不是我们的代码：不算进 GitHub 的语言统计（ADR-389 第 3 条）
 scripts/bench-t2/tasks/** linguist-vendored

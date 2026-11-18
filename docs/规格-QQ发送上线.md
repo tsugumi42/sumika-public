@@ -198,6 +198,7 @@ SnowLuma 有这两个动作（SL `packages/onebot/src/actions/info.ts:7-29`、`:
 **锁的细节（2026-10-28 补，我定的；Bun 第 4 步动手前查出这几处没写死，两边必须一字不差）**：
 
 - 锁的字节范围：`LockFileEx(LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY)`，偏移 2^62（`OffsetHigh = 0x40000000`、`Offset = 0`），长度 1 字节。锁在文件内容之外，别的进程照样能读交接记录；不锁 0 起的范围（会挡住读记录）。
+- 非 Windows（2026-11-19，公开仓库 CI 的 Linux 一格）：Linux 和 BSD 系用 `flock(LOCK_EX|LOCK_NB)`，锁整个文件（劝告锁，不挡读），抢不到立刻返回 `EWOULDBLOCK`、进程退出自动放。不和 Bun 互斥：Bun 后台只在 Windows 上跑，Linux 上没有第二方。别的系统（plan9、solaris 等）仍报“没有独占文件锁的实现”。
 - 打开方式：两边都用 `CreateFileW(GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, OPEN_ALWAYS)`。只读记录的一方用同样的共享方式只读打开。
 - 写记录：只有持锁的一方写，用持锁的那个句柄原地写：截断到 0 → 整段 JSON 一次写入 → `FlushFileBuffers`。不许"写临时文件再改名"（改名会换掉被锁的文件）。读的一方解析失败（读到写了一半）就隔 50 毫秒重读，最多 3 次，仍失败按"记录不是 protocol 1"处理。
 - JSON：UTF-8、不带 BOM；`account` 是**字符串**（十进制数字）；`pid` 是整数；`releasedAt` 是整数毫秒，持有时不写这个键。

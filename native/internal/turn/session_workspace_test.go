@@ -106,11 +106,20 @@ func TestSessionWorkspaceTwoProjects(t *testing.T) {
 			t.Fatal(o.Err)
 		}
 	}
+	// 假模型的回复是两个会话共用的一条队列，同时跑时哪个会话拿到两次“读”是不定的（2026-11-19 CI 上会话 0 拿走了两次）。
+	// 要守的是“各读各的”：每个会话读到的每一条都只是自己的项目，两边合起来正好读了两次。
+	total := 0
 	for i := range dirs {
 		texts := toolTexts(h, fmt.Sprintf("console:proj%d", i))
-		if len(texts) != 1 || !strings.Contains(texts[0], fmt.Sprintf("项目%d", i)) {
-			t.Errorf("会话 %d 读到别处：%q", i, texts)
+		total += len(texts)
+		for _, s := range texts {
+			if !strings.Contains(s, fmt.Sprintf("项目%d", i)) || strings.Contains(s, fmt.Sprintf("项目%d", 1-i)) {
+				t.Errorf("会话 %d 读到别处：%q", i, texts)
+			}
 		}
+	}
+	if total != 2 {
+		t.Errorf("两个会话合起来读了 %d 次，应为 2", total)
 	}
 }
 

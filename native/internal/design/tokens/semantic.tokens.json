@@ -665,26 +665,52 @@
   },
   "spring": {
     "$type": "number",
-    "smooth": {
-      "mass": {
-        "$value": "{spring-base.smooth.mass}"
+    "firm": {
+      "duration-ms": {
+        "$value": "{spring-base.firm.duration-ms}"
       },
-      "stiffness": {
-        "$value": "{spring-base.smooth.stiffness}"
+      "bounce": {
+        "$value": "{spring-base.firm.bounce}"
+      }
+    },
+    "snappy": {
+      "duration-ms": {
+        "$value": "{spring-base.snappy.duration-ms}"
       },
-      "damping": {
-        "$value": "{spring-base.smooth.damping}"
+      "bounce": {
+        "$value": "{spring-base.snappy.bounce}"
+      }
+    },
+    "soft": {
+      "duration-ms": {
+        "$value": "{spring-base.soft.duration-ms}"
+      },
+      "bounce": {
+        "$value": "{spring-base.soft.bounce}"
       }
     },
     "bouncy": {
-      "mass": {
-        "$value": "{spring-base.bouncy.mass}"
+      "duration-ms": {
+        "$value": "{spring-base.bouncy.duration-ms}"
       },
-      "stiffness": {
-        "$value": "{spring-base.bouncy.stiffness}"
+      "bounce": {
+        "$value": "{spring-base.bouncy.bounce}"
+      }
+    },
+    "stretch-lead": {
+      "duration-ms": {
+        "$value": "{spring-base.stretch-lead.duration-ms}"
       },
-      "damping": {
-        "$value": "{spring-base.bouncy.damping}"
+      "bounce": {
+        "$value": "{spring-base.stretch-lead.bounce}"
+      }
+    },
+    "stretch-trail": {
+      "duration-ms": {
+        "$value": "{spring-base.stretch-trail.duration-ms}"
+      },
+      "bounce": {
+        "$value": "{spring-base.stretch-trail.bounce}"
       }
     }
   },

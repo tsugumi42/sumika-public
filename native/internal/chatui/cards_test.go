@@ -214,12 +214,12 @@ func TestApprovalKeyboard(t *testing.T) {
 	}
 }
 
-// 审批结果：决定后按钮换成一行结果；提交中按钮禁用、不再触发。
+// 审批结果：决定后按钮没有了，行尾一个小图标加两三个字；提交中按钮禁用、不再触发。
 func TestApprovalStates(t *testing.T) {
 	tk := Derive(DefaultSettings())
 	fired := 0
 	h := Host{T: tk, Column: 600, SelfChar: CharColors[0], OnApprove: func(string, ApprovalScope) { fired++ }, OnDeny: func(string, string) { fired++ }}
-	for st, want := range map[ApprovalState]string{ApprovalAllowed: "允许了", ApprovalDenied: "拒绝了", ApprovalExpired: "超时了", ApprovalRevoked: "撤回了"} {
+	for st, want := range map[ApprovalState]string{ApprovalAllowed: "已允许", ApprovalDenied: "已拒绝", ApprovalExpired: "超时", ApprovalRevoked: "已撤回"} {
 		step := &Step{ID: "c", Kind: StepCommand, State: StepDone, Target: "ls", Approval: &Approval{State: st}}
 		tt := approvalTester(&h, step)
 		if !tt.HasText(want) || tt.HasText("允许一次") {

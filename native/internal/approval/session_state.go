@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"sumika-native/internal/policy"
@@ -54,7 +55,8 @@ func (g *Gate) UseSessionFile(file string) error {
 
 func (s *sessionState) load() error {
 	b, err := os.ReadFile(s.file)
-	if errors.Is(err, fs.ErrNotExist) {
+	// 上级目录的位置被文件占着时，Windows 报“路径不存在”，Linux 报 ENOTDIR；都是“没有记录”，写的时候再报写失败
+	if errors.Is(err, fs.ErrNotExist) || errors.Is(err, syscall.ENOTDIR) {
 		return nil
 	}
 	if err != nil {

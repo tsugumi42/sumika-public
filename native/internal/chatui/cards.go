@@ -27,7 +27,9 @@ func (h Host) card(c *ui.Context, key string, s *Step, o *bool, lead func(), tit
 	if h.soleSegment { // 这一轮只有这一段：外层展开就是看它，不再折一层
 		open, o = true, nil
 	}
-	ui.Column(c.Key(key)).FillWidth().Gap(t.BubblePadV).Children(func() {
+	col := ui.Column(c.Key(key)).FillWidth().Gap(t.BubblePadV)
+	ds := ui.Local(col, "disc", func() discState { return discState{} })
+	col.Children(func() {
 		b := ui.ButtonBase(c.Key("head")).Label("展开")
 		if o != nil {
 			b.OnClick(func() { *o = !*o })
@@ -45,11 +47,12 @@ func (h Host) card(c *ui.Context, key string, s *Step, o *bool, lead func(), tit
 			ui.Row(c.Key("title")).Grow(1).MinWidth(0).Gap(t.S2).AlignItems(ui.Center).Children(title)
 		})
 		add := func(el ui.Element) ui.Element { return el }
-		if open && body != nil {
-			body(add)
+		if body != nil { // 没有内容可展开的（body 为 nil）不留盒子，免得多一段间距
+			h.disclose(c, col, "body", ds, open, false, true, func() { body(add) })
 		}
 		// 放行规则那一行只在展开时出现：平时一眼看的是做了什么，查"凭什么没问我"才展开
-		if s.Approval != nil && (s.Approval.State != ApprovalAuto || open) {
+		// 决定过的（允许、拒绝、超时、撤回）结果写在头部行尾，下面不再画一条
+		if a := s.Approval; a != nil && (a.State == ApprovalPending || a.State == ApprovalSubmitting || (a.State == ApprovalAuto && open)) {
 			h.approvalBlock(c, s)
 		}
 	})
@@ -104,12 +107,14 @@ func (h Host) commandCard(c *ui.Context, s *Step, o *bool, char OKLCH) {
 			verb = "不允许："
 		}
 	}
+	var body func(add func(ui.Element) ui.Element)
+	if !notRun(s) || strings.Contains(strings.TrimRight(s.Target, "\n"), "\n") { // 没执行、命令就一行：头部已经写着它，不在下面再画一遍
+		body = func(add func(ui.Element) ui.Element) { h.console(c, s) }
+	}
 	h.card(c, "cmd-"+s.ID, s, o, func() { h.cardIcon(c, "terminal", char) }, func() {
 		h.rowText(c, ui.Span{Text: verb}, ui.Span{Text: firstLine(s.Target), Font: h.Mono, Features: h.codeFeatures(), Size: t.FS[1]}).Grow(1)
 		h.cardMeta(c, s)
-	}, func(add func(ui.Element) ui.Element) {
-		h.console(c, s)
-	})
+	}, body)
 }
 
 // toolCard 是一次工具调用的卡：头部写调用了什么、参数是什么，展开是它返回的内容。没有返回内容就不能展开。
@@ -140,6 +145,17 @@ func (h Host) toolCard(c *ui.Context, s *Step, o *bool, char OKLCH) {
 	if s.Output == "" {
 		o = nil // 没有内容可看，头部不能点
 	}
+	var body func(add func(ui.Element) ui.Element)
+	if s.Output != "" {
+		body = func(add func(ui.Element) ui.Element) {
+			line := h.monoLine()
+			h.block(c, "tool-output").Label("工具返回的内容").Children(func() {
+				ui.Scroll(c.Key("tool-output-scroll")).FillWidth().MaxHeight(line * consoleOutLines).Children(func() {
+					ui.Text(c, s.Output).Font(h.Mono).FontFeatures(noLigatures).FontSize(t.FS[1]).FixedLineHeight(line).TextColor(t.C.Text2).Wrap().Selectable()
+				})
+			})
+		}
+	}
 	h.card(c, "tool-"+s.ID, s, o, func() { h.cardIcon(c, icon, char) }, func() {
 		spans := []ui.Span{{Text: verb}}
 		if name != "" {
@@ -153,17 +169,7 @@ func (h Host) toolCard(c *ui.Context, s *Step, o *bool, char OKLCH) {
 		}
 		h.rowText(c, spans...).Grow(1).MinWidth(0).SingleLine()
 		h.cardMeta(c, s)
-	}, func(add func(ui.Element) ui.Element) {
-		if s.Output == "" {
-			return
-		}
-		line := h.monoLine()
-		h.block(c, "tool-output").Label("工具返回的内容").Children(func() {
-			ui.Scroll(c.Key("tool-output-scroll")).FillWidth().MaxHeight(line * consoleOutLines).Children(func() {
-				ui.Text(c, s.Output).Font(h.Mono).FontFeatures(noLigatures).FontSize(t.FS[1]).FixedLineHeight(line).TextColor(t.C.Text2).Wrap().Selectable()
-			})
-		})
-	})
+	}, body)
 }
 
 // 终端块的几个上限（行数）：命令最多显示几行；输出运行中看最后几行、跑完的块多高、"展开全部"以后多高。
@@ -317,26 +323,35 @@ func stripANSI(s string) string {
 	return b.String()
 }
 
-// cardMeta 是卡片头部右边：运行中转圈 + 秒数；完成只有秒数；失败角标 + "退出码 N"；停下是停止图标。都用等宽数字、第三级色。
+// cardMeta 是卡片头部右边：运行中转圈 + 秒数；完成只有秒数；失败角标；停下是停止图标；审批决定过的先写结果（小图标 + 两三个字）。都用等宽数字、第三级色。
 func (h Host) cardMeta(c *ui.Context, s *Step) {
 	t := h.T
-	if s.Approval != nil && s.Approval.State == ApprovalPending || notRun(s) {
-		return // 等批准、没执行的：右边不放东西（停止图标只给跑起来又被停下的，结果写在审批块里）
+	if a := s.Approval; a != nil && (a.State == ApprovalPending || a.State == ApprovalSubmitting) {
+		return // 等批准的：右边不放东西（剩余时间在摘要行）
 	}
-	ui.Row(c.Key("meta")).Shrink(0).Gap(t.S1).AlignItems(ui.Center).Children(func() {
-		switch s.State {
-		case StepRunning:
-			h.spinner(c)
-		case StepFailed:
-			ui.Icon(c.Key("badge"), Icon("alert", true)).Size(t.Badge, t.Badge).TextColor(t.C.Danger).Label("出错了") // 退出码写在终端块最后一行
-			return
-		case StepStopped, StepDenied:
-			ui.Icon(c, Icon("stop", false)).Size(t.FS[2], t.FS[2]).TextColor(t.C.Text3).Label("停了")
-			return
+	ui.Row(c.Key("meta")).Shrink(0).Gap(t.S2).AlignItems(ui.Center).Children(func() {
+		h.approvalResultChip(c, s.Approval)
+		if notRun(s) {
+			return // 没执行：结果就是全部（停止图标只给跑起来又被停下的）
 		}
-		if s.Seconds > 0 {
-			ui.Text(c, fmt.Sprintf("%d 秒", s.Seconds)).Font(h.Font).FontSize(t.FS[1]).FontFeatures(Tabular).TextColor(t.C.Text3)
+		if s.State == StepDone && s.Seconds <= 0 {
+			return // 没有别的要写：不留一个空行占间距（结果行才对得齐）
 		}
+		ui.Row(c.Key("state")).Gap(t.S1).AlignItems(ui.Center).Children(func() {
+			switch s.State {
+			case StepRunning:
+				h.spinner(c)
+			case StepFailed:
+				ui.Icon(c.Key("badge"), Icon("alert", true)).Size(t.Badge, t.Badge).TextColor(t.C.Danger).Label("出错了") // 退出码写在终端块最后一行
+				return
+			case StepStopped, StepDenied:
+				ui.Icon(c, Icon("stop", false)).Size(t.FS[2], t.FS[2]).TextColor(t.C.Text3).Label("停了")
+				return
+			}
+			if s.Seconds > 0 {
+				ui.Text(c, fmt.Sprintf("%d 秒", s.Seconds)).Font(h.Font).FontSize(t.FS[1]).FontFeatures(Tabular).TextColor(t.C.Text3)
+			}
+		})
 	})
 }
 
@@ -356,6 +371,10 @@ func (h Host) editCard(c *ui.Context, s *Step, o *bool, char OKLCH) {
 	case s.State == StepRunning:
 		verb = "正在改"
 	}
+	var body func(add func(ui.Element) ui.Element)
+	if s.Diff != "" {
+		body = func(add func(ui.Element) ui.Element) { h.diffBlock(c, s) }
+	}
 	h.card(c, "edit-"+s.ID, s, o, func() { h.cardIcon(c, "pen", char) }, func() {
 		h.rowText(c, ui.Span{Text: verb + " "}, ui.Span{Text: s.Target, Font: h.Mono, Features: h.codeFeatures(), Size: t.FS[1]}).Grow(1)
 		if s.Added > 0 || s.Removed > 0 {
@@ -363,46 +382,47 @@ func (h Host) editCard(c *ui.Context, s *Step, o *bool, char OKLCH) {
 				ui.Span{Text: " "}, ui.Span{Text: fmt.Sprintf("−%d", s.Removed), Color: t.C.DangerText, Weight: t.Weight[1], Features: Tabular}).
 				Font(h.Font).FontSize(t.FS[1]).Shrink(0).SingleLine()
 		}
-		if s.State != StepDone {
+		if _, text, _ := approvalResult(s.Approval); s.State != StepDone || text != "" {
 			h.cardMeta(c, s)
 		}
-	}, func(add func(ui.Element) ui.Element) {
-		if s.Diff == "" {
-			return
+	}, body)
+}
+
+// diffBlock 是改动的差异块：加的行成功色、减的行危险色，行底各叠同色一层；最多显示 16 行，超出滚动。
+func (h Host) diffBlock(c *ui.Context, s *Step) {
+	t := h.T
+	line := round1(t.FS[1] * 1.6)
+	// 加、减的行底：连续同类的几行算一段，一段的四角做圆角（块里离边 s2 的同心值），不贴块边；字左右留 s1
+	r := min(max(t.Inner(max(t.Inner(t.R1, t.BubblePadV), t.RInnerMin), t.S2), t.RInnerMin), line/2) // 单独一行时按半行高封顶（小字号、大圆角时会超）
+	lines := splitLines(s.Diff)
+	kind := func(i int) byte {
+		if i < 0 || i >= len(lines) || lines[i] == "" || (lines[i][0] != '+' && lines[i][0] != '-') {
+			return 0
 		}
-		line := round1(t.FS[1] * 1.6)
-		// 加、减的行底：连续同类的几行算一段，一段的四角做圆角（块里离边 s2 的同心值），不贴块边；字左右留 s1
-		r := min(max(t.Inner(max(t.Inner(t.R1, t.BubblePadV), t.RInnerMin), t.S2), t.RInnerMin), line/2) // 单独一行时按半行高封顶（小字号、大圆角时会超）
-		lines := splitLines(s.Diff)
-		kind := func(i int) byte {
-			if i < 0 || i >= len(lines) || lines[i] == "" || (lines[i][0] != '+' && lines[i][0] != '-') {
-				return 0
-			}
-			return lines[i][0]
-		}
-		add(h.block(c, "diff")).Children(func() {
-			ui.Scroll(c.Key("scroll")).FillWidth().MaxHeight(16 * line).Children(func() {
-				ui.Column(c.Key("lines")).FillWidth().Children(func() {
-					for i, l := range lines {
-						ink, bg := t.C.Text2, ui.Transparent
-						k := kind(i)
-						switch k {
-						case '+':
-							ink, bg = t.C.OkText, t.C.Ok.Alpha(t.C.DiffTint)
-						case '-':
-							ink, bg = t.C.DangerText, t.C.Danger.Alpha(t.C.DiffTint)
-						}
-						var top, bottom float32
-						if k != 0 && kind(i-1) != k {
-							top = r
-						}
-						if k != 0 && kind(i+1) != k {
-							bottom = r
-						}
-						ui.Text(c.Key(i), l).Font(h.Mono).FontFeatures(h.codeFeatures()).FontSize(t.FS[1]).FixedLineHeight(line).TextColor(ink).Background(bg).FillWidth().
-							Padding(0, t.S1).Radius(top, top, bottom, bottom)
+		return lines[i][0]
+	}
+	h.block(c, "diff").Children(func() {
+		ui.Scroll(c.Key("scroll")).FillWidth().MaxHeight(16 * line).Children(func() {
+			ui.Column(c.Key("lines")).FillWidth().Children(func() {
+				for i, l := range lines {
+					ink, bg := t.C.Text2, ui.Transparent
+					k := kind(i)
+					switch k {
+					case '+':
+						ink, bg = t.C.OkText, t.C.Ok.Alpha(t.C.DiffTint)
+					case '-':
+						ink, bg = t.C.DangerText, t.C.Danger.Alpha(t.C.DiffTint)
 					}
-				})
+					var top, bottom float32
+					if k != 0 && kind(i-1) != k {
+						top = r
+					}
+					if k != 0 && kind(i+1) != k {
+						bottom = r
+					}
+					ui.Text(c.Key(i), l).Font(h.Mono).FontFeatures(h.codeFeatures()).FontSize(t.FS[1]).FixedLineHeight(line).TextColor(ink).Background(bg).FillWidth().
+						Padding(0, t.S1).Radius(top, top, bottom, bottom)
+				}
 			})
 		})
 	})

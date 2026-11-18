@@ -122,6 +122,15 @@ func TestSegmentFourSidesEqualAndConcentric(t *testing.T) {
 	k := testKit()
 	sel := 0
 	var track, first, last ui.Rect
+	var trackR, cellR float32
+	k.Surface = func(c *ui.Context, e ui.Element, info SurfaceInfo) {
+		switch info.ID {
+		case "seg":
+			trackR = info.Radius
+		case "seg0":
+			cellR = info.Radius
+		}
+	}
 	tt := ui.NewTester(func(c *ui.Context) {
 		c.SetTheme(&k.Theme)
 		ui.Column(c).Fill().Padding(10).Children(func() { k.Segment(c, "seg", &sel, []string{"按天", "按周", "按月"}) })
@@ -143,8 +152,12 @@ func TestSegmentFourSidesEqualAndConcentric(t *testing.T) {
 			t.Errorf("%s边距 %.2f，应与内边距 %.2f 相等：%v", side, v, pad, gaps)
 		}
 	}
-	if want := k.G.RadiusControl - pad; k.G.RadiusSegment != max(want, k.T.RInnerMin) {
-		t.Errorf("选中块圆角 %v，应为轨道圆角 %v 减内边距 %v", k.G.RadiusSegment, k.G.RadiusControl, pad)
+	// 单行的轨道是胶囊（圆角 = 高度一半），选项和选中块圆角 = 轨道圆角 − 内边距
+	if want := track.H / 2; abs32(trackR-want) > 0.01 {
+		t.Errorf("轨道圆角 %v，应为高 %v 的一半 %v", trackR, track.H, want)
+	}
+	if want := trackR - pad; abs32(cellR-want) > 0.01 {
+		t.Errorf("选中块圆角 %v，应为轨道圆角 %v 减内边距 %v", cellR, trackR, pad)
 	}
 }
 

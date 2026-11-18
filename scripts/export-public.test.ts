@@ -1,10 +1,10 @@
 // scripts/export-public.ts：排除、拒绝非空输出、文档改写、断链和隐私自检。仓库和数据都是编的。
-import { afterAll, expect, test } from 'bun:test'
+import { afterAll, beforeAll, expect, test } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { isExcluded, parseExclude, rewriteMarkdown, runExport, type Env } from './export-public.ts'
-import type { Known } from './scan-private.ts'
+import { devEnv, devExe } from './lib/sumika-dev.ts'
 
 const dirs: string[] = []
 afterAll(() => { for (const d of dirs) rmSync(d, { recursive: true, force: true }) })
@@ -44,8 +44,26 @@ const KEEP = [
   '（提交 1234567）',
 ].join('\n')
 
-const fakeKnown: Known = { numbers: new Set(['8642097531']), names: new Set(), secrets: new Set() }
-const opts = (root: string, out: string) => ({ root, out, known: fakeKnown, env: gitEnv() })
+// 隐私自检真的调 sumika-dev check private --tree，走正常路径（程序不在就编、源码改过就自己重编，不跳过摘要检查），
+// 只是用 SUMIKA_SCAN_DATA 让它读编造的数据目录：一个临时目录，群名表里放编造号码
+function fakeDataRoot(): string {
+  const d = tmp()
+  mkdirSync(join(d, 'data/dev/human-replies'), { recursive: true })
+  writeFileSync(join(d, 'data/dev/human-replies/groups.json'), JSON.stringify({ g: '8642097531' }))
+  return d
+}
+const fakeData = fakeDataRoot()
+const repoRoot = join(import.meta.dir, '..')
+// 先让程序编到最新（第一次可能要重编，慢）：之后每个用例都是已经最新的程序
+beforeAll(() => {
+  const p = Bun.spawnSync([devExe(repoRoot), 'version'], { env: devEnv(), stdout: 'pipe', stderr: 'pipe' })
+  if (p.exitCode !== 0) throw new Error(`sumika-dev 起不来：${p.stderr.toString()}`)
+}, 300_000)
+const privacy = (out: string) => {
+  const p = Bun.spawnSync([devExe(repoRoot), 'check', 'private', '--tree', out], { env: devEnv({ testDataDir: fakeData }), stdout: 'pipe', stderr: 'pipe' })
+  return { code: p.exitCode ?? 2, output: p.stdout.toString() + p.stderr.toString() }
+}
+const opts = (root: string, out: string) => ({ root, out, privacy, env: gitEnv() })
 
 function makeRepo(extra: Record<string, string> = {}): string {
   const root = tmp()
@@ -170,5 +188,7 @@ test('隐私扫描命中退出 1', () => {
   const out = join(tmp(), 'out')
   const r = runExport(opts(root, out))
   expect(r.ok).toBe(false)
-  expect(r.privacy.blocking.length).toBeGreaterThan(0)
+  expect(r.privacy.code).toBe(1)
+  expect(r.privacy.output).toContain('拦 号码')
+  expect(r.privacy.output).not.toContain('8642097531')
 })

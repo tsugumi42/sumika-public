@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -104,9 +105,7 @@ func snapshot(t *testing.T, root string) map[string]*string {
 }
 
 func TestSameAsBun(t *testing.T) {
-	if testing.Short() {
-		t.Skip("和 Bun 录像对拍，放在每日整套（ADR-225）")
-	}
+	// -short 下照常跑：对拍管着回收站这类保护（ADR-225 第 3 条）
 	// 完整命令输出也只写测试目录，不落进真实的系统临时目录。
 	temp := t.TempDir()
 	t.Setenv("TMP", temp)
@@ -138,6 +137,9 @@ func TestSameAsBun(t *testing.T) {
 	setToolPath(t, vendor+string(os.PathListSeparator)+os.Getenv("PATH"))
 	for i, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
+			if reason := windowsOnlyGolden(c.Name); reason != "" && runtime.GOOS != "windows" {
+				t.Skip("原因：" + reason)
+			}
 			want := golden[i]
 			if want.Name != c.Name {
 				t.Fatalf("golden 第 %d 个是 %s", i, want.Name)
@@ -226,4 +228,23 @@ func TestSameAsBun(t *testing.T) {
 			}
 		})
 	}
+}
+
+// windowsOnlyGolden 说这条对拍场景的基线只在 Windows 上成立，并给出原因；不是的返回空串。
+// 基线是 Bun 在 Windows 上录的：PowerShell 输出用 CRLF 换行、错误信息里的路径用反斜杠、cmd 和 Windows 路径写法。
+// 照 AGENTS 的约定，Go 的行为按自己的规格，Bun 录像只是 Windows 上的回归基线；Linux 上不拿它当标准。
+// 只点名列出的场景，别的场景在 Linux 上照常对拍。
+func windowsOnlyGolden(name string) string {
+	switch name {
+	case "write-backslash":
+		return "反斜杠在 Windows 上是路径分隔符，Linux 上是文件名里的一个字符"
+	case "write-under-file", "write-under-file-deep", "grep-missing-path", "find-missing-path":
+		return "错误信息里的路径基线是 Windows 的反斜杠写法"
+	case "find-full-path", "read-file-url":
+		return "场景用的是 Windows 的路径写法（盘符、file:///C:/ 形式的 URL）"
+	}
+	if strings.HasPrefix(name, "ps-") {
+		return "PowerShell 工具的基线是 Windows 上 pwsh 的 \r\n 换行、cmd.exe 和 PATH 里的 Windows 目录"
+	}
+	return ""
 }

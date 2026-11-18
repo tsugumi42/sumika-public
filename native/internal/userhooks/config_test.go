@@ -1,6 +1,7 @@
 package userhooks
 
 import (
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -140,7 +141,15 @@ func TestMatcher(t *testing.T) {
 }
 
 func TestPathGlobs(t *testing.T) {
-	root := `D:\work\proj`
+	// 表里的路径是 Windows 写法；别的系统上换成同一棵树的 POSIX 写法（盘符去掉、反斜杠换正斜杠），
+	// 匹配规则本身（pathMatches、globRegexp）不依赖盘符，两个系统测同一张表
+	local := func(p string) string {
+		if runtime.GOOS == "windows" {
+			return p
+		}
+		return strings.ReplaceAll(strings.TrimPrefix(p, "D:"), `\`, "/")
+	}
+	root := local(`D:\work\proj`)
 	for _, c := range []struct {
 		glob, file string
 		want       bool
@@ -166,11 +175,15 @@ func TestPathGlobs(t *testing.T) {
 		{"native/*.go", `D:\elsewhere\native\a.go`, false}, // 工作区外的比绝对路径
 		{"D:/elsewhere/**", `D:\elsewhere\native\a.go`, true},
 	} {
-		globs, err := parsePaths([]byte(`"` + strings.ReplaceAll(c.glob, `\`, `\\`) + `"`))
+		glob := c.glob
+		if strings.HasPrefix(glob, "D:/") { // 工作区外的绝对路径 glob
+			glob = local(glob)
+		}
+		globs, err := parsePaths([]byte(`"` + strings.ReplaceAll(glob, `\`, `\\`) + `"`))
 		if err != nil {
 			t.Fatalf("%q：%v", c.glob, err)
 		}
-		if got := pathMatches(globs, c.file, root); got != c.want {
+		if got := pathMatches(globs, local(c.file), root); got != c.want {
 			t.Errorf("glob %q 对 %q：%v", c.glob, c.file, got)
 		}
 	}

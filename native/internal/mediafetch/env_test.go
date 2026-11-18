@@ -131,7 +131,7 @@ func newEnv(t *testing.T, mut ...func(*envOpt)) *env {
 	st, _ := set.Platform("qq")
 	e := &env{t: t, data: p.Root, set: set, st: st, clk: fake.NewClock(time.Date(2026, 11, 2, 12, 0, 0, 0, time.UTC)),
 		handlers: map[string]http.HandlerFunc{}, refresh: &fakeRefresher{}}
-	e.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	e.srv = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		e.mu.Lock()
 		e.reqs = append(e.reqs, reqInfo{r.URL.Path, r.URL.RawQuery, e.clk.Now()})
 		h := e.handlers[r.URL.Path]
@@ -142,6 +142,15 @@ func newEnv(t *testing.T, mut ...func(*envOpt)) *env {
 		}
 		h(w, r)
 	}))
+	// 服务端的发送缓冲压小：测“客户端到上限就断开”时，服务端写出的字节数不该被内核缓冲撑大。
+	// Linux 回环的发送加接收缓冲能吞下几 MB，客户端早就断开了服务端还“写成功”，写出量就超过 4 MiB 的断言（第五轮 CI 的 Linux 上 4212722 字节）
+	e.srv.Config.ConnContext = func(ctx context.Context, c net.Conn) context.Context {
+		if tc, ok := c.(*net.TCPConn); ok {
+			_ = tc.SetWriteBuffer(32 << 10)
+		}
+		return ctx
+	}
+	e.srv.Start()
 	srvAddr := e.srv.Listener.Addr().String()
 	dl := NewDownloader(DownloadOptions{
 		Hosts: o.hosts, MaxBytes: o.maxBytes, Timeout: o.timeout,

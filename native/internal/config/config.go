@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"slices"
 	"strconv"
@@ -521,6 +522,9 @@ func LoadIn(root, data string) (Config, error) {
 // Parse 是启动和保存自检共用的字节解析、默认值与校验边界。
 func Parse(b []byte, file string) (Config, error) {
 	c := Defaults()
+	if err := checkStructKeys(b, reflect.TypeOf(c)); err != nil {
+		return c, fmt.Errorf("%s：%w", file, err)
+	}
 	if err := yaml.Unmarshal(b, &c); err != nil {
 		return c, fmt.Errorf("%s 不是合法的 YAML，或者某一项的类型不对：%s", file, yaml.FormatError(err, false, false))
 	}

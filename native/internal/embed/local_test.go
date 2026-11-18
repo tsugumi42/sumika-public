@@ -327,23 +327,26 @@ func TestLocalStopKillsAfterGrace(t *testing.T) {
 // LocalConfigFrom：modelsRoot 空 = <数据目录>/models；三个路径相对时相对数据目录；modelsExe 空取资源根里的 sumika-models；
 // 绝对路径照旧；后端空当 go-models；legacy 只把后端带过去、不拼路径
 func TestLocalConfigFrom(t *testing.T) {
-	data := filepath.Join(`D:\data`, "sumika")
-	e := config.Embed{Model: "m", ModelsRoot: "models", ModelsExe: `D:\bin\me.exe`, OrtLibrary: "onnxruntime.dll"}
-	if got := LocalConfigFrom(e, "rr", `D:\root`, data); !reflect.DeepEqual(got, LocalConfig{
-		Model: "m", Backend: BackendGoModels, Exe: `D:\bin\me.exe`, ModelsRoot: filepath.Join(data, "models"),
+	// 用本机的绝对路径：写死盘符路径在 Linux 上是相对路径，会被拼到数据目录下
+	base := t.TempDir()
+	exeAbs, root := filepath.Join(base, "bin", "me.exe"), filepath.Join(base, "root")
+	data := filepath.Join(base, "data", "sumika")
+	e := config.Embed{Model: "m", ModelsRoot: "models", ModelsExe: exeAbs, OrtLibrary: "onnxruntime.dll"}
+	if got := LocalConfigFrom(e, "rr", root, data); !reflect.DeepEqual(got, LocalConfig{
+		Model: "m", Backend: BackendGoModels, Exe: exeAbs, ModelsRoot: filepath.Join(data, "models"),
 		OrtLibrary: filepath.Join(data, "onnxruntime.dll"), RerankModel: "rr", MaxLineTokens: GoModelsMaxLineTokens,
 	}) {
 		t.Fatalf("相对路径没按数据目录解析：%+v", got)
 	}
 	e.ModelsRoot, e.ModelsExe, e.OrtLibrary = "", "", ""
-	if got := LocalConfigFrom(e, "", `D:\root`, data); got.ModelsRoot != filepath.Join(data, "models") || got.Exe != filepath.Join(`D:\root`, ModelsExeName()) || got.OrtLibrary != "" {
+	if got := LocalConfigFrom(e, "", root, data); got.ModelsRoot != filepath.Join(data, "models") || got.Exe != filepath.Join(root, ModelsExeName()) || got.OrtLibrary != "" {
 		t.Fatalf("modelsRoot 空该用数据目录的 models，modelsExe 空取资源根的：%+v", got)
 	}
 	if got := LocalConfigFrom(e, "", "", data); got.Exe != "" {
 		t.Fatalf("没有资源根就没有默认的 exe：%+v", got)
 	}
 	e.Backend = "legacy"
-	if got := LocalConfigFrom(e, "rr", `D:\root`, data); got.Backend != "legacy" || got.Exe != "" || got.ModelsRoot != "" || got.RerankModel != "" {
+	if got := LocalConfigFrom(e, "rr", root, data); got.Backend != "legacy" || got.Exe != "" || got.ModelsRoot != "" || got.RerankModel != "" {
 		t.Fatalf("legacy 只把后端带过去：%+v", got)
 	}
 	e.Backend = ""

@@ -25,12 +25,12 @@ func TestAskRuleOverridesEveryAllow(t *testing.T) {
 	write := ruleArgs("path", "src/a.go")
 	// 档位放行、放行规则、记住、这个对话：ask 规则都压得过，而且只给"这一次"
 	cases := map[string]Env{
-		"yolo": func() Env { e := askBase(ask...); e.Mode = "yolo"; return e }(),
-		"auto": func() Env { e := askBase(ask...); e.Mode = "auto"; return e }(),
-		"记住":   func() Env { e := askBase(ask...); e.Granted = "always"; return e }(),
-		"这个对话": func() Env { e := askBase(ask...); e.Granted = "conversation"; return e }(),
+		"yolo": func() Env { e := localAskBase(ask...); e.Mode = "yolo"; return e }(),
+		"auto": func() Env { e := localAskBase(ask...); e.Mode = "auto"; return e }(),
+		"记住":   func() Env { e := localAskBase(ask...); e.Granted = "always"; return e }(),
+		"这个对话": func() Env { e := localAskBase(ask...); e.Granted = "conversation"; return e }(),
 		"放行规则同时命中": func() Env {
-			e := askBase(append(mustRules(t, [2]string{"Write(src/**)", "allow"}), ask...)...)
+			e := localAskBase(append(mustRules(t, [2]string{"Write(src/**)", "allow"}), ask...)...)
 			return e
 		}(),
 	}
@@ -41,15 +41,15 @@ func TestAskRuleOverridesEveryAllow(t *testing.T) {
 		}
 	}
 	// 没盖住的调用不受影响
-	if d := Decide("write", Specs["write"], ruleArgs("path", "docs/a.md"), func() Env { e := askBase(ask...); e.Mode = "yolo"; return e }()); d.Kind != "allow" {
+	if d := Decide("write", Specs["write"], ruleArgs("path", "docs/a.md"), func() Env { e := localAskBase(ask...); e.Mode = "yolo"; return e }()); d.Kind != "allow" {
 		t.Errorf("没命中的调用该照旧放行：%+v", d)
 	}
 	// 默认放行的查网也能被 ask 规则拦成问
 	web := mustRules(t, [2]string{"WebFetch(domain:example.com)", "ask"})
-	if d := Decide("web_fetch", Specs["web_fetch"], ruleArgs("url", "https://a.example.com/x"), askBase(web...)); d.Kind != "ask" || d.Limit != "once" {
+	if d := Decide("web_fetch", Specs["web_fetch"], ruleArgs("url", "https://a.example.com/x"), localAskBase(web...)); d.Kind != "ask" || d.Limit != "once" {
 		t.Errorf("默认放行档该被 ask 规则拦住：%+v", d)
 	}
-	if d := Decide("web_fetch", Specs["web_fetch"], ruleArgs("url", "https://other.org/x"), askBase(web...)); d.Kind != "allow" {
+	if d := Decide("web_fetch", Specs["web_fetch"], ruleArgs("url", "https://other.org/x"), localAskBase(web...)); d.Kind != "allow" {
 		t.Errorf("别的域名不该受影响：%+v", d)
 	}
 }
@@ -76,37 +76,37 @@ func TestAskRulePrecedence(t *testing.T) {
 func TestAskRuleNeverLoosens(t *testing.T) {
 	ask := mustRules(t, [2]string{"Write(**)", "ask"}, [2]string{"Bash(format:*)", "ask"}, [2]string{"Task", "ask"})
 	// 受保护路径：本来就是只问一次
-	d := Decide("write", Specs["write"], ruleArgs("path", `D:\Data\x.yml`), askBase(ask...))
+	d := Decide("write", Specs["write"], ruleArgs("path", localProtectedFile()), localAskBase(ask...))
 	if d.Kind != "ask" || d.Limit != "once" || !d.Sticky || d.RuleKey != "" {
 		t.Errorf("受保护路径的结论被改了：%+v", d)
 	}
 	// 灾难性命令：本来问、给"这个对话"——ask 规则盖住以后还是问，范围档收成只这一次（只会更严），原因保留
-	env := askBase(ask...)
+	env := localAskBase(ask...)
 	env.Shell = &Verdict{Names: []string{"format"}}
 	if d := Decide("powershell", Specs["powershell"], ruleArgs("command", "format C: /q"), env); d.Kind != "ask" || d.Limit != "once" || !d.Sticky || d.RuleKey != "rule:ask:Bash(format:*)" || d.Reason != whyCatastrophe {
 		t.Errorf("灾难性命令该收成只问一次、保留原因：%+v", d)
 	}
 	// 手动档下普通的问（本来有范围档）：被 ask 规则盖住以后也只给这一次
-	if d := Decide("write", Specs["write"], ruleArgs("path", "a.go"), askBase(ask...)); d.Kind != "ask" || d.Limit != "once" || d.RuleKey != "rule:ask:Write(**)" {
+	if d := Decide("write", Specs["write"], ruleArgs("path", "a.go"), localAskBase(ask...)); d.Kind != "ask" || d.Limit != "once" || d.RuleKey != "rule:ask:Write(**)" {
 		t.Errorf("本来就问的该收成只问一次：%+v", d)
 	}
-	if d := Decide("write", Specs["write"], ruleArgs("path", "a.go"), askBase()); d.Kind != "ask" || d.Limit == "once" {
+	if d := Decide("write", Specs["write"], ruleArgs("path", "a.go"), localAskBase()); d.Kind != "ask" || d.Limit == "once" {
 		t.Errorf("前提：没有 ask 规则时手动档的问是有范围档的：%+v", d)
 	}
 	// 不是主人发起的：只问一次
-	env = askBase(ask...)
+	env = localAskBase(ask...)
 	env.NotOwner = true
 	if d := Decide("write", Specs["write"], ruleArgs("path", "a.go"), env); d.Kind != "ask" || d.Limit != "once" {
 		t.Errorf("非主人发起的结论被改了：%+v", d)
 	}
 	// 场合不对：照旧 deny（不会变成 ask 把卡弹给不该看的人）
-	env = askBase(ask...)
+	env = localAskBase(ask...)
 	env.Audience = Audience{Channel: "qq", PrivateOk: true}
 	if d := Decide("write", Specs["write"], ruleArgs("path", "a.go"), env); d.Kind != "deny" {
 		t.Errorf("场合挡掉的该照旧 deny：%+v", d)
 	}
 	// 先于一切的 deny 规则
-	env = askBase(append(ask, mustRules(t, [2]string{"Write(a.go)", "deny"})...)...)
+	env = localAskBase(append(ask, mustRules(t, [2]string{"Write(a.go)", "deny"})...)...)
 	if d := Decide("write", Specs["write"], ruleArgs("path", "a.go"), env); d.Kind != "deny" {
 		t.Errorf("deny 规则丢了：%+v", d)
 	}
@@ -166,6 +166,7 @@ func TestScopedRuleKeysAndParse(t *testing.T) {
 }
 
 func TestProjectScope(t *testing.T) {
+	windowsPathsOnly(t)
 	write := ruleArgs("path", "a.go")
 	for _, effect := range []string{"allow", "ask"} {
 		rule := scoped(t, "Write", effect, `D:\Work`, "")
@@ -218,7 +219,7 @@ func TestSessionScope(t *testing.T) {
 	allow := scoped(t, "Write", "allow", "", "local:console:a")
 	ask := scoped(t, "Write", "ask", "", "local:console:a")
 	run := func(rule UserRule, conv string, anc ...string) Decision {
-		env := askBase(rule)
+		env := localAskBase(rule)
 		env.Mode = "yolo"
 		env.Conversation, env.Ancestors = conv, anc
 		return Decide("write", Specs["write"], write, env)
@@ -255,9 +256,9 @@ func TestSessionScope(t *testing.T) {
 	}
 	// 项目和会话都写：要同时满足
 	both := scoped(t, "Write", "ask", `D:\Work`, "local:console:a")
-	env := askBase(both)
+	env := localAskBase(both)
 	env.Mode = "yolo"
-	env.Workdir = `D:\Other`
+	env.Workdir = localOtherWorkdir() // 另一个项目目录：不在规则的项目范围里
 	if d := Decide("write", Specs["write"], write, env); d.Kind == "ask" {
 		t.Errorf("两个范围要同时满足：%+v", d)
 	}
@@ -266,8 +267,8 @@ func TestSessionScope(t *testing.T) {
 // 拒绝不分范围：手写带了范围的 deny 也是全局的（上层把范围丢掉再解析）
 func TestDenyIgnoresScope(t *testing.T) {
 	deny := mustRules(t, [2]string{"Write(a.go)", "deny"})
-	env := askBase(deny...)
-	env.Workdir, env.Conversation = `Z:\别处`, "other"
+	env := localAskBase(deny...)
+	env.Workdir, env.Conversation = localElsewhere(), "other"
 	if d := Decide("write", Specs["write"], ruleArgs("path", "a.go"), env); d.Kind != "deny" {
 		t.Errorf("deny 在任何目录、会话都生效：%+v", d)
 	}

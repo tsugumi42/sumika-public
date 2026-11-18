@@ -5,10 +5,12 @@ import (
 	"image"
 	"sumika-native/internal/api"
 	"sumika-native/internal/segview"
+	"sumika-native/internal/uitest"
 	"testing"
 )
 
 func TestMessageInitialsAndOwnerColor(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	for _, group := range []bool{false, true} {
 		for _, local := range []bool{false, true} {
 			key := api.ConversationKey{Platform: "qq", Scene: "private", Conversation: "qq:private:90001"}

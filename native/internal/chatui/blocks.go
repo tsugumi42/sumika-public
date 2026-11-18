@@ -49,6 +49,7 @@ func (h Host) blocks(c *ui.Context, m *Msg, l layout, ink ui.Color, acc Accent) 
 						}
 						opts := h.optionsFor(c, &part, ink, acc, entry.blocks[i])
 						opts.OnLink = h.OnLink
+						entry.blocks[i].width = l.TextW
 						md := h.mdSelectable(c, "markdown", m, i, side, func(k *ui.Context) ui.Element {
 							if m.State == Streaming {
 								return markdown.Stream(k, mdSource(&part), opts)

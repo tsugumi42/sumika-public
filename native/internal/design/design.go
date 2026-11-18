@@ -9,6 +9,7 @@ package design
 import (
 	"math"
 	"sync"
+	"time"
 
 	"github.com/egoist/mygo/ui"
 
@@ -157,13 +158,32 @@ func (t Tokens) ColorByPath(p string) (ui.Color, bool) { return t.Color.byPath(p
 // Weight 是字重令牌换成 mygo 要的整数。
 func Weight(w float64) int { return int(math.Round(float64(w))) }
 
-// Spring 是弹簧令牌。
-func (t Tokens) Spring(bouncy bool) ui.SpringOptions {
+// Springs 是弹簧预设：位移、尺寸、缩放一律从这几根里挑，不现场写刚度阻尼；颜色、透明度不用弹簧，用 Motion 的时长淡变。
+// 每根只有两个数（mygo 的 Duration、Bounce），照开源库 Fluid（MIT）的频率 w、阻尼比 z 换算：Duration = 2π / w，Bounce = 1 − z。
+// 取值和用途见 tokens/primitive.tokens.json 的 spring-base；回弹封顶 0.3。
+type Springs struct {
+	Firm   ui.SpringOptions // 利落：不回弹。宽高、展开收起的高度（永不过冲）、退场位移、按下后的回位
+	Snappy ui.SpringOptions // 灵敏：小回弹。开关滑钮、菜单和下拉进场、按下回弹
+	Soft   ui.SpringOptions // 柔和：面板、抽屉、对话框、换层
+	Bouncy ui.SpringOptions // 弹跳：提示条、自己发出的消息、新冒出来的小东西
+	// StretchLead、StretchTrail 是“拉伸”这一对：选中块往哪走，那一侧的边用前缘（快），另一侧用后缘（慢），块先被拉长再恢复。
+	StretchLead, StretchTrail ui.SpringOptions
+}
+
+// Springs 是这套令牌的弹簧预设。
+func (t Tokens) Springs() Springs {
 	n := t.Num
-	if bouncy {
-		return ui.SpringOptions{Mass: n.SpringBouncyMass, Stiffness: n.SpringBouncyStiffness, Damping: n.SpringBouncyDamping}
+	sp := func(ms, bounce float64) ui.SpringOptions {
+		return ui.SpringOptions{Duration: time.Duration(math.Round(ms * float64(time.Millisecond))), Bounce: bounce}
 	}
-	return ui.SpringOptions{Mass: n.SpringSmoothMass, Stiffness: n.SpringSmoothStiffness, Damping: n.SpringSmoothDamping}
+	return Springs{
+		Firm:         sp(n.SpringFirmDurationMs, n.SpringFirmBounce),
+		Snappy:       sp(n.SpringSnappyDurationMs, n.SpringSnappyBounce),
+		Soft:         sp(n.SpringSoftDurationMs, n.SpringSoftBounce),
+		Bouncy:       sp(n.SpringBouncyDurationMs, n.SpringBouncyBounce),
+		StretchLead:  sp(n.SpringStretchLeadDurationMs, n.SpringStretchLeadBounce),
+		StretchTrail: sp(n.SpringStretchTrailDurationMs, n.SpringStretchTrailBounce),
+	}
 }
 
 // Accent 是一个角色色推出来的强调色阶梯（照 chatui.Accent）。
@@ -229,6 +249,9 @@ func (t Tokens) deriveAccent(char colorx.OKLCH) Accent {
 	return a
 }
 
+// FocusRingOffset 是键盘焦点环离控件边的距离（DIP）。
+const FocusRingOffset = 2
+
 // Theme 是给 mygo 自带控件（焦点环、滚动条、读屏、没专门画过的控件）的主题；全仓只有这里构造 ui.Theme（规格 7.5）。
 func Theme(t Tokens, acc Accent, font string) ui.Theme {
 	th := *ui.LightTheme()
@@ -239,7 +262,10 @@ func Theme(t Tokens, acc Accent, font string) ui.Theme {
 	th.Background, th.Surface, th.SurfaceHover, th.SurfacePressed = c.Bg, c.Bg, c.Sunken, c.SunkenHover
 	th.Text, th.TextMuted = c.Text, c.Text2
 	th.Accent, th.AccentText, th.AccentHover, th.AccentPressed = acc.Base, acc.On, acc.Hover, acc.Press
-	th.Border, th.Focus, th.Danger = c.Line, acc.Base, c.Danger
+	// 焦点环用强调色当字用的那一档（acc.Text）：角色色本身在浅色面上只有约 2:1，看不清（WCAG 2.4.7、1.4.11 要 3:1）；
+	// 离边 2，和设计语言第十节一致（2026-11-17 组件库体检）。宽度用 mygo 默认的 2。
+	th.Border, th.Focus, th.Danger = c.Line, acc.Text, c.Danger
+	th.FocusRingOffset = FocusRingOffset
 	th.Scrollbar = c.Scrollbar
 	th.Radius, th.Spacing, th.FontSize, th.Font = t.Dim.RadiusCtl, t.Dim.SpaceS1, t.Dim.FontSize4, font
 	return th

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -20,6 +21,9 @@ func TestFailureEvidence(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Setenv("PATH", filepath.Join(root, "vendor", "bin")+string(os.PathListSeparator)+os.Getenv("PATH"))
+	if _, err := exec.LookPath("rg"); err != nil {
+		t.Skip("原因：这条用真工具读文件，要 ripgrep（rg）在 PATH 或 vendor/bin 里，这台机器上没有")
+	}
 	dir := t.TempDir()
 	k, err := newKernel(dir, 2, 1, 3)
 	if err != nil {

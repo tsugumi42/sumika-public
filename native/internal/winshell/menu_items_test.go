@@ -55,6 +55,7 @@ func (r *menuRig) rect(t *testing.T, text string) ui.Rect {
 
 // 危险项在最下面、前面有一条分隔线、红字；快捷键和原因是右边的灰字；不可用的项变灰、点了不响应。
 func TestMenuItemsDangerShortcutDisabled(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	var did []string
 	act := func(name string) func() { return func() { did = append(did, name) } }
 	r := newMenuRig(t, []MenuItem{
@@ -194,8 +195,8 @@ func TestSidebarRowContextMenu(t *testing.T) {
 	if err := tt.RightClick("甲会话"); err != nil {
 		t.Fatal(err)
 	}
-	tt.Frame()
-	tt.Frame()
+	settle(tt) // 菜单长开（MenuMorph）以后再点
+
 	if !tt.HasText("标为已读") || !tt.HasText("还没有这个功能") {
 		t.Fatalf("右键该出菜单：%q", tt.Texts())
 	}

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -75,8 +76,11 @@ func TestPowerShellPlainTextKnownEffects(t *testing.T) {
 	if r := runTool(t, wd, "powershell", map[string]any{"command": "Get-Content -LiteralPath esc.txt"}); !strings.Contains(r.Text, "AREDB") || strings.Contains(r.Text, "\x1b") {
 		t.Errorf("Get-Content 读带转义字符的文件：预期转义字符被去掉（AREDB），实际 %q", r.Text)
 	}
-	if r := runTool(t, wd, "powershell", map[string]any{"command": "cmd /c type esc.txt"}); !strings.Contains(r.Text, raw) {
-		t.Errorf("外部程序的输出应该原样，实际 %q", r.Text)
+	// cmd /c 是 Windows 的外部程序；别的系统没有 cmd，这一条只在 Windows 上测
+	if runtime.GOOS == "windows" {
+		if r := runTool(t, wd, "powershell", map[string]any{"command": "cmd /c type esc.txt"}); !strings.Contains(r.Text, raw) {
+			t.Errorf("外部程序的输出应该原样，实际 %q", r.Text)
+		}
 	}
 	if r := runTool(t, wd, "read", map[string]any{"path": "esc.txt"}); !strings.Contains(r.Text, raw) {
 		t.Errorf("read 读文件应该原样，实际 %q", r.Text)
