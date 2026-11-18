@@ -31,13 +31,13 @@
     "text-2": {
       "$value": {
         "colorSpace": "srgb",
-        "components": [0.3294, 0.3608, 0.3922],
-        "hex": "#545c64"
+        "components": [0.2353, 0.2627, 0.2941],
+        "hex": "#3c434b"
       },
       "$extensions": {
         "sumika": {
           "neutral": {
-            "l": 0.47,
+            "l": 0.38,
             "k": 2
           }
         }
@@ -963,27 +963,59 @@
   },
   "spring-base": {
     "$type": "number",
-    "$description": "弹簧（Bun appearance.ts:94-100）",
-    "smooth": {
-      "mass": {
-        "$value": 1
+    "$description": "弹簧预设：位移、尺寸、缩放一律从这里挑，只有两个数：duration-ms 是无阻尼周期（mygo SpringOptions.Duration），bounce 是回弹（1 − 阻尼比）。照 Fluid（MIT）的 w、z 换算：Duration = 2π / w，Bounce = 1 − z。颜色、透明度不用弹簧，用 motion-base 的时长淡变",
+    "firm": {
+      "$description": "利落：不回弹，约 150 毫秒到位。宽高、展开收起的高度（永不过冲）、退场位移、按下后的回位",
+      "duration-ms": {
+        "$value": 200
       },
-      "stiffness": {
-        "$value": 1366
+      "bounce": {
+        "$value": 0
+      }
+    },
+    "snappy": {
+      "$description": "灵敏：约 170 毫秒到位、小回弹。开关滑钮、菜单和下拉进场、按下回弹",
+      "duration-ms": {
+        "$value": 290
       },
-      "damping": {
-        "$value": 73.9
+      "bounce": {
+        "$value": 0.2
+      }
+    },
+    "soft": {
+      "$description": "柔和：约 270 毫秒到位。面板、抽屉、对话框、换层这种大块东西",
+      "duration-ms": {
+        "$value": 480
+      },
+      "bounce": {
+        "$value": 0.14
       }
     },
     "bouncy": {
-      "mass": {
-        "$value": 1
+      "$description": "弹跳：约 300 毫秒到位，回弹封顶 0.3（Fluid 说阻尼比低于 0.6 会被看成晃）。提示条、自己发出的消息、新冒出来的小东西",
+      "duration-ms": {
+        "$value": 370
       },
-      "stiffness": {
-        "$value": 1366
+      "bounce": {
+        "$value": 0.3
+      }
+    },
+    "stretch-lead": {
+      "$description": "拉伸的前缘：选中块往哪走，那一侧的边用它（Fluid PillTabs 的 LEAD）",
+      "duration-ms": {
+        "$value": 210
       },
-      "damping": {
-        "$value": 55.4
+      "bounce": {
+        "$value": 0.2
+      }
+    },
+    "stretch-trail": {
+      "$description": "拉伸的后缘：另一侧的边用它，慢一拍追上，块先被拉长再恢复（Fluid PillTabs 的 TRAIL）",
+      "duration-ms": {
+        "$value": 390
+      },
+      "bounce": {
+        "$value": 0.2
       }
     }
   }

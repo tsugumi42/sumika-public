@@ -51,3 +51,6 @@ __pycache__/
 
 # Bun 后台插件热换时的拷贝（server/src/plugins/host.ts 启动和停止时清空）
 /server/.plugins-hot/
+
+# sumika-dev 编出来的程序（每个 worktree 各一份，启动时自己按源码摘要重编；规格-脚本迁Go）
+/native/bin/

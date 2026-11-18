@@ -122,17 +122,8 @@ func List(c *ui.Context, model *Model, state *ListState, o ListOptions) ui.Eleme
 			GroupHeading(c, item.Heading)
 			return
 		}
-		r := buildRow(c, item.Conversation, RowOptions{Selected: row.Selected(), Compact: o.Compact, Menu: o.Menu, OnStory: o.OnStory, OnCommunity: o.OnCommunity}, false)
-		id, index := item.Conversation.ID, row.Index
-		// DoubleClicked arrives on press; OnClick arrives on release.
-		if r.DoubleClicked() && o.OnActivate != nil {
-			o.OnActivate(id)
-		}
-		r.OnClick(func() {
-			state.cursor = index
-			commit()
-			state.View.Focus(c)
-		})
+		buildRow(c, item.Conversation, RowOptions{Selected: row.Selected(), Compact: o.Compact, Menu: o.Menu, OnStory: o.OnStory, OnCommunity: o.OnCommunity}, &row)
+		// The list row takes the click and chooses; a double click or Enter reaches OnSubmit below.
 	})
 	root.OnChange(commit).OnSubmit(func() {
 		commit()

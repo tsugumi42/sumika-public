@@ -74,8 +74,7 @@ func TestPickerFiltersAndPicks(t *testing.T) {
 	if err := tt.Click("模型"); err != nil {
 		t.Fatal(err)
 	}
-	tt.Frame()
-	tt.Frame()
+	settle(tt) // 面板从入口那条边长开（MenuMorph），没露出来的部分不收点击：等它长完
 	for _, want := range []string{"agnes", "deepseek", "DeepSeek V4.1 Flash"} {
 		if !tt.HasText(want) {
 			t.Fatalf("打开后没有 %s：%q", want, tt.Texts())

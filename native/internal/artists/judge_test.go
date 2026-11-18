@@ -158,7 +158,7 @@ func TestFollowingClass(t *testing.T) {
 	}
 }
 
-// clue-samples.json 是 Go 和确认页脚本（scripts/artist-review.ts）共用的样例：同一个简介两边得分、命中线索必须一样。
+// clue-samples.json 是 Go 和确认页脚本共用的样例：同一个简介两边得分、命中线索必须一样。确认页脚本已移出仓库，放在本机 data/dev/tools/artist-review.ts（不进 git，ADR-389）。
 func TestClueSamplesMatchFile(t *testing.T) {
 	b, err := os.ReadFile("testdata/clue-samples.json")
 	if err != nil {

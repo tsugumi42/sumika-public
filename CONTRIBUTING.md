@@ -85,7 +85,7 @@
   ```
 
   整套平时由维护者那边的每日巡检跑；想在推送时让钩子跑整套，设环境变量 `SUMIKA_PUSH_FULL=1`。
-- **文档检查**：改了 `docs/`、配置示例或 ADR 时跑 `bun run check:docs`（提交时钩子也会跑）。
+- **文档检查**：改了 `docs/`、配置示例或 ADR 时跑 `native/bin/sumika-dev.exe check docs`（提交时钩子也会跑）。
 
 ## 四、提交
 

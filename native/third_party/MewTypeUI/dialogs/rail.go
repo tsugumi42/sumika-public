@@ -68,18 +68,14 @@ func Rail(c *ui.Context, folders []Folder, state *RailState, o RailOptions) ui.E
 	}
 	root := ui.List(c, &state.View, len(folders)).Width(t.Metrics().Sidebar().Width()).Padding(0).Gap(0).Background(t.Materials().Sidebar().Background())
 	root.Rows(func(row ui.ListRow) {
-		index := row.Index
-		folderRow(c, folders[row.Index], row.Selected() && !folders[row.Index].Locked, o).OnClick(func() {
-			state.cursor = index
-			choose(index)
-			state.View.Focus(c)
-		})
+		folderRow(c, folders[row.Index], row.Selected() && !folders[row.Index].Locked, o, &row)
 	})
 	root.OnChange(func() { choose(state.cursor) })
 	return root
 }
 
-func folderRow(c *ui.Context, item Folder, selected bool, o RailOptions) ui.Element {
+// folderRow draws one folder; the mygo list row lr takes the click, the name and the press state.
+func folderRow(c *ui.Context, item Folder, selected bool, o RailOptions, lr *ui.ListRow) ui.Element {
 	t := theme.T(c)
 	m := t.Metrics().Sidebar()
 	p := t.Colors().Sidebar()
@@ -108,8 +104,8 @@ func folderRow(c *ui.Context, item Folder, selected bool, o RailOptions) ui.Elem
 	if o.Mode == TextOnly {
 		height, top = m.TextOnlyHeight()+max(float32(0), labelHeight-line), m.TextOnlyTop()
 	}
-	root := ui.Box(c).FillWidth().Height(height).Shrink(0).Label(item.Name).Background(bg).Clip()
-	ripple(c, root, p.BackgroundPressed())
+	root := ui.Box(c).FillWidth().Height(height).Shrink(0).Background(bg).Clip()
+	ripple(c, root, p.BackgroundPressed(), lr)
 	if o.Menu != nil {
 		root.ContextMenu(func(menu *ui.Menu) { o.Menu(menu, item.ID) })
 	}

@@ -51,8 +51,9 @@ func (k *Kit) RemotePicker(c *ui.Context, o RemotePicker) {
 		// 输入框自己就是外框（下拉面板跟它同宽、贴着它的左边）
 		cb := ui.ComboboxBase(c.Key(o.Key+"-input"), &st.Text)
 		cb.Input.Label(o.Placeholder).Placeholder(o.Placeholder).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).FillWidth().MinWidth(0).
-			Height(g.RowHeight).Padding(0, g.FieldInset).Radius(g.RadiusControl).Background(p.Bubble).Disabled(o.Busy)
-		k.surface(c, cb.Input, o.Key, "input", g.RadiusControl, g.FieldInset)
+			Height(g.RowHeight).Padding(0, g.FieldInset+g.SpaceSmall).Radius(g.Pill(g.RowHeight)).Disabled(o.Busy)
+		k.SunkenField(cb.Input.FocusRing(false), cb.Input.Focused()) // 单行：胶囊，“凹下去”
+		k.surface(c, cb.Input, o.Key, "input", g.Pill(g.RowHeight), g.FieldInset)
 		st.Edit(c.Now(), st.Text)
 		k.remotePopup(c, o, cb)
 		if id, ok := cb.Chosen(); ok {
@@ -74,7 +75,7 @@ func (k *Kit) remotePopup(c *ui.Context, o RemotePicker, cb ui.ComboboxParts) {
 	st := o.State
 	cb.Popup(func(panel ui.Element) {
 		panel.Padding(g.SpaceTight).Gap(g.SpaceTight).Radius(g.RadiusControl).MaxHeight(g.HitSmall * remoteRows)
-		k.FloatMenu(panel)
+		k.FloatMenu(c, panel)
 		k.surface(c, panel, o.Key+"-popup", "choice-popup", g.RadiusControl, g.SpaceTight)
 		note := func(key, s string, ink ui.Color) {
 			ui.Text(c.Key(o.Key+"-"+key), s).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).TextColor(ink).Wrap().Padding(g.ControlInset)
@@ -82,7 +83,7 @@ func (k *Kit) remotePopup(c *ui.Context, o RemotePicker, cb ui.ComboboxParts) {
 		for i, cand := range st.Items {
 			item := cb.Item(cand.ID).Label(cand.Label).MinHeight(g.HitSmall).Padding(g.ControlInset).Gap(g.SpaceSmall).AlignItems(ui.Center).Radius(g.RadiusSegment).TextColor(p.Ink)
 			if item.Highlighted() {
-				item.Background(p.Selected)
+				item.Background(p.Hover)
 			}
 			item.Children(func() {
 				ui.Text(c, cand.Label).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).SingleLine().Grow(1).MinWidth(0)

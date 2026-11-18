@@ -24,7 +24,7 @@ type LinkReaderConfig struct {
 	Expand  LinkExpand  `yaml:"expand"`
 	// X 是推特取数线路的设置（link_x.go）
 	X LinkX `yaml:"x"`
-	// FakeIPRanges 是代理 fake-ip 模式的假地址段（CIDR 列表，link_fakeip.go）。默认 ["198.18.0.0/15"]；写 [] 表示没有假地址段
+	// FakeIPRanges 是代理 fake-ip 模式的假地址段（CIDR 列表，link_fakeip.go）。默认 netsafe.DefaultFakeIPRanges（IPv4 198.18.0.0/15、IPv6 2001:2::/48 和 fdfe:dcba:9876::/48，ADR-392）；写 [] 表示没有假地址段。收图下载（mediafetch）也读这一项
 	FakeIPRanges []string `yaml:"fakeIPRanges"`
 	// Rate 是取数自己的节奏：额度用满排队等，平台真拦了才失败（link_rate.go）
 	Rate LinkRate `yaml:"rate"`

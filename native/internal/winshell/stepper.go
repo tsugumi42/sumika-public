@@ -26,6 +26,7 @@ type stepperState struct {
 	last    float64
 	seen    bool
 	focused bool
+	down    bool // 最近一次变化是变小：数字从上面落下来；变大从下面升上来
 }
 
 // Stepper 是设置页一行里的数字框：[−] [数字 单位] [+]，加减点一下就调 onChange，输入框打完回车或点别处也调；
@@ -43,6 +44,9 @@ func (k *Kit) Stepper(c *ui.Context, key, label string, value float64, o Stepper
 		k.steppers[key] = st
 	}
 	shown := stepperText(value, o)
+	if st.seen && st.last != value {
+		st.down = value < st.last
+	}
 	if !st.seen || st.last != value || !st.focused {
 		st.text, st.last, st.seen = shown, value, true
 	}
@@ -54,50 +58,73 @@ func (k *Kit) Stepper(c *ui.Context, key, label string, value float64, o Stepper
 			onChange(v)
 		}
 	}
-	box := ui.Row(c.Key(key)).Shrink(0).Height(g.RowHeight).Padding(g.SpaceTight).Gap(g.SpaceTight).AlignItems(ui.Center).Radius(g.RadiusControl).Background(p.Bubble)
+	outer := g.Pill(g.RowHeight)         // 单行：外框是胶囊，“凹下去”（Sunken）
+	btnR := g.Inner(outer, g.SpaceTight) // 加减键和外框同心：外圆角 − 内距
+	box := ui.Row(c.Key(key)).Shrink(0).Height(g.RowHeight).Padding(g.SpaceTight).Gap(g.SpaceTight).AlignItems(ui.Center).Radius(outer)
+	k.SunkenField(box, st.focused)
 	if o.Disabled {
 		box.Opacity(DisabledAlpha)
 	}
-	k.surface(c, box, key, "stepper", g.RadiusControl, g.SpaceTight).Children(func() {
+	k.surface(c, box, key, "stepper", outer, g.SpaceTight).Children(func() {
 		button := func(suffix, name string, icon *ui.SVG, dir int) {
 			next, can := stepValue(value, dir, o)
 			disabled := o.Disabled || !can
-			b := ui.ButtonBase(c.Key(key+suffix)).Label(label+" "+name).Size(inner, inner).Center().Radius(g.RadiusSegment).TextColor(p.Ink).Disabled(disabled).OnClick(func() { onChange(next) })
-			bg := ui.Transparent
-			if !disabled && b.Pressed() {
-				bg = p.Press
-			} else if !disabled && b.Hovered() {
-				bg = p.Hover
-			}
+			b := ui.ButtonBase(c.Key(key+suffix)).Label(label+" "+name).Size(inner, inner).Center().Radius(btnR).TextColor(p.Ink).Disabled(disabled).OnClick(func() { onChange(next) })
 			if disabled {
 				b.Opacity(DisabledAlpha)
 			}
-			b.Background(b.AnimateColor("fill", bg, ControlFade)).Children(func() { ui.Icon(c, icon).Size(g.IconSmall, g.IconSmall) })
-			k.surface(c, b, key+suffix, "button", g.RadiusSegment, 0)
+			k.Flat(b, ui.Transparent, !disabled && b.Pressed(), !disabled && b.Hovered()) // 加减键是“平的”
+			b.Children(func() { ui.Icon(c, icon).Size(g.IconSmall, g.IconSmall) })
+			k.surface(c, b, key+suffix, "button", btnR, 0)
 		}
 		button("-minus", "减", chatui.Icon("minus", false), -1)
 		// 有没有单位，中间这一格总宽都一样：同一页几个加减框的左边缘对齐
 		inputW := g.ValueWidth * 2
+		unitW := stepperUnitWidth(o.Unit, g.IconSmall)
 		if o.Unit != "" {
-			inputW -= g.IconSmall + g.SpaceTight
+			inputW -= unitW + g.SpaceTight
 		}
 		ui.Row(c.Key(key + "-cell")).Height(inner).Gap(g.SpaceTight).AlignItems(ui.Center).Children(func() {
-			in := ui.TextInputBase(c.Key(key+"-input"), &st.text).Label(label).Placeholder(o.ZeroLabel).Disabled(o.Disabled).
-				Width(inputW).Height(inner).Padding(g.SpaceTight).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).TextAlign(ui.Center)
-			in.OnChange(func() { st.text = stepperDigits(st.text) })
-			in.OnSubmit(commit)
-			if foc := in.Focused(); foc != st.focused {
-				st.focused = foc
-				if !foc { // 点别处离开输入框也算打完了
-					commit()
+			// 输入框管打字和焦点；没在编辑时它的字透明，上面叠一个只读的 Text 负责逐位滚（mygo 的 ContentTransition 只管 Text，不管输入框）。
+			// 点加减、外面改了值才会变，一次一次地滚，不节流（跟手的操作）；输入中直接显示输入框自己的字（铁律 1）。
+			ui.Box(c.Key(key + "-field")).Width(inputW).Height(inner).Shrink(0).Children(func() {
+				in := ui.TextInputBase(c.Key(key+"-input"), &st.text).Label(label).Placeholder(o.ZeroLabel).Disabled(o.Disabled).
+					Width(inputW).Height(inner).Padding(g.SpaceTight).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).TextAlign(ui.Center).FontFeatures(chatui.Tabular).FocusRing(false)
+				in.OnChange(func() { st.text = stepperDigits(st.text) })
+				in.OnSubmit(commit)
+				foc := in.Focused()
+				if foc != st.focused {
+					st.focused = foc
+					if !foc { // 点别处离开输入框也算打完了
+						commit()
+					}
 				}
-			}
+				if !foc && shown != "" {
+					in.TextColor(ui.Transparent)
+					k.NumberRoll(ui.Text(c.Key(key+"-roll"), shown), k.snappy(), st.down).Absolute().Left(0).Right(0).Top(0).Bottom(0).
+						Padding(g.SpaceTight).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).TextAlign(ui.Center).TextColor(p.Ink).SingleLine().PassThrough()
+				}
+			})
 			if o.Unit != "" {
-				ui.Text(c.Key(key+"-unit"), o.Unit).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).TextColor(p.Muted).SingleLine().Shrink(0).Width(g.IconSmall)
+				ui.Text(c.Key(key+"-unit"), o.Unit).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).TextColor(p.Muted).SingleLine().Shrink(0).Width(unitW)
 			}
 		})
 		button("-plus", "加", chatui.Icon("add", false), 1)
 	})
+}
+
+// stepperUnitWidth 是单位那一格的宽：一个汉字（“条”“秒”）占一个小图标宽，两个字（“分钟”“小时”）占两个，
+// 西文字符按六成算、不小于一格（“%”“MB”“token”）。以前一律只给一格宽，“分钟”会被截成“…”。
+func stepperUnitWidth(unit string, icon float32) float32 {
+	var w float32
+	for _, r := range unit {
+		if r > 0x7f {
+			w += icon
+		} else {
+			w += icon * .6
+		}
+	}
+	return max(w, icon)
 }
 
 // stepperText 是值在输入框里的样子：整数不带小数点，零且有 ZeroLabel 时留空让灰字露出来。

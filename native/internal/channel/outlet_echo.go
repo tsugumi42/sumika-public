@@ -131,7 +131,8 @@ func (o *Outlet) ClaimEcho(in types.Inbound) (bool, error) {
 		note.LatencyMS = max(0, o.nowMS()-plan.Parts[idx].SentAt)
 	}
 	notify = o.echoes.claimed(o.clock.Now(), o.cfg.EchoWindow, plan.Origin, planID, idx, note)
-	o.logf("会话 %s 的计划 %s 第 %d 段被回声认领", in.Conv.String(), planID, idx)
+	// 带上来源：被认领说明这一段真发进了会话，读日志的人（巡检）要能分清是她开口还是链接展开这类插件发的（2026-11-16 巡检把链接展开误当成闸门漏了）
+	o.logf("会话 %s 的计划 %s（来源 %s）第 %d 段已发出、被回声认领", in.Conv.String(), planID, plan.Origin, idx)
 	return true, nil
 }
 

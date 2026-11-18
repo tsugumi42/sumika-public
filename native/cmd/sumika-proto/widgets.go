@@ -50,8 +50,8 @@ func (a *app) switchControl(c *ui.Context, key, label string, v *bool) {
 	if *v {
 		target = 1
 	}
-	pos := e.AnimateTo("thumb", target, controlMotion) // 颜色跟这个走：缓动，不会冲过头
-	x := e.Spring("thumb-x", target, a.T.Bouncy)       // 位移用回弹（ADR-285 第 6 条）；减少动态效果时 mygo 直接给终点（ui/motion.go:300）
+	pos := e.AnimateTo("thumb", target, controlMotion)  // 颜色跟这个走：缓动，不会冲过头
+	x := e.Spring("thumb-x", target, a.T.Spring.Snappy) // 位移用回弹（ADR-285 第 6 条）；减少动态效果时 mygo 直接给终点（ui/motion.go:300）
 	if a.SwitchX == nil {
 		a.SwitchX = map[string]float32{}
 	}

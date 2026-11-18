@@ -91,10 +91,25 @@ type mdEntry struct {
 	// 量排版的缓存：同一段文字、同一宽度、同一套令牌不重算
 	key    mdKey
 	lay    mdLayout
-	shaped mdShapeCache      // 段落排版缓存：流式时前面没变的段落不重排
-	copied map[int]time.Time // 代码块按下复制的时刻（按块序号），两秒内显示对勾
+	shaped mdShapeCache       // 段落排版缓存：流式时前面没变的段落不重排
+	copied map[int]time.Time  // 代码块按下复制的时刻（按块序号），两秒内显示对勾
+	morphs map[int]*IconMorph // 代码块复制钮的图标变形状态（按块序号）：复制 ↔ 对勾流过去
 	blocks map[int]*mdEntry
+
+	// 表格（table_md.go）：可用宽（构建前由调用方填，ContentW）、量过的各列、流式时上一帧的列宽、格子里的字用的选项
+	width      float32
+	tables     map[string]tableMeasure
+	tablePrev  map[int][]float32
+	cell       markdown.Options
+	cellReveal markdown.Reveal
+
+	// 整块出现时淡入（规格-过渡动画 C1 的“已播过”那一套）：optionsFor 每帧数一次；第一次画就在场的块（历史消息、滚出去又回来）不播，
+	// 之后才冒出来的表格、代码块（流式、追加）淡入一次，不位移、不动高度。
+	passes int
+	fades  map[string]*blockFade
 }
+
+type blockFade struct{ play, seen bool }
 
 type mdKey struct {
 	src         string
@@ -194,6 +209,7 @@ func (h Host) options(c *ui.Context, m *Msg, ink ui.Color, acc Accent) *markdown
 }
 
 func (h Host) optionsFor(c *ui.Context, m *Msg, ink ui.Color, acc Accent, e *mdEntry) *markdown.Options {
+	e.passes++
 	e.reveal = markdown.Reveal{Unit: markdown.ByWord, Fade: mdFade}
 	if m.State == Interrupted || c.Preferences().ReduceMotion {
 		e.reveal.Unit = markdown.AtOnce
@@ -207,6 +223,10 @@ func (h Host) optionsFor(c *ui.Context, m *Msg, ink ui.Color, acc Accent, e *mdE
 	// 代码长行折行，不横向滚动：气泡里横向滚动的内容会越出滚动视口，几何检查已批的"滚动内容"例外只管竖向（ADR-285 第 11 条），
 	// 要改成横向滚动得先请主人把那条例外扩到横向
 	e.opts.WrapCode = true
+	e.opts.Block = nil
+	if hasTable(mdSource(m)) {
+		e.opts.Block = h.tableBlock(e) // 表格自己排（table_md.go）；没有表格的消息不接管，免得每个块多包一层
+	}
 	return &e.opts
 }
 
@@ -467,6 +487,7 @@ func (h Host) codeBlock(e *mdEntry) func(c *ui.Context, b *markdown.CodeBlockVie
 			label += "：" + b.Language
 		}
 		box := ui.Column(c.Key("code")).Background(t.C.Hover).Radius(r).Padding(pad).AlignSelf(ui.Stretch).Clip().Label(label)
+		e.fadeIn(t, box, "code", b.Index)
 		box.Children(func() {
 			// 标题行只放语言名、四边内距一样：行高等于字高时字到框上边、左边一样远（复制按钮比字高，放进这一行会把它撑高、字居中后上面多出一截，主人 2026-11-06 截图）
 			line := t.FS[1]
@@ -493,7 +514,15 @@ func (h Host) codeBlock(e *mdEntry) func(c *ui.Context, b *markdown.CodeBlockVie
 				bg = t.C.Hover
 			}
 			btn.Background(t.Fill(btn, bg))
-			btn.Children(func() { ui.Icon(c, Icon(name, false)).Size(line, line).TextColor(t.C.Text3) })
+			if e.morphs == nil {
+				e.morphs = map[int]*IconMorph{}
+			}
+			im := e.morphs[b.Index]
+			if im == nil {
+				im = &IconMorph{}
+				e.morphs[b.Index] = im
+			}
+			btn.Children(func() { im.Show(c, "copy-icon", MorphGlyph(name, false), line, t.C.Text3, t.Spring.Snappy) })
 			if btn.Clicked() {
 				c.WriteClipboard(b.Code())
 				if e.copied == nil {

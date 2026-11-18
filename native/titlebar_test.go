@@ -84,7 +84,7 @@ func TestTitleBarToggleKeepsControlState(t *testing.T) {
 			t.Fatal("标题带变化丢失标签焦点")
 		}
 	}
-	clickAt(t, tt, "本地")
+	click(t, tt, "本地")
 	for _, bar := range []ui.TitleBar{{}, win11Bar} {
 		tt.SetTitleBar(bar)
 		tt.Frame()

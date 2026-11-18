@@ -9,50 +9,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/goccy/go-yaml/ast"
-	"github.com/goccy/go-yaml/parser"
 )
-
-// hasNonStringKey 报告 YAML 里有没有不是字符串的映射键。goccy 的 struct 解码遇到这种键会静默放弃整个映射
-// （decode.go 的 keyToNodeMap 返回 nil, nil），Parse 看不出来；这是库的缺陷，另案处理，先跳过，不在这里改产品行为。
-func hasNonStringKey(raw []byte) bool {
-	tree, err := parser.ParseBytes(raw, 0)
-	if err != nil {
-		return false
-	}
-	v := &nonStringKeyVisitor{}
-	for _, doc := range tree.Docs {
-		if doc.Body != nil {
-			ast.Walk(v, doc.Body)
-		}
-	}
-	return v.found
-}
-
-type nonStringKeyVisitor struct {
-	found bool
-	seen  map[ast.Node]bool
-}
-
-func (v *nonStringKeyVisitor) Visit(n ast.Node) ast.Visitor {
-	if n == nil {
-		return nil
-	}
-	if v.seen == nil {
-		v.seen = map[ast.Node]bool{}
-	}
-	if v.seen[n] { // 别名可能指回祖先，别转圈
-		return nil
-	}
-	v.seen[n] = true
-	if m, ok := n.(*ast.MappingValueNode); ok && !m.Key.IsMergeKey() {
-		if _, ok := m.Key.(*ast.StringNode); !ok {
-			v.found = true
-		}
-	}
-	return v
-}
 
 // FuzzConfigParsePatch 覆盖 Parse 和 PatchLink 的往返边界。
 func FuzzConfigParsePatch(f *testing.F) {
@@ -105,9 +62,6 @@ func FuzzConfigParsePatch(f *testing.F) {
 			t.Fatalf("PatchLink 返回的配置和重新解析的不一样：\n%+v\n%+v\n%s", c3, c4, out)
 		}
 		if c4.LinkReader.Expand.Enabled != on {
-			if hasNonStringKey(raw) {
-				t.Skip("已知 goccy 缺陷：非字符串键会让整个映射被静默忽略；另案处理")
-			}
 			t.Fatalf("补丁没生效：要 %v，得到 %v\n%s", on, c4.LinkReader.Expand.Enabled, out)
 		}
 	})

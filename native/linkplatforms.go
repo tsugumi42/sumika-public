@@ -60,14 +60,13 @@ func (a *app) linkPlatformsPage(c *ui.Context, k *winshell.Kit, e config.LinkExp
 				a.linkJob(&api.LinkSettingsChange{Key: config.LinkPlatformEnabled, Site: p.ID, Bool: v})
 			})
 		})
-		if !open {
-			continue
-		}
-		a.linkImageModeRow(c, e, p)
-		a.linkTranslateRow(c, k, e, p)
-		for _, kind := range p.Kinds {
-			a.linkKindRow(c, k, e, p, kind, on)
-		}
+		k.Disclose(c, "plat-body-"+p.ID, open, k.G.PaneInset, func() { // 展开收起：高度弹簧加淡变（设置页内容列的间距）
+			a.linkImageModeRow(c, e, p)
+			a.linkTranslateRow(c, k, e, p)
+			for _, kind := range p.Kinds {
+				a.linkKindRow(c, k, e, p, kind, on)
+			}
+		})
 	}
 }
 
@@ -146,10 +145,10 @@ func (a *app) linkKindRow(c *ui.Context, k *winshell.Kit, e config.LinkExpand, p
 		s.tplForward, s.tplOpen = false, false
 		a.linkLoadTemplate(e, kind.Site)
 	}, control)
-	if open {
+	k.Disclose(c, "kind-body-"+id, open, k.G.PaneInset, func() {
 		site, _, _ := linktemplate.SiteByKey(kind.Site)
 		a.linkKindPanel(c, k, e, site)
-	}
+	})
 }
 
 // linkLoadTemplate 把这个站点现在生效的模板放进编辑框（没写过的放内置默认原文，方便在它上面改）。
@@ -231,9 +230,13 @@ func (a *app) linkTemplateEditor(c *ui.Context, k *winshell.Kit, e config.LinkEx
 		a.linkLoadTemplate(e, site.Key) // 面板是别处打开的，缓冲区还是上一个站点的
 	}
 	k.DisclosureRow(c, "tpl-adv-"+site.Key, "通配符模板", "高级：自己排版，改完实时预览", s.tplOpen, false, func() { s.tplOpen = !s.tplOpen }, nil)
-	if !s.tplOpen {
-		return
-	}
+	// 展开收起：高度弹簧加淡变；外面是 linkKindPanel 那一列，间距 SpaceSmall
+	k.Disclose(c, "tpl-adv-body-"+site.Key, s.tplOpen, k.G.SpaceSmall, func() { a.linkTemplateBody(c, k, e, site) })
+}
+
+// linkTemplateBody 是“通配符模板”展开后的内容：选哪份模板、编辑框、插入、套用、预览、保存。
+func (a *app) linkTemplateBody(c *ui.Context, k *winshell.Kit, e config.LinkExpand, site linktemplate.Site) {
+	s := &a.linkSettings
 	if site.HasForward() {
 		which := 0
 		if s.tplForward {

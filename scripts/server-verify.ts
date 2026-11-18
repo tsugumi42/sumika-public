@@ -3,7 +3,6 @@
 import { existsSync, readdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { readsGo } from './go-affected'
-import { runDesktopCheck } from './desktop-check'
 import { hasServer } from './gen-rpc'
 
 // 协议的两个生成文件（gen-rpc.ts 写的）
@@ -14,47 +13,43 @@ export type Plan = {
   bun: boolean   // 在 server/ 里跑 bun test
   gen: boolean   // 跑 gen-rpc.ts --check
   scripts?: boolean // 挑选和队列脚本自己改了：点名跑它们的测试（根目录 bun test 只跑 test/，scripts/*.test.ts 要点名）
-  desktop?: boolean // 主窗口（desktop/，ADR-353）：类型、打包、测试、令牌 CSS（scripts/desktop-check.ts）
 }
 
 // 挑选、队列、生成器这几份脚本：它们改了，所有检查都要跑（检查本身也是高风险改动，AGENTS 第 7 条）
-const CHECK_SCRIPTS = /^scripts\/(server-verify|go-verify|go-affected|pre-push|merge-queue(-\d+)?|merge-queue\.testlib|nightly(-record)?|gen-rpc|desktop-check|precommit-fast|go-shard|scan-private|friction-report|slot|run-low|check-commit-msg)(\.test)?\.ts$|^scripts\/(run-low\.ps1|go-shard\.cmd)$|^lefthook\.yml$/
+const CHECK_SCRIPTS = /^scripts\/(server-verify|go-verify|go-affected|pre-push|merge-queue(-\d+)?|merge-queue\.testlib|nightly(-record)?|gen-rpc|precommit-fast|go-shard|friction-report|slot|run-low)(\.test)?\.ts$|^scripts\/(run-low\.ps1|go-shard\.cmd)$|^lefthook\.yml$/
 // Bun 测试会读到、却不在 server/ 里的 Go 文件：迁移 SQL（server/test 跑同一套迁移）和它照抄的显示规则
 const BUN_READS_GO = /^native\/internal\/store\/(migrations\/|display[^/]*\.go$|local_groups\.go$|platform\.go$)|^native\/internal\/desktopread\//
-export const SCRIPT_TESTS = ['./scripts/server-verify.test.ts', './scripts/merge-queue.test.ts', './scripts/merge-queue-2.test.ts', './scripts/merge-queue-3.test.ts', './scripts/go-affected.test.ts', './scripts/go-verify.test.ts', './scripts/nightly.test.ts', './scripts/desktop-check.test.ts', './scripts/precommit-fast.test.ts', './scripts/go-shard.test.ts', './scripts/run-low.test.ts', './scripts/check-commit-msg.test.ts', './scripts/check-spec-merged.test.ts']
+export const SCRIPT_TESTS = ['./scripts/server-verify.test.ts', './scripts/merge-queue.test.ts', './scripts/merge-queue-2.test.ts', './scripts/merge-queue-3.test.ts', './scripts/go-affected.test.ts', './scripts/go-verify.test.ts', './scripts/nightly.test.ts', './scripts/precommit-fast.test.ts', './scripts/go-shard.test.ts', './scripts/run-low.test.ts', './scripts/export-public.test.ts', './scripts/sumika-dev.test.ts']
 
 const isServer = (f: string) => f.startsWith('server/')
-// 主窗口自己的文件；它还引 server/src 的代码和类型、用协议和令牌生成的 CSS，这几处改了也要查它
+// 主窗口（desktop/）的文件：冻结的网页，不再有它自己的检查（ADR-359、378）；只改它时不用跑 Go
 const isDesktop = (f: string) => f.startsWith('desktop/')
-const desktopReads = (f: string) => isDesktop(f) || f.startsWith('server/src/') || f.startsWith('server/package.json') || f.startsWith('server/bun.lock') || f.startsWith('protocol/') || f.startsWith('native/internal/design/') || f.startsWith('native/cmd/tokens-css/') || f === 'native/internal/chatui/tokens.go'
 const isProtocol = (f: string) => f.startsWith('protocol/') || f === 'scripts/gen-rpc.ts' || GEN_FILES.includes(f)
 // Go 的测试会读到的地方：native/、整个 testdata/（含 shared）、协议定义，加上 go-affected 的 readsGo（"改了就整套跑"的那批和示例配置）
 const isGo = (f: string) => f.startsWith('native/') || f.startsWith('testdata/') || f.startsWith('protocol/') || readsGo(f)
 
 // 空改动：和以前一样只跑 Go。只有"改到了 server/、又没有任何 Go 会读到的文件"才跳过 Go；只改文档、脚本的照旧跑 Go
 export function plan(files: string[]): Plan {
-  if (files.some((f) => CHECK_SCRIPTS.test(f))) return { go: true, bun: true, gen: true, scripts: true, desktop: true }
+  if (files.some((f) => CHECK_SCRIPTS.test(f))) return { go: true, bun: true, gen: true, scripts: true }
   // 共用场景只有 rpc/（Go 和 Bun 的通信协议）还挡合并；其余（记忆、QQ、回合、补录）是冻结的 Bun 实现对拍，
   // Go 照 ADR-384 等有意改行为时 Bun 不跟着改，红了不该挡（ADR-378：冻结代码碰到关卡就摘掉并登记；后续路线决 12）
   const bun = files.some((f) => isServer(f) || f.startsWith('protocol/') || f.startsWith('testdata/shared/rpc/') || GEN_FILES.includes(f) || BUN_READS_GO.test(f))
   const gen = files.some(isProtocol)
   // 只改 server/ 或 desktop/、没有 Go 会读到的文件：跳过 Go
   const go = !(files.some((f) => isServer(f) || isDesktop(f)) && !files.some(isGo))
-  const p: Plan = { go, bun, gen }
-  if (files.some(desktopReads)) p.desktop = true
-  return p
+  return { go, bun, gen }
 }
 
-// 要不要进 runPlanned：go-verify、pre-push 共用这一个判断，新加一类检查只改这里（漏过一次：desktop 检查只在提交钩子里跑，2026-11-11 复核查出）
+// 要不要进 runPlanned：go-verify、pre-push 共用这一个判断，新加一类检查只改这里
 export function needsRunPlanned(p: Plan): boolean {
-  return !!(p.bun || p.gen || p.scripts || p.desktop)
+  return !!(p.bun || p.gen || p.scripts)
 }
 
 // runPlanned 测的是工作区：这几处和要测的提交不一样时测出来的不是那份代码，调用方先查这几处干不干净
 export const PLANNED_PATHS = ['server', 'protocol', 'testdata/shared', 'desktop', 'native/internal/design']
 
 // --full（每日整套）：全都跑；公开导出的仓库没有 server/、desktop/ 时由各步骤自己跳过并在结论里写明
-export const FULL_PLAN: Plan = { go: true, bun: true, gen: true, scripts: true, desktop: true }
+export const FULL_PLAN: Plan = { go: true, bun: true, gen: true, scripts: true }
 
 export type StepResult = { name: string; ok: boolean; seconds: number; summary: string; skipped?: boolean }
 
@@ -119,7 +114,9 @@ export const GO_PARITY_TESTS = ['turn-golden.test.ts', 'policy-golden.test.ts', 
   'link-plugin-wiring.test.ts', 'link-steam.test.ts', 'link-twitter.test.ts', 'link-youtube.test.ts', 'web-wiki.test.ts']
 // 冻结的 Bun 在计划任务环境里收 run/ 的权限超时（2026-11-17 每日整套），不是对不上而是跑不完。
 // ADR-378：冻结代码碰到关卡就摘掉并登记（docs/待办.md）
-export const FROZEN_FLAKY_TESTS = ['run-file-secure.test.ts']
+// web-wiring：冻结的 Bun 联网接线测试 2026-11-18 在 main 上也红（合并队列 chore/sumika-dev-1 带出整套时发现），
+// 搜索落到了真的 DuckDuckGo、没有结果，断言的“编造的结果”对不上；不为过关改冻结代码，摘掉并登记（docs/待办.md）
+export const FROZEN_FLAKY_TESTS = ['run-file-secure.test.ts', 'web-wiring.test.ts']
 // bun test 自己认的测试文件名（.test / _test / .spec / _spec，ts、tsx、js、mjs 等）：显式列文件时照它挑，免得以后漏跑
 const BUN_TEST_FILE = /[._](test|spec)\.[cm]?[jt]sx?$/
 
@@ -198,7 +195,6 @@ export const STEP_PATHS: Record<string, string[]> = {
   'gen-rpc --check': ['protocol', 'server', 'desktop', 'scripts'],
   // 跑这一步的脚本也算输入：脚本改了跑法（比如换参数），旧记录不能再认（2026-11-12 研究铃音复核指出）
   'server bun test': ['server', 'protocol', 'testdata/shared', 'scripts/server-verify.ts'],
-  'desktop 检查': ['desktop', 'server', 'protocol', 'native/internal/design', 'native/cmd/tokens-css', 'native/go.mod', 'native/go.sum', 'scripts/desktop-check.ts', 'scripts/server-verify.ts'],
   '检查脚本的测试': ['scripts', 'lefthook.yml', 'package.json', 'bun.lock', 'native/go.mod'],
   // mygo vet 先跑整个模块的 go vet、结果顶替 go vet ./...（go-verify 的 verify），所以范围是整个 native/；记录里的工具版本记 go 的指纹
   'mygo vet': ['native', 'scripts/go-verify.ts'],
@@ -233,19 +229,16 @@ export function runPlanned(p: Plan, root: string, env: Record<string, string | u
   }
   if (p.gen && !step('gen-rpc --check', () => runGenCheck(root, env, bun))) return steps
   if (p.bun) step('server bun test', () => runServerTest(root, env, bun))
-  if (p.desktop) step('desktop 检查', () => runDesktopCheck(root, env, bun))
   if (p.scripts) step('检查脚本的测试', () => runScriptTests(root, env, bun))
   return steps
 }
 
-// 手动看的计划行：公开导出的仓库没有 server/、desktop/ 时，直接写这两步会跳过，不写“跑”
+// 手动看的计划行：公开导出的仓库没有 server/ 时，直接写这两步会跳过，不写“跑”
 export function describePlan(p: Plan, root = process.cwd()): string {
   const server = existsSync(join(root, 'server'))
-  const desktop = existsSync(join(root, 'desktop'))
   const bun = p.bun ? (server ? '跑' : '跳过（没有 server/）') : '不跑'
   const gen = p.gen ? '跑' + (server ? '' : '（没有 server/，只查 Go 侧）') : '不跑'
-  const desk = p.desktop ? (desktop ? '跑' : '跳过（没有 desktop/）') : '不跑'
-  return `Go：${p.go ? '跑' : '没有 Go 改动，跳过'}；server bun test：${bun}；gen-rpc --check：${gen}；desktop 检查：${desk}`
+  return `Go：${p.go ? '跑' : '没有 Go 改动，跳过'}；server bun test：${bun}；gen-rpc --check：${gen}`
 }
 
 if (import.meta.main) {

@@ -913,9 +913,7 @@ func testGate(root string) *approval.Gate {
 
 func TestSameAsBun(t *testing.T) {
 	t.Parallel()
-	if testing.Short() {
-		t.Skip("和 Bun 录像对拍，放在每日整套（ADR-225）")
-	}
+	// -short 下照常跑：对拍管着回收站、“始终允许”这类保护（ADR-225 第 3 条）；整组约 10 秒
 	entries, err := os.ReadDir(filepath.Join(testdataDir(), "cases"))
 	if err != nil {
 		t.Fatal(err)

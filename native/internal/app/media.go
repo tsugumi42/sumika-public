@@ -7,12 +7,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sumika-native/internal/applog"
+	"net/netip"
 
+	"sumika-native/internal/applog"
 	"sumika-native/internal/channel"
 	"sumika-native/internal/channel/snowluma"
 	"sumika-native/internal/channel/types"
+	"sumika-native/internal/config"
 	"sumika-native/internal/mediafetch"
+	"sumika-native/internal/netsafe"
 )
 
 // openMedia 装媒体下载。开关关闭时只存地址；历史补扫仍只管图片，视频补扫后续做。
@@ -35,7 +38,7 @@ func (a *App) openMedia() error {
 	}
 	dl := a.opt.MediaDownloader
 	if dl == nil {
-		dl = mediafetch.NewDownloader(mediafetch.DownloadOptions{})
+		dl = mediafetch.NewDownloader(mediaDownloadOptions(a.cfg, a.logf))
 	}
 	f, err := mediafetch.New(mediafetch.Options{
 		Store: st, Data: a.paths.Root, Platform: "qq", Downloader: dl,
@@ -98,4 +101,20 @@ func (r qqRefresher) FileURL(ctx context.Context, conversation string, seg types
 		return "", mediafetch.ErrRefreshUnavailable
 	}
 	return u, err
+}
+
+// mediaDownloadOptions 是收图下载器的参数，从配置来（现在只有假地址段）
+func mediaDownloadOptions(cfg config.Config, logf func(string, ...any)) mediafetch.DownloadOptions {
+	return mediafetch.DownloadOptions{FakeIPRanges: mediaFakeIPRanges(cfg.LinkReader.FakeIPRanges, logf)}
+}
+
+// mediaFakeIPRanges：收图下载的假地址段和链接取数共用 linkReader.fakeIPRanges（ADR-392）。配置加载时已核对过，
+// 这里解析失败就按没有假地址段（只会更严）；返回非 nil，免得下载器把 nil 当成“用默认段”
+func mediaFakeIPRanges(raw []string, logf func(string, ...any)) []netip.Prefix {
+	fake, err := netsafe.ParseFakeIPRanges(raw)
+	if err != nil {
+		logf("收图下载：linkReader.fakeIPRanges 不合格，按没有假地址段处理：%v", err)
+		return []netip.Prefix{}
+	}
+	return fake
 }

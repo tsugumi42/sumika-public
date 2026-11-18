@@ -39,6 +39,3 @@
 /test/tool-policy.test.ts
 /test/helpers/qq-setup.ts
 
-# 主人个人的画师名单确认页：只在本机用，不公开（主人 2026-11-18）
-/scripts/artist-review.ts
-/scripts/artist-review.template.html

@@ -5,7 +5,6 @@ import { join } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { FULL_PLAN, bunParallel, bunSummary, describePlan, needsRunPlanned, parseBunCounts, PLANNED_PATHS, plan, runGenCheck, runPlanned, runServerTest, serverTestFiles, stepScope } from './server-verify'
 import { genGo, load } from './gen-rpc'
-import { runDesktopCheck } from './desktop-check'
 
 // 这几条真的起 bun install、bun test、git 子进程（低优先级），机器忙时一条要好几秒；默认 5 秒的上限会误红。这是干活的上限，不是等待
 const SPAWN_TIMEOUT = 60_000
@@ -18,14 +17,13 @@ process.env.SUMIKA_SLOT_HELD = [process.env.SUMIKA_SLOT_HELD, 'verify'].filter(B
 const GO = { go: true, bun: false, gen: false }
 
 test('只改 server/：只跑 Bun，不跑 Go', () => {
-  // server/src 是主窗口会引的代码：desktop 检查也跑（ADR-353）；只改 server/test 不跑它
-  expect(plan(['server/src/main.ts', 'server/test/a.test.ts'])).toEqual({ go: false, bun: true, gen: false, desktop: true })
+  expect(plan(['server/src/main.ts', 'server/test/a.test.ts'])).toEqual({ go: false, bun: true, gen: false })
   expect(plan(['server/test/a.test.ts'])).toEqual({ go: false, bun: true, gen: false })
-  expect(plan(['server/package.json', 'server/bun.lock'])).toEqual({ go: false, bun: true, gen: false, desktop: true })
+  expect(plan(['server/package.json', 'server/bun.lock'])).toEqual({ go: false, bun: true, gen: false })
 })
 
 test('server/ 加文档、脚本：还是不跑 Go（这些不是 Go 会读到的）', () => {
-  expect(plan(['server/src/a.ts', 'docs/待办.md', 'scripts/check-docs.ts'])).toEqual({ go: false, bun: true, gen: false, desktop: true })
+  expect(plan(['server/src/a.ts', 'docs/待办.md', 'scripts/dsh-ask.ts'])).toEqual({ go: false, bun: true, gen: false })
 })
 
 test('只改 native/：只跑 Go，不跑 Bun，也不跑生成检查', () => {
@@ -34,18 +32,18 @@ test('只改 native/：只跑 Go，不跑 Bun，也不跑生成检查', () => {
 })
 
 test('改 protocol/：生成检查 + Bun + Go', () => {
-  expect(plan(['protocol/sumika-rpc.json'])).toEqual({ go: true, bun: true, gen: true, desktop: true })
+  expect(plan(['protocol/sumika-rpc.json'])).toEqual({ go: true, bun: true, gen: true })
 })
 
 test('只改某个生成文件：也要生成检查和 Bun（native 那个还有 Go）', () => {
   expect(plan(['native/internal/rpcwire/wire_gen.go'])).toEqual({ go: true, bun: true, gen: true })
   // 只有 TS 生成文件在 server/ 里：没有别的 Go 文件，Go 跳过，但生成检查必须跑
-  expect(plan(['server/src/protocol/gen.ts'])).toEqual({ go: false, bun: true, gen: true, desktop: true })
+  expect(plan(['server/src/protocol/gen.ts'])).toEqual({ go: false, bun: true, gen: true })
 })
 
 test('改检查脚本自己（生成器、挑选、队列、钩子配置）：全都跑，外加脚本测试', () => {
-  const all = { go: true, bun: true, gen: true, scripts: true, desktop: true }
-  for (const f of ['scripts/gen-rpc.ts', 'scripts/server-verify.ts', 'scripts/merge-queue.ts', 'scripts/go-verify.ts', 'scripts/go-affected.ts', 'scripts/pre-push.ts', 'scripts/nightly.ts', 'scripts/nightly-record.ts', 'scripts/desktop-check.ts', 'scripts/precommit-fast.ts', 'scripts/precommit-fast.test.ts', 'scripts/server-verify.test.ts', 'lefthook.yml']) {
+  const all = { go: true, bun: true, gen: true, scripts: true }
+  for (const f of ['scripts/gen-rpc.ts', 'scripts/server-verify.ts', 'scripts/merge-queue.ts', 'scripts/go-verify.ts', 'scripts/go-affected.ts', 'scripts/pre-push.ts', 'scripts/nightly.ts', 'scripts/nightly-record.ts', 'scripts/precommit-fast.ts', 'scripts/precommit-fast.test.ts', 'scripts/server-verify.test.ts', 'lefthook.yml']) {
     expect(plan([f])).toEqual(all)
     expect(plan([f, 'server/src/a.ts'])).toEqual(all)
   }
@@ -73,24 +71,10 @@ test('别的 testdata（Go 自己的）：只跑 Go', () => {
 })
 
 test('混合改动：server/ + native/ 两边都跑', () => {
-  expect(plan(['server/src/a.ts', 'native/internal/app/app.go'])).toEqual({ go: true, bun: true, gen: false, desktop: true })
+  expect(plan(['server/src/a.ts', 'native/internal/app/app.go'])).toEqual({ go: true, bun: true, gen: false })
 })
 
 // 主窗口（ADR-353）
-test('只改 desktop/：只跑 desktop 检查，不跑 Go、不跑 Bun 后台', () => {
-  expect(plan(['desktop/src/web/App.tsx', 'desktop/package.json'])).toEqual({ go: false, bun: false, gen: false, desktop: true })
-})
-
-test('改令牌、tokens-css 或聊天区令牌：Go 和 desktop 都跑（令牌 CSS 要跟着重新生成）', () => {
-  for (const f of ['native/internal/design/tokens/semantic.tokens.json', 'native/cmd/tokens-css/main.go', 'native/internal/chatui/tokens.go']) {
-    expect(plan([f])).toEqual({ go: true, bun: false, gen: false, desktop: true })
-  }
-})
-
-test('只改 native/ 别处：不跑 desktop', () => {
-  expect(plan(['native/internal/app/app.go']).desktop).toBeUndefined()
-})
-
 test('server/ 加会让 Go 整套跑的文件（提示词、go.mod、示例配置、挑包脚本）：Go 要跑', () => {
   for (const f of ['prompts/a.md', 'characters/x/card.json', 'sumika.example.yml', 'native/go.mod', 'scripts/go-verify.ts']) {
     expect(plan(['server/src/a.ts', f]).go).toBe(true)
@@ -99,7 +83,7 @@ test('server/ 加会让 Go 整套跑的文件（提示词、go.mod、示例配�
 
 test('没有 server/ 的改动：Go 照旧跑，Bun 不跑（文档、脚本、空改动）', () => {
   expect(plan(['docs/待办.md'])).toEqual(GO)
-  expect(plan(['scripts/check-docs.ts'])).toEqual(GO)
+  expect(plan(['scripts/dsh-ask.ts'])).toEqual(GO)
   expect(plan([])).toEqual(GO)
 })
 
@@ -109,12 +93,12 @@ test('路径只是长得像：serverless/、native-x/、protocols/ 不算', () =
   expect(plan(['xserver/a.ts'])).toEqual(GO)
 })
 
-test('计划行：没有 server/、desktop/ 时写跳过，不写跑', () => {
+test('计划行：没有 server/ 时写跳过，不写跑', () => {
   const root = mkdtempSync(join(tmpdir(), 'plan-line-noserver-'))
   try {
-    expect(describePlan({ go: true, bun: true, gen: true, desktop: true }, root))
-      .toBe('Go：跑；server bun test：跳过（没有 server/）；gen-rpc --check：跑（没有 server/，只查 Go 侧）；desktop 检查：跳过（没有 desktop/）')
-    expect(describePlan({ go: true, bun: false, gen: false }, process.cwd())).toBe('Go：跑；server bun test：不跑；gen-rpc --check：不跑；desktop 检查：不跑')
+    expect(describePlan({ go: true, bun: true, gen: true }, root))
+      .toBe('Go：跑；server bun test：跳过（没有 server/）；gen-rpc --check：跑（没有 server/，只查 Go 侧）')
+    expect(describePlan({ go: true, bun: false, gen: false }, process.cwd())).toBe('Go：跑；server bun test：不跑；gen-rpc --check：不跑')
   } finally { rmSync(root, { recursive: true, force: true }) }
 })
 
@@ -220,25 +204,25 @@ test('runGenCheck：没有 server/ 时只查 Go 侧，结论写明原因', () =>
   expect(r.summary).toContain('没有 server/，只查了 Go 侧')
 }, SPAWN_TIMEOUT)
 
-test('没有 server/、desktop/：步骤跳过、结论写明原因，不起子进程', () => {
+test('没有 server/：步骤跳过、结论写明原因，不起子进程', () => {
   const root = mkdtempSync(join(tmpdir(), 'steps-noserver-'))
   dirs.push(root)
   expect(runServerTest(root, process.env)).toEqual({ name: 'server bun test', ok: true, seconds: 0, summary: 'server bun test：没有 server/，跳过', skipped: true })
-  expect(runDesktopCheck(root, process.env)).toEqual({ name: 'desktop 检查', ok: true, seconds: 0, summary: 'desktop 检查：没有 desktop/，跳过', skipped: true })
-  const steps = runPlanned({ go: false, bun: true, gen: false, desktop: true }, root, process.env)
+  const steps = runPlanned({ go: false, bun: true, gen: false }, root, process.env)
   expect(steps.map((s) => [s.ok, s.skipped, s.summary])).toEqual([
     [true, true, 'server bun test：没有 server/，跳过'],
-    [true, true, 'desktop 检查：没有 desktop/，跳过'],
   ])
 })
 
-// 复核查出（2026-11-11）：plan 带了 desktop，调用方却只看 bun/gen/scripts，desktop 检查在推送和队列里一次都没跑
-test('只改 desktop/ 或令牌：调用方会进 runPlanned', () => {
+// ADR-359、378：desktop/ 是冻结的网页，没有自己的检查了；只改它什么都不挑
+test('只改 desktop/ 或令牌：什么检查都不跑', () => {
+  expect(plan(['desktop/src/web/App.tsx', 'desktop/bun.lock'])).toEqual({ go: false, bun: false, gen: false })
+  expect(plan(['native/internal/design/tokens/semantic.tokens.json'])).toEqual(GO)
   for (const f of ['desktop/src/web/App.tsx', 'desktop/bun.lock', 'native/internal/design/tokens/semantic.tokens.json']) {
-    expect(needsRunPlanned(plan([f]))).toBe(true)
+    expect(needsRunPlanned(plan([f]))).toBe(false)
   }
   expect(needsRunPlanned(plan(['native/internal/app/app.go']))).toBe(false)
-  expect(FULL_PLAN.desktop).toBe(true)
+  expect(FULL_PLAN).toEqual({ go: true, bun: true, gen: true, scripts: true })
 })
 
 test('go-verify、pre-push 都用共用的判断和路径，不自己写条件', () => {
@@ -328,11 +312,9 @@ test('stepScope：只改了这一步不读的目录，算出来一样；改了�
     const t2 = cleanTree(dir, 'HEAD', env)!
     expect(t2).not.toBe(t1)
     expect(stepScope(dir, t2, 'server bun test', env)).toBe(stepScope(dir, t1, 'server bun test', env))   // server 的测试不读 desktop/
-    expect(stepScope(dir, t2, 'desktop 检查', env)).not.toBe(stepScope(dir, t1, 'desktop 检查', env))
     wf(jn(dir, 'server/a.ts'), '2'); gitIn(dir, 'commit', '-qam', '改 server')
     const t3 = cleanTree(dir, 'HEAD', env)!
     expect(stepScope(dir, t3, 'server bun test', env)).not.toBe(stepScope(dir, t2, 'server bun test', env))
-    expect(stepScope(dir, t3, 'desktop 检查', env)).not.toBe(stepScope(dir, t2, 'desktop 检查', env))   // desktop 的类型引了 server
     expect(stepScope(dir, 'T1', 'server bun test', env)).toBe('T1')   // 假树号照原样
   } finally { rmd(dir, { recursive: true, force: true }) }
 }, 30_000)

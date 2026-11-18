@@ -138,6 +138,47 @@ func Contains(a, b ui.Rect) bool {
 	d := Distances(a, b)
 	return d[0] >= -1 && d[1] >= -1 && d[2] >= -1 && d[3] >= -1
 }
+
+// HugsCorner 说子元素的一个角是不是贴着父元素的那个圆角：R 是父元素这个角的半径，a、b 是子元素离这个角两条边的距离，r 是子元素这个角的半径。
+// 沿子元素这个角的圆弧取点（r 为 0 就是那个尖角点），只看落在父元素圆角区域（离两条边都不到 R）里的点，
+// 量它们到父元素圆弧的距离；最近的不比 min(a, b) 远（留半像素）就是贴着——这时才要求等距、同心。
+// 同心的子元素（a = b、r = R − a）到圆弧处处正好 a，算贴着；圆角太小或尖角塞在角里的会更近，也算贴着、被严格检查抓到；
+// 一排按钮里离角远的那颗，圆弧上的点离父圆弧比离直边远得多，不算。没有点落在圆角区域里也不算。
+func HugsCorner(R, a, b, r float32) bool {
+	if R <= 0 {
+		return false
+	}
+	const samples = 48
+	best := float32(math.Inf(1))
+	for i := 0; i <= samples; i++ {
+		th := float64(i) / samples * math.Pi / 2
+		px := a + r - r*float32(math.Cos(th))
+		py := b + r - r*float32(math.Sin(th))
+		if r == 0 {
+			px, py = a, b
+		}
+		if px < R && py < R {
+			d := R - float32(math.Hypot(float64(R-px), float64(R-py)))
+			best = min(best, d)
+		}
+		if r == 0 {
+			break
+		}
+	}
+	return best < min(a, b)+0.5
+}
+
+// CornerExempt 说对应角的等距同心检查要不要跳过这个子元素：只跳过一行按钮里离角远的那种——
+// 两边距离差得多（超过父圆角的四分之一），而且圆弧上离父圆弧比离直边远（HugsCorner 为假）。
+// 两边等距（相差不超过 1）的一律不跳：等距本身就是“贴着这个角”，圆角偏大偏小都要查；差几像素的不等距也不跳。
+// （2026-11-15 独立复核指出只看 HugsCorner 会放过“等距但圆角偏大”“差 4 像素的不等距”，所以加了这两道。）
+func CornerExempt(R, a, b, r float32) bool {
+	if Near(a, b) || float32(math.Abs(float64(a-b))) <= R/4 {
+		return false
+	}
+	return !HugsCorner(R, a, b, r)
+}
+
 func Equal(t *testing.T, scene, what string, got, want float32) {
 	t.Helper()
 	if !Near(got, want) {
@@ -228,6 +269,12 @@ func CheckTree(t *testing.T, root *Node, scene string, innerMin float32, pairs *
 					if parent.Radius[corner] > 0 && x >= 0 && y >= 0 && x < parent.Radius[corner]-0.5 && y < parent.Radius[corner]-0.5 { // 离边正好一个圆角半径算在角外（留半像素给浮点误差）
 						// 零距满铺层由外壳Clip给出实际外角，按裁切后的轮廓计算。
 						if x <= 1 && y <= 1 {
+							continue
+						}
+						// 一排按钮里离角远的那颗（大圆角外观下也落在半径以内）两边距离差得多、离圆弧比离直边远，看上去和角没关系，
+						// 不查等距同心（主人 2026-11-15 定改规则、不登记例外；条件见 CornerExempt），记录里如实写跳过了
+						if CornerExempt(parent.Radius[corner], x, y, n.Radius[corner]) {
+							p.Checks = append(p.Checks, "对应角跳过：离角远（CornerExempt）")
 							continue
 						}
 						Equal(t, scene, n.Name()+" 对应角四边距离", x, y)

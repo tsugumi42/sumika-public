@@ -153,7 +153,7 @@ func (a *app) sideConvSummary(c *ui.Context, kit *winshell.Kit) {
 					ink = p.Danger
 				}
 				track := ui.Row(c.Key("conv-usage-bar")).FillWidth().Height(g.SpaceTight).Radius(g.SpaceTight / 2).Background(p.Line).Clip()
-				fill := track.AnimateTo("usage", min(u.ratio(), 1), winshell.RouteMotion)
+				fill := track.AnimateTo("usage", min(u.ratio(), 1), winshell.SizeMotion)
 				track.Children(func() { // 用了的一段和剩下的一段按比例分宽
 					ui.Box(c.Key("conv-usage-fill")).Grow(fill).Basis(0).FillHeight().Radius(g.SpaceTight / 2).Background(ink)
 					ui.Box(c.Key("conv-usage-rest")).Grow(1 - fill).Basis(0).FillHeight()

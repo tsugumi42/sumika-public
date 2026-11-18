@@ -8,7 +8,7 @@
     "setup": "bun scripts/fetch-tools.ts",
     "postinstall": "bun scripts/fetch-tools.ts",
     "test": "bun test",
-    "check:docs": "bun scripts/check-docs.ts"
+    "check:docs": "native/bin/sumika-dev.exe check docs"
   },
   "dependencies": {
     "@zip.js/zip.js": "^2.24.0"

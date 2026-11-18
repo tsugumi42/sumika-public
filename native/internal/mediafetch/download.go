@@ -16,6 +16,7 @@ import (
 	"net/netip"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -84,8 +85,10 @@ type DownloadOptions struct {
 	VideoMaxBytes  int64         // 视频自动下载独立上限，默认 100 MiB
 	Timeout        time.Duration // 一次请求总时限，默认 20 秒
 	ConnectTimeout time.Duration // 建连，默认 5 秒
-	LookupIP       func(ctx context.Context, host string) ([]net.IP, error)
-	Dial           func(ctx context.Context, network, addr string) (net.Conn, error)
+	// FakeIPRanges 是代理的假地址段（app 从 linkReader.fakeIPRanges 解析好传进来）。nil 用 netsafe 的默认段；空切片表示没有假地址段
+	FakeIPRanges []netip.Prefix
+	LookupIP     func(ctx context.Context, host string) ([]net.IP, error)
+	Dial         func(ctx context.Context, network, addr string) (net.Conn, error)
 }
 
 // Downloader 下载一个地址。可以并发用
@@ -94,6 +97,7 @@ type Downloader struct {
 	max      int64
 	videoMax int64
 	timeout  time.Duration
+	fake     []netip.Prefix
 	lookup   func(ctx context.Context, host string) ([]net.IP, error)
 	dial     func(ctx context.Context, network, addr string) (net.Conn, error)
 	client   *http.Client
@@ -112,6 +116,11 @@ func NewDownloader(o DownloadOptions) *Downloader {
 	d := &Downloader{hosts: o.Hosts, max: o.MaxBytes, timeout: o.Timeout, lookup: o.LookupIP, dial: o.Dial}
 	if len(d.hosts.Exact) == 0 && len(d.hosts.Suffix) == 0 {
 		d.hosts = DefaultHosts
+	}
+	if o.FakeIPRanges == nil {
+		d.fake = netsafe.DefaultFakeIPPrefixes()
+	} else {
+		d.fake = slices.Clone(o.FakeIPRanges)
 	}
 	if d.max <= 0 {
 		d.max = defaultMaxBytes
@@ -192,19 +201,17 @@ func (d *Downloader) checkURL(u *url.URL) (string, error) {
 	return host, nil
 }
 
-// fakeIPNet：开着代理的机器用 198.18.0.0/15 做假地址（fake-ip），挡了所有下载都会失败（规格 4.4）。
-// 它不是私网，但 netsafe 把它排除在"外网"之外，所以单独放行
-var fakeIPNet = netip.MustParsePrefix("198.18.0.0/15")
-
 // blockedIP：不是外网的地址不连。判断用 netsafe.PublicIP（和链接取数同一份白名单：回环、私网、链路本地、CGNAT、保留段、
-// 组播、NAT64 等一概不连），只在它上面放行 fakeIPNet
-func blockedIP(ip net.IP) bool {
+// 组播、NAT64 等一概不连），只在它上面放行代理的假地址段（fake：和 linkReader.fakeIPRanges 同一份配置，规格 4.4）。
+// 开着代理 TUN 的机器上，名单内的 QQ 主机会解析成假地址，挡了所有下载都会失败；IPv4、IPv6 两种假地址都可能出现，
+// 解析结果里只要有一个既不是外网、也不在假地址段里，就整个不连
+func blockedIP(fake []netip.Prefix, ip net.IP) bool {
 	a, ok := netip.AddrFromSlice(ip)
 	if !ok {
 		return true
 	}
 	a = a.Unmap()
-	return !fakeIPNet.Contains(a) && !netsafe.PublicIP(a)
+	return !netsafe.InFakeRanges(fake, a) && !netsafe.PublicIP(a)
 }
 
 // dialChecked 是 Transport 的拨号：自己解析，解析出来的地址里有一个不该连的就整个不连，再按核对过的地址去拨
@@ -221,7 +228,7 @@ func (d *Downloader) dialChecked(ctx context.Context, network, addr string) (net
 		return nil, &Error{State: StateFailed, Retry: true, Reason: "域名解析失败"}
 	}
 	for _, ip := range ips {
-		if blockedIP(ip) {
+		if blockedIP(d.fake, ip) {
 			return nil, &Error{State: StateBlocked, Reason: "域名解析到了内网或本机地址"}
 		}
 	}

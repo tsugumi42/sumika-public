@@ -305,7 +305,7 @@ func (h Host) selectionTool(c *ui.Context, key string) {
 				}
 				targets := orderTargets(h.WhisperTargets(sel.MessageID))
 				q := button("引用", "quote", nil).Disabled(len(targets) == 0)
-				q.PopoverMenuButton(func(m *ui.Menu) { h.targetItems(m, sel, targets, true, done) })
+				q.PopoverMenuButton(func(m *ui.Menu) { h.targetItems(m, sel, targets, true, done) }, h.T.MenuButton(c))
 				return
 			}
 			if h.OnReply != nil {

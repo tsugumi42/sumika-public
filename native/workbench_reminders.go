@@ -147,11 +147,11 @@ func (a *app) wbReminders(c *ui.Context, kit *winshell.Kit) {
 	}
 	if len(ended) > 0 {
 		kit.DisclosureRow(c, "remind-ended", fmt.Sprintf("已结束（%d）", len(ended)), "", st.endedOpen, false, func() { st.endedOpen = !st.endedOpen }, func() {})
-		if st.endedOpen {
+		kit.Disclose(c, "remind-ended-rows", st.endedOpen, kit.G.PaneInset, func() { // 展开收起：高度弹簧加淡变（设置页的内容列间距是 PaneInset）
 			for _, r := range ended {
 				a.wbRemindRow(c, kit, r, now)
 			}
-		}
+		})
 	}
 	a.wbRemindEditor(c, kit, opts)
 	kit.ActionDialog(c, "remind-delete", &st.delOpen, winshell.DialogSpec{

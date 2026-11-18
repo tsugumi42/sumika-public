@@ -545,17 +545,22 @@ func TestDisabledControlsApplyOpacityOnce(t *testing.T) {
 				items := []TabItem{{ID: "a", Label: "Alpha"}, {ID: "b", Label: "Beta"}}
 				tt := ui.NewTester(func(c *ui.Context) {
 					theme.Apply(c, theme.Light())
-					var e ui.Element
-					switch kind {
-					case 0:
-						e = InputField(c, &draft, "Field", InputOptions{Disabled: disabled})
-					case 1:
-						e = SettingsSlider(c, items, "a", SegmentsOptions{Disabled: disabled})
-					default:
-						e = Tabs(c, items, "a", TabsOptions{Variant: TabsVariant(kind - 2), Disabled: disabled})
+					build := func(off bool) {
+						switch kind {
+						case 0:
+							InputField(c, &draft, "Field", InputOptions{Disabled: off})
+						case 1:
+							SettingsSlider(c, items, "a", SegmentsOptions{Disabled: off})
+						default:
+							Tabs(c, items, "a", TabsOptions{Variant: TabsVariant(kind - 2), Disabled: off})
+						}
 					}
-					if !disabled {
-						e.Opacity(.5)
+					// mygo 0.8.0 起 Opacity 是整组淡出，和禁用继承的 0.5 不再等价；
+					// 参照改成：启用的控件放进一个禁用的父元素，只吃 mygo 的那一次 0.5。
+					if disabled {
+						build(true)
+					} else {
+						ui.Column(c).FillWidth().Disabled(true).Children(func() { build(false) })
 					}
 				}, 320, 80)
 				settle(tt)

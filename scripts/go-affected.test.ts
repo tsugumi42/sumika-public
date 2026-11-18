@@ -99,7 +99,7 @@ test('提到 sumika.example.yml 的 Go 测试所在的包都在 EXAMPLE_READERS 
   expect(found.size).toBeGreaterThan(0)
   expect([...found].filter((p) => !EXAMPLE_READERS.includes(p)).sort()).toEqual([])
 }, 60_000)   // 要读全部 _test.go，机器忙时超过默认 5 秒（2026-11-13 队列里红过一次）
-test('别的脚本不碰 Go', () => expect(names(['scripts/check-docs.ts'])).toBe(''))
+test('别的脚本不碰 Go', () => expect(names(['scripts/dsh-ask.ts'])).toBe(''))
 
 // go list 整个真实模块要二三十秒，几条用真实依赖图的测试共用一次
 let cached: Graph | undefined

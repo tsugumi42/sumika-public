@@ -104,9 +104,7 @@ func snapshot(t *testing.T, root string) map[string]*string {
 }
 
 func TestSameAsBun(t *testing.T) {
-	if testing.Short() {
-		t.Skip("和 Bun 录像对拍，放在每日整套（ADR-225）")
-	}
+	// -short 下照常跑：对拍管着回收站这类保护（ADR-225 第 3 条）
 	// 完整命令输出也只写测试目录，不落进真实的系统临时目录。
 	temp := t.TempDir()
 	t.Setenv("TMP", temp)

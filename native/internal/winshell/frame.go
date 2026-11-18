@@ -1,6 +1,7 @@
 package winshell
 
 import (
+	"os"
 	"strconv"
 
 	"github.com/egoist/mygo/ui"
@@ -151,7 +152,9 @@ func (k *Kit) columns(c *ui.Context, s *State, sp *Spec, w float32) {
 	g := k.G
 	line := k.Theme // 分隔条平时不画线（几栏靠留缝分开），悬停和拖动时才亮强调色
 	line.Border = ui.Transparent
-	// 右栏分隔条按指针的绝对位置算宽度：Split 只给增量，拖过下限再拖回来会漂移
+	// 右栏分隔条按指针的绝对位置算宽度：Split 只给增量，拖过下限再拖回来会漂移。
+	// mygo 0.8 起（egoist/mygo#1474）Split 会记住拖过它自己最小宽度的那段，但右栏的 SideMin / SideMax 是在 Split 外面夹的，
+	// Split 不知道这两个界限，拖过它们照样漂；Split 没有设上下限的选项（0.10.0 查过，已提 egoist/mygo#2041），所以这里仍按绝对位置算；上游加了上下限就改回 Split 自己的增量
 	cols := ui.Row(c.Key("columns")).Fill().AlignItems(ui.Stretch)
 	cols.Children(func() {
 		k.nav(c, s, sp)
@@ -247,7 +250,7 @@ func (k *Kit) listGrip(c *ui.Context, s *State, sp *Spec, w float32) (float32, u
 		shown = grip.Jump("list-w", min(max(d.raw, g.ListCompactWidth), k.listUpper(s, w)))
 	} else {
 		// 松手后用弹簧落到位，接着拖动时最后的速度（Jump 记着），不是从静止起步
-		shown = grip.AnimateTo("list-w", s.ListWidth, ui.Animation{Spring: k.T.Smooth})
+		shown = grip.AnimateTo("list-w", s.ListWidth, ui.Animation{Spring: k.firm()})
 	}
 	if grip.DoubleClicked() {
 		s.ToggleList()
@@ -331,7 +334,11 @@ func (k *Kit) floatPanel(c *ui.Context, s *State, sp *Spec, open bool) {
 	}
 	ui.Overlay(c, func() {
 		fill := ui.Box(c.Key("float-fill")).Absolute().Right(gap).Top(gap).Bottom(gap).Width(width).Radius(g.RadiusCard)
-		k.Glass(fill, LevelInput, p.Composer)
+		sideLevel := LevelInput
+		if os.Getenv("DL_SIDE") == "float" { // 临时：设计专场并排图
+			sideLevel = LevelFloat
+		}
+		k.Glass(fill, sideLevel, p.Composer)
 		k.FloatShadow(fill)
 		panel := ui.Column(c.Key("float-panel")).Absolute().Right(gap).Top(gap).Bottom(gap).Width(width).Clip().Radius(g.RadiusCard).Label("资料与活动")
 		if panel.OverlayShortcut(0, ui.KeyEscape) && open && (spec.Escape == nil || !spec.Escape()) {

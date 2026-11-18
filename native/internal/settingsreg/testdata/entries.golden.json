@@ -2195,7 +2195,9 @@
   "MinExclusive": false,
   "MaxExclusive": false,
   "Default": [
-   "198.18.0.0/15"
+   "198.18.0.0/15",
+   "2001:2::/48",
+   "fdfe:dcba:9876::/48"
   ],
   "ReadOnly": true,
   "Reason": "目前只能在配置文件中修改。"

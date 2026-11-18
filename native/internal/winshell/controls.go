@@ -14,16 +14,19 @@ import (
 // SearchField 是标准搜索框：左边放大镜，框的底和圆角在外层，输入本身透明。bind 可以是 nil。
 func (k *Kit) SearchField(c *ui.Context, key string, value *string, hint string, bind *ui.Handle) ui.Element {
 	g := k.G
-	return k.searchShaped(c, key, value, hint, bind, g.RowHeight, g.FieldInset, g.RadiusControl).FillWidth().Shrink(0)
+	return k.searchShaped(c, key, value, hint, bind, g.RowHeight, g.FieldInset).FillWidth().Shrink(0)
 }
 
-// searchShaped 给顶行那种更高的搜索框用：样子一样，只是尺寸不同。
-func (k *Kit) searchShaped(c *ui.Context, key string, value *string, hint string, bind *ui.Handle, height, inset, radius float32) ui.Element {
+// searchShaped 给顶行那种更高的搜索框用：样子一样，只是尺寸不同。单行，所以圆角是高度的一半；“凹下去”（Sunken）。
+func (k *Kit) searchShaped(c *ui.Context, key string, value *string, hint string, bind *ui.Handle, height, inset float32) ui.Element {
 	g, p := k.G, k.P
-	box := ui.Row(c.Key(key + "-box")).MinWidth(0).Height(height).Padding(inset).Gap(g.SpaceSmall).AlignItems(ui.Center).Radius(radius).Background(p.Bubble)
+	radius := g.Pill(height)
+	box := ui.Row(c.Key(key + "-box")).MinWidth(0).Height(height).Gap(g.SpaceSmall).AlignItems(ui.Center).Radius(radius)
+	k.pillPadding(box, inset)
+	k.SunkenField(box, box.FocusWithin())
 	k.surface(c, box, key, "input", radius, inset).Children(func() {
 		ui.Icon(c, IconSearch).Size(g.IconSmall, g.IconSmall).Shrink(0).TextColor(p.Meta)
-		in := ui.TextInputBase(c.Key(key), value).Label(hint).Placeholder(hint).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).Grow(1).MinWidth(0)
+		in := ui.TextInputBase(c.Key(key), value).Label(hint).Placeholder(hint).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).Grow(1).MinWidth(0).FocusRing(false)
 		if bind != nil {
 			in.Bind(bind)
 		}
@@ -104,10 +107,11 @@ func (k *Kit) NumberField(c *ui.Context, key string, value *string, label string
 	return e
 }
 
-// TextArea 是多行输入框：和 TextField 同一个底、圆角和内距，随内容在 minLines 到 maxLines 之间长。
+// TextArea 是多行输入框：多行所以不是胶囊，用控件圆角；和 TextField 同样“凹下去”（Sunken），随内容在 minLines 到 maxLines 之间长。
 func (k *Kit) TextArea(c *ui.Context, key string, value *string, label string, minLines, maxLines int) ui.Element {
 	g := k.G
-	e := ui.TextAreaBase(c.Key(key), value).Label(label).Lines(minLines, maxLines).FillWidth().Padding(g.FieldInset).Radius(g.RadiusControl).Background(k.P.Bubble).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine)
+	e := ui.TextAreaBase(c.Key(key), value).Label(label).Lines(minLines, maxLines).FillWidth().Padding(g.FieldInset).Radius(g.RadiusControl).FontSize(g.LabelSize).FixedLineHeight(g.MetaLine).FocusRing(false)
+	k.SunkenField(e, e.Focused())
 	return k.surface(c, e, key, "input", g.RadiusControl, g.FieldInset)
 }
 
@@ -161,7 +165,7 @@ func (k *Kit) Badge(c *ui.Context, key, text string, tone BadgeTone) {
 		ink = k.T.C.DangerText
 	}
 	h := g.MetaLine + 2*g.SpaceTight
-	b := ui.Box(c.Key(key)).Shrink(0).Height(h).Padding(g.SpaceTight).Radius(h / 2).Background(p.Bubble).Center()
+	b := ui.Box(c.Key(key)).Shrink(0).Height(h).Padding(g.SpaceTight).Radius(h / 2).Background(p.Track).Center()
 	k.surface(c, b, key, "badge", h/2, g.SpaceTight).Children(func() {
 		ui.Text(c, text).FontSize(g.MetaSize).FixedLineHeight(g.MetaLine).TextColor(ink).SingleLine()
 	})

@@ -42,7 +42,7 @@ func (k *Kit) header(c *ui.Context, s *State, h *HeaderSpec, l ChatLayout, onBac
 	}
 	fill := ui.Box(c.Key("chat-header-fill")).Absolute().Left(l.Inset).Right(right).Top(l.Inset).Height(g.BarHeight).Radius(g.RadiusBar)
 	k.Glass(fill, LevelHeader, p.Canvas.Alpha(OverlayAlpha))
-	k.CardShadow(fill)
+	k.RaisedShadow(fill)
 	e := ui.Row(c.Key("chat-header")).Absolute().Left(l.Inset).Right(right).Top(l.Inset).Height(g.BarHeight).Padding(g.BarInset).Gap(g.SpaceSmall).AlignItems(ui.Center).DragWindow()
 	e.Children(func() {
 		if l.Narrow {
@@ -82,7 +82,7 @@ func (k *Kit) headerIconButton(c *ui.Context, key, label string, icon *ui.SVG, f
 	if b.Pressed() {
 		bg = p.Selected
 	} else if b.Hovered() {
-		bg = p.Bubble
+		bg = p.Track
 	}
 	b.Background(b.AnimateColor("fill", bg, ControlFade)).Children(func() { ui.Icon(c, icon).Size(g.IconSize, g.IconSize) })
 	k.Tip(c, b, label)
@@ -121,7 +121,7 @@ func (k *Kit) headerAvatar(c *ui.Context, h *HeaderSpec, size, radius float32) {
 		b.OnClick(h.OnAvatar)
 	}
 	if h.UsageOK {
-		v := b.AnimateTo("context-usage", max(0, min(h.Usage, 1)), ui.Animation{Duration: MotionRoute, Ease: RouteMotion.Ease})
+		v := b.AnimateTo("context-usage", max(0, min(h.Usage, 1)), SizeMotion)
 		ink := p.Accent
 		if h.Usage >= contextUsageWarn {
 			ink = p.Danger

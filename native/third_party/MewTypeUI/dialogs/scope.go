@@ -59,7 +59,7 @@ func searchScopeRow(c *ui.Context, scope SearchScope, cancelLabel string, cancel
 		if button.Hovered() {
 			button.Background(t.Colors().Conversation().BackgroundHover())
 		}
-		ripple(c, button, t.Colors().Conversation().PressedBackground())
+		ripple(c, button, t.Colors().Conversation().PressedBackground(), nil)
 		button.Children(func() {
 			ui.Box(c).Absolute().Left(m.ScopeLeft()).Top((height-m.ScopePhoto())/2).Size(m.ScopePhoto(), m.ScopePhoto()).Radius(m.ScopePhoto() / 2).Background(t.Colors().Avatar().SavedMessagesBackground()).Clip().Center().Children(func() {
 				if scope.Image != nil {
