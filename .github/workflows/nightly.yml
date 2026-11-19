@@ -66,16 +66,27 @@ jobs:
         working-directory: native
         run: go tool mygo vet .
 
+      # 临时：查 Git Bash 是不是把备份特权打开了（第一次试跑用 bash 跑 go test，四条“拒绝读取 / 独占打开”的用例红，
+      # ci.yml 用 pwsh 跑同样的用例是绿的，2026-11-19）。确认后去掉这一步。
+      - name: 特权对照（临时）
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          echo "== bash"; whoami //priv | grep -iE 'Backup|Restore|Security' || true
+          echo "== pwsh"; pwsh -NoProfile -Command "whoami /priv | Select-String -Pattern 'Backup|Restore|Security'"
+
       # 不带 -short；-timeout 20m 和本机 go-verify 同一个口径（几个慢包在负载下会过 Go 默认的 10 分钟）。
       # 输出另存一份传成产物：整套的输出很长，网页上的日志不好翻，巡检和对账要下载下来按包查。
+      # shell 用 pwsh 和 ci.yml 一致，不用 bash（见上一步）。$LASTEXITCODE 是 go 的退出码（Tee-Object 不是外部程序），runner 包的那层用它退出。
       - name: go test 整套
         id: gotest
         if: ${{ !cancelled() }}
-        shell: bash
+        shell: pwsh
         working-directory: native
         run: |
-          set -o pipefail
-          go test -count=1 -timeout 20m ./... 2>&1 | tee ../go-test-full.txt
+          [Console]::OutputEncoding = [Text.UTF8Encoding]::new() # go 输出 UTF-8；不设的话 pwsh 按控制台代码页解码，中文进文件就乱了
+          go test -count=1 -timeout 20m ./... 2>&1 | Tee-Object -FilePath ../go-test-full.txt
+          exit $LASTEXITCODE
 
       - name: 检查脚本的 bun 测试
         if: ${{ !cancelled() }}
