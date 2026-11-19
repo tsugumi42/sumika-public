@@ -22,13 +22,16 @@ func (x LinkX) check() []string {
 	return nil
 }
 
-// LinkTweetCard 是推特卡片（x 站点的 @推特卡片 样式）的设置
+// LinkTweetCard 是推特卡片（x 站点的 @推特卡片 样式、纯文字推文）的设置
 type LinkTweetCard struct {
 	// Theme 是配色：auto 按北京时间（06:00～18:00 浅色，其余深色）；light / dark 固定
 	Theme string `yaml:"theme"`
 	// MaxHeight 是卡片高度封顶（图上像素）：默认 0 不封顶，长推文整张画出来（正文不截断，硬上限 8000，到了再截）；
 	// 要封顶写 480～8000 的像素值（原来的封顶是 960）。用户 2026-11-13 定 QQ 这边默认不封顶
 	MaxHeight int `yaml:"maxHeight"`
+	// TextOnly：纯文字推文（自己没有图、视频，没有外链卡，被引推文没有视频）不管 x 站点配的什么样式都画推特卡片加链接；
+	// 有图的推文照旧按模板（主人 2026-11-19，ADR-399）。默认开；没写 x 自定义模板时才生效
+	TextOnly bool `yaml:"textOnly"`
 }
 
 // DefaultTweetCardMaxHeight 是 MaxHeight 的默认值，和 linkcard.DefaultTweetMaxHeight 一致（config 不引 linkcard）

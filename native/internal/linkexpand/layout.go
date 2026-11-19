@@ -8,6 +8,7 @@ import (
 
 	"sumika-native/internal/channel/types"
 	"sumika-native/internal/linkreader"
+	"sumika-native/internal/linktemplate"
 )
 
 // 默认排版用到的几个字段和槽位：B 站视频的分 P 和时长说明，X 的短时间、正文文字、拼图、图片、视频。
@@ -190,6 +191,38 @@ func artistEligible(r *linkreader.Result, mode string) bool {
 		return false
 	}
 	return len(xOwnImages(r)) > 0
+}
+
+// textCardEligible 说这条 X 推文算“纯文字”、可以画成推特卡片（ADR-399）：是推文不是长文；自己一个媒体都没有
+// （图、视频、动图，取不到的也算有）；没有外链卡（推特卡片不画外链卡）；被引推文没有视频、动图，也没有更深一层的引用
+// （卡片只画一层引用、不放视频）。被引推文的图画在卡片里，不算。
+func textCardEligible(r *linkreader.Result) bool {
+	if r.Kind != "post" || xArticle(r) || len(r.Media.Value) > 0 || r.LinkCard.State == "available" || r.MoreQuotes.Value {
+		return false
+	}
+	if q := r.Quote; q.State == "available" && q.Value != nil {
+		if q.Value.MoreQuotes.Value || q.Value.Quote.State == "available" || q.Value.LinkCard.State == "available" {
+			return false
+		}
+		for _, m := range q.Value.Media.Value {
+			if m.Type != "image" && m.Type != "photo" {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// TextCardApplies 说这条链接按 o 会不会走纯文字推文的卡片（预览拿它写说明）：开关开着、是 X 推文、没命中画师发法、
+// 没写 x 自定义模板、推文是纯文字。
+func TextCardApplies(r *linkreader.Result, o Options) bool {
+	if !o.TextCard || linktemplate.SiteKey(r.Platform, r.Kind) != "x" || artistEligible(r, o.Artist) {
+		return false
+	}
+	if strings.TrimSpace(o.Templates["x"]) != "" || strings.TrimSpace(o.Templates["x-forward"]) != "" {
+		return false
+	}
+	return textCardEligible(r)
 }
 
 // xUseMosaic 说这条帖子发拼图：直发模板写了 $拼图（内置默认不写）、直发（不进合并转发）、自己有三张及以上的图、没有视频、取数端给了拼图。

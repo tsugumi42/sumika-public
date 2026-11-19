@@ -94,3 +94,17 @@ func TestLinkTweetCardMaxHeight(t *testing.T) {
 		t.Fatalf("写了 960 就是 960：%v %d", err, v.Expand.TweetCard.MaxHeight)
 	}
 }
+
+// 主人 2026-11-19（ADR-399）：纯文字推文画推特卡片，默认开，写 false 关掉。
+func TestLinkTweetCardTextOnly(t *testing.T) {
+	if d := DefaultLinks(); !d.Expand.TweetCard.TextOnly {
+		t.Fatal("默认要开")
+	}
+	v := DefaultLinks()
+	if err := yaml.Unmarshal([]byte("expand: {tweetCard: {textOnly: false}}"), &v); err != nil || v.Expand.TweetCard.TextOnly {
+		t.Fatalf("写 false 要关掉：%v %v", err, v.Expand.TweetCard.TextOnly)
+	}
+	if err := yaml.Unmarshal([]byte("expand: {tweetCard: {textOnly: \"yes\"}}"), &v); err == nil {
+		t.Fatal("类型错误该报错")
+	}
+}

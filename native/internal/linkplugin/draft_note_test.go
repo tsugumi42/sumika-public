@@ -57,6 +57,7 @@ func TestExcessNoteGoesIntoFirstForwardNode(t *testing.T) {
 	set := expandSettings(func(e *config.LinkExpand) {
 		e.MaxLinks = 1
 		e.Sites = map[string]config.LinkSite{"x": {Forward: linktemplate.ForwardAlways}}
+		e.TweetCard.TextOnly = false // 假取数给的是纯文字推文，这里要的是文字版（ADR-399 的卡片只直发、不带正文）
 	})
 	r, _ := newTraceRig(t, &fakeFetcher{}, Options{Settings: set, Expand: exp})
 	r.p.OnStored(storedMsg(31, []types.Seg{{Kind: types.SegText, Text: "https://x.com/a/status/3101 https://x.com/a/status/3102"}}))
@@ -98,6 +99,7 @@ func TestTextSettingsReachDraft(t *testing.T) {
 	set := expandSettings(func(e *config.LinkExpand) {
 		e.Text.StripTrailingHashtags = false
 		e.Sites = map[string]config.LinkSite{"x": {Forward: linktemplate.ForwardNever}}
+		e.TweetCard.TextOnly = false // 假取数给的是纯文字推文，这里要的是文字版（ADR-399 的卡片只直发、不带正文）
 	})
 	r, _ := newTraceRig(t, &fakeFetcher{text: "编的正文 #编的标签"}, Options{Settings: set, Expand: exp})
 	r.p.OnStored(storedMsg(33, []types.Seg{{Kind: types.SegText, Text: "https://x.com/a/status/3301"}}))
