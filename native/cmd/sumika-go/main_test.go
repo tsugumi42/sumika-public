@@ -30,6 +30,7 @@ import (
 	"sumika-native/internal/filelog"
 	"sumika-native/internal/llm/llmtest"
 	"sumika-native/internal/paths"
+	"sumika-native/internal/testutil/leftover"
 )
 
 // 测试里要连的号、主人、群、令牌、模型、角色都是编的
@@ -229,7 +230,7 @@ func newEnv(t *testing.T) *env {
 	if err != nil {
 		t.Fatalf("找项目根（在 native/cmd/sumika-go 里跑）：%v", err)
 	}
-	e := &env{t: t, root: root, data: t.TempDir()}
+	e := &env{t: t, root: root, data: leftover.Dir(t)}
 	if _, err := paths.Init(e.data); err != nil {
 		t.Fatalf("初始化临时数据目录：%v", err)
 	}

@@ -362,14 +362,17 @@ func TestShellJobStartFailureClosesHandles(t *testing.T) {
 		}
 	}
 	run()
+	// 句柄数是整个测试进程的：运行时新起线程、前面测试的收尾会让它涨落几个（CI 上 8 次涨过 3 个，279 → 282）。
+	// 真泄漏是每次失败至少漏一个 Job 句柄，所以多跑几次、门槛按每次漏一个的一半算，噪声进不来、漏了照样拦下。
+	const n = 64
 	before := shellJobHandles(t)
-	for range 8 {
+	for range n {
 		run()
 	}
 	after := shellJobHandles(t)
-	t.Logf("连续 8 次启动失败：句柄 %d → %d", before, after)
-	if after > before+2 {
-		t.Errorf("连续 8 次启动失败漏了句柄：%d → %d", before, after)
+	t.Logf("连续 %d 次启动失败：句柄 %d → %d", n, before, after)
+	if after > before+n/2 {
+		t.Errorf("连续 %d 次启动失败漏了句柄：%d → %d", n, before, after)
 	}
 }
 

@@ -8,7 +8,7 @@
 // 登记会改系统的持久配置：主会话运行前先问主人（规格第 4 条）。测试只调 registerScript 这类纯函数，绝不真登记。
 import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, win32 } from 'node:path'
 import { git, lockFile, makeCtx } from './merge-queue'
 import { KEEP, loadNightly, type NightlyRecord } from './nightly-record'
 
@@ -313,7 +313,7 @@ export function stableBun(o: { home?: string; exists?: (p: string) => boolean; w
 // 登记命令只生成文本，测试只查文本；绝不在这里执行（--register 的 CLI 才执行）
 export function registerScript(o: { repo: string; bun: string; at: string; taskName?: string }) {
   const task = o.taskName ?? NIGHTLY_TASK
-  const script = join(o.repo, 'scripts', 'nightly.ts')
+  const script = win32.join(o.repo, 'scripts', 'nightly.ts') // 写进 Windows 计划任务的路径：按 Windows 规则拼，在哪个系统上生成都一样
   return [
     "$ErrorActionPreference = 'Stop'",
     '# 仅在用户登录时运行（LogonType Interactive）：服务账户会和交互式队列抢 Local\\ 名额',
