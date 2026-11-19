@@ -76,9 +76,6 @@ func (d *Desktop) localQuestions() []api.LocalQuestion {
 
 // AnswerLocal 核对会话和角色后回答；问题已结束、不属于这个会话、下标越界都是 ErrQuestionGone
 func (r *DesktopReader) AnswerLocal(ctx context.Context, k api.ConversationKey, id string, option int) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return err

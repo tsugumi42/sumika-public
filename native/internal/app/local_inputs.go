@@ -21,9 +21,6 @@ func (r *DesktopReader) localInputScope(ctx context.Context, k api.ConversationK
 	return inv.Scope, err
 }
 func (r *DesktopReader) SubmitLocal(ctx context.Context, k api.ConversationKey, s api.LocalInputSubmission) (api.InputReceipt, error) {
-	if err := r.bunOwned(); err != nil {
-		return api.InputReceipt{}, err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return api.InputReceipt{}, err
@@ -99,9 +96,6 @@ func (r *DesktopReader) SubmitLocal(ctx context.Context, k api.ConversationKey, 
 	return api.InputReceipt{InputID: rec.InputID, RunID: rec.RunID, State: string(rec.State), Sequence: rec.Sequence, Revision: rec.Revision}, err
 }
 func (r *DesktopReader) StopLocalRun(ctx context.Context, k api.ConversationKey, run string, through uint64) (api.StopReceipt, error) {
-	if err := r.bunOwned(); err != nil {
-		return api.StopReceipt{}, err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return api.StopReceipt{}, err
@@ -246,9 +240,6 @@ func (r *DesktopReader) HeldLocal(ctx context.Context) ([]api.HeldInput, error) 
 }
 
 func (r *DesktopReader) ReleaseHeldLocal(ctx context.Context, k api.ConversationKey, id string) (api.InputReceipt, error) {
-	if err := r.bunOwned(); err != nil {
-		return api.InputReceipt{}, err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return api.InputReceipt{}, err
@@ -263,9 +254,6 @@ func (r *DesktopReader) ReleaseHeldLocal(ctx context.Context, k api.Conversation
 }
 
 func (r *DesktopReader) DiscardHeldLocal(ctx context.Context, k api.ConversationKey, id string) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return err
@@ -279,9 +267,6 @@ func (r *DesktopReader) DiscardHeldLocal(ctx context.Context, k api.Conversation
 }
 
 func (r *DesktopReader) WithdrawQueuedLocal(ctx context.Context, k api.ConversationKey, id string) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return err

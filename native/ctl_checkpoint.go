@@ -32,9 +32,6 @@ func checkpointError(err error, data any) error {
 	if err == nil {
 		return nil
 	}
-	if errors.Is(err, api.ErrLocalOwnedByBun) { // bun 模式：检查点归 Bun，Bun 还没做；不退回 Go 去写
-		return bunNotYet(err, "用检查点（Bun 后台还没有检查点），请改回 backend.local: go")
-	}
 	code := ctlproto.CodeFailed
 	if errors.Is(err, api.ErrLocalChatUnsupported) {
 		code = ctlproto.CodeReadOnly

@@ -91,9 +91,6 @@ func clipRunes(s string, n int) string {
 
 // SelftestChat 往角色的自检话题发一句话，等这一轮结束（或停在审批上、到时限）
 func (r *DesktopReader) SelftestChat(ctx context.Context, req SelftestRequest) (SelftestResult, error) {
-	if err := r.bunOwned(); err != nil {
-		return SelftestResult{}, err
-	}
 	d := r.desk
 	a := d.app
 	if a.opt.Mode == Archive {
@@ -349,13 +346,4 @@ func (a *App) selftestCharacter(character string) (string, error) {
 		return "", ErrSelftestCharacter
 	}
 	return character, nil
-}
-
-// SelftestCharacter 是 selftestCharacter 的对外口子，给 bun 模式下的 sumika-ctl 用：自检话题由 Bun 建，Bun 不知道主窗口选了谁，
-// 空的角色由 Go 先换成具体的 id（只读角色目录，不碰任何库，不受 bunOwned 管）。
-func (r *DesktopReader) SelftestCharacter(character string) (string, error) {
-	if r == nil || r.desk == nil || r.desk.app == nil {
-		return "", errors.New("后台还没就绪")
-	}
-	return r.desk.app.selftestCharacter(character)
 }

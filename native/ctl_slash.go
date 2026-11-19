@@ -21,13 +21,10 @@ func (b *ctlBackend) Slash(ctx context.Context, req ctlserver.SlashRequest) (ctl
 	if err != nil {
 		return ctlproto.SlashResult{}, err
 	}
-	if link, archive, on := b.bunMode(); on { // 本地私聊交给了 Bun：同 chat，绝不调 Go 的 SlashCommand
-		return b.slashViaBun(ctx, r, link, archive, req)
-	}
 	return slashReply(r.SlashCommand(ctx, backend.SlashCommandRequest{Command: req.Command, Sub: req.Sub, Character: req.Character, Text: req.Text, ID: req.ID, Loop: req.Loop}))
 }
 
-// slashReply 把后台的命令结果翻成协议的结果（go 模式和 bun 模式共用这一份）
+// slashReply 把后台的命令结果翻成协议的结果
 func slashReply(res backend.SlashCommandResult, err error) (ctlproto.SlashResult, error) {
 	switch {
 	case errors.Is(err, api.ErrLocalChatUnsupported):

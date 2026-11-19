@@ -11,7 +11,6 @@ import (
 	backend "sumika-native/internal/app"
 	"sumika-native/internal/ctlproto"
 	"sumika-native/internal/ctlserver"
-	"sumika-native/internal/rpcwire"
 	"sumika-native/internal/store"
 	"sumika-native/internal/whisper"
 	"sumika-native/internal/whisperlog"
@@ -25,9 +24,6 @@ func (b *ctlBackend) WhisperCreate(ctx context.Context, req ctlserver.WhisperCre
 	if err != nil {
 		return ctlproto.WhisperResult{}, err
 	}
-	if link, archive, on := b.bunMode(); on { // 本地私聊交给了 Bun：绝不调 Go 的 SelftestWhisper
-		return b.whisperCreateViaBun(ctx, link, archive, req)
-	}
 	out, err := r.SelftestWhisper(ctx, backend.SelftestWhisperRequest{Characters: req.Characters, SourceText: req.SourceText, QuoteName: req.QuoteName, Say: req.Say, Timeout: req.Timeout})
 	return whisperReply(out, err, true)
 }
@@ -37,9 +33,6 @@ func (b *ctlBackend) WhisperStatus(ctx context.Context, batch string) (ctlproto.
 	if err != nil {
 		return ctlproto.WhisperResult{}, err
 	}
-	if link, archive, on := b.bunMode(); on { // 批在 Bun 里，Go 这边的 a.whisper 没装
-		return b.whisperBatchViaBun(ctx, link, archive, rpcwire.MethodSelftestWhisperStatus, batch)
-	}
 	out, err := r.WhisperStatus(ctx, batch)
 	return whisperReply(out, err, false)
 }
@@ -48,9 +41,6 @@ func (b *ctlBackend) WhisperCancel(ctx context.Context, batch string) (ctlproto.
 	r, err := b.checkpointReader()
 	if err != nil {
 		return ctlproto.WhisperResult{}, err
-	}
-	if link, archive, on := b.bunMode(); on {
-		return b.whisperBatchViaBun(ctx, link, archive, rpcwire.MethodSelftestWhisperCancel, batch)
 	}
 	out, err := r.WhisperCancel(ctx, batch)
 	return whisperReply(out, err, false)
@@ -117,8 +107,6 @@ func logErr(err error) error {
 	switch {
 	case err == nil:
 		return nil
-	case errors.Is(err, api.ErrLocalOwnedByBun):
-		return bunNotYet(err, "看悄悄话的对话日志，请在界面里看")
 	case errors.Is(err, api.ErrLocalChatUnsupported):
 		return ctlproto.Errorf(ctlproto.CodeReadOnly, "只看历史模式没有对话日志，请先开始接收")
 	case errors.Is(err, backend.ErrWhisperBatch):

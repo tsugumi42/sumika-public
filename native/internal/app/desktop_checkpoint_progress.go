@@ -22,9 +22,6 @@ func (r *DesktopReader) ReadCheckpointProgress(ctx context.Context, key api.Conv
 }
 
 func (r *DesktopReader) CancelCheckpointRestore(ctx context.Context, key api.ConversationKey, id string) (api.CheckpointProgress, error) {
-	if err := r.bunOwned(); err != nil {
-		return api.CheckpointProgress{}, err
-	}
 	ctx, owner, done, err := r.enterCheckpoints(ctx, key)
 	if err != nil {
 		return api.CheckpointProgress{}, err

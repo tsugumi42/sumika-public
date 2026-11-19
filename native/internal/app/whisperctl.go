@@ -39,9 +39,6 @@ type WhisperOutcome struct {
 
 // SelftestWhisper 发一条自检悄悄话并等到结局或时限。
 func (r *DesktopReader) SelftestWhisper(ctx context.Context, req SelftestWhisperRequest) (WhisperOutcome, error) {
-	if err := r.bunOwned(); err != nil {
-		return WhisperOutcome{}, err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return WhisperOutcome{}, err
@@ -108,9 +105,6 @@ func (r *DesktopReader) WhisperStatus(ctx context.Context, batch string) (Whispe
 
 // WhisperCancel 取消一批：排队中的移除，处理中的取消那一轮；已经结束的不动。返回取消后的状态。
 func (r *DesktopReader) WhisperCancel(ctx context.Context, batch string) (WhisperOutcome, error) {
-	if err := r.bunOwned(); err != nil {
-		return WhisperOutcome{}, err
-	}
 	a := r.desk.app
 	if a.whisper == nil {
 		return WhisperOutcome{}, api.ErrLocalChatUnsupported

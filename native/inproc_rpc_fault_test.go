@@ -25,7 +25,7 @@ func TestBridgeKernelFaultReachesComposerLine(t *testing.T) {
 		t.Fatalf("Open：%v", err)
 	}
 	d := a.Desktop()
-	b, err := newRPCBridge(context.Background(), &d.Reader, nil, nil)
+	b, err := newRPCBridge(context.Background(), &d.Reader, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

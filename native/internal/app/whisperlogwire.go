@@ -170,9 +170,6 @@ func (r *DesktopReader) WatchWhisperLog(ctx context.Context, k api.ConversationK
 }
 
 func (r *DesktopReader) CancelWhisper(ctx context.Context, k api.ConversationKey, batch, character string) (int, error) {
-	if err := r.bunOwned(); err != nil {
-		return 0, err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return 0, err

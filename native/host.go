@@ -12,9 +12,6 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"strings"
 	"sumika-native/internal/applog"
 	"sync"
@@ -52,11 +49,9 @@ type hostState struct {
 	// 0 个启动时直接开本地可用，多个照旧停在只看历史等 -account（规格-不带QQ也能用 设计第 3 条）。
 	Accounts int
 
-	// 本地私聊交给 Bun 时（backend.local 是 bun，规格-本地私聊切到Bun）：Bun 子进程现在连着没有、给人看的一行说明。
-	// 连着时 archive 阶段也能发本地消息（本地私聊归 Bun，不归 Go 的 receive）；不在时发送被拦下并显示这一行
-	LocalByBun bool
-	LocalOK    bool
-	LocalLine  string
+	// ConfigNotes 是配置里还写着、但已经删掉的键的说明，每个键一行（config.Config.RemovedNotes）。
+	// 后台状态页“配置里的旧项”照这个写；解除办法就写在行里：把那个键从 sumika.yml 里删掉。
+	ConfigNotes []string
 
 	// 模型目录取不到时的原因和来源地址（规格-模型配置 6.1 第 7 条）：目录是好的时 CatalogError 空。
 	// 由 watchCatalog 从后台的当前目录带过来，界面在聊天框上方写“模型来源连不上”那一行。
@@ -71,18 +66,8 @@ type hostState struct {
 	Env envcheck.Snapshot
 }
 
-// localSendOff 说现在为什么不能发本地消息；空串就是可以。
-// go 模式：只看历史（archive）阶段不能发；bun 模式：看 Bun 子进程在不在，和 Go 是不是 archive 无关
+// localSendOff 说现在为什么不能发本地消息；空串就是可以：只看历史（archive）阶段不能发
 func (s hostState) localSendOff() string {
-	if s.LocalByBun {
-		if s.LocalOK {
-			return ""
-		}
-		if s.LocalLine == "" {
-			return "本地私聊的后台不在"
-		}
-		return s.LocalLine
-	}
 	if s.Mode == backend.Archive {
 		return "请先启动后台，再发送本地消息"
 	}
@@ -118,27 +103,15 @@ type host struct {
 	runCh            chan error
 	state            hostState    // 只在 op 下写（set）；别的线程读用 current()
 	stateMu          sync.RWMutex // 只保护 state：open 进行时 op 被占着，读状态的人（托盘之外的控制接口）不能被它卡住
-	pubMu            sync.Mutex   // 更新 state 并 publish 作一步：set（op 里）和 Bun 状态变化（监护的协程里）都发布，顺序不能颠倒
+	pubMu            sync.Mutex   // 更新 state 并 publish 作一步：set（op 里）和 setCatalog（目录监视的协程里）都发布，顺序不能颠倒
 	storeUnavailable []string     // 当前后台记下的不可用平台（open 成功时更新）；和 state 一起发布
 	envSnap          hostEnvState // 环境自检快照：基础部分 + 运行部分（hostenval.go）
 	// onEnv 只给外壳：快照重算后直接交给界面线程（改 a.host.Env 并重画），不走 publish——
 	// 阶段发布有先后次序（退出流程的测试钉住了），环境重算不另加一次阶段发布。nil 表示没人接。
 	onEnv func(envcheck.Snapshot)
 
-	// 本地私聊交给 Bun（bunchild.go，临时：Electrobun 接管进程后去掉）：start 时读配置，bun 模式就拉起子进程；
-	// 连接属于宿主，archive ↔ receive 切换重建桥时不跟着重来
-	localByBun bool
-	// localOwner 是 start 里读一次配置做的决定（go / bun）：之后每次 open 都把它交给后台（Options.LocalOwner），后台不再自己读 backend.local。
-	// 空 = 还没做过决定（直接调 open 的测试），后台照配置
-	localOwner string
-	bunLink    *bunLink
-	bunSup     *bunSupervisor
-	localOK    bool   // 受 stateMu 保护
-	localLine  string // 同上
-	// 测试替换：找 bun 和 server/、起子进程、调监护的时限
-	resolveBun func(cfg config.Backend, root, dataDir string) (bunSpec, error)
-	bunSpawn   func(bunSpec, func(string, ...any)) (bunProc, error)
-	bunTune    func(*bunSupervisor)
+	// configNotes 是 start 读配置时记下的已删键说明（给状态页），受 stateMu 保护
+	configNotes []string
 }
 
 // current 是最近一次 set 的状态，任何线程都能调，不等 op 锁
@@ -160,6 +133,7 @@ type receiveChoice struct {
 	account string
 	count   int // 配置里的 QQ 小号数；-1 = 配置没读到
 	reason  string
+	notes   []string // 配置里已删键的说明（config.Config.RemovedNotes），读到配置才有
 }
 
 // chooseReceiveAccount 只认显式给的 -account，或配置里恰好只有一个小号；不自动挑第一个（规格 1.2）。
@@ -174,24 +148,25 @@ func chooseReceiveAccount(opt backend.Options) receiveChoice {
 		return receiveChoice{count: -1, reason: "读不到配置：" + err.Error()}
 	}
 	count := len(cfg.QQ.Accounts)
+	notes := cfg.RemovedNotes
 	if opt.Account != "" {
 		for _, a := range cfg.QQ.Accounts {
 			if string(a.ID) == opt.Account {
-				return receiveChoice{account: opt.Account, count: count}
+				return receiveChoice{account: opt.Account, count: count, notes: notes}
 			}
 		}
 		if count == 0 {
-			return receiveChoice{count: 0, reason: "配置里没有 QQ 小号，现在只开了本地"}
+			return receiveChoice{count: 0, reason: "配置里没有 QQ 小号，现在只开了本地", notes: notes}
 		}
-		return receiveChoice{count: count, reason: fmt.Sprintf("配置里没有 %s 这个小号", config.MaskID(opt.Account))}
+		return receiveChoice{count: count, reason: fmt.Sprintf("配置里没有 %s 这个小号", config.MaskID(opt.Account)), notes: notes}
 	}
 	switch count {
 	case 0:
-		return receiveChoice{count: 0, reason: "配置里没有 QQ 小号，现在只开了本地"}
+		return receiveChoice{count: 0, reason: "配置里没有 QQ 小号，现在只开了本地", notes: notes}
 	case 1:
-		return receiveChoice{account: string(cfg.QQ.Accounts[0].ID), count: 1}
+		return receiveChoice{account: string(cfg.QQ.Accounts[0].ID), count: 1, notes: notes}
 	}
-	return receiveChoice{count: count, reason: fmt.Sprintf("配置里有 %d 个小号，要用 -account 指定一个", count)}
+	return receiveChoice{count: count, reason: fmt.Sprintf("配置里有 %d 个小号，要用 -account 指定一个", count), notes: notes}
 }
 
 // pickReceiveAccount 是 chooseReceiveAccount 的两值形式（测试和旧调用沿用）
@@ -227,7 +202,7 @@ func (h *host) set(s hostState) {
 	}
 	h.pubMu.Lock()
 	h.stateMu.Lock()
-	s.LocalByBun, s.LocalOK, s.LocalLine = h.localByBun, h.localOK, h.localLine
+	s.ConfigNotes = h.configNotes
 	s.CatalogSource, s.CatalogError = h.state.CatalogSource, h.state.CatalogError // 目录状态由 watchCatalog 单独更新，每次阶段变化不要清零
 	s.StoreUnavailable = append([]string(nil), h.storeUnavailable...)
 	s.Env = h.state.Env // 上一次的快照先顶上；下面算完再发一次
@@ -306,7 +281,6 @@ func (h *host) open(mode backend.Mode, localOnly bool) error {
 	opt := h.opt
 	h.redactor.Refresh(opt)
 	opt.Mode = mode
-	opt.LocalOwner = h.localOwner
 	opt.EnvChanged = h.envChanged
 	opt.LocalOnly = mode == backend.Receive && localOnly
 	if mode == backend.Receive && !localOnly {
@@ -327,15 +301,9 @@ func (h *host) open(mode backend.Mode, localOnly bool) error {
 	h.storeUnavailable = a.StoreUnavailableLines()
 	h.state.CatalogSource, h.state.CatalogError = "", ""
 	h.stateMu.Unlock()
-	if h.inprocRPC || h.localByBun { // bun 模式必须经桥：写本地的方法靠它分给 Bun，直接用后台对象就绕过了分流
-		b, err := newRPCBridge(h.ctx, &h.desk.Reader, nil, h.bunLink)
+	if h.inprocRPC {
+		b, err := newRPCBridge(h.ctx, &h.desk.Reader, nil)
 		if err != nil {
-			if h.localByBun {
-				h.desk.Close()
-				_ = a.Close()
-				h.cur, h.desk = nil, nil
-				return fmt.Errorf("进程内协议没建成，本地私聊没法分给 Bun：%w", err)
-			}
 			// 管道握手不会失败；真失败了退回直接调，不让界面没有数据源
 			h.logf("进程内协议没建成，界面直接用后台：%v", err)
 		} else {
@@ -358,7 +326,6 @@ func (h *host) open(mode backend.Mode, localOnly bool) error {
 		go h.watchCatalog(runCtx, a)
 		go h.watchRun(a, h.runCh)
 	}
-	h.bunUp() // 数据锁拿到、后台开成功了才拉 Bun（第一次是启动，blocked 恢复后是重新拉起）
 	return nil
 }
 
@@ -450,12 +417,14 @@ func (h *host) start() {
 	defer h.op.Unlock()
 	h.redactor.Refresh(h.opt)
 	h.set(hostState{Phase: phaseStarting})
-	if err := h.prepareBun(); err != nil { // 找不到 bun 或 server/：进 blocked 写明原因，不退回 Go 去管本地私聊
-		h.block("后台没在运行：本地私聊交给了 Bun（sumika.yml 的 backend.local），但" + err.Error())
-		return
-	}
 	choice := chooseReceiveAccount(h.opt) // 读配置在后台线程（规格第八节：ready 里不读文件）
 	h.account, h.noRecv, h.qqCount = choice.account, choice.reason, choice.count
+	h.stateMu.Lock()
+	h.configNotes = choice.notes
+	h.stateMu.Unlock()
+	for _, note := range choice.notes { // 已删键只提示不失败：写进日志，状态页“配置里的旧项”也列出来
+		h.logf("配置提示：%s", note)
+	}
 	if h.account != "" {
 		h.logf("托盘可以开始接收的小号 %s", config.MaskID(h.account))
 	} else {
@@ -656,118 +625,12 @@ func (h *host) shutdown() error {
 	defer h.op.Unlock()
 	h.set(hostState{Phase: phaseStopping, Reason: "正在退出"})
 	err := h.closeCurrent()
-	if h.bunSup != nil { // 桥已经断了，再收 Bun 子进程（它在 sumika.exe 之外活不下去：作业对象也兜着）
-		h.bunSup.stop()
-	}
 	h.set(hostState{Phase: phaseStopped})
 	return err
 }
 
-// prepareBun：backend.local 是 bun 时找到 bun 和 server/、建好子进程的监护（bunchild.go），但**不起**子进程：
-// 子进程要等 Go 的后台 Open 成功（数据锁拿到了）再起（bunUp），不然 Open 失败、宿主进 blocked 时 Bun 已经在写本地，成了没有宿主的写者。
-// 不是 bun 或读不了配置（后面的 Open 会报同样的错）什么都不做；找不到 bun / server/ 回错，调用方进 blocked
-func (h *host) prepareBun() error {
-	h.localOwner = config.LocalByGo // 读不到配置也是这一个决定：之后后台读到的要是 bun，照这个走并记日志，不会出现“宿主以为 go、后台按 bun 跑”
-	location, err := backend.ResourceRoot(h.opt.Root)
-	if err != nil {
-		return nil
-	}
-	cfg, err := config.LoadIn(location.Dir, h.opt.DataDir)
-	if err != nil || !cfg.Backend.LocalOwnedByBun() {
-		return nil
-	}
-	h.localOwner = config.LocalByBun
-	dataDir := h.opt.DataDir
-	if dataDir == "" {
-		dataDir = cfg.DataDirIn(location.Dir)
-	}
-	resolve := h.resolveBun
-	if resolve == nil {
-		resolve = defaultResolveBun(cfg.Tools.Workdir)
-	}
-	spec, err := resolve(cfg.Backend, location.Dir, dataDir)
-	if err != nil {
-		return err
-	}
-	h.stateMu.Lock()
-	h.localByBun, h.localOK, h.localLine = true, false, "正在启动 Bun 后台……"
-	h.stateMu.Unlock()
-	h.bunLink = newBunLink("Bun 后台还没连上")
-	sup := newBunSupervisor(spec, h.bunLink, h.logf, h.onBunStatus)
-	if h.bunSpawn != nil {
-		sup.spawn = h.bunSpawn
-	}
-	if h.bunTune != nil {
-		h.bunTune(sup)
-	}
-	h.bunSup = sup
-	return nil
-}
-
-// bunUp：Go 的后台开成功了，拉起（或重新拉起）Bun 的监护。已经在跑、不是 bun 模式、正在退出都什么都不做
-func (h *host) bunUp() {
-	if h.bunSup == nil || h.ctx.Err() != nil {
-		return
-	}
-	h.bunSup.start()
-}
-
-// bunDown：宿主进了 blocked（数据锁拿不到、后台开不起来）就把 Bun 收掉，不留没有宿主的写者；
-// 之后后台又开成功了（bunUp）再拉起来。why 写进状态行
-func (h *host) bunDown(why string) {
-	if h.bunSup == nil {
-		return
-	}
-	if h.bunSup.running() {
-		h.bunSup.stop()
-		h.logf("本地私聊的后台：已收掉（%s）", why)
-	}
-	h.stateMu.Lock()
-	h.localOK, h.localLine = false, "本地私聊的后台已停："+why
-	h.stateMu.Unlock()
-}
-
-// block 进 blocked：清掉“只开本地”的标记（后台已经不在了，下一次切换不能凭旧标记回本地），先收掉 Bun 再发布状态
+// block 进 blocked：清掉“只开本地”的标记（后台已经不在了，下一次切换不能凭旧标记回本地）再发布状态
 func (h *host) block(reason string) {
 	h.localOnly = false
-	h.bunDown("后台没在运行")
 	h.set(hostState{Phase: phaseBlocked, Reason: reason})
-}
-
-// defaultResolveBun 是真的找法：bun 可执行文件和 server/ 目录（bunchild.go）。workdir 是 tools.workdir，非空就传给 Bun 当没绑目录的会话的工作目录
-func defaultResolveBun(workdir string) func(config.Backend, string, string) (bunSpec, error) {
-	return func(cfg config.Backend, root, dataDir string) (bunSpec, error) {
-		isFile := func(p string) bool { st, err := os.Stat(p); return err == nil && !st.IsDir() }
-		home, _ := os.UserHomeDir()
-		exe, err := resolveBunExe(cfg, exec.LookPath, home, isFile)
-		if err != nil {
-			return bunSpec{}, err
-		}
-		dir, err := resolveServerDir(cfg, root, isFile)
-		if err != nil {
-			return bunSpec{}, err
-		}
-		// -root：资源根交给 Bun，配置文件的回退位置（<资源根>/sumika.yml）和出厂提示词两边才是同一处
-		args := []string{filepath.Join(dir, "src", "main.ts"), "-data", dataDir, "-root", root}
-		if workdir != "" {
-			args = append(args, "-workdir", workdir)
-		}
-		return bunSpec{Exe: exe, Args: args, Dir: dir, DataDir: dataDir}, nil
-	}
-}
-
-// onBunStatus：监护报告 Bun 连上了或不在了。更新状态行并立刻发布（宿主阶段不变，界面拿到的 Reader 也是同一个，不会换数据源）
-func (h *host) onBunStatus(ok bool, line string) {
-	h.logf("本地私聊的后台：%s", line)
-	h.pubMu.Lock()
-	defer h.pubMu.Unlock()
-	h.stateMu.Lock()
-	h.localOK, h.localLine = ok, h.redactor.Redact(line)
-	s := h.state
-	s.LocalByBun, s.LocalOK, s.LocalLine = true, ok, h.localLine
-	h.state = s
-	h.stateMu.Unlock()
-	if s.Phase != "" { // 宿主还没报过第一个状态（starting）之前不发
-		h.publish(s)
-	}
 }

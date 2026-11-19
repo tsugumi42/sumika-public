@@ -222,9 +222,11 @@ type Config struct {
 	Ecosystem `yaml:",inline"`
 	// Present 只记录显式配置的键，不保存原始 YAML 或秘密值。
 	Present map[string]bool `yaml:"-"`
-	// RemovedKeys 是配置里还写着、但已经删掉的键（现在只有 embed.python、embed.serverDir）。读配置不因此失败，
-	// 启动时由宿主各警告一次（规格-嵌入不依赖外部程序 第 2 条）；未知键照旧静默忽略
-	RemovedKeys []string `yaml:"-"`
+	// RemovedKeys 是配置里还写着、但已经删掉的键（清单见 removed.go）。读配置不因此失败，不起作用；
+	// RemovedNotes 是对应的说明，一个键一行，写明现在怎么处理、怎么解除（删掉那个键）。
+	// 启动时宿主把说明写进日志，后台状态页“配置里的旧项”也列出来；未知键照旧静默忽略
+	RemovedKeys  []string `yaml:"-"`
+	RemovedNotes []string `yaml:"-"`
 	// Notices 是读配置时要告诉用户的提示（不影响加载）：现在只有 providers.magpie 和 magpie.baseUrl 并存
 	Notices []string `yaml:"-"`
 	Source  string   `yaml:"-"`
@@ -355,8 +357,6 @@ type Config struct {
 	FreeAPI FreeAPI `yaml:"freeApi"`
 	// 提醒（规格-提醒）：她自己建、到点找主人；发 QQ 默认关
 	Reminders Reminders `yaml:"reminders"`
-	// Backend：本地私聊由 Go 还是 Bun 管（规格-本地私聊切到Bun）；默认 go
-	Backend Backend `yaml:"backend"`
 	// Notifications 是桌面系统通知按类的开关，默认全开
 	Notifications Notifications `yaml:"notifications"`
 	// Calendar 是日历工具的设置
@@ -446,7 +446,6 @@ func Defaults() Config {
 	c.ModelMeta = DefaultModelMeta()
 	c.Proactive = DefaultProactive()
 	c.Reminders = DefaultReminders()
-	c.Backend = DefaultBackend()
 	c.Notifications = DefaultNotifications()
 	c.Calendar.HolidayURL = DefaultHolidayURL
 	c.FreeAPI = DefaultFreeAPI()
@@ -587,12 +586,7 @@ func Parse(b []byte, file string) (Config, error) {
 	if explicitNull(raw, "memory", "write", "summarize") {
 		c.Memory.Write.Summarize = []string{}
 	}
-	// 删掉的嵌入键：读得进来、不用；宿主启动时警告一次，别让主人以为还在用
-	for _, k := range []string{"embed.python", "embed.serverDir"} {
-		if c.Present[k] {
-			c.RemovedKeys = append(c.RemovedKeys, k)
-		}
-	}
+	c.RemovedKeys, c.RemovedNotes = removedKeysIn(raw, c.Present)
 	c.Source = file
 	c.Version = ContentVersion(original) // 版本认磁盘上的原文，不认换过写法的
 	if c.Characters == nil {
@@ -701,7 +695,6 @@ func (c Config) check(raw map[string]any) error {
 	bad = append(bad, c.ModelMeta.check()...)
 	bad = append(bad, c.Proactive.check()...)
 	bad = append(bad, c.Reminders.check()...)
-	bad = append(bad, c.Backend.check()...)
 	bad = append(bad, c.checkLife()...)
 	bad = append(bad, c.FreeAPI.check()...)
 	bad = append(bad, c.Hooks.check()...)

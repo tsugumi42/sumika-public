@@ -285,19 +285,20 @@ func TestGuardEmbeddingUnavailable(t *testing.T) {
 	}
 }
 
-// 配置里还写着旧的 embed.python / embed.serverDir：读配置不失败，启动时只警告一次，两个键都点名
-func TestWarnRemovedEmbedKeys(t *testing.T) {
+// 配置里还写着已删的键：读配置不失败，启动时每个键各记一行说明
+func TestWarnRemovedConfigKeys(t *testing.T) {
 	t.Parallel()
 	var logs []string
 	a := &App{logf: func(format string, args ...any) { logs = append(logs, fmt.Sprintf(format, args...)) }}
-	a.cfg.RemovedKeys = []string{"embed.python", "embed.serverDir"}
+	a.cfg.RemovedNotes = []string{"embed.python 已删除：说明甲", "backend.local 写着 bun：说明乙"}
 	a.warnRemovedConfigKeys()
-	if len(logs) != 1 || !strings.Contains(logs[0], "embed.python") || !strings.Contains(logs[0], "embed.serverDir") {
-		t.Fatalf("两个旧键要在同一行里点名、只一行：%q", logs)
+	if len(logs) != 2 || !strings.Contains(logs[0], "embed.python") || !strings.Contains(logs[1], "backend.local") {
+		t.Fatalf("每个旧键各一行、点名：%q", logs)
 	}
-	a.cfg.RemovedKeys = nil
+	logs = nil
+	a.cfg.RemovedNotes = nil
 	a.warnRemovedConfigKeys()
-	if len(logs) != 1 {
+	if len(logs) != 0 {
 		t.Fatalf("没有旧键不该写日志：%q", logs)
 	}
 }

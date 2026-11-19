@@ -32,9 +32,6 @@ func (r *DesktopReader) ConversationApprovalMode(ctx context.Context, k api.Conv
 // SetConversationApprovalMode 只改这个本地私聊会话的审批档，下一次判定就用新的，不写配置文件、不用重启。
 // 身份不变：非主人发起的、群里的、QQ 的调用一律不吃自动放行（Decide 的 NotOwner 在模式之前）。
 func (r *DesktopReader) SetConversationApprovalMode(ctx context.Context, k api.ConversationKey, mode string) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	if mode != "" && !approval.ValidMode(mode) {
 		return fmt.Errorf("不认识的审批方式：%q", mode)
 	}

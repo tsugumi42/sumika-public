@@ -17,9 +17,6 @@ var pngSignature = []byte("\x89PNG\r\n\x1a\n")
 // SaveLocalImage 把主人粘贴进输入框的图存进媒体库（local 平台，内容寻址），返回可放进 LocalPart 的附件。
 // 新图还没有事件，拿不到 Media 凭据（凭据要对上会话里已有的事件），所以给的是 Path；会话所有权照发送一样校验。
 func (r *DesktopReader) SaveLocalImage(ctx context.Context, k api.ConversationKey, png []byte) (api.LocalAttachment, error) {
-	if err := r.bunOwned(); err != nil {
-		return api.LocalAttachment{}, err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return api.LocalAttachment{}, err

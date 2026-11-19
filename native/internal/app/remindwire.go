@@ -649,9 +649,6 @@ func (r *DesktopReader) ReminderOptions() api.ReminderOptions {
 }
 
 func (r *DesktopReader) CreateReminder(ctx context.Context, k api.ConversationKey, d api.ReminderDraft) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	a, actor, done, err := r.reminderEntry(ctx, k)
 	if err != nil {
 		return err
@@ -666,9 +663,6 @@ func (r *DesktopReader) CreateReminder(ctx context.Context, k api.ConversationKe
 }
 
 func (r *DesktopReader) UpdateReminder(ctx context.Context, k api.ConversationKey, id int, p api.ReminderPatch) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	a, actor, done, err := r.reminderEntry(ctx, k)
 	if err != nil {
 		return err
@@ -691,9 +685,6 @@ func (r *DesktopReader) UpdateReminder(ctx context.Context, k api.ConversationKe
 }
 
 func (r *DesktopReader) FinishReminder(ctx context.Context, k api.ConversationKey, id int, finished bool) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	a, actor, done, err := r.reminderEntry(ctx, k)
 	if err != nil {
 		return err
@@ -704,9 +695,6 @@ func (r *DesktopReader) FinishReminder(ctx context.Context, k api.ConversationKe
 }
 
 func (r *DesktopReader) DeleteReminder(ctx context.Context, k api.ConversationKey, id int) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	a, actor, done, err := r.reminderEntry(ctx, k)
 	if err != nil {
 		return err

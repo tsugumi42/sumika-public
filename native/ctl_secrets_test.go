@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -51,4 +52,14 @@ func TestCtlSecretsBackendDemoAndNoBackend(t *testing.T) {
 	if ce := ctlErr(t, err); ce.Code != ctlproto.CodeFailed || !strings.Contains(ce.Msg, "读不了密钥库") {
 		t.Fatalf("后台还没开好应回失败并说清：%+v", ce)
 	}
+}
+
+// ctlErr 把错误还原成控制接口的错，不是就当场失败
+func ctlErr(t *testing.T, err error) *ctlproto.Error {
+	t.Helper()
+	var ce *ctlproto.Error
+	if !errors.As(err, &ce) {
+		t.Fatalf("该是控制接口的错：%T %v", err, err)
+	}
+	return ce
 }

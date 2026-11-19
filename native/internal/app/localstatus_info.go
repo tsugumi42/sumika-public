@@ -85,9 +85,6 @@ func sameSchedule(a, b loop.Schedule) bool {
 
 // AddLoop 是定期任务页的“新建”：和 /loop 同一个 Scheduler.Add，会话里留一行系统行。
 func (r *DesktopReader) AddLoop(ctx context.Context, k api.ConversationKey, sp api.LoopSpec) (int, error) {
-	if err := r.bunOwned(); err != nil {
-		return 0, err
-	}
 	sc, err := loopSchedule(sp)
 	if err != nil {
 		return 0, err
@@ -109,9 +106,6 @@ func (r *DesktopReader) AddLoop(ctx context.Context, k api.ConversationKey, sp a
 // EditLoop 是“保存修改”：整张表单的值一次交进来。日程没变就不动下次时间，只改说明、通知、聊天方式；
 // 暂停的仍是暂停（Scheduler.Edit 不碰状态）。
 func (r *DesktopReader) EditLoop(ctx context.Context, k api.ConversationKey, id int, sp api.LoopSpec) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	if id <= 0 {
 		return errors.New("要指定定期任务的编号")
 	}
@@ -163,24 +157,15 @@ func (r *DesktopReader) loopEntry(ctx context.Context, k api.ConversationKey) (*
 }
 
 func (r *DesktopReader) PauseLoop(ctx context.Context, k api.ConversationKey, id int) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	return r.loopCommand(ctx, k, id, loop.CmdPause)
 }
 
 func (r *DesktopReader) ResumeLoop(ctx context.Context, k api.ConversationKey, id int) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	return r.loopCommand(ctx, k, id, loop.CmdResume)
 }
 
 // RemoveLoop 是“删除”：调度器没有真删，就是停止（和 /loop stop 同一条），停了的任务不再出现在列表里。
 func (r *DesktopReader) RemoveLoop(ctx context.Context, k api.ConversationKey, id int) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	return r.loopCommand(ctx, k, id, loop.CmdStop)
 }
 

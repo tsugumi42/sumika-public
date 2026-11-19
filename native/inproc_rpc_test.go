@@ -213,7 +213,7 @@ func (e *bridgeEnv) open(t *testing.T, wrap func(rpcclient.Transport) rpcclient.
 		t.Fatalf("Open：%v", err)
 	}
 	d := a.Desktop()
-	b, err := newRPCBridge(context.Background(), &d.Reader, wrap, nil)
+	b, err := newRPCBridge(context.Background(), &d.Reader, wrap)
 	if err != nil {
 		t.Fatal(err)
 	}

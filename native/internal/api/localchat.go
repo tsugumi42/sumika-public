@@ -12,14 +12,6 @@ var (
 	ErrQuestionGone         = errors.New("这个问题已经结束了，或者不属于这个会话")
 )
 
-// 本地私聊交给 Bun 以后（配置 backend.local 是 bun，规格-本地私聊切到Bun）的两种拒绝：
-//   - ErrLocalOwnedByBun：Go 后台这边的本地写方法一律拒绝，写由 Bun 管；
-//   - ErrLocalBackendDown：该走 Bun 的方法，但 Bun 后台现在不在（没起来、崩了、连不上），不会退回 Go 去写。
-var (
-	ErrLocalOwnedByBun  = errors.New("本地私聊现在由 Bun 管，这里不能改")
-	ErrLocalBackendDown = errors.New("本地私聊的后台不在")
-)
-
 // LocalDraft 是一条发送请求当前步骤的完整草稿；Text 为空表示该步骤已落库。
 // 回调只在该请求内有序，不依赖聊天库的失效通知。
 type LocalDraft struct {

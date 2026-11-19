@@ -65,9 +65,6 @@ func (a *App) openWhispers() {
 // SendWhisper 把几块引用卡作为悄悄话交给被指的角色。候选角色按来源会话取：本地群是群成员，QQ 群是观察这个群的角色，
 // QQ 私聊是这个号绑定的角色；本地私聊不是悄悄话。引用的消息必须在这个会话里、对应角色看得到；任何一块不合格整条拒绝。
 func (r *DesktopReader) SendWhisper(ctx context.Context, k api.ConversationKey, in []api.LocalPart) (api.WhisperReceipt, error) {
-	if err := r.bunOwned(); err != nil {
-		return api.WhisperReceipt{}, err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return api.WhisperReceipt{}, err

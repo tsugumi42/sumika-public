@@ -51,10 +51,14 @@ func (a *app) statusBody(c *ui.Context) {
 			if rt.Connection != "" {
 				row(c, "QQ 连接", rt.Connection, func() {})
 			}
-			if h.LocalByBun { // 本地私聊交给了 Bun 子进程（backend.local: bun）：它在不在、为什么不在
-				row(c, "本地私聊", h.LocalLine, func() {})
-			}
 		})
+		if len(h.ConfigNotes) > 0 { // 配置里还写着已删掉的键：读得进来、不起作用；每行写了怎么解除（删掉那个键）
+			group(c, "配置里的旧项", "", func() {
+				for _, note := range h.ConfigNotes {
+					row(c, note, "", func() {})
+				}
+			})
+		}
 		if len(h.StoreUnavailable) > 0 {
 			group(c, "平台库没打开", "", func() {
 				for _, line := range h.StoreUnavailable {

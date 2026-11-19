@@ -110,7 +110,7 @@ func (a *app) localComposer(c *ui.Context) {
 		localCaption(c, "这里仅查看记录：QQ 发送需走平台发送规则")
 		return
 	}
-	if off := a.host.localSendOff(); off != "" { // go 模式是只看历史；bun 模式是 Bun 后台不在（hostState.localSendOff）
+	if off := a.host.localSendOff(); off != "" { // 只看历史阶段不能发（hostState.localSendOff）
 		localCaption(c, off)
 		return
 	}

@@ -29,9 +29,6 @@ func (r *DesktopReader) ProactiveStatus(ctx context.Context, character string) (
 }
 
 func (r *DesktopReader) ProactiveSnooze(ctx context.Context, character string) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	h := r.desk.app.pthreads
 	if h == nil || !h.enabledFor(character) {
 		return ErrProactiveOff
@@ -41,9 +38,6 @@ func (r *DesktopReader) ProactiveSnooze(ctx context.Context, character string) e
 }
 
 func (r *DesktopReader) ProactiveCloseThread(ctx context.Context, character string) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	h := r.desk.app.pthreads
 	if h == nil || !h.enabledFor(character) {
 		return ErrProactiveOff

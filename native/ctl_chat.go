@@ -20,13 +20,10 @@ func (b *ctlBackend) Chat(ctx context.Context, req ctlserver.ChatRequest) (ctlpr
 	if err != nil {
 		return ctlproto.ChatResult{}, err
 	}
-	if link, archive, on := b.bunMode(); on { // 本地私聊交给了 Bun：执行体在 Bun，这里只翻译（规格-本地私聊切到Bun 第十一节）；绝不调 Go 的 SelftestChat
-		return b.chatViaBun(ctx, r, link, archive, req)
-	}
 	return chatReply(r.SelftestChat(ctx, backend.SelftestRequest{Character: req.Character, New: req.New, Text: req.Text, Timeout: req.Timeout}))
 }
 
-// chatReply 把后台的自检结果翻成协议的结果（go 模式和 bun 模式共用这一份）
+// chatReply 把后台的自检结果翻成协议的结果
 func chatReply(res backend.SelftestResult, err error) (ctlproto.ChatResult, error) {
 	switch {
 	case errors.Is(err, api.ErrLocalChatUnsupported):

@@ -1,7 +1,7 @@
 // Package datalock 是数据目录的排他锁：Go 后台和只读诊断开库前都先拿 <数据目录>/go/backend.lock；
-// 本地私聊的写权另有一把 go/local.lock（规格-本地私聊切到Bun 第三节）：配置 backend.local 是 go 时 Go 拿，是 bun 时 Bun 拿。
+// 本地私聊的写权另有一把 go/local.lock：Go 后台的 receive 阶段拿（archive 只读，不拿）。
 // 老工具（memory-migrate、reply-backfill 等）用 LockExisting / LockExistingForWrite：除了 backend.lock，也要认 local.lock——
-// Go 不在而 Bun 在写时，只认 backend.lock 的工具会和 Bun 同时写 local.db、memory.db。
+// 只认 backend.lock 的工具会和正在写本地的后台同时写 local.db、memory.db。
 package datalock
 
 import (
@@ -17,10 +17,10 @@ type DataLock struct{ files []*os.File }
 
 var ErrDataInUse = errors.New("数据目录正在被另一个 Sumika 进程使用，请先关掉它")
 
-// ErrLocalInUse：本地私聊的写锁（local.lock）被另一个进程拿着——go 模式下多半是有人手动起了一个 Bun 后台
-var ErrLocalInUse = errors.New("本地私聊的写锁正被另一个进程占用（可能手动起了一个 Bun 后台），请先关掉它")
+// ErrLocalInUse：本地私聊的写锁（local.lock）被另一个进程拿着——多半是另一个在接收的 sumika.exe，或正在写本地的诊断、迁移工具
+var ErrLocalInUse = errors.New("本地私聊的写锁正被另一个进程占用（可能是另一个在接收的 Sumika，或正在写本地的工具），请先关掉它")
 
-// BackendLockName 和 LocalLockName 是 <数据目录>/go/ 下两把锁的文件名；Bun 侧（server/src/store/datalock.ts）按同样的名字拿
+// BackendLockName 和 LocalLockName 是 <数据目录>/go/ 下两把锁的文件名
 const (
 	BackendLockName = "backend.lock"
 	LocalLockName   = "local.lock"

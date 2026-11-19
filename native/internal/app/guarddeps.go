@@ -18,14 +18,12 @@ import (
 	"sumika-native/internal/turn"
 )
 
-// warnRemovedConfigKeys 对配置里还写着的已删键警告一次（规格-嵌入不依赖外部程序 第 2 条）：读配置不失败，但别让主人以为还在用。
-// 现在只有 embed.python、embed.serverDir
+// warnRemovedConfigKeys 对配置里还写着的已删键各警告一次（规格-嵌入不依赖外部程序 第 2 条；清单和说明在 config/removed.go）：
+// 读配置不失败、这些键被忽略，但别让主人以为还在用。
 func (a *App) warnRemovedConfigKeys() {
-	if len(a.cfg.RemovedKeys) == 0 {
-		return
+	for _, note := range a.cfg.RemovedNotes {
+		a.logf("sumika.yml：%s", note)
 	}
-	a.logf("sumika.yml 里的 %s 已删掉（旧版借 MaiBot 嵌入的退路整体移除了），这几项被忽略；嵌入现在只走自带的 sumika-models，模型目录是 embed.modelsRoot（空 = <数据目录>/models）",
-		strings.Join(a.cfg.RemovedKeys, "、"))
 }
 
 // warnConfigNotices 把读配置时留下的提示各记一次（现在只有 providers.magpie 和 magpie.baseUrl 并存）。

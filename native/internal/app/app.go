@@ -152,12 +152,6 @@ type Options struct {
 	ModelRetry turn.RetryPolicy
 	// CatalogRetry 是模型目录取不到时后台重试的节奏（modelcatalog.go）；零值用 30 秒、1 分、2 分、5 分。测试换成自己的等待，不真的等
 	CatalogRetry CatalogRetry
-	// ExternalPollEvery 是 backend.local 为 bun 时查 local.db data_version 的间隔；0 = 一秒（store.ExternalPollInterval）。测试才改
-	ExternalPollEvery time.Duration
-	// LocalOwner 是本地私聊交给谁（"go" 或 "bun"）：桌面宿主启动时读一次配置做的决定，之后每次 Open 都照它走，不再重读 backend.local
-	// （宿主的 Bun 子进程是按那次决定拉起的；中途改了 sumika.yml，两边各读一次会对不上）。
-	// 空 = 这次 Open 照配置文件（命令行后台、测试等一次 Open 就读一次的入口）。和配置文件现在的值不一样时照宿主的，记一行日志，重启 sumika.exe 才生效
-	LocalOwner string
 }
 
 // ChannelSpec 是往装配里多加的一个渠道：渠道名、平台（库文件名）、连的号和绑的角色、适配器、准入和分流。
@@ -275,9 +269,7 @@ type App struct {
 	sendLock     *sendlock.Holder
 	sendResultMu sync.Mutex // 串行不同会话的明确结果，提醒与通道门按同一顺序处理
 	dataLock     *datalock.DataLock
-	localOwner   string             // 本地私聊交给谁（go / bun）：Open 时定下，之后不变（local_owner.go 的 pickLocalOwner）
-	localLock    *datalock.DataLock // go/local.lock：本地私聊的写权。backend.local 是 bun 时不拿（Bun 拿），是 nil
-	stopExt      func()             // 停 local.db 的 data_version 轮询（local_owner.go）
+	localLock    *datalock.DataLock // go/local.lock：本地私聊的写权；archive 不拿，是 nil
 
 	projectTrust    projectcontext.Trust // 项目说明的信任；没开项目说明是 nil（客户端自知要据此核验工作目录）
 	projectTrustDyn *projectTrust        // 同一个对象的具体类型：问一次、记住
@@ -355,11 +347,7 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 	if initialized && opt.Logs != nil {
 		opt.Logs.Logf(applog.App)("新建了数据目录 %s（写了身份证）", p.Root)
 	}
-	owner, err := pickLocalOwner(opt.LocalOwner, cfg.Backend)
-	if err != nil {
-		return nil, err
-	}
-	a := &App{opt: opt, cfg: cfg, root: root, rootLocation: location, paths: p, now: time.Now, imageWait: imageWait, localOwner: owner}
+	a := &App{opt: opt, cfg: cfg, root: root, rootLocation: location, paths: p, now: time.Now, imageWait: imageWait}
 	if opt.Now != nil {
 		a.now = opt.Now
 	}
@@ -371,9 +359,6 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 	a.warnRemovedConfigKeys()
 	a.warnConfigNotices()
 	a.selfcheck.counters = selfcheck.NewCounters() // 先于渠道建好：入库一站、适配器往里数
-	if opt.LocalOwner != "" && opt.LocalOwner != cfg.Backend.Local {
-		a.logf("本地私聊：sumika.yml 的 backend.local 现在是 %s，和启动时的决定（%s）不一样；这次照启动时的走，重启 sumika.exe 才生效", cfg.Backend.Local, opt.LocalOwner)
-	}
 
 	failed := func(err error) (*App, error) {
 		a.cleanup()
@@ -384,9 +369,9 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 	if err != nil {
 		return failed(err)
 	}
-	// 本地私聊的写锁：go 模式、能写的 receive 阶段 Go 拿（防止有人手动起了 Bun 去写本地）；bun 模式 Bun 拿，这里不拿。
+	// 本地私聊的写锁：能写的 receive 阶段拿（别的写本地的程序，如 memory-migrate、reply-backfill，靠它避开正在写的后台）。
 	// archive 只读、不写本地，不拿也不建锁文件（读路径不新建文件的测试守着）；之后切到 receive 时再拿，被占就回 archive 并写明原因
-	if mode == Receive && !a.localByBun() {
+	if mode == Receive {
 		if a.localLock, err = datalock.LockLocal(p.Root); err != nil {
 			return failed(err)
 		}
@@ -409,7 +394,6 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 		if len(a.set.Platforms()) == 0 {
 			return failed(storeUnavailableAllError(a.set))
 		}
-		a.watchExternalLocal()
 		a.openBackup() // archive 也能手动备份；调度只在接收模式里开
 		if err := ctx.Err(); err != nil {
 			return failed(err)
@@ -436,7 +420,7 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 			return failed(err)
 		}
 	}
-	// 1. 路径和库：Go 的库不许落在 Bun 的目录里（两个进程不能写同一个库文件），登记里每个平台的库都查
+	// 1. 路径和库：Go 的库不许落在 SnowLuma 的目录里（两个进程不能写同一个库文件），登记里每个平台的库都查
 	dbFiles := []string{}
 	for _, pl := range reg.Platforms() {
 		dbFiles = append(dbFiles, p.ChatDB(pl.Name))
@@ -446,7 +430,7 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 			return failed(err)
 		}
 	}
-	set, err := store.OpenGoOpts(p, reg, store.OpenOptions{ReadOnly: a.localReadOnlyPlatforms(), Logf: a.logfFor(applog.Store)})
+	set, err := store.OpenGoOpts(p, reg, store.OpenOptions{Logf: a.logfFor(applog.Store)})
 	if err != nil {
 		return failed(fmt.Errorf("打开 Go 的库：%w", err))
 	}
@@ -454,7 +438,6 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 	if len(set.Platforms()) == 0 {
 		return failed(storeUnavailableAllError(set))
 	}
-	a.watchExternalLocal()
 	a.degrade = &taskrun.Degrader{Logf: a.logfFor(applog.Taskrun), Alerts: a.alerts, Sink: &store.TaskSink{S: set.TraceStore()},
 		Redact: func(s string) string { return RedactLog(s, a.tokens) }, Now: a.now}
 	// 运行页用量的汇总表按本地时区对账（偏移没变就什么都不做，第一次或时区变了才从原始行重建）。
@@ -652,11 +635,8 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 	}
 	a.kernel = &trackedKernel{Kernel: a.hub}
 	a.autoCtx, a.autoCancel = context.WithCancel(context.Background())
-	// 本地私聊交给 Bun 时，目标、定期任务、提醒、主动联系、本地群聊、悄悄话都只写本地：一个都不装，Go 就不会到点触发、不会开轮
-	if !a.localByBun() {
-		if err := a.openGoals(); err != nil {
-			return failed(err)
-		}
+	if err := a.openGoals(); err != nil {
+		return failed(err)
 	}
 	if err := a.hub.Use(budgetNoticePlugin{app: a}); err != nil {
 		a.logf("预算提醒插件没启用，别的照常：%v", err)
@@ -665,23 +645,19 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 	if err := a.hub.Use(&assetsvc.Plugin{}); err != nil {
 		a.logf("素材服务没启用，别的照常：%v", err)
 	}
-	if !a.localByBun() {
-		if err := a.openLoops(); err != nil {
-			return failed(err)
-		}
-		a.openProactive()
-		a.openReminders()
+	if err := a.openLoops(); err != nil {
+		return failed(err)
 	}
+	a.openProactive()
+	a.openReminders()
 
 	a.openEmbedding()
 	// 5. 记忆（只读）
 	if err := a.openMemories(ctx); err != nil {
 		return failed(err)
 	}
-	if !a.localByBun() {
-		a.openLocalGroups()
-		a.openWhispers()
-	}
+	a.openLocalGroups()
+	a.openWhispers()
 
 	// 6. 渠道中间件、7. 适配器和接收端、8. 提醒
 	if err := a.openChannel(&responder); err != nil {
@@ -803,7 +779,7 @@ func (a *App) Run(ctx context.Context) error {
 // Close 释放已经打开的后台，没启动过 Run 也能关。调用方必须先停止 Run，
 // 等它退出再调 Close；关机不能和仍在使用资源的调用方并发。
 // RPCGoRunFile 是 Go 的界面协议入口（-rpc-listen）写地址和令牌的文件（规格-Bun后台第1批 第三节）。
-// run/rpc.json 归 Bun，Go 写 run/rpc-go.json（规格-本地私聊切到Bun）
+// Go 写 run/rpc-go.json；run/rpc.json 是 Bun 后台留下的名字，Go 不写它
 func (a *App) RPCGoRunFile() string { return a.paths.RPCGoRunFile() }
 
 func (a *App) Close() error {

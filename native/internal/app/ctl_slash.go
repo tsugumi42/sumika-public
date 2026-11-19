@@ -102,9 +102,6 @@ func checkSlash(req SlashCommandRequest) error {
 // SlashCommand 执行一条 goal、loop 命令，交出命令之后的目标和定期任务现状。
 // 设目标、继续目标、新建定期任务会让她排上一轮（设目标时目标原文当主人这一条消息发给她）；一轮在后台跑，这里不等。
 func (r *DesktopReader) SlashCommand(ctx context.Context, req SlashCommandRequest) (SlashCommandResult, error) {
-	if err := r.bunOwned(); err != nil {
-		return SlashCommandResult{}, err
-	}
 	a := r.desk.app
 	if a.opt.Mode == Archive {
 		return SlashCommandResult{}, api.ErrLocalChatUnsupported

@@ -90,9 +90,6 @@ func checkpointApproval(plan checkpoint.Plan) (string, bool) {
 	return b.String(), false
 }
 func (r *DesktopReader) RestoreCheckpoint(ctx context.Context, key api.ConversationKey, id, mode, version string) (out api.CheckpointRestore, err error) {
-	if err := r.bunOwned(); err != nil {
-		return api.CheckpointRestore{}, err
-	}
 	ctx, scope, done, err := r.enterCheckpoints(ctx, key)
 	if err != nil {
 		return out, err

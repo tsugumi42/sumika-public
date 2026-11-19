@@ -24,3 +24,22 @@ func TestStatusBodyShowsUnavailablePlatforms(t *testing.T) {
 		t.Fatalf("没有不可用平台时还写着那一行：%v", tt.Texts())
 	}
 }
+
+// 状态页：配置里还写着已删的键时多一组“配置里的旧项”，每个键一行；没有时不出这一组。
+func TestStatusBodyShowsRemovedConfigNotes(t *testing.T) {
+	a := &app{postFn: func(fn func()) { fn() }}
+	sh := newShell(a, backend.Options{}, false)
+	sh.host = newHost(sh.opt, func(hostState) {})
+	defer sh.host.cancel()
+	note := "backend.local 写着 bun：本地私聊的 Bun 后台已移除，现在由 Go 处理；可以把 backend.local 从 sumika.yml 里删掉"
+	a.host = hostState{Phase: phaseArchive, Reason: "只看历史", ConfigNotes: []string{note}}
+	tt := testerOf(2048, 1030, a.statusBody)
+	if !tt.HasText(note) || !tt.HasText("配置里的旧项") {
+		t.Fatalf("状态页没有已删键的说明：%v", tt.Texts())
+	}
+	a.host.ConfigNotes = nil
+	tt = testerOf(2048, 1030, a.statusBody)
+	if tt.HasText("配置里的旧项") {
+		t.Fatalf("没有已删键时还写着那一组：%v", tt.Texts())
+	}
+}

@@ -209,9 +209,6 @@ func (r *DesktopReader) ReadLocalWorkspace(ctx context.Context, k api.Conversati
 }
 
 func (r *DesktopReader) SetLocalWorkspace(ctx context.Context, k api.ConversationKey, dir string) (api.WorkspaceInfo, error) {
-	if err := r.bunOwned(); err != nil {
-		return api.WorkspaceInfo{}, err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return api.WorkspaceInfo{}, err
@@ -224,9 +221,6 @@ func (r *DesktopReader) SetLocalWorkspace(ctx context.Context, k api.Conversatio
 }
 
 func (r *DesktopReader) ClearLocalWorkspace(ctx context.Context, k api.ConversationKey) (api.WorkspaceInfo, error) {
-	if err := r.bunOwned(); err != nil {
-		return api.WorkspaceInfo{}, err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return api.WorkspaceInfo{}, err

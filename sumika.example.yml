@@ -374,11 +374,9 @@ tools:
     path: ""          # es.exe 的路径；不写就自动找（PATH，再看 Program Files\Everything、D:\Programs\Everything）。写了但文件不存在 = 不用，不悄悄换成别的 es
     timeoutMs: 3000   # es 最多等多久（100～60000），到点杀掉、退回 fd
 
-# 本地私聊由哪个后台管（规格-本地私聊切到Bun）。只在启动时读，改了要重启 sumika.exe。QQ 始终由 Go 管。
-backend:
-  local: go    # go（默认）：Go 管本地私聊、本地群聊、悄悄话、提醒；bun：sumika.exe 拉起 Bun 子进程管这些，Go 只读 local.db。退回就改回 go 再重启，数据不迁移
-  bun: ""      # Bun 的路径；不写就自动找（PATH 里的 bun，再看 %USERPROFILE%\.bun\bin\bun.exe）。只在 local: bun 时用
-  server: ""   # server/ 目录；不写就用资源根下的 server/。只在 local: bun 时用
+# 已删除的键（读到只记日志、后台状态页的“配置里的旧项”列出来，不起作用，可以删掉）：
+#   backend.local / backend.bun / backend.server —— 本地私聊的 Bun 后台已移除（ADR-401），写 bun 也照 go 处理，本地私聊一直由 Go 管；
+#   embed.python / embed.serverDir —— 旧版借 MaiBot 嵌入的退路，嵌入只走自带的 sumika-models。
 
 # 用户钩子（规格-用户钩子）：工具改完文件后跑 gofmt、回合要结束时跑 go vet 之类，把结果告诉她。
 # 钩子本身写在数据目录的 config/hooks.json（全局）和工作区的 .sumika/hooks.json（项目级，工作区要在下面 projectContext 的可信目录里才跑），

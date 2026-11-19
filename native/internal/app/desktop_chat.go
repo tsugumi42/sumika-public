@@ -98,9 +98,6 @@ func (d *Desktop) enterChat() (context.Context, func(), error) {
 	if d.closed {
 		return nil, nil, errors.New("桌面入口已经关闭")
 	}
-	if d.app.localByBun() { // 本地私聊的回合归 Bun 跑，Go 这边不开轮（archive 也一样）
-		return nil, nil, api.ErrLocalOwnedByBun
-	}
 	if d.app.opt.Mode == Archive {
 		return nil, nil, api.ErrLocalChatUnsupported
 	}
@@ -245,9 +242,6 @@ func (r *DesktopReader) storeUploads(ctx context.Context, images [][]byte) ([]hi
 }
 
 func (r *DesktopReader) StopLocal(ctx context.Context, k api.ConversationKey) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	_, done, err := r.desk.enterChat()
 	if err != nil {
 		return err
@@ -271,9 +265,6 @@ func (r *DesktopReader) StopLocal(ctx context.Context, k api.ConversationKey) er
 }
 
 func (r *DesktopReader) DecideLocal(ctx context.Context, k api.ConversationKey, id string, choice api.ApprovalChoice) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	switch choice {
 	case api.ApproveOnce, api.ApproveConversation, api.ApproveAlways, api.ApproveDeny:
 	default:
@@ -344,9 +335,6 @@ func (r *DesktopReader) ListApprovalRules(ctx context.Context) ([]api.ApprovalRu
 // AddApprovalRule 加一条主人自己写的放行、每次都问或拒绝规则（和"记住"同一份存储），放行、每次都问可以限定项目目录或会话。只有桌面（主人 × 主窗口）有这个入口；
 // 受保护路径、灾难性命令、不是主人发起的不被放行规则越过（判定里排在它们后面），拒绝规则先于一切放行。
 func (r *DesktopReader) AddApprovalRule(ctx context.Context, raw, effect, project, session string) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -361,9 +349,6 @@ func (r *DesktopReader) AddApprovalRule(ctx context.Context, raw, effect, projec
 
 // RevokeApprovalRule 撤销一条，下一次判定就要问；已经放行、还没开始执行的那一步在执行前也会作废。
 func (r *DesktopReader) RevokeApprovalRule(ctx context.Context, rule api.ApprovalRule) error {
-	if err := r.bunOwned(); err != nil {
-		return err
-	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
