@@ -242,7 +242,7 @@ func render(d Data) (Output, error) {
 	t := theme.Light()
 	h := 0
 	var bg ui.Color
-	img := ui.Render(func(c *ui.Context) {
+	img := renderOffscreen(func(c *ui.Context) {
 		theme.Apply(c, t)
 		bg = c.Theme().Background
 		c.Root().Background(ui.Transparent) // 根节点默认铺主题底色（不透明），文字落在上面会按子像素画

@@ -614,7 +614,7 @@ func renderTweet(t Tweet, fs *fontSet, theme string, capPx int) (Output, error) 
 		fields = append(fields, FieldLayout{Name: name, Text: text, X: px(b.X), Y: px(b.Y), W: px(b.X+b.W) - px(b.X), H: px(b.Y+b.H) - px(b.Y)})
 	}
 	h := l.H
-	img := ui.Render(func(c *ui.Context) {
+	img := renderOffscreen(func(c *ui.Context) {
 		fields = fields[:0]
 		ui.Box(c).Fill().Background(col.bg)
 		ui.Box(c).Absolute().Left(0).Top(0).Size(tweetW, h).Radius(frameRadius).Border(cardBorder, col.border)
