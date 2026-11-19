@@ -10,7 +10,7 @@ Go 共用身份在 `feat/kernel-int` 统一：`turn.ToolCall.Identity` 和 `Prep
 
 共用计算处理模糊匹配、BOM 和换行恢复；未改的原始字节沿用执行器规则。审批差分来自最终将写入的正文，超过 6000 个 UTF-16 码元只截显示并标 `Truncated`，实际写入不截断。测试矩阵见 [`edit_preview_test.go`](../../native/internal/edittext/edit_preview_test.go)。这里保证同一文件内容与参数的计算一致；审批等待期间文件被外部修改的并发保护不在本次 A01 修复范围。
 
-## Go 写文件的换行（feat/write-eol，未合 main）
+## Go 写文件的换行
 
 [`lineend.Final`](../../native/internal/lineend/lineend.go) 是 `write` 最终落盘内容的唯一计算：[`tools.write`](../../native/internal/tools/write.go) 写文件和 [`Gate.Describe`](../../native/internal/approval/approval.go) 算审批预览都只调它，输入同是目标绝对路径、原文件开头（最多 1 MiB）和她给的正文，所以卡上的字节就是写进去的字节（[`write_lineend_test.go`](../../native/internal/tools/write_lineend_test.go) 逐字节核对）。换行取第一个能定下来的：
 
