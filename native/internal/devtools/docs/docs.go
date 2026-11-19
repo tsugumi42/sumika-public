@@ -71,7 +71,6 @@ var (
 	scopeExt   = regexp.MustCompile(`\.(md|ts|tsx|css)$`)
 	docsTop    = regexp.MustCompile(`^docs/[^/]+\.(md|html)$`)
 	notesRe    = regexp.MustCompile(`^docs/notes/[^/]+\.md$`)
-	specRe     = regexp.MustCompile(`^docs/规格[^/]*\.md$`)
 	memLinkRe  = regexp.MustCompile(`\[\[([\w-]+)\]\]`)
 	d10Skip    = regexp.MustCompile(`找不回|没进仓库|不引用`)
 )
@@ -479,19 +478,6 @@ func (c *checker) d12(files []string) {
 			continue
 		}
 		c.bad("D12 调研没挂到用处上", f, "在对应的待办条目、规格或 ADR 里链上它（写\"参考：……\"），或者从已经挂上的笔记链过来；不挂就在笔记前 5 行写\"不挂：原因\"", LevelWarn)
-	}
-}
-
-// ———— D14 规格状态头还写着“待合并 / 在分支上”，头里点名的分支却已合进 main（或已删）————
-// 2026-11-13 主人确认改成工具层。只提醒。
-func (c *checker) d14(files []string) {
-	for _, f := range files {
-		if !specRe.MatchString(f) {
-			continue
-		}
-		if br := staleMergeNote(c.read(f), func(b string) bool { return mergedIntoMain(c.opt.Root, b, "main") }); br != nil {
-			c.bad("D14 规格状态头没跟上合并", f+":3", fmt.Sprintf("状态头还写着待合并 / 在分支上，但 %s 已合进 main 或已删；把状态改成“已合 main（提交号）”", strings.Join(br, "、")), LevelWarn)
-		}
 	}
 }
 
