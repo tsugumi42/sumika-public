@@ -7,7 +7,8 @@ import (
 )
 
 // openFiles 列出 dir 下还被打开着的文件：逐个用不共享的方式打开，打不开（共享冲突）就是还有句柄没关。
-// run 返回后还开着文件，删临时目录时 Windows 会报“目录不是空的”（CI，2026-11-19），这里先查出是谁。
+// CI 上删临时目录报过“目录不是空的”（2026-11-19）；runner 的 Defender 实时防护是关的、盘也整盘排除，不是它。
+// 原因还没查清：run 返回时还开着文件就是我们自己没关，这里先拦下并列出是谁。
 func openFiles(dir string) []string {
 	var held []string
 	filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
