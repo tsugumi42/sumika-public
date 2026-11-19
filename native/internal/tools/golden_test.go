@@ -143,6 +143,13 @@ func TestSameAsBun(t *testing.T) {
 			if reason := windowsOnlyGolden(c.Name); reason != "" && runtime.GOOS != "windows" {
 				t.Skip("原因：" + reason)
 			}
+			// grep、find 的对拍比的是真 rg、fd 的行为：缺了照 useVendorBin 跳过并写明（说法相同），不再整组报“could not be downloaded”；
+			// CI 上 scripts/ci-test-report.ts 把这个跳过判红（CI 装了它们，再跳过就是装的那步坏了）
+			for prefix, tool := range map[string]string{"grep-": "rg", "find-": "fd"} {
+				if strings.HasPrefix(c.Name, prefix) && toolPath(tool) == "" {
+					t.Skipf("原因：这条用真 %s 的行为，vendor/bin 和 PATH 里都没有它", tool)
+				}
+			}
 			want := golden[i]
 			if want.Name != c.Name {
 				t.Fatalf("golden 第 %d 个是 %s", i, want.Name)
