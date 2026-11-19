@@ -213,29 +213,43 @@ func (s *seenMap) marshal() ([]byte, error) {
 	return out.Bytes(), nil
 }
 
+// renameFile 是改名覆盖；测试里换成会失败几次的假的。
+var renameFile = os.Rename
+
 // writeAtomic 先写同目录的临时文件再改名：别的会话同时在读时不会读到写了一半的记录（旧版直接覆盖写）。
 func writeAtomic(path string, data []byte) error {
 	tmp := fmt.Sprintf("%s.tmp.%d", path, os.Getpid())
 	if err := os.WriteFile(tmp, data, 0o644); err != nil {
 		return err
 	}
-	if err := os.Rename(tmp, path); err != nil {
-		os.Remove(tmp)
-		return err
+	// Windows 上别的进程正读着目标文件时，改名覆盖会报 Access is denied：短暂重试几次
+	var err error
+	for i := 0; i < 8; i++ {
+		if err = renameFile(tmp, path); err == nil {
+			return nil
+		}
+		time.Sleep(25 * time.Millisecond)
 	}
-	return nil
+	os.Remove(tmp)
+	return err
 }
 
 // ---- 提醒 ----
 
-// loadSeen 读记录文件；第一次、读不了、写坏了，都从空的开始。
-func loadSeen(file string) *seenMap {
-	if b, err := os.ReadFile(file); err == nil {
-		if s, err := parseSeen(jstextBytes(b)); err == nil {
-			return s
+// loadSeen 读记录文件：第一次（文件不存在）、写坏了，都从空的开始；读不了（权限、被占用等，不是“不存在”）返回错误——
+// 这时不能当空的去覆盖写，会丢别的会话的记录。
+func loadSeen(file string) (*seenMap, error) {
+	b, err := os.ReadFile(file)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return newSeen(), nil
 		}
+		return nil, err
 	}
-	return newSeen()
+	if s, err := parseSeen(jstextBytes(b)); err == nil {
+		return s, nil
+	}
+	return newSeen(), nil
 }
 
 // Options 是一次提醒的输入。CI 为 nil 就只看报告（和旧脚本完全一样）。
@@ -265,7 +279,11 @@ func Collect(o Options) (string, error) {
 	}
 	today, yesterday := day(o.Now), day(o.Now.Add(-24*time.Hour))
 	file := filepath.Join(o.Dir, recordName)
-	seen := loadSeen(file)
+	lockPath := filepath.Join(o.Dir, lockName)
+	var seen *seenMap
+	if err := withLock(lockPath, func() (err error) { seen, err = loadSeen(file); return }); err != nil {
+		return "", err
+	}
 	var mine []string
 	var mineCI []int64
 	if e := seen.get(o.SessionID); e != nil {
@@ -287,11 +305,17 @@ func Collect(o Options) (string, error) {
 
 	// 看过的都记下（包括不用提醒的），报告之后补了“给主会话”也不再提：要重新提醒就换个文件名
 	var parts []string
+	var readable []string
 	for _, n := range fresh {
 		raw, err := os.ReadFile(filepath.Join(o.Dir, n))
 		if err != nil {
-			return "", err
+			// 这一份读不了（是目录、没权限）：跳过它、不记成看过，其他照常
+			if o.Warn != nil {
+				o.Warn("读不了报告 " + n + "，已跳过：" + err.Error())
+			}
+			continue
 		}
+		readable = append(readable, n)
 		body := SectionOf(jstext.DecodeLossy(raw))
 		if body == "" {
 			continue
@@ -308,44 +332,50 @@ func Collect(o Options) (string, error) {
 			o.Warn("CI 结果这次没查成，已忽略：" + err.Error())
 		}
 	}
+	fresh = readable
 	if len(fresh) == 0 && len(ciIDs) == 0 {
 		return "", nil
 	}
 
-	// 写记录前重读一遍：查 CI 最多等几秒，这期间别的会话写的记录不能被覆盖掉
-	seen = loadSeen(file)
-	cur := seen.get(o.SessionID)
-	if cur == nil {
-		cur = &entry{Files: []string{}}
-	}
-	files := append([]string{}, cur.Files...)
-	for _, n := range fresh {
-		if !contains(files, n) {
-			files = append(files, n)
+	// 写记录：整段（重读、改、写）在文件锁里。查 CI 最多等十几秒，这期间别的会话写的记录不能被覆盖掉
+	if err := withLock(lockPath, func() error {
+		seen, err := loadSeen(file)
+		if err != nil {
+			return err // 读不了不能当空的去覆盖写
 		}
-	}
-	ci := append([]int64{}, cur.CI...)
-	for _, id := range ciIDs {
-		if !containsID(ci, id) {
-			ci = append(ci, id)
+		cur := seen.get(o.SessionID)
+		if cur == nil {
+			cur = &entry{Files: []string{}}
 		}
-	}
-	cutoff := o.Now.Add(-keepDays * 24 * time.Hour)
-	for _, k := range append([]string(nil), seen.keys...) {
-		if t, err := time.Parse(time.RFC3339Nano, seen.m[k].At); err == nil && t.Before(cutoff) {
-			seen.del(k)
+		files := append([]string{}, cur.Files...)
+		for _, n := range fresh {
+			if !contains(files, n) {
+				files = append(files, n)
+			}
 		}
-	}
-	e := &entry{Files: files, At: o.Now.UTC().Format("2006-01-02T15:04:05.000Z")}
-	if len(ci) > 0 {
-		e.CI = ci
-	}
-	seen.set(o.SessionID, e)
-	out, err := seen.marshal()
-	if err != nil {
-		return "", err
-	}
-	if err := writeAtomic(file, out); err != nil {
+		ci := append([]int64{}, cur.CI...)
+		for _, id := range ciIDs {
+			if !containsID(ci, id) {
+				ci = append(ci, id)
+			}
+		}
+		cutoff := o.Now.Add(-keepDays * 24 * time.Hour)
+		for _, k := range append([]string(nil), seen.keys...) {
+			if t, err := time.Parse(time.RFC3339Nano, seen.m[k].At); err == nil && t.Before(cutoff) {
+				seen.del(k)
+			}
+		}
+		e := &entry{Files: files, At: o.Now.UTC().Format("2006-01-02T15:04:05.000Z")}
+		if len(ci) > 0 {
+			e.CI = ci
+		}
+		seen.set(o.SessionID, e)
+		out, err := seen.marshal()
+		if err != nil {
+			return err
+		}
+		return writeAtomic(file, out)
+	}); err != nil {
 		return "", err
 	}
 

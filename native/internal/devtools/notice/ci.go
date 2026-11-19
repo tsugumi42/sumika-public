@@ -27,13 +27,14 @@ import (
 )
 
 const (
-	ciBranch      = "main"
-	ciWindow      = 48 * time.Hour
-	ciListLimit   = 30 // gh run list 取多少条
-	ciShowMax     = 5  // 一次最多列几条（其余留到下一条消息）
-	ciJobsMax     = 4  // 一条里最多写几个红的 job
-	ciNameMax     = 60 // 工作流名、job 名、步骤名最长（字符）
-	defaultBudget = 5 * time.Second
+	ciBranch            = "main"
+	ciWindow            = 48 * time.Hour
+	ciListLimit         = 30              // gh run list 取多少条
+	ciShowMax           = 5               // 一次最多列几条（其余留到下一条消息）
+	ciJobsMax           = 4               // 一条里最多写几个红的 job
+	ciNameMax           = 60              // 工作流名、job 名、步骤名最长（字符）
+	defaultBudget       = 5 * time.Second // 列表的时限
+	defaultDetailBudget = 7 * time.Second // 详情的时限（并行问，和列表分开算）
 )
 
 // GhProgram 是 gh 程序名或绝对路径，由 cmd/sumika-dev 的 main 注入（internal/ 下非测试代码里 exec 的第一个参数不许是字面量，archcheck 的外部程序规则）。
@@ -44,11 +45,13 @@ type GhFunc func(ctx context.Context, args ...string) ([]byte, error)
 
 // CIOptions 是 CI 查询的设置。
 type CIOptions struct {
-	Repo        string        // owner/name；从 origin 推出
-	Gh          GhFunc        // 空就用真的 gh（GhProgram）
-	Timeout     time.Duration // gh 调用总共的时限；0 是 5 秒
-	CacheTTL    time.Duration // 查到的结果缓存多久（缓存文件在报告目录里，各会话共用）；0 不缓存
-	FailBackoff time.Duration // gh 查询失败后多久内不再重试（只在开了缓存时有效）
+	Repo          string        // owner/name；从 origin 推出
+	Gh            GhFunc        // 空就用真的 gh（GhProgram）
+	Timeout       time.Duration // 列表的时限；0 是 5 秒
+	DetailTimeout time.Duration // job 详情的时限；0 是 7 秒（给了 Timeout 就和它一样）
+	PartialTTL    time.Duration // 有运行详情还待补时缓存只给这么久；0 是 30 秒
+	CacheTTL      time.Duration // 查到的结果缓存多久（缓存文件在报告目录里，各会话共用）；0 不缓存
+	FailBackoff   time.Duration // gh 查询失败后多久内不再重试（只在开了缓存时有效）
 }
 
 // RealGh 是真的 gh：不弹交互提示、不检查更新、不上色，标准输入是空的，超时就杀掉。
@@ -180,15 +183,15 @@ func orDash(s string) string {
 	return s
 }
 
-// failedJobs 写“哪个 job 的哪一步红”，问不到就写没取到。
-func failedJobs(ctx context.Context, gh GhFunc, repo string, id int64) string {
+// failedJobs 写“哪个 job 的哪一步红”；问不到（gh 报错、超时、输出不是预期的 JSON）返回 ok=false。
+func failedJobs(ctx context.Context, gh GhFunc, repo string, id int64) (text string, ok bool) {
 	raw, err := gh(ctx, "run", "view", fmt.Sprint(id), "--repo", repo, "--json", "jobs")
 	if err != nil {
-		return "（job 详情没取到）"
+		return "", false
 	}
 	var jobs ghJobs
 	if err := json.Unmarshal(raw, &jobs); err != nil {
-		return "（job 详情没取到）"
+		return "", false
 	}
 	var items []string
 	for _, j := range jobs.Jobs {
@@ -209,12 +212,12 @@ func failedJobs(ctx context.Context, gh GhFunc, repo string, id int64) string {
 		}
 	}
 	if len(items) == 0 {
-		return "（没有标红的 job）"
+		return "（没有标红的 job）", true
 	}
 	more := ""
 	if len(items) > ciJobsMax {
 		more = fmt.Sprintf("，另有 %d 个 job 也红了", len(items)-ciJobsMax)
 		items = items[:ciJobsMax]
 	}
-	return "红在 " + strings.Join(items, "；") + more
+	return "红在 " + strings.Join(items, "；") + more, true
 }

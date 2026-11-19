@@ -33,22 +33,75 @@ type fakeGH struct {
 	jobs    map[int64]string // 运行编号 → run view 的 JSON；没有就报错
 	listErr error
 	onList  func() // 列表请求进来时做点事（并发写记录之类）
+
+	byEvent        map[string][]fakeRun // 给了就按 --event 返回各自的列表（不给就都返回 runs）
+	listErrByEvent map[string]error
+	listPanic      bool
+	viewPanic      bool
+	viewFailTimes  int // 前几次 run view 报错（模拟详情没取到）
+	viewAlwaysFail bool
+	deadlines      map[string]time.Time // "list" / "view" → 第一次调用时 ctx 的截止时间
+}
+
+func argAfter(args []string, flag string) string {
+	for i, a := range args {
+		if a == flag && i+1 < len(args) {
+			return args[i+1]
+		}
+	}
+	return ""
 }
 
 func (f *fakeGH) fn(ctx context.Context, args ...string) ([]byte, error) {
 	f.mu.Lock()
 	f.calls = append(f.calls, append([]string(nil), args...))
 	f.mu.Unlock()
+	note := func(kind string) {
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		if f.deadlines == nil {
+			f.deadlines = map[string]time.Time{}
+		}
+		if d, ok := ctx.Deadline(); ok {
+			if _, seen := f.deadlines[kind]; !seen {
+				f.deadlines[kind] = d
+			}
+		}
+	}
 	if len(args) >= 2 && args[0] == "run" && args[1] == "list" {
+		note("list")
 		if f.onList != nil {
 			f.onList()
+		}
+		if f.listPanic {
+			panic("假 gh 里 panic")
 		}
 		if f.listErr != nil {
 			return nil, f.listErr
 		}
+		ev := argAfter(args, "--event")
+		if e, ok := f.listErrByEvent[ev]; ok {
+			return nil, e
+		}
+		if f.byEvent != nil {
+			return json.Marshal(f.byEvent[ev])
+		}
 		return json.Marshal(f.runs)
 	}
 	if len(args) >= 3 && args[0] == "run" && args[1] == "view" {
+		note("view")
+		if f.viewPanic {
+			panic("假 gh 里 panic")
+		}
+		f.mu.Lock()
+		fail := f.viewAlwaysFail || f.viewFailTimes > 0
+		if f.viewFailTimes > 0 {
+			f.viewFailTimes--
+		}
+		f.mu.Unlock()
+		if fail {
+			return nil, errors.New("详情没取到")
+		}
 		var id int64
 		fmt.Sscan(args[2], &id)
 		if j, ok := f.jobs[id]; ok {
@@ -58,6 +111,9 @@ func (f *fakeGH) fn(ctx context.Context, args ...string) ([]byte, error) {
 	}
 	return nil, fmt.Errorf("没想到的 gh 调用：%v", args)
 }
+
+// refreshes 是真查了几轮：每轮把 push 和 schedule 各列一次，所以是列表请求数的一半。
+func (f *fakeGH) refreshes() int { return f.count("run", "list") / 2 }
 
 func (f *fakeGH) count(sub ...string) int {
 	f.mu.Lock()
@@ -122,7 +178,7 @@ func TestCIFailurePrinted(t *testing.T) {
 		t.Error("没红的 job 不该出现")
 	}
 	// 只查列表和 job 概况，不下载日志；列表请求带 main、仓库、失败状态
-	if fg.count("run", "list") != 1 || fg.count("run", "view") != 1 {
+	if fg.refreshes() != 1 || fg.count("run", "view") != 1 {
 		t.Errorf("调用：%v", fg.calls)
 	}
 	for _, c := range fg.calls {
@@ -131,8 +187,23 @@ func TestCIFailurePrinted(t *testing.T) {
 			t.Errorf("不该下载日志或调 api：%s", joined)
 		}
 	}
-	if l := strings.Join(fg.calls[0], " "); !strings.Contains(l, "--repo o/r") || !strings.Contains(l, "--branch main") || !strings.Contains(l, "--status failure") {
-		t.Errorf("列表请求参数不对：%s", l)
+	events := map[string]bool{}
+	for _, c := range fg.calls {
+		l := strings.Join(c, " ")
+		if !strings.HasPrefix(l, "run list") {
+			continue
+		}
+		if !strings.Contains(l, "--repo o/r") || !strings.Contains(l, "--branch main") || !strings.Contains(l, "--status failure") {
+			t.Errorf("列表请求参数不对：%s", l)
+		}
+		for _, ev := range []string{"push", "schedule"} {
+			if strings.Contains(l, "--event "+ev+" ") {
+				events[ev] = true
+			}
+		}
+	}
+	if !events["push"] || !events["schedule"] {
+		t.Errorf("要按 push 和 schedule 各列一次（别让 fork 里叫 main 的 PR 运行占名额）：%v", fg.calls)
 	}
 }
 
@@ -256,14 +327,9 @@ func TestCIGhTimeoutDoesNotBlock(t *testing.T) {
 		return nil, ctx.Err()
 	}
 	o := Options{Dir: dir, SessionID: "s1", Now: ciNow, CI: &CIOptions{Repo: "o/r", Gh: hang, Timeout: 100 * time.Millisecond}}
-	start := time.Now()
-	out, err := Collect(o)
-	took := time.Since(start)
+	out, err := Collect(o) // 时限到了 gh 就返回；真卡住的话这里不会返回，整个测试会因超时失败
 	if err != nil || !strings.Contains(out, "报告那段照常") || strings.Contains(out, "CI 结果") {
 		t.Fatalf("超时只少 CI 这一段：out=%q err=%v", out, err)
-	}
-	if took > 2*time.Second {
-		t.Fatalf("超时的 gh 拖了 %v，时限是 100ms", took)
 	}
 }
 

@@ -83,6 +83,21 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		// 隐藏子命令：只打编进来的源码摘要，给 selfbuild 拿到锁后问磁盘上的 exe 是不是已经被别的进程换新了
 		fmt.Fprintln(stdout, selfbuild.BuiltDigest)
 		return 0
+	case "__srcdigest":
+		// 隐藏子命令：算磁盘上现在这份源码的摘要（不是编进来的那个），给 settings.json 的兜底 go build 带 -ldflags 用，
+		// 编出来的程序摘要就是对的，以后别的关卡不用再重编一次
+		root, err := modRoot()
+		if err != nil {
+			fmt.Fprintln(stderr, "错误：", err)
+			return 1
+		}
+		d, err := selfbuild.Digest(root)
+		if err != nil {
+			fmt.Fprintln(stderr, "错误：", err)
+			return 1
+		}
+		fmt.Fprintln(stdout, d)
+		return 0
 	case "check":
 		if len(args) >= 2 {
 			if run, ok := checks[args[1]]; ok {
@@ -115,6 +130,15 @@ func Run(args []string, stdout, stderr io.Writer) int {
 
 // repoRoot 是仓库根：模块根（native/）的上一级。和旧脚本“按自己的位置找仓库根”一致，不看当前目录。
 func repoRoot() (string, error) {
+	mod, err := modRoot()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Dir(mod), nil
+}
+
+// modRoot 是模块根（native/，含 go.mod）：按程序自己所在的位置找。
+func modRoot() (string, error) {
 	exe, err := os.Executable()
 	if err != nil {
 		return "", err
@@ -122,9 +146,5 @@ func repoRoot() (string, error) {
 	if r, e := filepath.EvalSymlinks(exe); e == nil {
 		exe = r
 	}
-	mod, err := selfbuild.FindModRoot(exe)
-	if err != nil {
-		return "", err
-	}
-	return filepath.Dir(mod), nil
+	return selfbuild.FindModRoot(exe)
 }

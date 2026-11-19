@@ -293,17 +293,34 @@ func TestRunNeverBlocksOnBadInput(t *testing.T) {
 	}
 }
 
-func TestRunReportDirectoryEntryThatIsADirectoryIsSwallowed(t *testing.T) {
+func TestRunUnreadableReportIsSkippedOthersGoOn(t *testing.T) {
 	d := t.TempDir()
 	today := time.Now().Format("2006-01-02")
 	if err := os.Mkdir(filepath.Join(d, "复盘-"+today+".md"), 0o755); err != nil { // 名字像报告、实际是目录：读不了
 		t.Fatal(err)
 	}
+	write(t, d, "巡检-"+today+".md", "## 给主会话\n- 读得了的这份照常\n")
 	code, out, errOut := runHook(t, []string{"--reports", d, "--no-ci"}, t.TempDir(), `{"session_id":"s"}`)
-	if code != 0 || out != "" || !strings.Contains(errOut, "出错") {
+	if code != 0 || !strings.Contains(out, "读得了的这份照常") || strings.Count(errOut, "\n") != 1 || !strings.Contains(errOut, "读不了报告") {
 		t.Fatalf("code=%d out=%q err=%q", code, out, errOut)
 	}
+	got := readSeen(t, d)["s"].Files
+	if len(got) != 1 || got[0] != "巡检-"+today+".md" {
+		t.Fatalf("读不了的那份不记成看过（下次还会试）：%v", got)
+	}
+}
+
+func TestRunOnlyUnreadableReportWritesNothing(t *testing.T) {
+	d := t.TempDir()
+	today := time.Now().Format("2006-01-02")
+	if err := os.Mkdir(filepath.Join(d, "复盘-"+today+".md"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	code, out, _ := runHook(t, []string{"--reports", d, "--no-ci"}, t.TempDir(), `{"session_id":"s"}`)
+	if code != 0 || out != "" {
+		t.Fatalf("code=%d out=%q", code, out)
+	}
 	if _, err := os.Stat(filepath.Join(d, recordName)); err == nil {
-		t.Fatal("读报告失败时不该写记录（下次还要提醒）")
+		t.Fatal("什么都没读成就不该写记录")
 	}
 }
