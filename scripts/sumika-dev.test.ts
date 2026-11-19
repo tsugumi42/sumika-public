@@ -1,4 +1,4 @@
-// scripts/lib/sumika-dev.ts 和 lefthook.yml 里“隐私扫描”那一行：环境里带着 SUMIKA_SCAN_DATA（能把名单改指到别的目录，只给测试用）时，
+// scripts/lib/sumika-dev.ts 和 lefthook.yml 里 pre-commit 那一行（现在钩子只有这一项，隐私扫描是它里面每次都跑的一项）：环境里带着 SUMIKA_SCAN_DATA（能把名单改指到别的目录，只给测试用）时，
 // 生产路径不被改道，仍读“真实位置”的名单。真实位置在这里是一个编造的临时仓库：它带一份和真程序一模一样的源码和程序（摘要对得上，不会重编），
 // 名单里只有一个编造号码；SUMIKA_SCAN_DATA 指向一个没有名单的空目录，被改道的话扫描会读到空名单、退出 2 或放行，而不是拦下。
 import { Database } from 'bun:sqlite'
@@ -56,11 +56,11 @@ beforeAll(() => {
   emptyData = tmp() // 没有任何名单的空目录：被 SUMIKA_SCAN_DATA 改道到这里，扫描读不到号码
 }, 300_000)
 
-// lefthook.yml 里“隐私扫描”那一行（run: 后面双引号里的整行 sh）
+// lefthook.yml 里 pre-commit 的那一行（run: 后面双引号里的整行 sh，调 sumika-dev hook pre-commit）
 function hookLine(): string {
   const yml = readFileSync(join(repoRoot, 'lefthook.yml'), 'utf8')
-  const m = /\n {4}隐私扫描:\r?\n(?: {6}#[^\n]*\n)*? {6}run: "([^\n]*)"\r?\n/.exec(yml)
-  if (!m) throw new Error('lefthook.yml 里找不到“隐私扫描”那一行')
+  const m = /\npre-commit:\r?\n {2}commands:\r?\n {4}检查:\r?\n(?: {6}#[^\n]*\n)*? {6}run: "([^\n]*)"\r?\n/.exec(yml)
+  if (!m) throw new Error('lefthook.yml 里找不到 pre-commit 那一行')
   return m[1]!
 }
 const runSh = (line: string, env: Record<string, string>) => {
@@ -79,7 +79,7 @@ test('钩子那一行清掉环境里的 SUMIKA_SCAN_DATA：仍读真实位置的
 
 test('改坏检查：钩子那一行不清它，生产程序见到它就拒绝扫描（红），不读编造的名单（这个测试能看出漏清）', () => {
   const r = runSh(hookLine().replace(' -u SUMIKA_SCAN_DATA', ''), polluted())
-  expect(r.code).toBe(2)
+  expect(r.code).toBe(1) // hook 把每项的红汇总成 1；隐私扫描自己的 2 在输出里看（拒绝扫描）
   expect(r.out).toContain('拒绝扫描')
   expect(r.out).not.toContain('拦 号码')
 })
@@ -90,7 +90,7 @@ test('小写名的变量也改不了名单：要么被清掉照常拦，要么�
   env.sumika_scan_data = emptyData
   env.sumika_scan_maibot = join(emptyData, 'x.db')
   const r = runSh(hookLine(), env)
-  expect(r.code === 1 || r.code === 2).toBe(true)
+  expect(r.code).toBe(1)
   expect(r.out.includes('拦 号码') || r.out.includes('拒绝扫描')).toBe(true)
   expect(r.out).not.toContain('没发现')
 })

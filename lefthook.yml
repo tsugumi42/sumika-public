@@ -1,71 +1,29 @@
-# 提交和推送前的检查（规格-提交前检查，ADR-179）。按改了哪些文件挑检查；红了改代码或补基线，不用 --no-verify 绕过。
+# 提交和推送前的检查（规格-提交前检查，ADR-179；规格-检查统一入口）。按改了哪些文件挑检查；红了改代码或补基线，不用 --no-verify 绕过。
 # 装钩子：bun install 时自动装（postinstall），也可以 bunx lefthook install；worktree 共用主仓库的 .git/hooks，装一次就行
+# pre-commit、commit-msg 各只有一项，都交给 sumika-dev：挑哪些检查（glob 表）、并行、汇总退出码都在 native/internal/devtools/hook，不在这个文件里。
 glob_matcher: doublestar
 min_version: 2.2.2
 
 pre-commit:
-  parallel: true
   commands:
-    隐私扫描:
-      # 和文档检查同一个写法（理由见下），另外清掉 SUMIKA_SCAN_DATA、SUMIKA_SCAN_MAIBOT（前者能把名单改指到别的目录，后者能把 MaiBot 那份名单改指别处，都只给测试用，带进钩子会少读真实名单）；名单和误报登记在主工作区的 data/ 里，程序按 git 的 common dir 去找
-      run: "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT -u SUMIKA_SCAN_DATA -u SUMIKA_SCAN_MAIBOT native/bin/sumika-dev.exe check private --staged"
-    文档检查:
-      # 读暂存区的版本：别的会话改了一半、没暂存的文件不拦这次提交（2026-10-26）
+    检查:
+      # 读暂存区的版本：别的会话改了一半、没暂存的文件不拦这次提交（2026-10-26）。
       # 程序不在或是 0 字节（-s：0 字节的文件会被 sh 当空脚本执行、退出 0，钩子就静默放行了）先 go build 一次；
-      # 先编到 sumika-dev.exe.new.$$ 再 mv 成正式名，编到一半被打断不会留下半截程序。已经在的由程序自己核对源码摘要、改过就重编（规格-脚本迁Go「落点」）。
-      # env -u：钩子里不认这几个会跳过检查或改指仓库的变量（SUMIKA_DEV_NO_REBUILD 不重编、SUMIKA_DEV_REEXEC_DONE 防重编循环、SUMIKA_DEV_ROOT 改指别的树），手敲带进来的不该影响提交检查。
+      # 先编到 sumika-dev.exe.new.$$ 再 mv 成正式名，编到一半被打断不会留下半截程序。mv 失败但正式文件已经在了（别的进程先换上了），就删掉自己的临时文件、用现成的。
+      # 现在整个钩子只有这一个进程会编，之前十来项并行、六项各自现编抢着换同一个 exe（报“文件正被占用”，2026-11-19 两次）的撞车没有了。
+      # 这里编出来的程序摘要是空的：shell 里算不出摘要（Go 版本、GOWORK 等一起进哈希），第一次运行由程序自己带摘要重编一次（编译缓存命中，只重新链接）。
+      # 已经在的由程序自己核对源码摘要、改过就重编（规格-脚本迁Go「落点」）。
+      # env -u：钩子里不认这几个会跳过检查或改指仓库的变量（SUMIKA_DEV_NO_REBUILD 不重编、SUMIKA_DEV_REEXEC_DONE 防重编循环、SUMIKA_DEV_ROOT 改指别的树、
+      # SUMIKA_SCAN_DATA 能把隐私扫描的名单改指到别的目录、SUMIKA_SCAN_MAIBOT 把 MaiBot 那份名单改指别处，后两个只给测试用，带进钩子会少读真实名单）。
       # 用 && 连：编不过就红，不放行。写成一行、命令本身不含 shell 引号（Windows 上 lefthook 会拆坏 shell 引号；外面这层是 YAML 的引号）
-      run: "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT native/bin/sumika-dev.exe check docs --staged"
-    扫描自测:
-      # 隐私扫描的测试现在是 Go 测试（native/internal/devtools/private），由 Go检查 管不到测试结果，走合并队列和推送钩子的 go test；这里只剩 friction-report 的 TS 测试
-      glob: "scripts/friction-report*.ts"
-      run: bun test ./scripts/friction-report.test.ts
-    冲突标记:
-      # 合并时漏解决的冲突连标记一起提交过（2026-10-30，80062b2c），check:docs 不查这种标记
-      # 程序的编法和调用写法同文档检查（理由见上）；暂存区的新增行由程序自己用 git diff --cached 读，不经 lefthook 传文件名
-      run: "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT native/bin/sumika-dev.exe check conflicts"
-    类型检查:
-      # 根目录的 tsconfig 只含 scripts、test；server/ 有自己的类型检查，只改 server/ 不触发这条（规格-Bun后台第1批 第八节）
-      glob: "{scripts,test}/**/*.{ts,tsx}"
-      run: bun run typecheck
-    Server类型检查:
-      root: server/
-      glob: "server/**/*.{ts,tsx}"
-      run: bun run typecheck
-    Server测试:
-      # 只跑这次暂存的 server/test 测试文件（改了 helpers 这类非测试文件才跑整套）；整套（两三分钟）在合并队列和推送钩子里跑。
-      # 只改 server/src 不改测试时提交不跑测试，只有类型检查——这是有意的取舍（scripts/precommit-fast.ts 开头，2026-11-12 复核）
-      glob: "server/test/**/*.{ts,tsx}"
-      run: bun scripts/precommit-fast.ts server-tests {staged_files}
-    协议生成检查:
-      # 定义、生成器或任一生成文件被暂存：生成文件过期就红（退出码 1）
-      glob: ["protocol/**", "scripts/gen-rpc.ts", "native/internal/rpcwire/wire_gen.go", "server/src/protocol/gen.ts"]
-      run: bun scripts/gen-rpc.ts --check
-    界面技能核对:
-      # 界面技能入口页里点名的包、函数和 mygo 版本要和代码对得上（2026-11-14，质检 X-13：旧入口页核对的是 v0.7.4、一次没提 winshell）。
-      # 读的是工作区的文件，不是暂存区：入口页很少和别的改动同时半改，先不做暂存区版本
-      glob: [".claude/skills/mygo-ui/SKILL.md", "native/go.mod", "native/internal/winshell/**/*.go", "native/internal/devtools/uiskill/**/*.go"]
-      # 程序的编法和调用写法同文档检查；检查本身（native/internal/devtools/uiskill）改了也跑一遍
-      run: "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT native/bin/sumika-dev.exe check ui-skill"
-    Go格式:
-      # 在仓库根跑、不设 root：程序要读暂存区（git show :<文件>），worktree 的钩子里 git 设了 GIT_DIR 却没设 GIT_WORK_TREE，
-      # 切进 native/ 以后 git 会把 native/ 当成工作区的根，路径全对不上（2026-10-26）。写成程序是因为 Windows 上 lefthook 会拆坏 shell 引号
-      glob: "native/**/*.go"
-      # 程序的编法和调用写法同文档检查；它读暂存区里的内容（git show :<文件>），在程序所在的那棵树的根上跑，不看当前目录
-      run: "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT native/bin/sumika-dev.exe check gofmt {staged_files}"
-    Go检查:
-      # 只 vet 暂存的 .go 所在的包（整个模块 30 秒）；整个模块的 vet 和受影响包的测试在合并队列（go-verify）和推送钩子里跑。
-      # 改了导出接口、别的包跟着坏、纯删除文件这些，提交时看不到，推送和合并时拦（2026-11-12 复核记下的取舍）
-      # 在仓库根跑、不设 root，理由同上面 Go格式
-      glob: ["native/**/*.go", "native/go.mod", "native/go.sum"]
-      run: bun scripts/precommit-fast.ts go-vet {staged_files}
+      run: "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && { mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe 2>/dev/null || { rm -f native/bin/sumika-dev.exe.new.$$; [ -s native/bin/sumika-dev.exe ]; }; }; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT -u SUMIKA_SCAN_DATA -u SUMIKA_SCAN_MAIBOT native/bin/sumika-dev.exe hook pre-commit"
 
 commit-msg:
   commands:
     提交说明:
       # 标题 40 个字以内、不带分号（上级 AGENTS「提交」第 1 条；主人 2026-10-27 嫌提交说明太长）
-      # 程序的编法和调用写法同文档检查。{1} 是 git 给的说明文件路径，lefthook 不加引号拼进 sh：反斜杠路径会被吃掉，程序自己认得这种路径、改去问 git 说明文件在哪（找不到就按失败处理，不放行）
-      run: "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT native/bin/sumika-dev.exe check commit-msg {1}"
+      # 程序的编法和调用写法同上。{1} 是 git 给的说明文件路径，lefthook 不加引号拼进 sh：反斜杠路径会被吃掉，程序自己认得这种路径、改去问 git 说明文件在哪（找不到就按失败处理，不放行）
+      run: "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && { mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe 2>/dev/null || { rm -f native/bin/sumika-dev.exe.new.$$; [ -s native/bin/sumika-dev.exe ]; }; }; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT native/bin/sumika-dev.exe hook commit-msg {1}"
 
 pre-push:
   commands:
