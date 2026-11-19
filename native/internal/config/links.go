@@ -207,7 +207,7 @@ type LinkSite struct {
 }
 
 func DefaultLinks() LinkReaderConfig {
-	return LinkReaderConfig{Context: LinkContext{Enabled: true}, Expand: LinkExpand{Mode: "whitelist", Conversations: []string{}, MaxLinks: 3, RotateOnReject: true, ImageMaxMB: 20, StartEmoji: "289", DoneEmoji: "124", FailEmoji: "9", PrivateStatus: "开始解析链接……", Video: LinkVideo{TimeoutSeconds: 60, MaxMB: 100}, TweetCard: LinkTweetCard{Theme: TweetThemeAuto, MaxHeight: DefaultTweetCardMaxHeight}, Artist: DefaultLinkArtist(), Translate: LinkTranslate{Enabled: true, Target: DefaultTranslateTarget, TimeoutSeconds: DefaultTranslateTimeout, Retries: DefaultTranslateRetries}, DirectImageMax: DefaultDirectImageMax, Text: DefaultLinkText(), Send: DefaultLinkSend(), Senders: defaultLinkSenders()}, X: defaultLinkX(), FakeIPRanges: DefaultFakeIPRanges(), Rate: defaultLinkRate()}
+	return LinkReaderConfig{Context: LinkContext{Enabled: true}, Expand: LinkExpand{Mode: "whitelist", Conversations: []string{}, MaxLinks: 3, RotateOnReject: true, ImageMaxMB: 20, StartEmoji: "289", DoneEmoji: "124", FailEmoji: "9", PrivateStatus: "开始解析链接……", Video: LinkVideo{TimeoutSeconds: 60, MaxMB: 100}, TweetCard: LinkTweetCard{Theme: TweetThemeAuto, MaxHeight: DefaultTweetCardMaxHeight, TextOnly: true}, Artist: DefaultLinkArtist(), Translate: LinkTranslate{Enabled: true, Target: DefaultTranslateTarget, TimeoutSeconds: DefaultTranslateTimeout, Retries: DefaultTranslateRetries}, DirectImageMax: DefaultDirectImageMax, Text: DefaultLinkText(), Send: DefaultLinkSend(), Senders: defaultLinkSenders()}, X: defaultLinkX(), FakeIPRanges: DefaultFakeIPRanges(), Rate: defaultLinkRate()}
 }
 func (c LinkReaderConfig) Clone() LinkReaderConfig {
 	c.Expand.Conversations = slices.Clone(c.Expand.Conversations)

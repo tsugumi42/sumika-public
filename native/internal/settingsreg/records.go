@@ -179,6 +179,7 @@ var records = []record{
 	{key: "linkReader.expand.tweetCard.theme", name: "推特卡片配色（auto 按北京时间 6～18 点浅色）", effect: fxNow, cat: catPlugins, writable: true, readers: []string{"internal/app:App.openLinks#TweetCard.Theme"}},
 	{key: "linkReader.expand.artist.mode", name: "画师的推文怎么发（卡片加原图 / 只发原图 / 关）", effect: fxNow, cat: catPlugins, writable: true, readers: []string{"internal/config:LinkArtist.EffectiveMode#Mode"}},
 	{key: "linkReader.expand.artist.autoDetect", name: "展开时发现像画师的作者，记进待确认表（不生效）", effect: fxNow, cat: catPlugins, writable: true, readers: []string{"internal/linkplugin:Plugin.observeArtist#AutoDetect"}},
+	{key: "linkReader.expand.tweetCard.textOnly", name: "纯文字推文画成推特卡片（默认开，有图的推文照旧）", effect: fxNow, cat: catPlugins, writable: true, desc: "推文自己没有图和视频、没有外链卡、被引推文没有视频时，画成一张推特卡片加链接，只直发；有图的推文照旧按模板。写了 x 自定义模板时不管。", aliases: []string{"推特卡片", "纯文字推文", "推文卡片"}, readers: []string{"internal/linkplugin:BuildOptions#TweetCard.TextOnly"}},
 	{key: "linkReader.expand.tweetCard.maxHeight", name: "推特卡片高度封顶（像素，默认 0 不封顶，长推文整张画出来）", effect: fxNow, cat: catPlugins, writable: true, readers: []string{"internal/app:App.openLinks#TweetCard.MaxHeight"}},
 	{key: "linkReader.expand.platforms.*.imageMode", name: "按网站选发图方式（普通 / 转图 / 合并转发转图）", effect: fxNow, cat: catPlugins, readers: []string{"internal/config:LinkExpand.ImageModeOf#ImageMode"}},
 	{key: "linkReader.expand.translate.enabled", name: "链接展开时翻译帖子正文", effect: fxNow, cat: catPlugins, writable: true, readers: []string{"internal/linkplugin:Plugin.startTranslate#Expand.Translate"}},

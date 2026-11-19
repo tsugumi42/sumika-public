@@ -60,6 +60,9 @@ type Options struct {
 	// Artist 是这条链接命中了确认过的画师时的发法（规格-画师原图）：ArtistCardAndOriginals、ArtistOriginalsOnly；
 	// 空串是旧行为（零值即不特殊处理），和 Translation 一样每条链接不同、由调用方填，BuildOptions 不填它。
 	Artist string
+	// TextCard：纯文字推文画推特卡片加链接（linkReader.expand.tweetCard.textOnly，ADR-399）；判断见 textCardEligible。
+	// 零值是旧行为（按模板出文字版），没接配置的调用方和测试不受影响
+	TextCard bool
 	// DirectImageMax 是直接发的图数上限（linkReader.expand.directImageMax，1～9），X、pixiv 作品、Telegram、B 站动态超过就走合并转发；
 	// 0 按默认 DefaultDirectImageMax。
 	DirectImageMax int
