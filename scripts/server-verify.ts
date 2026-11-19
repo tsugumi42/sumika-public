@@ -19,7 +19,7 @@ export type Plan = {
 const CHECK_SCRIPTS = /^scripts\/(server-verify|go-verify|go-affected|pre-push|merge-queue(-\d+)?|merge-queue\.testlib|nightly(-record)?|gen-rpc|precommit-fast|go-shard|friction-report|slot|run-low)(\.test)?\.ts$|^scripts\/(run-low\.ps1|go-shard\.cmd)$|^lefthook\.yml$/
 // Bun 测试会读到、却不在 server/ 里的 Go 文件：迁移 SQL（server/test 跑同一套迁移）和它照抄的显示规则
 const BUN_READS_GO = /^native\/internal\/store\/(migrations\/|display[^/]*\.go$|local_groups\.go$|platform\.go$)|^native\/internal\/desktopread\//
-export const SCRIPT_TESTS = ['./scripts/server-verify.test.ts', './scripts/merge-queue.test.ts', './scripts/merge-queue-2.test.ts', './scripts/merge-queue-3.test.ts', './scripts/go-affected.test.ts', './scripts/pre-push.test.ts', './scripts/go-verify.test.ts', './scripts/nightly.test.ts', './scripts/precommit-fast.test.ts', './scripts/go-shard.test.ts', './scripts/run-low.test.ts', './scripts/export-public.test.ts', './scripts/sumika-dev.test.ts']
+export const SCRIPT_TESTS = ['./scripts/server-verify.test.ts', './scripts/merge-queue.test.ts', './scripts/merge-queue-2.test.ts', './scripts/merge-queue-3.test.ts', './scripts/go-affected.test.ts', './scripts/pre-push.test.ts', './scripts/go-verify.test.ts', './scripts/nightly.test.ts', './scripts/precommit-fast.test.ts', './scripts/go-shard.test.ts', './scripts/run-low.test.ts', './scripts/sumika-dev.test.ts']
 
 const isServer = (f: string) => f.startsWith('server/')
 // 主窗口（desktop/）的文件：冻结的网页，不再有它自己的检查（ADR-359、378）；只改它时不用跑 Go

@@ -50,7 +50,7 @@
 3. 本机 `main` 改为跟踪 `public/main`：`git checkout -B main public/main`。工作区里公开版没有的已跟踪文件（`server/`、`desktop/`、`docs/archive/` 等）会从工作区消失，它们留在私有仓库的历史里；`data/` 等不进 git 的目录不受影响。
 4. 切换前还没合的分支：用导出脚本的“排除表 + 改写”处理成补丁，在新 main 上重开分支，不直接合（历史不相交）。
 5. 私有仓库设为只读存档，`origin` 改名为 `private`，`public` 改名为 `origin`。
-6. 导出脚本 `scripts/export-public.ts` 和同步脚本从此不再需要，按 ADR-389 的删除规则处理。
+6. 导出脚本 `scripts/export-public.ts` 和同步脚本从此不再需要，按 ADR-389 的删除规则处理（2026-11-19 已删；以后还要从私有仓库搬旧分支，用 `git show private/main:scripts/export-public.ts` 取回）。
 
 撤回：私有仓库没有动过，`git checkout -B main private/main` 就能回去。
 
