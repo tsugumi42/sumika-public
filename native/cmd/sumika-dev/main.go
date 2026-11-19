@@ -10,6 +10,7 @@ import (
 
 	"sumika-native/internal/devtools/cli"
 	"sumika-native/internal/devtools/gitrun"
+	"sumika-native/internal/devtools/notice"
 	"sumika-native/internal/devtools/selfbuild"
 )
 
@@ -25,6 +26,7 @@ func run() int {
 		exe = r
 	}
 	gitrun.Program = "git" // internal/ 里不许写字面量程序名（archcheck 外部程序规则），由这里注入
+	notice.GhProgram = "gh"
 	selfbuild.CleanOld(exe)
 	if done, code := selfbuild.Prepare(exe, selfbuild.Env{
 		Exe: exe, Args: os.Args[1:], Stderr: os.Stderr,

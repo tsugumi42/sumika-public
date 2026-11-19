@@ -2,13 +2,22 @@ package notice
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 )
+
+// 本包的测试不许连网、不许依赖本机仓库的 origin：Run 里查 CI 的两个接缝默认换成桩，要查 CI 的测试自己再换。
+func TestMain(m *testing.M) {
+	runOrigin = func(string) (string, error) { return "o/r", nil }
+	runGh = func(context.Context, ...string) ([]byte, error) { return nil, errors.New("测试里不许连网") }
+	os.Exit(m.Run())
+}
 
 var testNow = time.Date(2026, 10, 19, 9, 0, 0, 0, time.Local)
 
@@ -245,12 +254,12 @@ func TestRunPrintsSectionAndAlwaysExitsZero(t *testing.T) {
 	d := t.TempDir()
 	today := time.Now().Format("2006-01-02")
 	write(t, d, "巡检-"+today+".md", "# 巡检\n\n## 给主会话\n\n- 有一项没过\n")
-	code, out, errOut := runHook(t, []string{"--reports", d}, t.TempDir(), `{"session_id":"s1","prompt":"你好"}`)
+	code, out, errOut := runHook(t, []string{"--reports", d, "--no-ci"}, t.TempDir(), `{"session_id":"s1","prompt":"你好"}`)
 	if code != 0 || errOut != "" || !strings.Contains(out, "有一项没过") || !strings.HasSuffix(out, "\n") {
 		t.Fatalf("code=%d out=%q err=%q", code, out, errOut)
 	}
 	// 同会话第二次没有新东西
-	if code, out, _ := runHook(t, []string{"--reports", d}, t.TempDir(), `{"session_id":"s1","prompt":"再来"}`); code != 0 || out != "" {
+	if code, out, _ := runHook(t, []string{"--reports", d, "--no-ci"}, t.TempDir(), `{"session_id":"s1","prompt":"再来"}`); code != 0 || out != "" {
 		t.Fatalf("code=%d out=%q", code, out)
 	}
 }
@@ -290,7 +299,7 @@ func TestRunReportDirectoryEntryThatIsADirectoryIsSwallowed(t *testing.T) {
 	if err := os.Mkdir(filepath.Join(d, "复盘-"+today+".md"), 0o755); err != nil { // 名字像报告、实际是目录：读不了
 		t.Fatal(err)
 	}
-	code, out, errOut := runHook(t, []string{"--reports", d}, t.TempDir(), `{"session_id":"s"}`)
+	code, out, errOut := runHook(t, []string{"--reports", d, "--no-ci"}, t.TempDir(), `{"session_id":"s"}`)
 	if code != 0 || out != "" || !strings.Contains(errOut, "出错") {
 		t.Fatalf("code=%d out=%q err=%q", code, out, errOut)
 	}

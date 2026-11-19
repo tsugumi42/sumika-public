@@ -37,9 +37,9 @@ const usage = `sumika-dev：Sumika 的开发工具（仓库脚本和钩子的 Go
   sumika-dev check ui-skill
                         界面技能入口页（.claude/skills/mygo-ui/SKILL.md）点名的包、函数和 mygo 版本要和代码对得上（原 scripts/check-ui-skill.ts）
 
-  sumika-dev notice [--reports 目录]
+  sumika-dev notice [--reports 目录] [--no-ci]
                         主会话的报告提醒（原 scripts/report-notice.ts，Claude Code 的 UserPromptSubmit 钩子）：从标准输入读钩子 JSON，
-                        把近两天复盘、巡检、早报里这个会话没看过的“## 给主会话”打出来；永远退出码 0，出错不挡发消息
+                        把近两天复盘、巡检、早报里这个会话没看过的“## 给主会话”，加上 gh 查到的公开仓库 main 近 48 小时 CI 失败（--no-ci 不查）打出来；永远退出码 0，出错不挡发消息
 
 环境变量：
   SUMIKA_DEV_ROOT=<native 或仓库根>   指定模块根（默认从程序所在位置往上找 native/go.mod）

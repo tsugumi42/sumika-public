@@ -1,6 +1,6 @@
 # 规格：仓库脚本和钩子改写成 Go
 
-> 状态：草稿（2026-11-18）；进度：第 1～4 步已合 main（第 2 步合并提交，第 3 步，第 4 步小关卡见合并 chore/sumika-dev-4 的提交）；第 5 步的通知（`report-notice`）在分支 feat/notice-go 上，已迁成 `sumika-dev notice`，待合 main。来源：ADR-389（主人原话见那条）。参考：盘点 `data/dev/research/盘点-脚本迁Go-Sol-.md`（Sol 只读盘点，每个文件一行，带出处；下文“盘点”指它）；[规格-合并走PR](规格-合并走PR.md)（合并队列和导出器的去留跟它走）。
+> 状态：草稿（2026-11-18）；进度：第 1～4 步已合 main（第 2 步合并提交，第 3 步，第 4 步小关卡见合并 chore/sumika-dev-4 的提交）；第 5 步的通知（`report-notice`）在分支 feat/notice-go 上，已迁成 `sumika-dev notice`，并加了“main 上 CI 失败带进上下文”，待合 main。来源：ADR-389（主人原话见那条）。参考：盘点 `data/dev/research/盘点-脚本迁Go-Sol-.md`（Sol 只读盘点，每个文件一行，带出处；下文“盘点”指它）；[规格-合并走PR](规格-合并走PR.md)（合并队列和导出器的去留跟它走）。
 
 ## 开工卡
 
