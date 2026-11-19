@@ -117,7 +117,9 @@ func TestGitIsAfterExistingAndEditorconfig(t *testing.T) {
 func TestGitMissingOrOutsideRepoFallsThrough(t *testing.T) {
 	dir := newRepo(t, "*.txt eol=crlf\n")
 	useSetting(t, "lf")
-	t.Setenv("PATH", "")
+	old := lookGit
+	lookGit = func() (string, bool) { return "", false }
+	t.Cleanup(func() { lookGit = old })
 	if got := Final(filepath.Join(dir, "a.txt"), nil, "x\ny"); got != "x\ny" {
 		t.Errorf("找不到 git：%q", got)
 	}

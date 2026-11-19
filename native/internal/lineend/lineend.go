@@ -19,6 +19,7 @@ import (
 
 	"sumika-native/internal/edittext"
 	"sumika-native/internal/policy"
+	"sumika-native/internal/toolchain"
 )
 
 const (
@@ -178,11 +179,17 @@ func gitEnv() []string {
 	return out
 }
 
+// lookGit 找 git：外部程序一律向 toolchain 要（archcheck 管着）；测试换掉它来模拟“没装 git”。
+var lookGit = func() (string, bool) {
+	r, ok := toolchain.Lookup("git")
+	return r.Path, ok
+}
+
 // fromGit 照 Git 检出这个文件时会用的换行：-text 原样；eol 属性；core.autocrlf=true；core.eol。
 // git 不在、不在仓库里、超时、出错都算没答案。解析交给 git 自己（.gitattributes 的匹配规则很复杂）
 func fromGit(abs string) (ending string, raw, ok bool) {
-	gitPath, err := exec.LookPath("git")
-	if err != nil {
+	gitPath, found := lookGit()
+	if !found {
 		return "", false, false
 	}
 	dir := filepath.Dir(abs)
