@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { addEntry, decide, nightlyPath, nightlyReminder, normChecks, removeEntry, runQueue, statusText, type Ctx, type NightlyRecord } from './merge-queue'
+import { addEntry, decide, nightlyPath, nightlyReminder, normChecks, pickPr, removeEntry, type RawPr, runQueue, statusText, type Ctx, type NightlyRecord } from './merge-queue'
 import { LINUX, WIN, bad, mkBranch, mkRepo, ok, pr, quiet, running, useQueueTestEnv } from './merge-queue.testlib'
 
 useQueueTestEnv()
@@ -47,7 +47,8 @@ test('PR 状态：已合、已关、冲突、草稿、落后、GitHub 还没算�
   expect(decide(pr({ mergeState: 'BEHIND', checks: [bad(WIN)] }), [WIN]).kind).toBe('red')                  // 红了先修，不替它更新
   expect(decide(pr({ mergeState: 'UNKNOWN' }), [WIN]).kind).toBe('wait')
   expect(decide(pr({ mergeState: '' }), [WIN]).kind).toBe('wait')
-  expect(decide(pr({ mergeState: 'BLOCKED' }), [WIN]).kind).toBe('merge')   // 必过都绿时 BLOCKED 交给 gh pr merge 去说
+  expect(decide(pr({ mergeState: 'BLOCKED' }), [WIN]).kind).toBe('wait')    // 必过都绿 GitHub 还说挡着：不交给 gh 去试
+  expect(decide(pr({ draft: true }), [WIN]).kind).toBe('wait')                 // 草稿（DRAFT 状态已弃用，看 isDraft）
   expect(decide(pr({ mergeState: 'UNSTABLE' }), [WIN]).kind).toBe('merge')  // 不挡合并的检查红
 })
 
@@ -57,6 +58,28 @@ test('同名检查有好几次（重跑）：按最新一次；同一时刻有�
   expect(decide(pr({ checks: [ok(WIN, t1), bad(WIN, 'FAILURE', t2)] }), [WIN]).kind).toBe('red')
   expect(decide(pr({ checks: [ok(WIN, t1), running(WIN, t2)] }), [WIN]).kind).toBe('wait')
   expect(decide(pr({ checks: [ok(WIN, t2), bad(WIN, 'FAILURE', t2)] }), [WIN]).kind).toBe('red')
+})
+
+test('同名检查新的一份没有时间（排队中、gh 给零值时间）：当它最新，旧的绿压不住', () => {
+  const t1 = '2026-11-19T01:00:00Z'
+  for (const at of ['', '0001-01-01T00:00:00Z', '不是时间']) {
+    expect(decide(pr({ checks: [ok(WIN, t1), running(WIN, at)] }), [WIN]).kind).toBe('wait')
+    expect(decide(pr({ checks: [ok(WIN, t1), bad(WIN, 'FAILURE', at)] }), [WIN]).kind).toBe('red')
+  }
+  // 带时区偏移的也按真实先后比：+08:00 的 09:30 早于 Z 的 02:00
+  expect(decide(pr({ checks: [bad(WIN, 'FAILURE', '2026-11-19T09:30:00+08:00'), ok(WIN, '2026-11-19T02:00:00Z')] }), [WIN]).kind).toBe('merge')
+})
+
+test('pickPr：只认本仓库、合进 main 的 PR；fork 里同名分支的、合进别的分支的不算；同时开着两个报错', () => {
+  const raw = (n: number, over: Partial<RawPr> = {}): RawPr => ({ number: n, state: 'OPEN', headRefOid: 'a'.repeat(40), mergeStateStatus: 'CLEAN', url: `u${n}`, statusCheckRollup: [], isCrossRepository: false, baseRefName: 'main', ...over })
+  expect(pickPr([raw(9, { isCrossRepository: true }), raw(3)], 'main')!.number).toBe(3)
+  expect(pickPr([raw(9, { isCrossRepository: true })], 'main')).toBeNull()
+  expect(pickPr([raw(9, { baseRefName: 'feat/x' })], 'main')).toBeNull()
+  expect(pickPr([raw(9, { isCrossRepository: undefined })], 'main')).toBeNull()   // 字段缺了不当本仓库
+  expect(pickPr([raw(5, { state: 'MERGED' }), raw(6)], 'main')!.number).toBe(6)
+  expect(pickPr([raw(5, { state: 'MERGED' }), raw(4, { state: 'CLOSED' })], 'main')!.number).toBe(5)
+  expect(() => pickPr([raw(5), raw(6)], 'main')).toThrow('这个分支有 2 个开着的 PR（#5、#6）')
+  expect(pickPr([raw(5, { isDraft: true })], 'main')!.draft).toBe(true)
 })
 
 test('normChecks：Actions 的检查和外部写的提交状态统一成一种', () => {

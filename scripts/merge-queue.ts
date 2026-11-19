@@ -8,7 +8,7 @@
 //   bun scripts/merge-queue.ts remove <分支>                                           从队列里删一条（正在跑的不删）
 // 状态和锁放 git 公共目录（所有 worktree 共用）：sumika-merge-queue.json、.lock（读改写的短锁）、sumika-merge-queue.runner（执行者锁）。
 // 环境变量（测试和特殊情况用）：SUMIKA_QUEUE_STATE 状态文件、SUMIKA_QUEUE_REMOTE 远端名（默认 origin）、SUMIKA_QUEUE_REPO GitHub 仓库 owner/name（默认从远端地址推）。
-import { readFileSync, renameSync, rmSync, statSync, writeFileSync, openSync, closeSync, mkdirSync } from 'node:fs'
+import { existsSync, readFileSync, renameSync, rmSync, statSync, writeFileSync, openSync, closeSync, mkdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { loadNightly, type NightlyRecord } from './nightly-record'
 
@@ -207,11 +207,13 @@ export function statusText(ctx: Ctx, now = Date.now()) {
 // ---------- GitHub ----------
 // 一条检查：Actions 的 CheckRun 和外部写进来的提交状态（StatusContext）统一成一种
 export type Check = { name: string; done: boolean; conclusion: string; url: string; at: string }
-export type Pr = { number: number; state: string; head: string; mergeState: string; url: string; checks: Check[] }
+export type Pr = { number: number; state: string; head: string; mergeState: string; url: string; checks: Check[]; draft?: boolean }
+// 分支保护里的必过检查；strict 是“要求分支是最新的”
+export type Required = { names: string[]; strict: boolean }
 // 跟 GitHub 打交道的全在这里，测试换成假的
 export type Hub = {
-  findPr: (branch: string) => Pr | null
-  required: (base: string) => string[]
+  findPr: (branch: string, base: string) => Pr | null
+  required: (base: string) => Required
   updateBranch: (pr: Pr) => void
   merge: (pr: Pr, subject: string, body: string) => { ok: boolean; err: string; commit?: string }
 }
@@ -228,12 +230,15 @@ export function normChecks(raw: RawCheck[] | null | undefined): Check[] {
 }
 
 const isGreen = (c: Check) => c.done && c.conclusion === 'SUCCESS'
+// 时间解析成毫秒；空的、解析不了的、gh 给的零值时间（0001-01-01，排队中的检查还没开始）一律当最新，宁可多等不放过
+const timeOf = (at: string) => { const t = Date.parse(at); return Number.isFinite(t) && t > 0 ? t : Number.POSITIVE_INFINITY }
 // 同名的取最新一次（重跑会留下旧记录）；最新时刻有几份时，有一份不绿就算不绿
 function latest(checks: Check[], name: string): Check | undefined {
   const same = checks.filter((c) => c.name === name)
   if (!same.length) return undefined
-  const top = same.reduce((a, b) => (b.at > a.at ? b : a))
-  return same.filter((c) => c.at === top.at).find((c) => !isGreen(c)) ?? top
+  const top = Math.max(...same.map((c) => timeOf(c.at)))
+  const newest = same.filter((c) => timeOf(c.at) === top)
+  return newest.find((c) => !isGreen(c)) ?? newest[0]
 }
 
 export type Decision =
@@ -248,7 +253,7 @@ export function decide(pr: Pr, required: string[]): Decision {
   if (pr.state === 'MERGED') return { kind: 'merged' }
   if (pr.state !== 'OPEN') return { kind: 'red', why: `PR #${pr.number} 已关闭，没合` }
   if (pr.mergeState === 'DIRTY') return { kind: 'red', why: `PR #${pr.number} 和 main 有冲突：本地合上 main、解决了推上去再排` }
-  if (pr.mergeState === 'DRAFT') return { kind: 'wait', why: `PR #${pr.number} 还是草稿，转成正式的再合` }
+  if (pr.draft || pr.mergeState === 'DRAFT') return { kind: 'wait', why: `PR #${pr.number} 还是草稿，转成正式的再合` }
   if (!required.length) return { kind: 'wait', why: 'main 的分支保护里没有必过检查，不合（先在 GitHub 上设好）' }
   const pending: string[] = []
   const lines: string[] = []
@@ -262,6 +267,8 @@ export function decide(pr: Pr, required: string[]): Decision {
   if (pr.mergeState === 'BEHIND') return { kind: 'update' }
   if (pending.length) return { kind: 'wait', why: `等 GitHub 检查：${pending.join('、')}` }
   if (!pr.mergeState || pr.mergeState === 'UNKNOWN') return { kind: 'wait', why: '等 GitHub 算出能不能合' }
+  // 必过都绿了 GitHub 还说挡着：不交给 gh 去试（管理员账号服务端不拦，gh 的预检只看这个状态）
+  if (pr.mergeState === 'BLOCKED') return { kind: 'wait', why: `PR #${pr.number} 必过检查都绿了，GitHub 还说不能合（BLOCKED），去 PR 页面看看` }
   // 不挡合并的检查也写进合并说明，红了看得见
   for (const name of [...new Set(pr.checks.map((c) => c.name))].filter((n) => n && !required.includes(n))) {
     const c = latest(pr.checks, name)!
@@ -288,23 +295,31 @@ export function repoOf(ctx: Ctx): string {
   return m[1]
 }
 
-const PR_FIELDS = 'number,state,headRefOid,mergeStateStatus,url,statusCheckRollup'
-type RawPr = { number: number; state: string; headRefOid: string; mergeStateStatus?: string; url: string; statusCheckRollup?: RawCheck[] }
-const toPr = (v: RawPr): Pr => ({ number: v.number, state: v.state, head: v.headRefOid, mergeState: v.mergeStateStatus ?? '', url: v.url, checks: normChecks(v.statusCheckRollup) })
+const PR_FIELDS = 'number,state,headRefOid,mergeStateStatus,url,statusCheckRollup,isCrossRepository,baseRefName,isDraft'
+export type RawPr = { number: number; state: string; headRefOid: string; mergeStateStatus?: string; url: string; statusCheckRollup?: RawCheck[]; isCrossRepository?: boolean; baseRefName?: string; isDraft?: boolean }
+const toPr = (v: RawPr): Pr => ({ number: v.number, state: v.state, head: v.headRefOid, mergeState: v.mergeStateStatus ?? '', url: v.url, checks: normChecks(v.statusCheckRollup), draft: v.isDraft === true })
+
+// 从 gh pr list --head 的结果里挑这个分支的 PR：--head 不分仓库，fork 里同名分支的 PR 也会列出来，
+// 只认本仓库、合进 base 的；同时开着两个以上说不清合哪个，报错留在队首
+export function pickPr(all: RawPr[], base: string): Pr | null {
+  const mine = all.filter((v) => v.isCrossRepository === false && v.baseRefName === base)
+  const open = mine.filter((v) => v.state === 'OPEN')
+  if (open.length > 1) throw new Error(`这个分支有 ${open.length} 个开着的 PR（${open.map((v) => `#${v.number}`).join('、')}），关掉多余的再合`)
+  const pick = open[0] ?? mine.find((v) => v.state === 'MERGED') ?? mine[0]
+  return pick ? toPr(pick) : null
+}
 
 export const ghHub = (ctx: Ctx): Hub => ({
-  findPr(branch) {
-    const r = gh(ctx, ['pr', 'list', '-R', repoOf(ctx), '--head', branch, '--state', 'all', '--json', PR_FIELDS, '--limit', '10'])
+  findPr(branch, base) {
+    const r = gh(ctx, ['pr', 'list', '-R', repoOf(ctx), '--head', branch, '--base', base, '--state', 'all', '--json', PR_FIELDS, '--limit', '100'])
     if (r.code !== 0) throw new Error(`gh pr list 失败：${firstLine(r.err)}`)
-    const all = JSON.parse(r.out || '[]') as RawPr[]
-    const pick = all.find((v) => v.state === 'OPEN') ?? all.find((v) => v.state === 'MERGED') ?? all[0]
-    return pick ? toPr(pick) : null
+    return pickPr(JSON.parse(r.out || '[]') as RawPr[], base)
   },
   required(base) {
     const r = gh(ctx, ['api', `repos/${repoOf(ctx)}/branches/${base}/protection/required_status_checks`])
     if (r.code !== 0) throw new Error(`读不到 ${base} 的分支保护（${firstLine(r.err)}）`)
-    const v = JSON.parse(r.out) as { contexts?: string[]; checks?: { context: string }[] }
-    return [...new Set([...(v.contexts ?? []), ...(v.checks ?? []).map((c) => c.context)])].filter(Boolean)
+    const v = JSON.parse(r.out) as { strict?: boolean; contexts?: string[]; checks?: { context: string }[] }
+    return { names: [...new Set([...(v.contexts ?? []), ...(v.checks ?? []).map((c) => c.context)])].filter(Boolean), strict: v.strict === true }
   },
   updateBranch(pr) {
     const r = gh(ctx, ['pr', 'update-branch', String(pr.number), '-R', repoOf(ctx)])
@@ -323,29 +338,36 @@ export const ghHub = (ctx: Ctx): Hub => ({
 const isAncestor = (cwd: string, a: string, b: string) => git(cwd, ['merge-base', '--is-ancestor', a, b]).code === 0
 const remoteMain = (ctx: Ctx) => rev(ctx.mainDir, `refs/remotes/${ctx.remote}/${ctx.main}`)
 
-// main 检出在哪个 worktree（可能不是主工作区）；没检出返回空
-function checkedOutAt(ctx: Ctx): string {
+const fetchMain = (ctx: Ctx) => git(ctx.mainDir, ['fetch', '-q', ctx.remote, `+refs/heads/${ctx.main}:refs/remotes/${ctx.remote}/${ctx.main}`])
+
+// main 检出在哪个 worktree（可能不是主工作区）；没检出返回空。登记着但目录已经没了的 worktree 不算（在那里起 git 会直接抛）
+function checkedOutAt(ctx: Ctx): { path: string } | null {
   let path = ''
   for (const line of git(ctx.mainDir, ['worktree', 'list', '--porcelain']).out.split(/\r?\n/)) {
     if (line.startsWith('worktree ')) path = line.slice(9)
-    else if (line === `branch refs/heads/${ctx.main}`) return path
+    else if (line === `branch refs/heads/${ctx.main}` && existsSync(path)) return { path }
   }
-  return ''
+  return null
 }
 
-// 合完把本机 main 快进到远端。只快进：本机 main 有远端没有的提交、工作区不干净都不动，返回说明（空串是对齐了）
+// 合完把本机 main 快进到远端。只快进：本机 main 有远端没有的提交、工作区不干净都不动，返回说明（空串是对齐了）。
+// 合并已经成功了，这里出什么错都只写说明，不能让队列卡在这一步
 export function syncMain(ctx: Ctx): string {
-  const f = git(ctx.mainDir, ['fetch', '-q', ctx.remote, `+refs/heads/${ctx.main}:refs/remotes/${ctx.remote}/${ctx.main}`])
-  if (f.code !== 0) return `本机 ${ctx.main} 没对齐：fetch 失败（${firstLine(f.err)}）`
-  const remote = remoteMain(ctx)
-  const local = rev(ctx.mainDir, ctx.main)
-  if (local === remote) return ''
-  if (!isAncestor(ctx.mainDir, local, remote)) return `本机 ${ctx.main} 有远端没有的提交（${local.slice(0, 8)}），没对齐`
-  const wt = checkedOutAt(ctx)
-  if (!wt) return git(ctx.mainDir, ['update-ref', `refs/heads/${ctx.main}`, remote, local]).code === 0 ? '' : `本机 ${ctx.main} 没对齐：被别人抢先改了`
-  if (git(wt, ['status', '--porcelain', '--untracked-files=no']).out) return `本机 ${ctx.main} 没对齐：${wt} 有没提交的改动，干净后 git pull --ff-only`
-  const r = git(wt, ['merge', '--ff-only', '-q', remote])
-  return r.code === 0 ? '' : `本机 ${ctx.main} 没对齐：${firstLine(r.err)}`
+  try {
+    const f = fetchMain(ctx)
+    if (f.code !== 0) return `本机 ${ctx.main} 没对齐：fetch 失败（${firstLine(f.err)}）`
+    const remote = remoteMain(ctx)
+    const local = rev(ctx.mainDir, `refs/heads/${ctx.main}`)
+    if (local === remote) return ''
+    if (!isAncestor(ctx.mainDir, local, remote)) return `本机 ${ctx.main} 有远端没有的提交（${local.slice(0, 8)}），没对齐`
+    const wt = checkedOutAt(ctx)
+    if (!wt) return git(ctx.mainDir, ['update-ref', `refs/heads/${ctx.main}`, remote, local]).code === 0 ? '' : `本机 ${ctx.main} 没对齐：被别人抢先改了`
+    if (git(wt.path, ['status', '--porcelain', '--untracked-files=no']).out) return `本机 ${ctx.main} 没对齐：${wt.path} 有没提交的改动，干净后 git pull --ff-only`
+    const r = git(wt.path, ['merge', '--ff-only', '-q', remote])
+    return r.code === 0 ? '' : `本机 ${ctx.main} 没对齐：${firstLine(r.err)}`
+  } catch (e) {
+    return `本机 ${ctx.main} 没对齐：${(e as Error).message}`
+  }
 }
 
 // ---------- 执行者 ----------
@@ -378,22 +400,32 @@ export async function processHead(ctx: Ctx, entry: Entry, o: RunOpts = {}): Prom
   const tip = rev(ctx.mainDir, `refs/heads/${entry.branch}`)
   if (!tip) { finish(ctx, entry, { ok: false, reason: `分支 ${entry.branch} 不存在了`, seconds: secs() }); return 'done' }
   setRunning(ctx, entry, '看 PR')
-  let pr: Pr | null, required: string[]
+  let pr: Pr | null, required: Required = { names: [], strict: false }
   try {
-    pr = hub.findPr(entry.branch)
-    if (!pr) { finish(ctx, entry, { ok: false, reason: `没找到 ${entry.branch} 的 PR：先推到 ${ctx.remote}、gh pr create 再排`, seconds: secs(), tip }); return 'done' }
-    required = pr.state === 'OPEN' ? hub.required(ctx.main) : []
+    pr = hub.findPr(entry.branch, ctx.main)
+    if (!pr) { finish(ctx, entry, { ok: false, reason: `没找到 ${entry.branch} 合进 ${ctx.main} 的 PR：先推到 ${ctx.remote}、gh pr create 再排`, seconds: secs(), tip }); return 'done' }
+    if (pr.state === 'OPEN') required = hub.required(ctx.main)
   } catch (e) { return hold(ctx, entry, `问 GitHub 出错：${(e as Error).message}`) }
 
-  if (pr.state === 'OPEN' && tip !== pr.head) {
-    // 本地有没推的提交：PR 上的检查测的不是要合的东西。PR 头比本地新（点过“更新分支”）没关系
+  if (pr.state === 'OPEN') {
+    // 分支保护不要求“分支是最新的”时，下面这道“包含最新 main”的检查就成了唯一的一道，不合（规格第四节）
+    if (!required.strict) return hold(ctx, entry, `${ctx.main} 的分支保护没开“要求分支是最新的”，不合（先在 GitHub 上设好）`)
+    // PR 头和最新 main 都取到本地，下面两道检查自己用 git 判断，不只信 GitHub 异步算的状态
     git(ctx.mainDir, ['fetch', '-q', ctx.remote, `+refs/heads/${entry.branch}:refs/remotes/${ctx.remote}/${entry.branch}`])
-    if (!isAncestor(ctx.mainDir, tip, pr.head)) return hold(ctx, entry, `本地 ${entry.branch}（${tip.slice(0, 8)}）有没推上去的提交，PR 头是 ${pr.head.slice(0, 8)}：推上去再合`)
+    fetchMain(ctx)
+    // 本地有没推的提交：PR 上的检查测的不是要合的东西。PR 头比本地新（点过“更新分支”）没关系
+    if (tip !== pr.head && !isAncestor(ctx.mainDir, tip, pr.head)) return hold(ctx, entry, `本地 ${entry.branch}（${tip.slice(0, 8)}）有没推上去的提交，PR 头是 ${pr.head.slice(0, 8)}：推上去再合`)
   }
 
-  const d = decide(pr, required)
+  let d = decide(pr, required.names)
+  // GitHub 说能合，但 PR 头其实还没包含最新 main（刚合完上一条，GitHub 还没重算）：当落后处理。
+  // 管理员账号合并时服务端不拦“落后”，这一道是队列自己的
+  if (d.kind === 'merge') {
+    const m = remoteMain(ctx)
+    if (!m || !isAncestor(ctx.mainDir, m, pr.head)) d = { kind: 'update' }
+  }
   if (d.kind === 'merged') {
-    git(ctx.mainDir, ['fetch', '-q', ctx.remote, `+refs/heads/${ctx.main}:refs/remotes/${ctx.remote}/${ctx.main}`])
+    fetchMain(ctx)
     // 同名分支以前合过一个 PR、后来又有新提交：不算合了
     if (!isAncestor(ctx.mainDir, tip, remoteMain(ctx))) { finish(ctx, entry, { ok: false, reason: `${entry.branch} 的 PR #${pr.number} 以前合过，之后的提交不在 ${ctx.main} 里：再开一个 PR`, seconds: secs(), tip, pr: pr.url }); return 'done' }
     const note = syncMain(ctx)

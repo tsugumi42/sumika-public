@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { writeFileSync } from 'node:fs'
+import { rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { addEntry, loadState, runQueue, statusText } from './merge-queue'
 import { FakeHub, LINUX, WIN, bad, mainSha, mkBranch, mkRepoWithRemote, ok, quiet, remoteSha, running, sh, useQueueTestEnv } from './merge-queue.testlib'
@@ -147,7 +147,7 @@ test('没有 PR、PR 已关：出队记红；PR 已经在 GitHub 上合了：记
   expect(await runQueue(c, { ...quiet, hub })).toBe('empty')
   const rs = loadState(c.statePath).results
   expect(rs.map((r) => [r.branch, r.ok])).toEqual([['none', false], ['closed', false], ['done', true]])
-  expect(rs[0].reason).toBe('没找到 none 的 PR：先推到 origin、gh pr create 再排')
+  expect(rs[0].reason).toBe('没找到 none 合进 main 的 PR：先推到 origin、gh pr create 再排')
   expect(rs[1].reason).toBe('PR #1 已关闭，没合')
   expect(rs[2].reason).toBe('PR #2 已经在 GitHub 上合了')
   expect(mainSha(c)).toBe(remoteSha(c))
@@ -219,4 +219,46 @@ test('本机 main 对不齐时不硬来：工作区有改动、本机 main 有�
   expect(await runQueue(c3, { ...quiet, hub: hub3 })).toBe('empty')
   expect(loadState(c3.statePath).results[0].reason).not.toContain('没对齐')
   expect(mainSha(c3)).toBe(remoteSha(c3))
+})
+
+test('GitHub 还说能合（状态没重算），但 PR 头没包含最新 main：当落后处理，替它更新分支，不合', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.open('a')
+  addEntry(c, 'a')
+  // 别人在网页上合了别的 PR，main 前进了；GitHub 对 a 的状态还是旧的 CLEAN
+  mkBranch(c, 'other', 'o.txt', 'o\n')
+  hub.merge(hub.open('other'), '别人合的', '')
+  hub.set('a', { mergeState: 'CLEAN' })
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(hub.merges.map((m) => m.subject)).toEqual(['别人合的'])
+  expect(hub.updates).toEqual([1])
+  expect(loadState(c.statePath).queue[0].waiting).toBe('PR #1 落后 main，已点“更新分支”，等 GitHub 检查重跑')
+})
+
+test('分支保护没开“要求分支是最新的”：不合', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.open('a'); addEntry(c, 'a')
+  hub.strict = false
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(hub.merges).toEqual([])
+  expect(loadState(c.statePath).queue[0].waiting).toBe('main 的分支保护没开“要求分支是最新的”，不合（先在 GitHub 上设好）')
+})
+
+test('main 检出在一个目录已经删掉的 worktree 里：合并照常记绿，本机 main 照样跟上，不卡队列', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.open('a'); addEntry(c, 'a')
+  sh(c.mainDir, 'checkout', '-q', '-b', 'other')
+  const gone = join(c.mainDir, '..', `gone-${Date.now()}`)
+  sh(c.mainDir, 'worktree', 'add', '-q', gone, 'main')
+  rmSync(gone, { recursive: true, force: true })
+  expect(await runQueue(c, { ...quiet, hub })).toBe('empty')
+  const r = loadState(c.statePath).results[0]
+  expect(r.ok).toBe(true)
+  expect(sh(c.mainDir, 'rev-parse', 'refs/heads/main')).toBe(remoteSha(c))
 })

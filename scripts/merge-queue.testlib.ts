@@ -82,6 +82,7 @@ function onRemote(c: Ctx, fn: (dir: string) => void) {
 export class FakeHub implements Hub {
   prs = new Map<string, Pr>()
   requiredNames: string[] = [WIN]
+  strict = true
   requiredErr = ''
   findErr = ''
   merges: { number: number; head: string; subject: string; body: string }[] = []
@@ -99,14 +100,14 @@ export class FakeHub implements Hub {
   }
   set(branch: string, over: Partial<Pr>) { Object.assign(this.prs.get(branch)!, over) }
 
-  findPr(branch: string) {
+  findPr(branch: string, _base: string) {
     if (this.findErr) throw new Error(this.findErr)
     const p = this.prs.get(branch)
     return p ? { ...p, checks: [...p.checks] } : null
   }
   required() {
     if (this.requiredErr) throw new Error(this.requiredErr)
-    return [...this.requiredNames]
+    return { names: [...this.requiredNames], strict: this.strict }
   }
   updateBranch(p: Pr) {
     this.updates.push(p.number)
@@ -121,6 +122,8 @@ export class FakeHub implements Hub {
   merge(p: Pr, subject: string, body: string) {
     const [branch, cur] = [...this.prs].find(([, x]) => x.number === p.number)!
     if (cur.head !== p.head) return { ok: false, err: 'Head branch was modified. Review and try the merge again.' }
+    // 真 gh 的预检：这几种状态拒绝合并
+    if (['BLOCKED', 'BEHIND', 'DIRTY'].includes(cur.mergeState)) return { ok: false, err: `Pull request #${p.number} is not mergeable: ${cur.mergeState}` }
     let commit = ''
     onRemote(this.c, (d) => {
       writeFileSync(join(d, '.msg'), `${subject}\n\n${body}\n`)
