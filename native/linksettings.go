@@ -153,13 +153,19 @@ func (a *app) linkEditShown(c *ui.Context, title string, key config.LinkKey, val
 		s.editBox.Open = true
 	}})
 }
+
+// zeroOK 说正在编辑的数字项能不能填 0：站点项和推特卡片高度封顶的 0 是不限 / 不封顶，其余数字项至少 1；具体范围由后台的配置检查定
+func (s *linkPageState) zeroOK() bool {
+	return s.editSite != "" || s.editKey == config.LinkTweetCardMaxH
+}
+
 func (a *app) linkEditSave() {
 	s := &a.linkSettings
 	ch := api.LinkSettingsChange{Key: s.editKey, Text: s.text}
 	ch.Site = s.editSite
 	if s.numeric {
 		n, e := strconv.Atoi(s.number.Text)
-		if e != nil || n < 0 || (n < 1 && s.editSite == "") {
+		if e != nil || n < 0 || (n < 1 && !s.zeroOK()) {
 			s.editError = "请输入范围内的整数"
 			return
 		}
@@ -238,6 +244,16 @@ func (a *app) pageLinkSettingsBody(c *ui.Context) {
 		a.linkToggle(c, "图被拒收后旋转重发一次", config.LinkRotateOnReject, e.RotateOnReject)
 		a.linkToggle(c, "拼接后另附原图", config.LinkPanoramaOriginals, e.PanoramaOriginals)
 		a.linkToggle(c, "纯文字推文画成卡片", config.LinkTweetTextCard, e.TweetCard.TextOnly)
+		themes := []string{config.TweetThemeAuto, config.TweetThemeLight, config.TweetThemeDark}
+		a.settingsOneOfHint(c, "link-tweet-theme", "推特卡片配色", "自动：北京时间 6～18 点浅色，其余深色", []string{"自动", "浅色", "深色"}, []string{"推特卡片：自动（北京时间 6～18 点浅色）", "推特卡片：浅色", "推特卡片：深色"}, max(slices.Index(themes, e.TweetCard.Theme), 0), s.busy, func(i int) {
+			a.linkJob(&api.LinkSettingsChange{Key: config.LinkTweetCardTheme, Text: themes[i]})
+		})
+		height := strconv.Itoa(e.TweetCard.MaxHeight)
+		shownHeight := height
+		if e.TweetCard.MaxHeight == 0 {
+			shownHeight = "不封顶"
+		}
+		a.linkEditShown(c, "推特卡片高度封顶（像素，0 不封顶，480～8000）", config.LinkTweetCardMaxH, height, shownHeight, true)
 		a.linkToggle(c, "翻译外文正文", config.LinkTranslateEnabled, e.Translate.Enabled)
 		a.linkEdit(c, "翻译成什么语言", config.LinkTranslateTarget, e.Translate.Target, false)
 		a.linkEdit(c, "翻译时限（秒，1～60）", config.LinkTranslateTimeout, strconv.Itoa(e.Translate.TimeoutSeconds), true)
@@ -333,10 +349,12 @@ func (a *app) linkDialogs(c *ui.Context) {
 				limit = 60
 			} else if s.editKey == config.LinkSiteForwardBytes {
 				limit = 17500
+			} else if s.editKey == config.LinkTweetCardMaxH {
+				limit = 8000
 			} else if s.editSite != "" {
 				limit = 100000
 			}
-			a.settingsNumber(c, "link-number-input", &s.number, "编辑插件数值", limit, false, false, func(value string) { s.number.Text = value; a.linkEditSave() })
+			a.settingsNumber(c, "link-number-input", &s.number, "编辑插件数值", limit, s.zeroOK(), false, func(value string) { s.number.Text = value; a.linkEditSave() })
 		} else {
 			a.settingsField(c, "link-text-input", &s.text, "编辑插件文字", a.linkEditSave)
 		}

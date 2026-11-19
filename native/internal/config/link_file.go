@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"slices"
 	"strconv"
@@ -46,6 +47,16 @@ const (
 	LinkVideoTimeout      LinkKey = "videoTimeout"
 	LinkVideoMaxMB        LinkKey = "videoMaxMB"
 	LinkImageMaxMB        LinkKey = "imageMaxMB"
+	LinkTweetCardTheme    LinkKey = "tweetCardTheme"     // auto / light / dark（tweetCard.check 查）
+	LinkTweetCardMaxH     LinkKey = "tweetCardMaxHeight" // 0 不封顶或 480～8000 像素（tweetCard.check 查）
+	LinkDirectImageMax    LinkKey = "directImageMax"
+	LinkStripHashtags     LinkKey = "stripTrailingHashtags"
+	LinkArtistMode        LinkKey = "artistMode"
+	LinkArtistAutoDetect  LinkKey = "artistAutoDetect"
+	LinkEchoWait          LinkKey = "echoWaitMS"
+	LinkHistoryCheck      LinkKey = "historyCheck"
+	LinkForwardVideo      LinkKey = "forwardVideo"
+	LinkForwardQuoteReply LinkKey = "forwardQuoteReply"
 	LinkTweetTextCard     LinkKey = "tweetTextCard" // 纯文字推文画推特卡片（tweetCard.textOnly，ADR-399）
 )
 
@@ -59,50 +70,151 @@ type LinkChange struct {
 	Conversations []string
 }
 
+// linkValueKind 是单值链接键的值放在 LinkChange 的哪个字段
+type linkValueKind int
+
+const (
+	linkBool linkValueKind = iota
+	linkInt
+	linkText
+)
+
+// linkScalar 是只写一个值的链接键。path 相对 linkReader，设置登记里的键名就是 "linkReader." 加 path（LinkChangeFor 按它反查），
+// 所以设置页和设置工具走同一条写入路径。取值范围统一由 Parse 的 check 查；check 只给几项更好懂的报错，先于写文件。
+type linkScalar struct {
+	path  string
+	kind  linkValueKind
+	check func(LinkChange) error
+}
+
+var linkScalars = map[LinkKey]linkScalar{
+	LinkContextEnabled:    {path: "context.enabled", kind: linkBool},
+	LinkEnabled:           {path: "expand.enabled", kind: linkBool},
+	LinkBareBiliID:        {path: "expand.bareBiliID", kind: linkBool},
+	LinkStartEmoji:        {path: "expand.startEmoji", kind: linkText, check: checkLinkEmoji},
+	LinkDoneEmoji:         {path: "expand.doneEmoji", kind: linkText, check: checkLinkEmoji},
+	LinkFailEmoji:         {path: "expand.failEmoji", kind: linkText, check: checkLinkEmoji},
+	LinkRotateOnReject:    {path: "expand.rotateOnReject", kind: linkBool},
+	LinkPanoramaOriginals: {path: "expand.panoramaOriginals", kind: linkBool},
+	LinkTweetTextCard:     {path: "expand.tweetCard.textOnly", kind: linkBool},
+	LinkMaxLinks:          {path: "expand.maxLinks", kind: linkInt},
+	LinkImageMaxMB:        {path: "expand.imageMaxMB", kind: linkInt},
+	LinkPrivateStatus:     {path: "expand.privateStatus", kind: linkText},
+	LinkTranslateEnabled:  {path: "expand.translate.enabled", kind: linkBool},
+	LinkTranslateTarget: {path: "expand.translate.target", kind: linkText, check: func(ch LinkChange) error {
+		if !translateTarget(ch.Text) {
+			return errors.New("目标语言名须为1～40字，不含换行、尖括号和花括号")
+		}
+		return nil
+	}},
+	LinkTranslateTimeout: {path: "expand.translate.timeoutSeconds", kind: linkInt, check: func(ch LinkChange) error {
+		if ch.Int < 1 || ch.Int > 60 {
+			return errors.New("翻译时限须在1～60秒")
+		}
+		return nil
+	}},
+	LinkTranslateRetries: {path: "expand.translate.retries", kind: linkInt, check: func(ch LinkChange) error {
+		if ch.Int < 0 || ch.Int > 3 {
+			return errors.New("翻译超时重试次数须在0～3次")
+		}
+		return nil
+	}},
+	LinkTranslateModel: {path: "expand.translate.model", kind: linkText, check: func(ch LinkChange) error {
+		if !translateModelOK(ch.Text) {
+			return errors.New("模型 ID 不能带首尾空白或换行，最多200字；留空跟后台模型")
+		}
+		return nil
+	}},
+	LinkVideoEnabled: {path: "expand.video.enabled", kind: linkBool},
+	LinkVideoTimeout: {path: "expand.video.timeoutSeconds", kind: linkInt},
+	LinkVideoMaxMB:   {path: "expand.video.maxMB", kind: linkInt},
+	// 以下各项除推特卡片两项外，范围只由 Parse 的 check 查
+	LinkTweetCardTheme: {path: "expand.tweetCard.theme", kind: linkText, check: func(ch LinkChange) error { return checkTweetCard("推特卡片配色", LinkTweetCard{Theme: ch.Text}) }},
+	LinkTweetCardMaxH: {path: "expand.tweetCard.maxHeight", kind: linkInt, check: func(ch LinkChange) error {
+		return checkTweetCard("推特卡片高度封顶", LinkTweetCard{MaxHeight: ch.Int})
+	}},
+	LinkDirectImageMax:    {path: "expand.directImageMax", kind: linkInt},
+	LinkStripHashtags:     {path: "expand.text.stripTrailingHashtags", kind: linkBool},
+	LinkArtistMode:        {path: "expand.artist.mode", kind: linkText},
+	LinkArtistAutoDetect:  {path: "expand.artist.autoDetect", kind: linkBool},
+	LinkEchoWait:          {path: "expand.send.echoWaitMS", kind: linkInt},
+	LinkHistoryCheck:      {path: "expand.send.historyCheck", kind: linkBool},
+	LinkForwardVideo:      {path: "expand.send.forwardVideo", kind: linkBool},
+	LinkForwardQuoteReply: {path: "expand.send.forwardQuoteReply", kind: linkBool},
+}
+
+// checkTweetCard 用推特卡片自己的检查（只填了要写的那一项，另一项是合法的零值），报错把键名换成设置页上的叫法
+func checkTweetCard(name string, t LinkTweetCard) error {
+	if bad := t.check(); len(bad) > 0 {
+		_, msg, _ := strings.Cut(bad[0], "：")
+		return errors.New(name + "：" + msg)
+	}
+	return nil
+}
+
+func checkLinkEmoji(ch LinkChange) error {
+	if ch.Text != "" {
+		if n, err := strconv.ParseUint(ch.Text, 10, 32); err != nil || n == 0 {
+			return errors.New("表情编号须为正整数，留空关闭")
+		}
+	}
+	return nil
+}
+
+// linkScalarKeys 是设置登记键名到 LinkKey 的反查表
+var linkScalarKeys = func() map[string]LinkKey {
+	m := make(map[string]LinkKey, len(linkScalars))
+	for k, f := range linkScalars {
+		m["linkReader."+f.path] = k
+	}
+	return m
+}()
+
+// LinkChangeFor 把设置登记里的单值链接键和它的 JSON 值换成 LinkChange；ok 为 false 是这张表里没有这个键。
+func LinkChangeFor(key string, raw json.RawMessage) (ch LinkChange, ok bool, err error) {
+	k, ok := linkScalarKeys[key]
+	if !ok {
+		return ch, false, nil
+	}
+	ch.Key = k
+	var target any = &ch.Text
+	switch linkScalars[k].kind {
+	case linkBool:
+		target = &ch.Bool
+	case linkInt:
+		target = &ch.Int
+	}
+	if json.Unmarshal(raw, target) != nil {
+		return ch, true, errors.New("设置值类型不正确")
+	}
+	return ch, true, nil
+}
+
 func (ch LinkChange) targets() ([]configEdit, error) {
+	if f, ok := linkScalars[ch.Key]; ok {
+		if f.check != nil {
+			if err := f.check(ch); err != nil {
+				return nil, err
+			}
+		}
+		var value any = ch.Text
+		switch f.kind {
+		case linkBool:
+			value = ch.Bool
+		case linkInt:
+			value = ch.Int
+		}
+		return []configEdit{{path: append([]string{"linkReader"}, strings.Split(f.path, ".")...), value: value}}, nil
+	}
 	path := []string{"linkReader", "expand"}
 	var value any
 	switch ch.Key {
-	case LinkContextEnabled:
-		return []configEdit{{path: []string{"linkReader", "context", "enabled"}, value: ch.Bool}}, nil
 	case LinkList:
 		ids := ch.Conversations
 		if ids == nil {
 			ids = []string{}
 		}
 		return []configEdit{{path: append(path, "mode"), value: ch.Mode}, {path: []string{"linkReader", "expand", "conversations"}, value: ids}}, nil
-	case LinkEnabled:
-		path = append(path, "enabled")
-		value = ch.Bool
-	case LinkBareBiliID:
-		path = append(path, "bareBiliID")
-		value = ch.Bool
-	case LinkStartEmoji, LinkDoneEmoji, LinkFailEmoji:
-		if ch.Text != "" {
-			if n, err := strconv.ParseUint(ch.Text, 10, 32); err != nil || n == 0 {
-				return nil, errors.New("表情编号须为正整数，留空关闭")
-			}
-		}
-		path = append(path, string(ch.Key))
-		value = ch.Text
-	case LinkRotateOnReject:
-		path = append(path, "rotateOnReject")
-		value = ch.Bool
-	case LinkPanoramaOriginals:
-		path = append(path, "panoramaOriginals")
-		value = ch.Bool
-	case LinkTweetTextCard:
-		path = append(path, "tweetCard", "textOnly")
-		value = ch.Bool
-	case LinkMaxLinks:
-		path = append(path, "maxLinks")
-		value = ch.Int
-	case LinkImageMaxMB:
-		path = append(path, "imageMaxMB")
-		value = ch.Int
-	case LinkPrivateStatus:
-		path = append(path, "privateStatus")
-		value = ch.Text
 	case LinkTemplate:
 		site, _, ok := linktemplate.SiteByKey(ch.Site)
 		if !ok {
@@ -211,48 +323,12 @@ func (ch LinkChange) targets() ([]configEdit, error) {
 			return configEdit{path: append(slices.Clone(base), name), value: v}
 		}
 		return []configEdit{edit("nodeName", ch.Card.NodeName), edit("source", ch.Card.Source), edit("news", news), edit("summary", ch.Card.Summary), edit("prompt", ch.Card.Prompt)}, nil
-	case LinkTranslateEnabled:
-		path = append(path, "translate", "enabled")
-		value = ch.Bool
-	case LinkTranslateTarget:
-		if !translateTarget(ch.Text) {
-			return nil, errors.New("目标语言名须为1～40字，不含换行、尖括号和花括号")
-		}
-		path = append(path, "translate", "target")
-		value = ch.Text
-	case LinkTranslateTimeout:
-		if ch.Int < 1 || ch.Int > 60 {
-			return nil, errors.New("翻译时限须在1～60秒")
-		}
-		path = append(path, "translate", "timeoutSeconds")
-		value = ch.Int
-	case LinkTranslateRetries:
-		if ch.Int < 0 || ch.Int > 3 {
-			return nil, errors.New("翻译超时重试次数须在0～3次")
-		}
-		path = append(path, "translate", "retries")
-		value = ch.Int
-	case LinkTranslateModel:
-		if !translateModelOK(ch.Text) {
-			return nil, errors.New("模型 ID 不能带首尾空白或换行，最多200字；留空跟后台模型")
-		}
-		path = append(path, "translate", "model")
-		value = ch.Text
 	case LinkPlatformTranslate:
 		if _, ok := linktemplate.PlatformByID(ch.Site); !ok {
 			return nil, errors.New("不认识的网站")
 		}
 		path = append(path, "platforms", ch.Site, "translate")
 		value = ch.Bool
-	case LinkVideoEnabled:
-		path = append(path, "video", "enabled")
-		value = ch.Bool
-	case LinkVideoTimeout:
-		path = append(path, "video", "timeoutSeconds")
-		value = ch.Int
-	case LinkVideoMaxMB:
-		path = append(path, "video", "maxMB")
-		value = ch.Int
 	default:
 		return nil, errors.New("链接设置不允许写这个键")
 	}

@@ -281,6 +281,11 @@ func patchSettings(raw []byte, file string, edits []configEdit) ([]byte, Config,
 		m := expected
 		for _, key := range edit.path[:len(edit.path)-1] {
 			nested, ok := m[key].(map[string]any)
+			if !ok && edit.remove {
+				// 要删的键连上层都没有：文件不会变，预期里也不能凭空多出一层空表（delete 对 nil 表什么都不做）
+				m = nil
+				break
+			}
 			if !ok {
 				nested = map[string]any{}
 				m[key] = nested

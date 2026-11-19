@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"sumika-native/internal/api"
@@ -202,49 +203,12 @@ func registryModelChange(ch api.SettingChange) (config.ModelChange, error) {
 }
 
 func (a *App) registryLinkChange(ch api.SettingChange) (config.LinkChange, error) {
+	if c, ok, err := config.LinkChangeFor(ch.Key, ch.Value); ok {
+		return c, err
+	}
 	var c config.LinkChange
 	var target any
 	switch ch.Key {
-	case "linkReader.context.enabled":
-		c.Key, target = config.LinkContextEnabled, &c.Bool
-	case "linkReader.expand.enabled":
-		c.Key, target = config.LinkEnabled, &c.Bool
-	case "linkReader.expand.maxLinks":
-		c.Key, target = config.LinkMaxLinks, &c.Int
-	case "linkReader.expand.imageMaxMB":
-		c.Key, target = config.LinkImageMaxMB, &c.Int
-	case "linkReader.expand.bareBiliID":
-		c.Key, target = config.LinkBareBiliID, &c.Bool
-	case "linkReader.expand.startEmoji":
-		c.Key, target = config.LinkStartEmoji, &c.Text
-	case "linkReader.expand.doneEmoji":
-		c.Key, target = config.LinkDoneEmoji, &c.Text
-	case "linkReader.expand.failEmoji":
-		c.Key, target = config.LinkFailEmoji, &c.Text
-	case "linkReader.expand.rotateOnReject":
-		c.Key, target = config.LinkRotateOnReject, &c.Bool
-	case "linkReader.expand.panoramaOriginals":
-		c.Key, target = config.LinkPanoramaOriginals, &c.Bool
-	case "linkReader.expand.tweetCard.textOnly":
-		c.Key, target = config.LinkTweetTextCard, &c.Bool
-	case "linkReader.expand.privateStatus":
-		c.Key, target = config.LinkPrivateStatus, &c.Text
-	case "linkReader.expand.translate.enabled":
-		c.Key, target = config.LinkTranslateEnabled, &c.Bool
-	case "linkReader.expand.translate.target":
-		c.Key, target = config.LinkTranslateTarget, &c.Text
-	case "linkReader.expand.translate.timeoutSeconds":
-		c.Key, target = config.LinkTranslateTimeout, &c.Int
-	case "linkReader.expand.translate.retries":
-		c.Key, target = config.LinkTranslateRetries, &c.Int
-	case "linkReader.expand.translate.model":
-		c.Key, target = config.LinkTranslateModel, &c.Text
-	case "linkReader.expand.video.enabled":
-		c.Key, target = config.LinkVideoEnabled, &c.Bool
-	case "linkReader.expand.video.timeoutSeconds":
-		c.Key, target = config.LinkVideoTimeout, &c.Int
-	case "linkReader.expand.video.maxMB":
-		c.Key, target = config.LinkVideoMaxMB, &c.Int
 	case "linkReader.expand.mode", "linkReader.expand.conversations":
 		before, err := config.LoadIn(a.root, a.opt.DataDir)
 		if err != nil {
@@ -256,6 +220,15 @@ func (a *App) registryLinkChange(ch api.SettingChange) (config.LinkChange, error
 		} else {
 			target = &c.Conversations
 		}
+	case "linkReader.expand.forward.nodeName", "linkReader.expand.forward.source", "linkReader.expand.forward.news", "linkReader.expand.forward.summary", "linkReader.expand.forward.prompt":
+		// 合并转发外观五项是一组（LinkForward.Check 一起查）：从当前配置取整组，只换这一项
+		before, err := config.LoadIn(a.root, a.opt.DataDir)
+		if err != nil {
+			return c, err
+		}
+		c.Key, c.Card = config.LinkForwardCard, before.LinkReader.Expand.Forward
+		c.Card.News = slices.Clone(c.Card.News)
+		target = map[string]any{"nodeName": &c.Card.NodeName, "source": &c.Card.Source, "news": &c.Card.News, "summary": &c.Card.Summary, "prompt": &c.Card.Prompt}[strings.TrimPrefix(ch.Key, "linkReader.expand.forward.")]
 	default:
 		return c, errors.New("设置没有写入入口")
 	}

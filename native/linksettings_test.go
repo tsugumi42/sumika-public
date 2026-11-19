@@ -76,16 +76,17 @@ func (h *linkHarness) click(t *testing.T, label string) {
 		if !ok {
 			t.Fatalf("找不到 %s：%v", label, h.tt.Texts())
 		}
-		if r.Y >= 0 && r.Y+r.H <= float32(h.height) {
+		if r.H > 0 && r.Y >= 0 && r.Y+r.H <= float32(h.height) {
 			if e := h.tt.Click(label); e != nil {
 				t.Fatal(e)
 			}
 			h.tt.Frame()
 			return
 		}
-		dy := float32(-400)
-		if r.Y < 0 {
-			dy = 400
+		// 正数往下滚。滚出视口裁掉的行框是 0×0：在上面的停在 Y=0，在下面的停在窗口下沿外
+		dy := float32(400)
+		if r.Y < 0 || (r.H == 0 && r.Y <= 0) {
+			dy = -400
 		}
 		h.tt.Scroll(float32(h.width-20), float32(h.height/2), 0, dy)
 		h.tt.Frame()
@@ -93,7 +94,7 @@ func (h *linkHarness) click(t *testing.T, label string) {
 	t.Fatalf("不能滚动到 %s", label)
 }
 func TestPluginSettingsInteraction(t *testing.T) {
-	h := newLinkHarness(t, 2048, 1500, 1000) // 展开设置加了翻译四行（含翻译模型）、站点页加了合并转发说明和显示简介，页面变长，高度跟着加
+	h := newLinkHarness(t, 2048, 1030, 1000)
 	h.click(t, "链接解析（link-reader）")
 	h.click(t, "选择会话")
 	h.wait(t)

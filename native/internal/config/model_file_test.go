@@ -174,3 +174,19 @@ func TestModelFileVersionAndHistory(t *testing.T) {
 		}
 	}
 }
+
+// 文件里没有 defaults 这一段时，把后台模型清空（写空串就是删掉这一项）不改文件、不报错；
+// 以前自检的预期表会凭空多出 defaults: {}，报“目标以外的键发生变化”。
+func TestModelClearAbsentKey(t *testing.T) {
+	raw := []byte("agent: {}\n")
+	empty := ""
+	for _, ch := range []ModelChange{{Field: BackgroundModel, String: &empty}, {Field: CharacterBackground, Character: "example", String: &empty}} {
+		out, _, err := PatchModel(raw, "fixture.yml", ch)
+		if err != nil {
+			t.Fatalf("%s：%v", ch.Field, err)
+		}
+		if string(out) != string(raw) {
+			t.Fatalf("%s：文件不该变：\n%s", ch.Field, out)
+		}
+	}
+}
