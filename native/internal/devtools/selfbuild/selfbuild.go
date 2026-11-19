@@ -182,6 +182,9 @@ type Env struct {
 // 先看 SUMIKA_DEV_GO，再用编出本程序的那套 Go（runtime.GOROOT）里的 bin/go。
 func goBinary() (string, error) { return goBinaryFrom(runtime.GOROOT()) }
 
+// GoBinary 是 goBinary 的导出版：hook pre-commit 的 go vet 和自我重编用同一套 Go。
+func GoBinary() (string, error) { return goBinary() }
+
 func goBinaryFrom(goroot string) (string, error) {
 	p := os.Getenv(EnvGo)
 	if p == "" {
