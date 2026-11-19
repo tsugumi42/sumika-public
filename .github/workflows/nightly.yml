@@ -1,0 +1,118 @@
+# 每日整套搬到公开仓库（ADR-398 第 3 条，规格-每日整套“搬到公开仓库的定时工作流”一节）：每天北京时间 04:30 在 Windows 机器上跑不带 -short 的整套。
+#
+# 和 ci.yml 的分工：ci.yml 在 PR 上跑 -short（慢的对拍、压力、规模测试跳过），这里每天把它们跑满一次，不挡合并。
+# 和本机 scripts/nightly.ts 的关系：本机那一份照旧留着，直到两边并行几天、对出 CI 上因为缺字体、ffmpeg、中文 pwsh 跳过了哪些测试，
+# 再决定本机缩成只跑这几类还是停掉（停本机任务计划要先问主人）。
+#
+# 和本机版的不同：Go 整套和检查脚本的 bun 测试各跑各的，谁红都不挡另一个。本机版是脚本测试先跑、红了 Go 部分就不跑，
+# 2026-11-17、11-19 两晚因此一个 Go 包都没测（data/dev/test-runs/nightly-2026111{7,9}-*.txt）。
+name: nightly
+
+on:
+  schedule:
+    - cron: "30 20 * * *" # UTC 20:30 = 北京时间 04:30；GitHub 高峰时会晚几分钟到几十分钟才起
+  workflow_dispatch:
+  # 改这个文件的 PR 上跑一次：定时和手动触发只认默认分支上的文件，不这样改了以后要合进 main 才知道能不能跑
+  pull_request:
+    paths: [".github/workflows/nightly.yml"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  full:
+    if: github.event.repository.private == false
+    name: full (windows-latest)
+    # 只跑 Windows：产品现在只支持 Windows；Linux 一格在 ci.yml 里还没修绿（待办第八节），整套先不加它
+    runs-on: windows-latest
+    # 本机整套 11-18 跑了 25 分钟（8 核）；runner 是 4 核，按三倍再留余量
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: native/go.mod
+          cache-dependency-path: native/go.sum
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      - name: 安装 Bun 依赖
+        run: bun install --frozen-lockfile
+
+      # 同 ci.yml：runner 的 TEMP 是 8.3 短名，“路径必须就是它自己”的检查会把整片测试判成走了链接
+      - name: 临时目录用长路径
+        shell: pwsh
+        run: |
+          $t = Join-Path $env:RUNNER_TEMP 'gotmp'
+          New-Item -ItemType Directory -Force $t | Out-Null
+          $t = (Get-Item $t).FullName
+          "TEMP=$t" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          "TMP=$t" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
+      - name: go vet
+        working-directory: native
+        run: go vet ./...
+
+      # 本机整套也跑这一道（go-verify 的 mygo vet）：查界面代码有没有把 build 期的值存下来、协程里抓了 Context
+      - name: mygo vet
+        if: ${{ !cancelled() }}
+        working-directory: native
+        run: go tool mygo vet .
+
+      # 不带 -short；-timeout 20m 和本机 go-verify 同一个口径（几个慢包在负载下会过 Go 默认的 10 分钟）。
+      # 输出另存一份传成产物：整套的输出很长，网页上的日志不好翻，巡检和对账要下载下来按包查。
+      - name: go test 整套
+        id: gotest
+        if: ${{ !cancelled() }}
+        shell: bash
+        working-directory: native
+        run: |
+          set -o pipefail
+          go test -count=1 -timeout 20m ./... 2>&1 | tee ../go-test-full.txt
+
+      - name: 检查脚本的 bun 测试
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          set -o pipefail
+          bun -e '
+            const { SCRIPT_TESTS } = await import("./scripts/server-verify.ts")
+            const p = Bun.spawnSync([process.execPath, "test", ...SCRIPT_TESTS], { stdout: "inherit", stderr: "inherit" })
+            process.exit(p.exitCode ?? 1)
+          ' 2>&1 | tee bun-test-scripts.txt
+
+      # 红的包一眼看到：写进这次运行的摘要页
+      - name: 红的包
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          {
+            echo "## go test 整套"
+            if [ -f go-test-full.txt ]; then
+              n_ok=$(grep -c '^ok ' go-test-full.txt || true)
+              echo "过了 ${n_ok} 个包。"
+              if grep -q '^FAIL\s' go-test-full.txt; then
+                echo; echo "红的包："; echo '```'; grep '^FAIL\s' go-test-full.txt | head -40; echo '```'
+              fi
+            else
+              echo "没跑到（前面的步骤失败了）。"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 上传输出
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-output
+          path: |
+            go-test-full.txt
+            bun-test-scripts.txt
+          retention-days: 30
+          if-no-files-found: warn
