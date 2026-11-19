@@ -1,6 +1,6 @@
 # 规格：仓库脚本和钩子改写成 Go
 
-> 状态：草稿（2026-11-18）；进度：第 1～4 步已合 main（第 2 步合并提交，第 3 步，第 4 步小关卡见合并 chore/sumika-dev-4 的提交）。来源：ADR-389（主人原话见那条）。参考：盘点 `data/dev/research/盘点-脚本迁Go-Sol-.md`（Sol 只读盘点，每个文件一行，带出处；下文“盘点”指它）；[规格-合并走PR](规格-合并走PR.md)（合并队列和导出器的去留跟它走）。
+> 状态：草稿（2026-11-18）；进度：第 1～4 步已合 main（第 2 步合并提交，第 3 步，第 4 步小关卡见合并 chore/sumika-dev-4 的提交）；第 5 步的通知（`report-notice`）在分支 feat/notice-go 上，已迁成 `sumika-dev notice`，待合 main。来源：ADR-389（主人原话见那条）。参考：盘点 `data/dev/research/盘点-脚本迁Go-Sol-.md`（Sol 只读盘点，每个文件一行，带出处；下文“盘点”指它）；[规格-合并走PR](规格-合并走PR.md)（合并队列和导出器的去留跟它走）。
 
 ## 开工卡
 
@@ -62,7 +62,7 @@
 | 小关卡 | `check-commit-msg.ts`、`check-conflict-markers.ts`、`check-gofmt.ts`（必须查暂存区内容）、`check-ui-skill.ts` | 各自的例外规则 |
 | 挑包和分片 | `go-affected.ts`、`go-shard.ts`、`nightly-record.ts`、`go-test-times.ts` | 直接导入方、穿透没有测试的包、根包例外、archcheck；分片退出码聚合 |
 | 下载和素材 | `fetch-tools.ts`、`fetch-ort.ts`、`lib/zip.ts`、`lib/tgz.ts`、`gen-mingcute.ts`、`update-twemoji.ts` | 固定摘要、不取最新；解包拒绝越界路径；许可文件 |
-| 其他 | `report-notice.ts`、`dsh-ask.ts`、`dsh-readonly.yml`（原样留） | 通知出错不挡发消息；dsh 默认只读 |
+| 其他 | `report-notice.ts`（已迁，`sumika-dev notice`）、`dsh-ask.ts`、`dsh-readonly.yml`（原样留） | 通知出错不挡发消息；dsh 默认只读 |
 | 测试 | 各 `*.test.ts`、`test/*.test.ts` | 跟被测工具一起迁成 Go 测试，临时目录用 `t.TempDir()` |
 
 ## 重新设计

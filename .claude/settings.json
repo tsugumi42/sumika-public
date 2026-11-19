@@ -5,8 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun scripts/report-notice.ts",
-            "timeout": 10
+            "command": "{ [ -s native/bin/sumika-dev.exe ] || { (cd native && go build -o bin/sumika-dev.exe.new.$$ ./cmd/sumika-dev) && mv native/bin/sumika-dev.exe.new.$$ native/bin/sumika-dev.exe; }; } && env -u SUMIKA_DEV_NO_REBUILD -u SUMIKA_DEV_REEXEC_DONE -u SUMIKA_DEV_ROOT native/bin/sumika-dev.exe notice; exit 0",
+            "timeout": 30
           }
         ]
       }

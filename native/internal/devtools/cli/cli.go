@@ -13,6 +13,7 @@ import (
 	"sumika-native/internal/devtools/conflicts"
 	"sumika-native/internal/devtools/docs"
 	"sumika-native/internal/devtools/gofmt"
+	"sumika-native/internal/devtools/notice"
 	"sumika-native/internal/devtools/private"
 	"sumika-native/internal/devtools/selfbuild"
 	"sumika-native/internal/devtools/uiskill"
@@ -35,6 +36,10 @@ const usage = `sumika-dev：Sumika 的开发工具（仓库脚本和钩子的 Go
                         提交说明的标题检查（原 scripts/check-commit-msg.ts）：超 40 字、带分号、带 ADR 编号就拦
   sumika-dev check ui-skill
                         界面技能入口页（.claude/skills/mygo-ui/SKILL.md）点名的包、函数和 mygo 版本要和代码对得上（原 scripts/check-ui-skill.ts）
+
+  sumika-dev notice [--reports 目录]
+                        主会话的报告提醒（原 scripts/report-notice.ts，Claude Code 的 UserPromptSubmit 钩子）：从标准输入读钩子 JSON，
+                        把近两天复盘、巡检、早报里这个会话没看过的“## 给主会话”打出来；永远退出码 0，出错不挡发消息
 
 环境变量：
   SUMIKA_DEV_ROOT=<native 或仓库根>   指定模块根（默认从程序所在位置往上找 native/go.mod）
@@ -91,6 +96,14 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		}
 		fmt.Fprintf(stderr, "check 后面要跟检查名（现有：%s）\n%s", strings.Join(checkNames(), "、"), usage)
 		return 2
+	case "notice":
+		// 钩子：任何错误都不能挡住用户发消息，找不到仓库根也只写一行 stderr、退出码 0
+		root, err := repoRoot()
+		if err != nil {
+			fmt.Fprintln(stderr, "notice：找不到仓库根，已忽略：", err)
+			return 0
+		}
+		return notice.Run(args[1:], root, os.Stdin, stdout, stderr)
 	case "-h", "-help", "--help", "help":
 		fmt.Fprint(stdout, usage)
 		return 0
