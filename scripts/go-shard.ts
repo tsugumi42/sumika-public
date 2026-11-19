@@ -8,7 +8,7 @@
 // 以前按名字轮流发牌，几条 20 多秒的大测试凑到同一份，整包要等这一份（根包 240 秒、app 115 秒）。
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
-import { basename, isAbsolute, join } from 'node:path'
+import { isAbsolute, join, win32 } from 'node:path'
 
 // 只分慢包（2026-11-09 不挤时量的串行耗时：根包 140 秒、memory 90 秒、turn 65 秒）；别的包不值得。
 // app 2026-11-12 改成包内 t.Parallel 后单进程 42～46 秒，再分进程没有额外收益（实测 52 秒），从名单里拿掉
@@ -55,7 +55,8 @@ export function parseTimes(out: string): Record<string, number> {
 }
 
 /** 测试程序叫 sumika-native.test.exe、app.test.exe……记录按去掉 .test(.exe) 的名字分开存 */
-export const binaryKey = (binary: string) => basename(binary).replace(/\.test(\.exe)?$/, '')
+// win32.basename 认 \ 和 / 两种分隔符：Windows 的 x.test.exe 和 Linux 的 /…/x.test 都取得到文件名
+export const binaryKey = (binary: string) => win32.basename(binary).replace(/\.test(\.exe)?$/, '')
 
 type TimesFile = Record<string, Record<string, number>>
 /** 记录放在共用的 git 目录（所有 worktree 和队列共用一份）；拿不到 git 目录就不记、不读 */

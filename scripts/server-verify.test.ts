@@ -9,6 +9,10 @@ import { genGo, load } from './gen-rpc'
 // 这几条真的起 bun install、bun test、git 子进程（低优先级），机器忙时一条要好几秒；默认 5 秒的上限会误红。这是干活的上限，不是等待
 const SPAWN_TIMEOUT = 60_000
 
+// run-low.ps1 经 Windows PowerShell P/Invoke kernel32 的作业对象（名额、内存上限、最低优先级），只在 Windows 上能跑；
+// Linux 上换 pwsh 也调不了 kernel32，所以起 runServerTest、runPlanned 的这几条（它们经 run-low.ps1 跑 bun test）只在 Windows 上跑（公开仓库 CI 的 Linux 一格会跳过，2026-11-19）
+const winOnly = test.skipIf(process.platform !== 'win32')
+
 // 下面在临时目录里真起几次只有一两行的 bun test：不值得排全机验证档名额（队列跑 go test 时会等好几分钟、被 5 秒超时打红）。
 // 当作已经拿着名额，run-low 就不再抢（scripts/run-low.ps1 的 SUMIKA_SLOT_HELD）
 process.env.SUMIKA_SLOT_HELD = [process.env.SUMIKA_SLOT_HELD, 'verify'].filter(Boolean).join(',')
@@ -129,19 +133,19 @@ function fakeRoot(body: string) {
   return root
 }
 
-test('server 测试红：退出码非 0 就是红，结论行写红', () => {
+winOnly('server 测试红：退出码非 0 就是红，结论行写红', () => {
   const r = runServerTest(fakeRoot('expect(1).toBe(2)'), process.env)
   expect(r.ok).toBe(false)
   expect(r.summary).toContain('server bun test：红')
 }, SPAWN_TIMEOUT)
 
-test('server 测试绿：结论行写通过数', () => {
+winOnly('server 测试绿：结论行写通过数', () => {
   const r = runServerTest(fakeRoot('expect(1).toBe(1)'), process.env)
   expect(r.ok).toBe(true)
   expect(r.summary).toBe('server bun test：1 通过')
 }, SPAWN_TIMEOUT)
 
-test('对拍 Go 的 Bun 测试红了不挡关卡，别的照样挡（ADR-378）', () => {
+winOnly('对拍 Go 的 Bun 测试红了不挡关卡，别的照样挡（ADR-378）', () => {
   const root = fakeRoot('expect(1).toBe(1)')
   writeFileSync(join(root, 'server', 'test', 'turn-golden.test.ts'), "import { expect, test } from 'bun:test'\ntest('g', () => { expect(1).toBe(2) })\n")
   const r = runServerTest(root, process.env)
@@ -151,7 +155,7 @@ test('对拍 Go 的 Bun 测试红了不挡关卡，别的照样挡（ADR-378）'
   expect(runServerTest(root, process.env).ok).toBe(false)
 }, SPAWN_TIMEOUT)
 
-test('只摘名单里的：local-tools-golden 红了照样挡，.spec.ts 也会跑，一个文件都没有算红', () => {
+winOnly('只摘名单里的：local-tools-golden 红了照样挡，.spec.ts 也会跑，一个文件都没有算红', () => {
   const kept = fakeRoot('expect(1).toBe(1)')
   writeFileSync(join(kept, 'server', 'test', 'local-tools-golden.test.ts'), "import { expect, test } from 'bun:test'\ntest('l', () => { expect(1).toBe(2) })\n")
   expect(runServerTest(kept, process.env).ok).toBe(false)
@@ -173,7 +177,7 @@ test('计划任务里超时的冻结测试摘掉：serverTestFiles 不含 run-fi
   expect(serverTestFiles(dir).sort()).toEqual(['local-tools-golden.test.ts', 'x.spec.ts'])
 })
 
-test('有 .only、跳过、待办：退出码 0 也算红', () => {
+winOnly('有 .only、跳过、待办：退出码 0 也算红', () => {
   expect(runServerTest(fakeRoot("expect(1).toBe(1) }); test.only('b', () => {"), process.env).ok).toBe(false)
   const skip = runServerTest(fakeRoot("expect(1).toBe(1) }); test.skip('b', () => {"), process.env)
   expect(skip.ok).toBe(false)
@@ -181,7 +185,7 @@ test('有 .only、跳过、待办：退出码 0 也算红', () => {
   expect(runServerTest(fakeRoot("expect(1).toBe(1) }); test.todo('b', () => {"), process.env).ok).toBe(false)
 }, SPAWN_TIMEOUT)
 
-test('runPlanned 按 plan 跑：Bun 红就红，没挑上的不跑', () => {
+winOnly('runPlanned 按 plan 跑：Bun 红就红，没挑上的不跑', () => {
   const root = fakeRoot('expect(1).toBe(2)')
   expect(runPlanned({ go: false, bun: true, gen: false }, root, process.env).map((s) => s.ok)).toEqual([false])
   expect(runPlanned({ go: true, bun: false, gen: false }, root, process.env)).toEqual([])
