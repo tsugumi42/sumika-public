@@ -80,6 +80,8 @@ func TestHostShutdownDuringOpenNeverStartsBun(t *testing.T) {
 	<-entered
 	stopped := make(chan error, 1)
 	go func() { stopped <- h.shutdown() }()
+	// 等关机真开始了（shutdown 第一步取消 h.ctx）再放 Open 过去：不等的话 Open 可能抢在关机前做完，那时拉 Bun 是对的，测试却判红（CI 偶发，2026-11-19）
+	<-h.ctx.Done()
 	close(release)
 	<-done
 	if err := <-stopped; err != nil {
