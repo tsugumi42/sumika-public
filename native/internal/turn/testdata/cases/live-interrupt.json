@@ -115,6 +115,27 @@
         "x-magpie-provider": "fake-provider",
         "x-magpie-model": "fake/think-1"
       }
+    },
+    {
+      "reasoning": [],
+      "content": [
+        "好，不急，",
+        "慢慢来。"
+      ],
+      "usage": {
+        "prompt_tokens": 1700,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "headers": {
+        "x-magpie-provider": "fake-provider",
+        "x-magpie-model": "fake/think-1"
+      }
     }
   ],
   "next": [],
