@@ -47,7 +47,7 @@ test('只改某个生成文件：也要生成检查和 Bun（native 那个还有
 
 test('改检查脚本自己（生成器、挑选、队列、钩子配置）：全都跑，外加脚本测试', () => {
   const all = { go: true, bun: true, gen: true, scripts: true }
-  for (const f of ['scripts/gen-rpc.ts', 'scripts/server-verify.ts', 'scripts/merge-queue.ts', 'scripts/go-verify.ts', 'scripts/go-affected.ts', 'scripts/pre-push.ts', 'scripts/nightly.ts', 'scripts/nightly-record.ts', 'scripts/precommit-fast.ts', 'scripts/precommit-fast.test.ts', 'scripts/pre-push.test.ts', 'scripts/server-verify.test.ts', 'lefthook.yml']) {
+  for (const f of ['scripts/gen-rpc.ts', 'scripts/server-verify.ts', 'scripts/merge-queue.ts', 'scripts/go-verify.ts', 'scripts/go-affected.ts', 'scripts/pre-push.ts', 'scripts/nightly.ts', 'scripts/nightly-record.ts', 'scripts/pre-push.test.ts', 'scripts/server-verify.test.ts', 'lefthook.yml']) {
     expect(plan([f])).toEqual(all)
     expect(plan([f, 'server/src/a.ts'])).toEqual(all)
   }

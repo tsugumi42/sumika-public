@@ -22,7 +22,7 @@
   - 旧的 bun 脚本一次 306 毫秒。
   - 提交钩子并行跑好几条检查，所以要调用编好的程序，只在开发工具自己的源码改过时才重编。
 - **不做什么**：
-  - 不翻译只为冻结 Bun 服务的部分。`desktop-check.ts`，以及 `server-verify.ts`、`precommit-fast.ts`、`gen-rpc.ts` 里给 `server/`、`desktop/` 的分支，直接删掉，不迁（ADR-359 冻结，ADR-378 关卡碰到冻结代码就摘掉）。
+  - 不翻译只为冻结 Bun 服务的部分。`desktop-check.ts`，以及 `server-verify.ts`、`precommit-fast.ts`（2026-11-19 已整个删：server-tests 一支摘掉，go-vet 一支迁进 `hook pre-commit`）、`gen-rpc.ts` 里给 `server/`、`desktop/` 的分支，直接删掉，不迁（ADR-359 冻结，ADR-378 关卡碰到冻结代码就摘掉）。
   - 不改任何检查的规则和结论。
   - 合并队列不在本规格里重写成新的长期本地队列，跟[规格-合并走PR](规格-合并走PR.md) S3 一起做。
   - `export-public.ts` 和 `public-exclude.txt` 在切换开发主仓库之前沿用旧的，切换后整块删除，不迁（2026-11-19 已删）。
@@ -69,7 +69,7 @@
 
 | 文件 | 为什么不能照搬 | 做法 |
 |---|---|---|
-| `go-verify.ts`、`server-verify.ts`、`precommit-fast.ts`、`pre-push.ts` | 里面混着冻结 Bun 的检查；执行器指纹写死了 TS 和 PS1 路径 | 只留 Go 的部分，指纹改成新路径；多 ref、删除 ref、新分支、记录复用的语义不变 |
+| `go-verify.ts`、`server-verify.ts`、`pre-push.ts` | 里面混着冻结 Bun 的检查；执行器指纹写死了 TS 和 PS1 路径 | 只留 Go 的部分，指纹改成新路径；多 ref、删除 ref、新分支、记录复用的语义不变 |
 | `run-low.ps1` + `slot.ts` | PowerShell 里内嵌 C# 调 Win32；`slot.ts` 转了一手，参数不能带空格 | 合成 `sumika-dev run`，用 `golang.org/x/sys/windows` 做命名 Mutex、Job Object、优先级、内存上限。过渡期锁名不变（`run-low.ps1:100`），新旧工具共用同一套名额。Mutex 要固定在一个系统线程上（`runtime.LockOSThread`） |
 | `gen-rpc.ts` | 一半是给冻结的 `server/` 生成 TS | 只留 Go 生成和 `--check` |
 | `nightly.ts`、`merge-queue.ts` | nightly 反向 import 队列；队列要跟着合并走 PR 变 | 先抽出共用的 git、锁、记录、worktree 操作，nightly 先迁；队列跟[规格-合并走PR](规格-合并走PR.md) S3 一起做 |
