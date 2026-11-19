@@ -81,15 +81,34 @@ jobs:
           "TEMP=$t" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
           "TMP=$t" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
 
-      # grep、find 的测试用真 ripgrep 和 fd（测的是 .env 过滤、截断这类真行为，不是假文件）；Linux runner 自带的镜像里没有。
-      # Ubuntu 仓库里 fd 叫 fdfind，internal/toolchain 的登记表认这个别名（TestFdAliasFromPath）。
-      # 没有这两个时测试自己会跳过并写明，不会红；装上是为了让它们在 Linux 这一格也真跑。
-      # 同一步装中文字体：公开仓库不带 native/fonts/*.ttf，Linux runner 又没有中文字体，字画不出来，对比度、行高这类像素用例量不到。
-      # 装了 fonts-noto-cjk，uitest.RequireGlyphs 判断画得出字，那 13 个用例就在 Linux 这一格真跑；没装或装失败它们会跳过并写明缺什么。
-      # Noto 的字高、行距和文渊圆体不同，字体度量敏感的断言（行高、行距）可能因此露出新的红，那是要追的真实结果，不是装字体的错。
-      - name: 装 ripgrep、fd 和中文字体
+      # 测试要用、仓库里没有的东西，这里装齐（GitHub 官方的做法：镜像没有的软件在 job 里加一步装，见 docs.github.com
+      # “Customizing GitHub-hosted runners”）。缺了的话那些测试只会跳过，CI 就悄悄少测（2026-11-19 对照实验：推特卡片真字体 14 条、
+      # 表情 2 条、视频几条在两格上一直跳过）；下面 go test 那步的汇总会把“缺依赖而跳过”判红，装的这几步坏了能看见。
+      # - rg、fd：上面“安装 Bun 依赖”的 postinstall（scripts/fetch-tools.ts）按钉死的版本和官方摘要装进 vendor/bin，两个系统同一版，
+      #   CI 上装不上就让 bun install 红。不再用 apt 的 ripgrep、fd-find（版本跟着发行版走，和开发机不一样）。
+      # - ffmpeg、ffprobe：视频取数、短片准备的测试要真的编码解码。Linux 用 Ubuntu 仓库的（版本跟着 24.04），
+      #   Windows 用 Chocolatey 钉 9.0.2（和开发机 `ffmpeg -version` 一样）。
+      # - 中文字体（只 Linux）：Linux runner 没有中文字体，uitest.RequireGlyphs 画不出字，对比度、行高这类像素用例量不到；
+      #   Noto 的字高、行距和文渊圆体不同，度量敏感的断言可能因此露出新的红，那是要追的真实结果。Windows 有微软雅黑。
+      - name: 装 ffmpeg 和中文字体（Linux）
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y ripgrep fd-find fonts-noto-cjk
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-cjk
+
+      - name: 装 ffmpeg（Windows）
+        if: runner.os == 'Windows'
+        run: choco install ffmpeg --version=9.0.2 -y --no-progress
+
+      # 文渊圆体、Twemoji：不进 git（46 MB、四千多个文件），scripts/ci-assets.ts 按钉死的版本和摘要从上游官方发布取，
+      # 缓存的键是那个脚本的哈希（钉的版本和摘要都写在里面），改了版本就重新下载；缓存命中时脚本核一遍摘要就跳过
+      - uses: actions/cache@v6
+        with:
+          path: |
+            native/fonts/WenYuanRoundedSCVF.ttf
+            native/twemoji
+          key: test-assets-${{ hashFiles('scripts/ci-assets.ts') }}
+
+      - name: 取测试素材（文渊圆体、Twemoji）
+        run: bun scripts/ci-assets.ts
 
       - name: go vet
         working-directory: native
@@ -100,10 +119,34 @@ jobs:
       # 取消后 GitHub 不留这一步的日志；超时让卡住的包自己 panic、打出各协程停在哪，才查得到是哪条测试。
       # 这一步和下面的脚本测试前一步红了也照跑（只有整次被取消才不跑）：默认“前一步失败、后面全跳过”会把后面那步的红盖住，
       # Linux 一格 go test 常红，脚本测试那 16 条在 Linux 上就一直没跑到、也就一直没人看见（2026-11-19）。job 结论照旧：任一步红就红
+      # -json 存一份原始结果，再交 scripts/ci-test-report.ts 打成人看的：每个包的结论、红了的用例原文（折叠分组）、按原因汇总的跳过，
+      # 缺依赖而跳过的判红。不带 -v 时 go test 不打跳过，CI 上少测了什么原来看不见。这一步红有两种：go test 自己红（退出码照旧），
+      # 或者汇总查出缺依赖；两种都在日志里写明。原始结果在 job 的附件里（下一步上传），要细查时下载。
       - name: go test -short（全部包）
         if: ${{ !cancelled() }}
         working-directory: native
-        run: go test -short -count=1 -timeout 12m ./...
+        # 用 pwsh 不用 bash：nightly.yml 第一次试跑用 Git Bash 跑 go test，四条“拒绝读取 / 独占打开”的用例红，换 pwsh 后绿（2026-11-19）。
+        # Start-Process 把输出直接写文件，是 go 原样写的 UTF-8，不经 pwsh 解码（和 nightly.yml 同一种写法）；两个系统都这样跑
+        shell: pwsh
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'go-test.json'; $err = Join-Path $env:RUNNER_TEMP 'go-test-stderr.txt'
+          $p = Start-Process -FilePath go -ArgumentList @('test', '-short', '-count=1', '-timeout', '12m', '-json', './...') -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
+          $null = $p.Handle # 先拿住句柄，不然进程结束后 ExitCode 可能读不到（.NET 的已知坑）
+          $p.WaitForExit()
+          $code = $p.ExitCode
+          Get-Content $err -ErrorAction SilentlyContinue | Select-Object -Last 20
+          bun ../scripts/ci-test-report.ts $out
+          if ($LASTEXITCODE -ne 0) { $code = 1 }
+          "go test 退出码 $($p.ExitCode)，汇总退出码 $LASTEXITCODE"
+          exit $code
+
+      - name: 上传 go test 的原始结果
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: go-test-${{ matrix.os }}
+          path: ${{ runner.temp }}/go-test.json
+          retention-days: 14
 
       # 点名跑 scripts/ 下的检查脚本测试，名单不在工作流里抄一份：直接用 scripts/server-verify.ts 的 SCRIPT_TESTS
       # （go-verify、合并队列挑 scripts 测试的同一份来源）。冻结的 server/ 测试不在这里。
