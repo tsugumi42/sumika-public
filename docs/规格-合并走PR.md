@@ -1,6 +1,6 @@
 # 规格：合并走 PR
 
-> 状态：2026-11-18 草稿（ADR-386）。2026-11-19 被 ADR-398 修正：本机不再跑合并验证，`local-verify` 状态去掉，必过检查只剩 GitHub 两条；下面相关各处已改。第 3 节“切换开发主仓库”主人 2026-11-18 已同意，动手前完整备份；其余按本规格做。
+> 状态：2026-11-18 草稿（ADR-386）；2026-11-19 S1、S2、S4、S5 已做，S3（队列改成按 GitHub 检查合并的自动化）还是手动 `gh pr merge`。2026-11-19 被 ADR-398 修正：本机不再跑合并验证，`local-verify` 状态去掉，必过检查只剩 GitHub 两条；下面相关各处已改。第 3 节“切换开发主仓库”主人 2026-11-18 已同意，动手前完整备份；其余按本规格做。
 >
 > 参考：
 > - GitHub 官方文档：分支保护的“合并前必须通过的检查”（required status checks）、提交状态接口（`POST /repos/{owner}/{repo}/statuses/{sha}`）、`gh pr create` / `gh pr merge`、公开仓库用 GitHub 自带机器跑 Actions 不计费。**采用**：必过检查加一条本机检查的提交状态；合并用合并提交。**不采用**：GitHub 自带的 merge queue（本机检查进不去它的队列；一天十来次合并用不上分组并行）。
@@ -50,7 +50,7 @@
 3. 本机 `main` 改为跟踪 `public/main`：`git checkout -B main public/main`。工作区里公开版没有的已跟踪文件（`server/`、`desktop/`、`docs/archive/` 等）会从工作区消失，它们留在私有仓库的历史里；`data/` 等不进 git 的目录不受影响。
 4. 切换前还没合的分支：用导出脚本的“排除表 + 改写”处理成补丁，在新 main 上重开分支，不直接合（历史不相交）。
 5. 私有仓库设为只读存档，`origin` 改名为 `private`，`public` 改名为 `origin`。
-6. 导出脚本 `scripts/export-public.ts` 和同步脚本从此不再需要，按 ADR-389 的删除规则处理。
+6. 导出脚本 `scripts/export-public.ts` 和同步脚本从此不再需要，按 ADR-389 的删除规则处理（2026-11-19 已删；以后还要从私有仓库搬旧分支，用 `git show private/main:scripts/export-public.ts` 取回）。
 
 撤回：私有仓库没有动过，`git checkout -B main private/main` 就能回去。
 
@@ -88,8 +88,8 @@
 
 | 步 | 内容 | 依赖 |
 |---|---|---|
-| S1 | 公开仓库 CI 两套都绿（进行中，`chore/ci-fix`） | 无 |
-| S2 | 切换开发主仓库（第三节，先问主人） | S1 |
+| S1 | 公开仓库 CI：Windows 一格全绿（2026-11-19 已合）；Linux 一格剩 QQ 撤回补发两条，修完前只参考 | 无 |
+| S2 | 切换开发主仓库（第三节）：2026-11-19 已做，公开 main eaaa5c85 起 | S1 |
 | S3 | 队列按 GitHub 两条检查合并、本机不再跑 go-verify（ADR-398；`scripts/merge-queue.ts`，ADR-389 迁 Go 时一起迁） | S2 |
-| S4 | 公开仓库开分支保护 | S3 |
-| S5 | AGENTS「验收」合并那一条、[规格-合并队列](规格-合并队列.md)状态头改写 | S4 |
+| S4 | 公开仓库开分支保护：2026-11-19 已开（`test (windows-latest)` 必过、strict、禁强推删除） | S3 |
+| S5 | AGENTS「验收」合并那一条、[规格-合并队列](规格-合并队列.md)状态头改写：2026-11-19 本 PR | S4 |
