@@ -364,6 +364,7 @@ tools:
   approvalMinutes: 10
   approvalMode: manual   # manual 每次问 / auto 低风险自动放行 / yolo 全部放行（极危险的仍然问，ADR-021）；设置里改了当场生效，输入框能按会话单独切
   autoApproveDirs: []    # 自动模式下写文件也能直接放行的目录（工作目录本身总是算在内）
+  lineEnding: auto      # write 新建文件的换行兜底：auto 跟系统（Windows CRLF、别处 LF）/ lf / crlf；已有文件、.editorconfig、Git 检出规则排在它前面，设置里改了当场生效
   checkpoints:
     enabled: true  # write/edit/PowerShell 执行前留本地检查点；仅主人主窗口私聊能单次审批回退
   # find 在范围大（驱动器根、用户目录，或工作目录之外又不在 git 仓库里）时用 Everything 的命令行 es.exe 加速，用不了就静默退回 fd（规格-Bun本地工具补齐）。

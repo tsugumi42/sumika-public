@@ -42,6 +42,9 @@ type intendedDiff struct {
 	Name string `json:"name"`
 	ADR  string `json:"adr"`
 	Text string `json:"text"`
+	// Files：目录里的最终内容和 Bun 不一样时登记（键是 windows 或 other，值是 文件 → 内容）。write 的换行由 lineend 定：
+	// 没有已有文件、仓库、.editorconfig 时 auto 在 Windows 写 CRLF、别处写 LF，Bun 是原样写
+	Files map[string]map[string]string `json:"files"`
 }
 
 var trashName = regexp.MustCompile(`^[0-9a-f]{32}-`)
@@ -125,7 +128,7 @@ func TestSameAsBun(t *testing.T) {
 		intended[d.Name] = d
 	}
 	for _, g := range golden {
-		if d, ok := intended[g.Name]; ok && d.Text == g.Text {
+		if d, ok := intended[g.Name]; ok && d.Text != "" && d.Text == g.Text {
 			t.Errorf("%s：Bun 的结果已经和登记的一样了，删掉 intended.json 里这条（%s）", g.Name, d.ADR)
 		}
 	}
@@ -185,8 +188,17 @@ func TestSameAsBun(t *testing.T) {
 				}
 			}
 			text = mask(text, wd)
-			if d, ok := intended[c.Name]; ok {
+			if d, ok := intended[c.Name]; ok && d.Text != "" {
 				want.Text = d.Text
+			}
+			if d, ok := intended[c.Name]; ok {
+				goos := "other"
+				if runtime.GOOS == "windows" {
+					goos = "windows"
+				}
+				for rel, s := range d.Files[goos] {
+					want.Files[rel] = &s
+				}
 			}
 			sameText := true
 			switch {

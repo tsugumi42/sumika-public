@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"sumika-native/internal/jsjson"
+	"sumika-native/internal/lineend"
 )
 
 // ───────────── write（write.js） ─────────────
@@ -36,7 +37,8 @@ func write(ctx context.Context, cwd string, args jsjson.Value) (string, error) {
 		if err := checkNotChanged(ctx, abs, p); err != nil {
 			return "", err
 		}
-		if err := os.WriteFile(abs, []byte(content), 0o666); err != nil {
+		// 换行由 lineend 定；审批预览用同一个函数算同样的输入，卡上的字节就是写进去的字节
+		if err := os.WriteFile(abs, []byte(lineend.Final(abs, lineend.ReadExisting(abs), content)), 0o666); err != nil {
 			return "", err
 		}
 		rememberFileAt(ctx, abs)

@@ -544,6 +544,10 @@ func runCase(t *testing.T, name string) {
 		hub.Cfg.BeforeTurn = nil
 		turnsMs = append(turnsMs, msSince(tTurn))
 	}
+	// 插话在收尾时才没送到的，内核把它改排成新一轮（TestSteerAtSettlingRequeued）：等这些轮也跑完再比，否则结果取决于比的时候它跑没跑
+	if err := hub.Drain(ctx); err != nil {
+		t.Fatal(err)
+	}
 	// 影子对比（3s）：不判对错，把 Go 的结果写成和 golden 一样的样子，交给 scripts/go-shadow.ts 比
 	if os.Getenv("SHADOW") == "1" {
 		rss, peak := processMemoryMB()

@@ -52,14 +52,21 @@ func Apply(content string, edits []Pair, path string) (Change, error) {
 }
 
 func detectLineEnding(s string) string {
+	e, _ := LineEnding(s)
+	return e
+}
+
+// LineEnding 看第一个换行：CRLF 返回 "\r\n"，否则 "\n"；整段没有换行时第二个值是 false。
+// 编辑和写整个文件（lineend）沿用已有文件的换行时共用这一个判断。
+func LineEnding(s string) (string, bool) {
 	crlf, lf := strings.Index(s, "\r\n"), strings.Index(s, "\n")
-	if lf == -1 || crlf == -1 {
-		return "\n"
+	if lf == -1 {
+		return "\n", false
 	}
-	if crlf < lf {
-		return "\r\n"
+	if crlf != -1 && crlf < lf {
+		return "\r\n", true
 	}
-	return "\n"
+	return "\n", true
 }
 
 func normalizeToLF(s string) string {

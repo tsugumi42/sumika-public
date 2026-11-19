@@ -77,7 +77,7 @@ func TestProjectionFixesStaleDisabledAndEnabledKeys(t *testing.T) {
 	items := readDefaultSettings(t)
 	live := []string{
 		"vision.direct", "vision.directMax", // app/images.go:130,134
-		"tools.workdir", "tools.approvalMinutes", "tools.approvalMode", "tools.autoApproveDirs", // app/app.go:476-489、974；host.go:454
+		"tools.workdir", "tools.approvalMinutes", "tools.approvalMode", "tools.lineEnding", "tools.autoApproveDirs", // app/app.go:476-489、974；host.go:454
 		"backup.dir", "backup.daily", "backup.dailyMedia", "backup.alertGB", "backup.minFreeGB", "backup.runMaxHours", "backup.closeWaitSeconds", // app/backup.go:68-77
 	}
 	for _, key := range live {

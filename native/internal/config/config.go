@@ -302,6 +302,7 @@ type Config struct {
 		Workdir         string   `yaml:"workdir"` // 读写文件、跑命令的默认工作目录；空 = 用户目录
 		ApprovalMinutes float64  `yaml:"approvalMinutes"`
 		ApprovalMode    string   `yaml:"approvalMode"`
+		LineEnding      string   `yaml:"lineEnding"` // write 新建文件的换行兜底：auto（Windows CRLF、别处 LF）/ lf / crlf；已有文件、.editorconfig、Git 规则排在它前面
 		AutoApproveDirs []string `yaml:"autoApproveDirs"`
 		Checkpoints     struct {
 			Enabled bool `yaml:"enabled"`
@@ -460,7 +461,7 @@ func Defaults() Config {
 	c.Expression.LearnGroups, c.Expression.LearnPrivate = true, true
 	c.Expression.ReviewHours, c.Expression.ReviewBatches = 3, 10
 	c.Vision.Enabled, c.Vision.Concurrency, c.Vision.BackfillLanes, c.Vision.Direct, c.Vision.DirectMax = true, 2, 2, true, 4
-	c.Tools.ApprovalMinutes, c.Tools.ApprovalMode = 10, "manual"
+	c.Tools.ApprovalMinutes, c.Tools.ApprovalMode, c.Tools.LineEnding = 10, "manual", "auto"
 	c.Tools.Checkpoints.Enabled = true
 	c.QQ.RemoteApproval.AwayAfterSeconds = 60
 	c.ProjectContext.Enabled = true // 开着，但不信任的目录一个说明文件也不读：发现 AGENTS.md 时问一次，答过记住（规格-审批分级 8.5）
@@ -684,6 +685,7 @@ func (c Config) check(raw map[string]any) error {
 		{c.Group.Frequency >= 0 && c.Group.Frequency <= 1, fmt.Sprintf("group.frequency：%v 不在 0～1", c.Group.Frequency)},
 		{c.Group.Jitter >= 0 && c.Group.Jitter <= 0.2, fmt.Sprintf("group.jitter：%v 不在 0～0.2", c.Group.Jitter)},
 		{groupModes[c.Group.Mode], fmt.Sprintf("group.mode：%q 不是 off / dry / speak", c.Group.Mode)},
+		{lineEndings[c.Tools.LineEnding], fmt.Sprintf("tools.lineEnding：%q 不是 auto / lf / crlf", c.Tools.LineEnding)},
 		// 嵌入后端（规格-嵌入不依赖外部程序）：只有 go-models；legacy 已删，但旧配置要读得进来，交给 embed.Local 报明白原因。
 		// K 的上限是本地模型服务一次请求的条数上限（64）
 		{c.Embed.Backend == "" || c.Embed.Backend == BackendGoModels || c.Embed.Backend == "legacy", fmt.Sprintf("embed.backend：%q 不认识，只有 go-models（legacy 已移除）", c.Embed.Backend)},
@@ -745,6 +747,9 @@ func (c Config) check(raw map[string]any) error {
 
 // groupModes 是群聊闸门的三个档位（daemon/config.ts 的 group.mode）
 var groupModes = map[string]bool{"off": true, "dry": true, "speak": true}
+
+// lineEndings 是 tools.lineEnding 的三个取值
+var lineEndings = map[string]bool{"auto": true, "lf": true, "crlf": true}
 
 // check：只查取值认不认、有没有重复；"summarize 里的角色不在 characters 里""没选 catchUp"这类前提不在这里拒绝，
 // 启动时每个角色各查一遍、保持只读并写明原因（app 的 memory write 前提检查），不让一个记忆的键挡住整个后台起不来

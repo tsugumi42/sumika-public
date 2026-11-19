@@ -37,6 +37,7 @@ import (
 	"sumika-native/internal/goal"
 	"sumika-native/internal/kernel"
 	"sumika-native/internal/lifetools"
+	"sumika-native/internal/lineend"
 	"sumika-native/internal/linkcard"
 	"sumika-native/internal/linkexpand"
 	"sumika-native/internal/linkplugin"
@@ -523,6 +524,7 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 	a.openBackup()
 	a.protectBackupDir()
 	a.approvalGate.Mode = cfg.Tools.ApprovalMode
+	lineend.SetDefault(cfg.Tools.LineEnding) // write 新建文件的换行兜底；审批预览和真写入读同一个值
 	a.approvalGate.ParentOf = func(conversation string) string {
 		if a.ecosystem == nil || a.ecosystem.Tasks == nil {
 			return ""
