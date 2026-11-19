@@ -303,8 +303,8 @@ func Collect(o Options) (string, error) {
 	var ciIDs []int64
 	if o.CI != nil {
 		var err error
-		ciBlock, ciIDs, err = o.CI.check(o.Now, mineCI)
-		if err != nil && o.Warn != nil {
+		ciBlock, ciIDs, err = o.CI.check(o.Now, mineCI, filepath.Join(o.Dir, cacheName))
+		if err != nil && !errors.Is(err, errBackoff) && o.Warn != nil {
 			o.Warn("CI 结果这次没查成，已忽略：" + err.Error())
 		}
 	}
@@ -451,7 +451,7 @@ func Run(args []string, root string, stdin io.Reader, stdout, stderr io.Writer) 
 		if repo, err := runOrigin(root); err != nil {
 			say("CI 结果这次没查，已忽略：" + err.Error())
 		} else {
-			opts.CI = &CIOptions{Repo: repo, Gh: runGh}
+			opts.CI = &CIOptions{Repo: repo, Gh: runGh, CacheTTL: DefaultCacheTTL, FailBackoff: DefaultFailBackoff}
 		}
 	}
 	out, err := Collect(opts)
