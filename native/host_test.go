@@ -157,6 +157,7 @@ func TestHostShutdownDuringOpen(t *testing.T) {
 	<-entered
 	done := make(chan error, 1)
 	go func() { done <- h.shutdown() }()
+	<-h.ctx.Done() // 等关机真开始了再放 Open 过去，不然测到的可能是“Open 做完以后才退出”
 	close(release)
 	select {
 	case err := <-done:
