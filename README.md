@@ -6,7 +6,7 @@ English | [简体中文](README.zh-CN.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Status: early development](https://img.shields.io/badge/status-early%20development-orange.svg)
 
-Sumika is a local, always-on home for AI characters. Several characters live on one computer, each with their own persona, model and long-term memory. You chat with them in a native desktop window, ask them to help with tasks on your machine (every action goes through your approval), and they can take part in QQ private and group chats while remembering who is who.
+Sumika is a local, always-on home for AI characters. Several characters live on one computer, each with their own persona, model and long-term memory. You chat with them in a native desktop window, ask them to help with tasks on your machine, and they can take part in QQ private and group chats while remembering who is who.
 
 > [!WARNING]
 > **Sumika is in early development.** There are no releases or installers yet, configuration keys and on-disk formats still change without migration notes, and some features described in the docs are only partly implemented. It is not ready for everyday use by people who are not working on it.
@@ -19,7 +19,7 @@ What works today (Windows):
 
 - **Native desktop app.** One executable runs both the backend and a GPU-drawn UI built with [mygo](https://github.com/egoist/mygo) and [CrychicUI](https://github.com/ELY-Open-Source/CrychicUI). It sits in the system tray and does not open a web server or a port.
 - **Local private and group chats.** Streaming replies, stop, quoting, and group conversations where several characters take turns.
-- **Approval-gated tools.** Shell commands, file writes and other actions are checked by a policy layer and shown as approval cards; nothing runs without the owner's click. Checkpoints let you roll file changes back.
+- **Tool permissions.** Shell commands and file changes go through a permission policy. Sumika shows an approval card when the policy requires confirmation. Checkpoints can restore supported file changes.
 - **Long-term memory.** Per-character memory plus a shared pool for facts about the owner, with full-text and optional local-embedding search. Background consolidation is opt-in.
 - **QQ integration.** Connects to a OneBot-compatible endpoint, stores every message in a local archive, and decides when a character should speak. Sending is off by default and gated by an outbound guard.
 - **Link reading.** Understands links from X, Bilibili, YouTube, pixiv, Steam, BOOTH and others that appear in chats.
@@ -77,7 +77,7 @@ go vet ./...
 go test -short ./...
 ```
 
-CI runs the same suite on Windows and Linux for every push and pull request. Local development uses a merge queue and resource slots described in [CONTRIBUTING.md](CONTRIBUTING.md).
+CI runs on Windows and Linux for pushes and pull requests. Changes go through a [GitHub pull request](docs/规格-合并走PR.md). See [CONTRIBUTING.md](CONTRIBUTING.md) for local checks.
 
 ## Repository layout
 
