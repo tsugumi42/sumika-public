@@ -256,7 +256,7 @@ func TestHostConfigParseErrorHidesValue(t *testing.T) {
 	}
 }
 
-// -rpc-listen 写 run/rpc-go.json，run/rpc.json 归 Bun：Go 开着协议入口时不碰 rpc.json（规格-本地私聊切到Bun 第一节第 2 条）
+// -rpc-listen 写 run/rpc-go.json；run/rpc.json 是 Bun 后台留下的名字，Go 开着协议入口时不碰它
 func TestHostRPCListenWritesGoRunFile(t *testing.T) {
 	t.Parallel()
 	opt := hostFixture(t)
@@ -273,9 +273,56 @@ func TestHostRPCListenWritesGoRunFile(t *testing.T) {
 		t.Fatalf("Go 的协议入口该写 %s：%v", p.RPCGoRunFile(), err)
 	}
 	if _, err := os.Stat(p.RPCRunFile()); err == nil {
-		t.Fatalf("run/rpc.json 归 Bun，Go 不该写它：%s", p.RPCRunFile())
+		t.Fatalf("run/rpc.json 不是 Go 的文件，Go 不该写它：%s", p.RPCRunFile())
 	}
 	if filepath.Base(p.RPCGoRunFile()) != "rpc-go.json" || filepath.Base(p.RPCRunFile()) != "rpc.json" {
 		t.Fatalf("文件名不对：%s %s", p.RPCGoRunFile(), p.RPCRunFile())
+	}
+}
+
+// 已经在跑，后来切到接收时数据锁被别的进程抢走，回 archive 也开不了，进 blocked；
+// 锁放开、再触发一次：后台开成功，宿主恢复回 archive，界面拿到新的数据源（原来 Bun 测试的后半段，删 Bun 后留下的恢复用例）
+func TestHostBlockedByLockRecoversToArchiveWhenLockReleased(t *testing.T) {
+	t.Parallel()
+	opt := hostFixture(t)
+	var log stateLog
+	h := newHost(opt, log.add)
+	h.start()
+	t.Cleanup(func() { _ = h.shutdown() })
+	if s := log.last(); s.Phase != phaseArchive || s.Reader == nil {
+		t.Fatalf("出发时该是 archive：%+v", s)
+	}
+	var other *datalock.DataLock
+	h.beforeOpen = func(m backend.Mode) {
+		if m == backend.Receive && other == nil {
+			var err error
+			if other, err = datalock.LockData(opt.DataDir); err != nil {
+				t.Errorf("测试抢锁失败：%v", err)
+			}
+		}
+	}
+	if r := h.startReceive(); r.Outcome != receiveBlocked {
+		t.Fatalf("锁被抢走该受阻：%+v", r)
+	}
+	if s := log.last(); s.Phase != phaseBlocked || s.Reader != nil || h.cur != nil {
+		t.Fatalf("锁被抢走后该 blocked、没有数据源：%+v", s)
+	}
+	// 锁放开，再触发一次：receive 开不了（夹具没写协议端地址），回 archive 成功
+	if other == nil {
+		t.Fatal("测试没抢到锁")
+	}
+	if err := other.Close(); err != nil {
+		t.Fatal(err)
+	}
+	h.beforeOpen = nil
+	if r := h.startReceive(); r.Outcome != receiveOpenFailed {
+		t.Fatalf("锁放开后 receive 因没写协议端地址开不了、回 archive：%+v", r)
+	}
+	s := log.last()
+	if s.Phase != phaseArchive || s.Reader == nil || h.cur == nil {
+		t.Fatalf("恢复后该回 archive 并有数据源：%+v", s)
+	}
+	if s.localSendOff() == "" {
+		t.Fatalf("archive 阶段发送闸门该还是拦着：%+v", s)
 	}
 }

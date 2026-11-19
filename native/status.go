@@ -55,7 +55,8 @@ func (a *app) statusBody(c *ui.Context) {
 		if len(h.ConfigNotes) > 0 { // 配置里还写着已删掉的键：读得进来、不起作用；每行写了怎么解除（删掉那个键）
 			group(c, "配置里的旧项", "", func() {
 				for _, note := range h.ConfigNotes {
-					row(c, note, "", func() {})
+					key, why := splitConfigNote(note)
+					row(c, key, why, func() {}) // 键名当标题，整句说明放 hint（窄窗口下 hint 会折行，标题不会被撑破）
 				}
 			})
 		}
@@ -94,6 +95,12 @@ func (a *app) statusBody(c *ui.Context) {
 		}
 		a.envGroup(c, h.Env)
 	})
+}
+
+// splitConfigNote 把已删键的说明（以键名开头，见 config/removed.go）拆成键名和后面的话；没有空格就整句当键名
+func splitConfigNote(note string) (key, why string) {
+	key, why, _ = strings.Cut(note, " ")
+	return key, why
 }
 
 // noSettingsPage 是不属于任何一页的键：表示“这个键现在没有页面”。

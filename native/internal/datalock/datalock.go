@@ -68,7 +68,7 @@ func lockNamed(data, name string) (f *os.File, held bool, err error) {
 
 // LockExisting 和 LockData 拿同一把锁，但只读打开已有的锁文件：只读诊断不能为了拿锁去建文件。
 // 锁文件不在就把打开的错误原样交回；被别人拿着就是 ErrDataInUse（不带系统的原因）。
-// go/local.lock 已经存在的话也探一下并拿住：有人（多半是 Bun）正在写本地，诊断和迁移工具不该和它同时碰库，被占是 ErrLocalInUse。
+// go/local.lock 已经存在的话也探一下并拿住：有别的程序（比如另一个在接收的 Sumika）正在写本地，诊断和迁移工具不该和它同时碰库，被占是 ErrLocalInUse。
 // local.lock 不存在就算没人在写本地，不建它
 func LockExisting(data string) (*DataLock, error) {
 	l, err := lockExistingBackend(data)
@@ -93,7 +93,7 @@ func LockExisting(data string) (*DataLock, error) {
 }
 
 // LockExistingForWrite 给要写 local.db 或 memory.db 的老工具：backend.lock 照 LockExisting（必须已存在，被占是 ErrDataInUse），
-// 再把 go/local.lock 也拿住——不存在就建（它要写本地库，而不是只看；建出来也防着之后有人起 Bun 去写），被占是 ErrLocalInUse，拿不到就拒绝
+// 再把 go/local.lock 也拿住——不存在就建（它要写本地库，而不是只看；建出来也防着之后有别的写本地的程序同时开工），被占是 ErrLocalInUse，拿不到就拒绝
 func LockExistingForWrite(data string) (*DataLock, error) {
 	l, err := lockExistingBackend(data)
 	if err != nil {

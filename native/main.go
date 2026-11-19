@@ -238,7 +238,7 @@ func runMain() int {
 	flag.StringVar(&opt.DataDir, "data", "", "数据目录；不给 = 照配置")
 	flag.StringVar(&opt.Account, "account", "", "\"开始接收 QQ\"用的小号；不给 = 配置里恰好只有一个时用它")
 	flag.BoolVar(&demo, "demo", false, "只看编的演示数据，不碰任何库")
-	flag.BoolVar(&rpcListen, "rpc-listen", false, "后台开着时把只读的界面协议开到本机 WebSocket 上，地址和令牌写进 <数据目录>/run/rpc-go.json（run/rpc.json 归 Bun 后台）")
+	flag.BoolVar(&rpcListen, "rpc-listen", false, "后台开着时把只读的界面协议开到本机 WebSocket 上，地址和令牌写进 <数据目录>/run/rpc-go.json（run/rpc.json 是 Bun 后台留下的名字，Go 不写它）")
 	flag.BoolVar(&inprocRPC, "inproc-rpc", true, "主窗口经进程内协议客户端读写后台（默认）；false 退回直接用后台对象")
 	flag.StringVar(&remote, "backend-url", "", "不开本地后台，只当界面连一个协议后台：auto 读 -data 目录的 run/rpc.json；或 ws://127.0.0.1:<端口>/rpc（令牌放环境变量 SUMIKA_RPC_TOKEN）")
 	flag.BoolVar(&watch, "watch", false, "守护进程模式：不开窗口，拉起一个不带 -watch 的自己当桌面程序并盯着它，异常退出留记录、弹通知、重新拉起（开机自启用这个）")

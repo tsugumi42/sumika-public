@@ -197,7 +197,7 @@ func (p Paths) join(parts ...string) string {
 }
 
 // RPCRunFile 是 Bun 后台的界面协议开着时写的地址和令牌（规格-Bun后台第1批 第三节），后台退出时删。
-// 归 Bun：Go 的 -rpc-listen 写 RPCGoRunFile，两边不抢同一个文件（规格-本地私聊切到Bun 第一节第 2 条）
+// 这是 Bun 后台留下的文件名，Go 不写它：Go 的 -rpc-listen 写 RPCGoRunFile（ADR-401 起 Bun 后台已移除）
 func (p Paths) RPCRunFile() string { return p.join("run", "rpc.json") }
 
 // RPCGoRunFile 是 Go 的 -rpc-listen 写的地址和令牌（只读的界面协议）

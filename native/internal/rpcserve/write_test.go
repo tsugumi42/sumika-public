@@ -600,7 +600,7 @@ func writeMethodNames() []string {
 }
 
 // sumika-ctl 的自检方法（selftest.*）只有 Bun 实现：Go 的服务端哪怕开了写方法、后台对象什么接口都有，也不列出、不分派它们。
-// 否则 bun 模式下有人（或将来的改动）能让 Go 绕过 bunOwned 守卫去写本地。
+// 那些方法的执行体只在 Bun 后台里写过（Bun 后台已移除，ADR-401）；Go 不该因为将来的改动悄悄接上它们。
 func TestGoNeverServesSelftest(t *testing.T) {
 	raw := newRaw(t, rpcserve.New(newFake(), "test", rpcserve.WithWrites()))
 	methods := raw.initialize()

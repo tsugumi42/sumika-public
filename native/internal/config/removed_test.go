@@ -17,7 +17,12 @@ func TestRemovedBackendKeys(t *testing.T) {
 	}{
 		{"全写", "backend:\n  local: bun\n  bun: 'D:/tools/bun.exe'\n  server: D:/repo/server\n", []string{"backend.local", "backend.bun", "backend.server"},
 			map[string]string{"backend.local": "Bun 后台已移除，现在由 Go 处理", "backend.bun": "Bun 后台已移除", "backend.server": "Bun 后台已移除"}},
+		{"写 bun 要说清后果", "backend:\n  local: bun\n", []string{"backend.local"},
+			map[string]string{"backend.local": "Bun 上建的提醒、目标、定期任务和“记住”的授权 Go 看不到；Go 会按默认配置启动提醒、主动联系、本地群聊、悄悄话等功能，不想要的去设置里关掉"}},
 		{"大写 Bun 也认", "backend:\n  local: Bun\n", []string{"backend.local"}, map[string]string{"backend.local": "现在由 Go 处理"}},
+		{"整段写成标量", "backend: bun\n", []string{"backend"}, map[string]string{"backend": "不管写成什么都不起作用"}},
+		{"整段写成列表", "backend:\n  - bun\n", []string{"backend"}, map[string]string{"backend": "删掉"}},
+		{"backend 后面留空当没写", "backend:\n", nil, nil},
 		{"写 go", "backend:\n  local: go\n", []string{"backend.local"}, map[string]string{"backend.local": "本地私聊一直由 Go 处理"}},
 		{"写错的值也不再报错", "backend:\n  local: \"off\"\n", []string{"backend.local"}, map[string]string{"backend.local": "已不再使用"}},
 		{"空值", "backend:\n  local:\n", []string{"backend.local"}, map[string]string{"backend.local": "已不再使用"}},

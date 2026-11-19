@@ -1,6 +1,6 @@
 package store
 
-// 另一个进程管着的平台库（规格-本地私聊切到Bun 第三、四节）：backend.local 是 bun 时，local.db 由 Bun 写，
+// 另一个进程管着的平台库（当年是 backend.local 为 bun 时的 local.db，ADR-401 删了那条路线；这层现在没有生产入口，待办挂着）：
 // Go 只读打开（mode=ro 加 query_only，从连接上就写不了），所以 Go 里没有任何一处需要逐个加判断。
 // 三件事：
 //  1. 只读打开：不跑迁移，只核对版本是不是最新（落后就报错，不在别人写着的库上迁移）；
@@ -53,7 +53,7 @@ func (s *Store) ReadOnly() bool { return s != nil && s.readOnly }
 func openReadOnlyPlatform(p paths.Paths, name string) (*sql.DB, error) {
 	file := p.ChatDB(name)
 	if _, err := os.Stat(file); err != nil {
-		return nil, fmt.Errorf("%s 不存在：本地私聊交给 Bun 时 Go 不建库，先把 backend.local 改回 go 启动一次再切：%w", file, err)
+		return nil, fmt.Errorf("%s 不存在：这个库归另一个进程写，Go 不在别人写着的库上建库，先让写它的那一端建好：%w", file, err)
 	}
 	db, err := OpenReadOnlyFile(file)
 	if err != nil {
@@ -78,7 +78,7 @@ func checkSchemaCurrent(db *sql.DB, platform string) error {
 			return fmt.Errorf("读迁移记录 %s：%w", table, err)
 		}
 		if have.Int64 < want {
-			return fmt.Errorf("库结构落后（%s 在 %d，本程序要 %d）：本地私聊交给 Bun 时 Go 不迁移，先把 backend.local 改回 go 启动一次", table, have.Int64, want)
+			return fmt.Errorf("库结构落后（%s 在 %d，本程序要 %d）：这个库归另一个进程写，Go 不在上面迁移，先让写它的那一端升级", table, have.Int64, want)
 		}
 		if have.Int64 > want {
 			return fmt.Errorf("库结构比本程序新（%s 在 %d，本程序只到 %d）", table, have.Int64, want)
