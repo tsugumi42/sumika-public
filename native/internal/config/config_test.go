@@ -726,3 +726,21 @@ func TestFileInOrder(t *testing.T) {
 		t.Fatalf("SUMIKA_CONFIG 压过两个位置：%q %v", got, err)
 	}
 }
+
+func TestToolsLineEndingConfig(t *testing.T) {
+	load := func(s string) (Config, error) {
+		t.Setenv("SUMIKA_CONFIG", write(t, s))
+		return Load(t.TempDir())
+	}
+	if c, err := load("tools:\n  approvalMode: manual\n"); err != nil || c.Tools.LineEnding != "auto" {
+		t.Fatalf("不写默认 auto：%q %v", c.Tools.LineEnding, err)
+	}
+	for _, v := range []string{"lf", "crlf", "auto"} {
+		if c, err := load("tools:\n  lineEnding: " + v + "\n"); err != nil || c.Tools.LineEnding != v {
+			t.Errorf("%s：%q %v", v, c.Tools.LineEnding, err)
+		}
+	}
+	if _, err := load("tools:\n  lineEnding: cr\n"); err == nil || !strings.Contains(err.Error(), "tools.lineEnding") {
+		t.Fatalf("不认识的值要报错并点名键：%v", err)
+	}
+}

@@ -36,7 +36,7 @@ func TestSettingSaveEveryKey(t *testing.T) {
 		{"reply.deny", map[string]any{"qq:401": "ai"}}, {"linkReader.proxy", "http://127.0.0.1:8080"},
 		{"linkReader.expand.startEmoji", "123"},
 		{"location", map[string]any{"name": "编的市", "city": "编的市", "latitude": json.Number("31.5"), "longitude": json.Number("121.25")}},
-		{"tools.approvalMode", "auto"},
+		{"tools.approvalMode", "auto"}, {"tools.lineEnding", "crlf"},
 		{"embed.modelsRoot", "D:/Models"},
 		{"web.searchOrder", []any{"tavily", "deepseek", "duckduckgo"}}, {"web.fetchOrder", []any{"deepseek", "http"}},
 		{"freeApi.probe.enabled", false}, {"freeApi.probe.intervalHours", json.Number("24")},
