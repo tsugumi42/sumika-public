@@ -32,9 +32,9 @@ var settingKinds = map[string]string{
 	"qq.remoteApproval.enabled": "bool", "qq.remoteApproval.awayAfterSeconds": "number",
 	"group.frequency": "number", "group.jitter": "number", "group.mode": "string",
 	"plugins.sessions": "sessions", "reply.deny": "deny", "linkReader.proxy": "string", "linkReader.expand.startEmoji": "string", "location": "location",
-	"tools.approvalMode": "string",
-	"embed.modelsRoot":   "string",
-	"web.searchOrder":    "weborder", "web.fetchOrder": "weborder",
+	"tools.approvalMode": "string", "tools.lineEnding": "string",
+	"embed.modelsRoot": "string",
+	"web.searchOrder":  "weborder", "web.fetchOrder": "weborder",
 	"freeApi.probe.enabled": "bool", "freeApi.probe.intervalHours": "int",
 	"freeApi.limits.weather.perActorDaily": "int", "freeApi.limits.weather.perConversationHourly": "int",
 	"freeApi.limits.exchangeRate.perActorDaily": "int", "freeApi.limits.exchangeRate.perConversationHourly": "int",
@@ -75,6 +75,9 @@ func PatchSetting(raw []byte, file string, ch SettingChange) ([]byte, Config, er
 			return nil, Config{}, invalid
 		}
 		if ch.Key == "tools.approvalMode" && s != "manual" && s != "auto" && s != "yolo" {
+			return nil, Config{}, invalid
+		}
+		if ch.Key == "tools.lineEnding" && !lineEndings[s] {
 			return nil, Config{}, invalid
 		}
 		if ch.Key == "magpie.baseUrl" || ch.Key == "linkReader.proxy" {

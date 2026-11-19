@@ -10,6 +10,16 @@ Go 共用身份在 `feat/kernel-int` 统一：`turn.ToolCall.Identity` 和 `Prep
 
 共用计算处理模糊匹配、BOM 和换行恢复；未改的原始字节沿用执行器规则。审批差分来自最终将写入的正文，超过 6000 个 UTF-16 码元只截显示并标 `Truncated`，实际写入不截断。测试矩阵见 [`edit_preview_test.go`](../../native/internal/edittext/edit_preview_test.go)。这里保证同一文件内容与参数的计算一致；审批等待期间文件被外部修改的并发保护不在本次 A01 修复范围。
 
+## Go 写文件的换行（feat/write-eol，未合 main）
+
+[`lineend.Final`](../../native/internal/lineend/lineend.go) 是 `write` 最终落盘内容的唯一计算：[`tools.write`](../../native/internal/tools/write.go) 写文件和 [`Gate.Describe`](../../native/internal/approval/approval.go) 算审批预览都只调它，输入同是目标绝对路径、原文件开头（最多 1 MiB）和她给的正文，所以卡上的字节就是写进去的字节（[`write_lineend_test.go`](../../native/internal/tools/write_lineend_test.go) 逐字节核对）。换行取第一个能定下来的：
+
+1. 已有文件：沿用，判断和 `edit` 同一个函数 `edittext.LineEnding`（第一个换行是 CRLF 就 CRLF，否则 LF）；二进制（前 8000 字节有 NUL）或一个换行都没有就往下。
+2. `.editorconfig` 的 `end_of_line`（库 editorconfig-core-go v2，规范里的 root 和路径匹配它处理）；`cr` 不支持，按 LF 并记一行日志。
+3. Git 检出规则：`git check-attr -z eol text` 加 `git config --get-regexp core.(autocrlf|eol)`，1 秒超时，只留 `GIT_CONFIG_*` 三个环境变量。`-text` 原样写；`eol=lf|crlf` 照它；`core.autocrlf=true` 用 CRLF；`core.eol`。git 不在、不在仓库里（worktree 的 `.git` 是文件也认）、超时都当没有这一档。每次 git 约 85 毫秒（Defender 下实测），暂时没有回合内缓存。
+4. `tools.lineEnding`：`auto`（默认，Windows CRLF、别处 LF）/ `lf` / `crlf`。
+
+正文先把 CRLF、单独的 CR 统一成 LF 再换成选定的；正文自带 BOM 照留，没带而原文件有 BOM 就保留原文件的（和 `edit` 一致）。网络共享和设备路径不去连：跳过第 2、3 档，预览也不读它。`tools.lineEnding` 在 Open 时读进 `lineend`，设置页改了当场生效（`settings_registry.go`）。
 
 ## Go 文件检查点（feat/checkpoint-lsp，未合 main）
 
@@ -165,6 +175,8 @@ Go 工作回合的完整输出由 [`artifact.Store`](../../native/internal/artif
 ## 配置
 
 `tools.workdir`：读写文件和命令的默认目录，不填是用户目录；也可以用绝对路径。测试和预览必须指向临时目录（`SUMIKA_CONFIG`）。
+
+`tools.lineEnding`：`write` 新建文件时已有文件、`.editorconfig`、Git 规则都没说换行才用它，`auto`（默认）跟系统（Windows CRLF、别处 LF）、`lf`、`crlf`；设置页可改，当场生效。顺序见上面“Go 写文件的换行”。
 
 Go 后台的项目说明（`AGENTS.md` / `CLAUDE.md`，[规格](../规格-项目说明文件与skill.md)，代码 `native/internal/projectcontext/`，键在 `native/internal/config/projectcontext.go`）：`projectContext.enabled` 默认 false；`projectContext.trustedRoots` 默认空，工作区根在其中某个之下才读（ADR-206"问一次信不信任"的界面做出来以前用它代替）；`projectContext.userContext` 默认 false，数据目录里的用户说明暂按审批未通过处理。只有本地私聊读，本地群聊和 QQ 都不读。
 
