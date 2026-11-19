@@ -5,7 +5,7 @@
 [![CI](https://github.com/tsugumi42/sumika-public/actions/workflows/ci.yml/badge.svg)](https://github.com/tsugumi42/sumika-public/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Sumika（栖処）是一个常驻本机的 AI 角色之家。一台电脑里住着几个角色，各有自己的人设、模型和长期记忆。你可以在桌面窗口里和她们聊天，让她们帮你在电脑上做事（每一步都要你批准）；她们也能进 QQ 私聊和群聊，并且记得谁是谁。
+Sumika（栖処）是一个常驻本机的 AI 角色之家。一台电脑里住着几个角色，各有自己的人设、模型和长期记忆。你可以在桌面窗口里和她们聊天，让她们帮你在电脑上做事；她们也能进 QQ 私聊和群聊，并且记得谁是谁。
 
 > [!WARNING]
 > **还在早期开发。** 没有发布版和安装包；配置项和数据格式还会变，不保证能平滑迁移；文档里写的部分功能只做了一半。现在还不适合日常使用。
@@ -14,7 +14,7 @@ Sumika（栖処）是一个常驻本机的 AI 角色之家。一台电脑里住�
 
 - **原生桌面程序**：后台和界面在同一个 exe 里，界面用 [mygo](https://github.com/egoist/mygo) 和 [CrychicUI](https://github.com/ELY-Open-Source/CrychicUI) 绘制；常驻托盘，不开网页、不开端口。
 - **本地私聊和群聊**：流式回复、随时停止、引用；群里几个角色轮流接话。
-- **工具要你批准**：命令、写文件等操作先过策略检查，再弹审批卡，你点了才执行；改过的文件可以用检查点撤回。
+- **工具权限**。命令和文件修改先过权限策略，需要确认时会显示审批卡。检查点可以恢复其覆盖的文件改动。
 - **长期记忆**：每个角色有自己的记忆，关于你本人的事实放在共用池；支持全文检索，可选本地向量检索。后台整理默认关闭。
 - **QQ**：连接 OneBot 兼容的协议端，所有消息存进本地，由闸门决定角色要不要开口。发送默认关闭，发出前还要过守卫。
 - **看懂链接**：X、B 站、YouTube、pixiv、Steam、BOOTH 等。
@@ -45,7 +45,7 @@ Sumika（栖処）是一个常驻本机的 AI 角色之家。一台电脑里住�
    ./sumika.exe -root ..
    ```
    默认是只看历史的模式，从托盘开始接收后才能本地聊天。只想看看界面、不碰任何数据，用 `./sumika.exe -demo`。
-4. 跑测试：在 `native/` 里执行 `go vet ./...` 和 `go test -short ./...`。CI 每次推送都在 Windows 和 Linux 上各跑一遍。
+4. 跑测试：在 `native/` 里执行 `go vet ./...` 和 `go test -short ./...`。推送和 PR 都会在 Windows、Linux 上跑 CI。改动走 [GitHub PR](docs/规格-合并走PR.md)，本地检查见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 字体不随仓库分发，没有时界面用系统字体。所有命令行工具见 [docs/subsystems/go-tools.md](docs/subsystems/go-tools.md)。
 

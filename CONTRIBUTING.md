@@ -63,29 +63,13 @@
 
 ## 三、测试
 
-下面的 `go test`、`go vet` 都在 `native/` 里跑，`bun scripts/...` 在仓库根目录跑。
-
-- **改的过程中**：只跑你动到的包，比如：
-
-  ```bash
-  go test ./internal/channel/snowluma
-  ```
-
-- **合进 main 之前**：在分支上把改动都提交、先合上最新的 main，然后在仓库根执行：
-
-  ```bash
-  bun scripts/go-verify.ts
-  ```
-
-  它挑出改了文件的包和它们的直接导入方（根包除外，只多一层，ADR-362），低优先级对整个模块跑 `go vet`、对这几个包跑 `go test -short -count=1`，退出码都要是 0（根包、间接导入方和慢的测试由每天的巡检整套跑）；最后一行写着跑了几个包、结果如何，抄进合并的提交说明。过了的包它会记下"这份代码上验过了"，合并后推送时钩子见到同一份代码就不再跑；有几个包红了，改好再执行一遍，只跑没过的。工作区里还有没提交的改动时它不跑。想先看会挑哪些包，用 `bun scripts/go-affected.ts <文件>`；如果挑出来的是"整套"，说明你改的东西（`go.mod`、提示词、示例角色卡、示例配置等）会被很多测试读到。
-- **整套**：`go test ./...` 很吃 CPU，手动跑时在 `native/` 里用低优先级跑，退出码原样带出来：
-
-  ```bash
-  powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/run-low.ps1 go test ./...
-  ```
-
-  整套平时由维护者那边的每日巡检跑；想在推送时让钩子跑整套，设环境变量 `SUMIKA_PUSH_FULL=1`。
-- **文档检查**：改了 `docs/`、配置示例或 ADR 时跑 `native/bin/sumika-dev.exe check docs`（提交时钩子也会跑）。
+- **纯文档改动**跑仓库根目录下的 `native/bin/sumika-dev.exe check docs`。程序还没编时，在 `native/` 跑 `go build -o bin/sumika-dev.exe ./cmd/sumika-dev`。提交钩子也会检查暂存版本。
+- **开发中**只跑相关包。仓库根目录用 `bun scripts/go-affected.ts <文件>` 看范围，在 `native/` 用 `bun ../scripts/slot.ts go test ./internal/channel/snowluma` 这类命令跑。完整输出存主工作区 `data/dev/test-runs/`。
+- **测试名额**由 `scripts/run-low.ps1` 管理。开发命令走 `scripts/slot.ts`，使用 `dev` 档并限制 Go 并行度。推送检查、每日整套和兜底队列使用独占的 `verify` 档。间接导入方、根包、扩展测试、慢对拍和压测交给[每日整套](docs/规格-每日整套.md)。需要手跑整套时，从仓库根目录执行 `bun scripts/go-verify.ts --full`。
+- **写测试**照[测试耗时规范](docs/规范-测试耗时.md)，用 `bun scripts/go-test-times.ts` 量。固定等待换成事件同步，同包同类写法一起查。确实没有事件可等时才放宽时限，并用有负载的运行结果说明依据。
+- **提示词与对拍**使用已有真实样本和 [Go 评测入口](docs/subsystems/go-tools.md)，真实模型试验放后台。Go 按自身规格验收。回合重录用 `INTENDED=1`，先在 `testdata/intended/` 登记原因。工具、渠道的 `asent.json`、policy 和 textclean 的预期按各自样本更新。
+- **界面**按[设计自查](docs/设计自查.md)验收。新页面、模块试十个角色、上万条消息和长历史，记录卡顿、跳变和相关测量。用 `ui.NewTester` 查布局和状态，`MYGO_FRAME_STATS` 量帧耗时（[native/README.md](native/README.md)）。截图截相关组件，记录实际缩放。
+- **合进 main**走 [GitHub PR](docs/规格-合并走PR.md)，以 PR 上的必过检查为准。
 
 ## 四、提交
 
@@ -95,7 +79,7 @@
 |---|---|
 | 提交前 | 隐私扫描（号码、昵称、密钥）、文档检查、漏解决的冲突标记、改了 `.ts` 时的 TypeScript 类型检查、Go 格式、`go vet` |
 | 写提交说明时 | 标题 40 个字以内、不带分号、不带 ADR 编号 |
-| 推送前 | 这一段提交的隐私扫描，整个模块 `go vet`，改到的 Go 包 `go test -short`（合并前验过的不再跑） |
+| 推送前 | 功能分支扫描新增内容的隐私；Go 与脚本检查由 GitHub CI 执行 |
 
 红了就改代码或补基线，**不要用 `--no-verify` 绕过**。
 
@@ -117,9 +101,9 @@
 5. [docs/README.md](docs/README.md)：所有文档的索引，以及"每种事实以哪份为准"。
 6. 要改哪一块，就读那一块的规格：[规格-Go后台](docs/规格-Go后台.md)（内核）、规格-Go后台装配（私有存档）（怎么接成一个能跑的程序）、[规格-渠道中间件](docs/规格-渠道中间件.md)（收、存、认人、闸门、发送）、[规格-记忆-v2](docs/规格-记忆-v2.md)。规格是设计和进度混写的长文，先看开头的"状态"。
 
-注意：[docs/subsystems/](docs/subsystems/README.md) 里除了 `go-tools.md`，其余参考页写的还是 Bun 版，Go 的现状以规格和代码为准。
+[子系统参考](docs/subsystems/README.md)里同时有 Go 现状和历史说明，核对行为时沿对应源码链接阅读。
 
-AGENTS.md 里提到的"上级目录的 AGENTS.md"是维护者本机放通用约定的地方，不在这个仓库里；和提交、验收有关的要点已经写在这份和 AGENTS.md 里。
+公开仓库的开发约定从本页和 [AGENTS.md](AGENTS.md) 查。
 
 ## 六、代码地图
 
@@ -149,9 +133,6 @@ AGENTS.md 里提到的"上级目录的 AGENTS.md"是维护者本机放通用约�
 
 扩展点（插件）都是编进程序的 Go 代码，不在运行时加载第三方插件。现在有四类：内核的 `turn.Plugin`、渠道的拦截器（`channel/types` 的 `Interceptor`）、入库后的观察者、平台适配器。怎么统一还在讨论（GitHub issue #16），写新插件之前先看那里。
 
-## 七、安全和隐私的底线
+## 七、安全和隐私
 
-- 代码里不写任何供应商的 key；key、令牌不进 git、不进日志。
-- 工具权限按"谁在说话、从哪个渠道来"决定：只有维护者本人在本地主窗口能用执行类工具，而且要审批；QQ 渠道里不出现任何本地执行能力。
-- 改"谁能看到什么、谁能做什么"的代码：先把四种场合和敌对输入（冒充名字、怪号码、伪造字段）列成表再动手；身份按号认，不按名字；取不到、出错时的兜底只能收紧，不能放宽。
-- 不修改 MaiBot、AstrBot、NapCat、SnowLuma 的配置和数据；不自动部署或启动 SnowLuma（它的许可限制），只连接和监控。
+改权限、身份、可见性或外发前，读 [AGENTS.md 的安全边界](AGENTS.md#安全边界)和[开发指导](docs/开发指导/权限安全隐私.md)。仓库里的示例用虚构数据，密钥和令牌留在本地配置或密钥存储中。
