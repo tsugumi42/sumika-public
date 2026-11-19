@@ -1,122 +1,222 @@
-import { afterAll, beforeAll, expect, setDefaultTimeout, test } from 'bun:test'
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { expect, test } from 'bun:test'
+import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { acquireRunner, addEntry, conclusionOf, git, loadState, makeCtx, mutate, processHead, removeEntry, runnerAlive, runQueue, saveState, statusText, type Ctx, type Verify } from './merge-queue'
-import { cleanEnv, green, mainSha, mkBranch, mkRepo, quiet, root, sh, useQueueTestEnv } from './merge-queue.testlib'
+import { addEntry, loadState, runQueue, statusText } from './merge-queue'
+import { FakeHub, LINUX, WIN, bad, mainSha, mkBranch, mkRepoWithRemote, ok, quiet, remoteSha, running, sh, useQueueTestEnv } from './merge-queue.testlib'
 
 useQueueTestEnv()
 
-// 合并队列的测试（第 2 份，共三份；共用的准备在 merge-queue.testlib.ts）
+// 合并队列的测试（第 2 份，共三份）：按 GitHub 检查合并的整个流程。远端是本地裸仓库，GitHub 是假的（testlib 的 FakeHub）
 
-test('合并有冲突：记红、写冲突文件、不动 main、专用 worktree 回到干净，后面的照常合', async () => {
-  const c = mkRepo()
-  mkBranch(c, 'x', 'base.txt', 'X\nline2\nline3\n')
-  mkBranch(c, 'y', 'base.txt', 'Y\nline2\nline3\n')
-  mkBranch(c, 'z', 'z.txt', 'z\n')
-  for (const b of ['x', 'y', 'z']) addEntry(c, b)
-  const calls: string[] = []
-  await runQueue(c, { ...quiet, verify: (a) => { calls.push(a.entry.branch); return green(a) } })
-  const [rx, ry, rz] = loadState(c.statePath).results
-  expect([rx.ok, ry.ok, rz.ok]).toEqual([true, false, true])
-  expect(ry.reason).toBe('冲突')
-  expect(ry.files).toEqual(['base.txt'])
-  expect(calls).toEqual(['x', 'z'])   // 冲突的没进验证
-  expect(sh(c.mainDir, 'show', 'main:base.txt').replace(/\r/g, '')).toBe('X\nline2\nline3')   // y 没进来
-  expect(sh(c.queueWt, 'status', '--porcelain')).toBe('')
-  expect(existsSync(join(c.common, 'worktrees'))).toBe(true)
-  expect(git(c.queueWt, ['rev-parse', '--verify', '-q', 'MERGE_HEAD']).code).not.toBe(0)
+test('两条排队：第一条绿了合；第二条落后 main，替它更新分支、等检查；检查绿了再跑一次合上，本机 main 跟上', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'a', 'a.txt', 'a\n'); mkBranch(c, 'b', 'b.txt', 'b\n')
+  hub.open('a', [ok(WIN), bad(LINUX)]); hub.open('b', [ok(WIN)])
+  addEntry(c, 'a', 'feat(测试): 合 a', 'a 的正文\n\nCo-Authored-By: x')
+  addEntry(c, 'b', 'feat(测试): 合 b', 'b 的正文')
+
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(hub.merges.map((m) => m.number)).toEqual([1])
+  expect(hub.merges[0].subject).toBe('feat(测试): 合 a')
+  expect(hub.merges[0].body).toContain('a 的正文\n\nCo-Authored-By: x\n\nGitHub 检查（PR #1，头 ')
+  expect(hub.merges[0].body).toContain(`${WIN}：绿`)
+  expect(hub.merges[0].body).toContain(`${LINUX}：红（FAILURE），不挡合并`)
+  expect(hub.updates).toEqual([2])
+  let s = loadState(c.statePath)
+  expect(s.queue.map((e) => [e.branch, e.waiting])).toEqual([['b', 'PR #2 落后 main，已点“更新分支”，等 GitHub 检查重跑']])
+  expect(s.results.map((r) => [r.branch, r.ok, r.pr])).toEqual([['a', true, 'https://example.invalid/pull/1']])
+  expect(mainSha(c)).toBe(remoteSha(c))                       // 本机 main 快进到了远端的合并提交
+  expect(sh(c.mainDir, 'log', '-1', '--format=%s', 'main')).toBe('feat(测试): 合 a')
+
+  // 检查还在跑：再跑一次，还是等，不合
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(hub.merges).toHaveLength(1)
+  expect(loadState(c.statePath).queue[0].waiting).toBe(`等 GitHub 检查：${WIN}`)
+
+  // 检查出结果（会话收到事件）：再跑一次合上
+  hub.set('b', { checks: [ok(WIN, '2026-11-19T03:00:00Z')], mergeState: 'CLEAN' })
+  expect(await runQueue(c, { ...quiet, hub })).toBe('empty')
+  expect(hub.merges.map((m) => m.number)).toEqual([1, 2])
+  s = loadState(c.statePath)
+  expect(s.queue).toEqual([])
+  expect(s.running).toBeNull()
+  expect(s.results.map((r) => [r.branch, r.ok])).toEqual([['a', true], ['b', true]])
+  expect(mainSha(c)).toBe(remoteSha(c))
+  expect(sh(c.mainDir, 'log', '--first-parent', '--merges', '--format=%s', 'main').split(/\r?\n/)).toEqual(['feat(测试): 合 b', 'feat(测试): 合 a'])
+  expect(statusText(c)).toContain('https://example.invalid/pull/2')
 })
 
-test('验证途中 main 被别人改了：不快进，重新合、重新验', async () => {
-  const c = mkRepo()
+test('必过检查红：出队记红带链接，不合，远端和本机 main 都不动', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
   mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.open('a', [bad(WIN)])
   addEntry(c, 'a')
-  let calls = 0
-  let moved = ''
-  const verify: Verify = (x) => {
-    if (++calls === 1) {
-      writeFileSync(join(c.mainDir, 'other.txt'), 'o\n'); sh(c.mainDir, 'add', 'other.txt'); sh(c.mainDir, 'commit', '-qm', '别人合进来的')
-      moved = mainSha(c)
+  const before = remoteSha(c)
+  expect(await runQueue(c, { ...quiet, hub })).toBe('empty')
+  expect(hub.merges).toEqual([])
+  const r = loadState(c.statePath).results[0]
+  expect([r.ok, r.reason]).toEqual([false, `GitHub 检查红：${WIN}（FAILURE） https://example.invalid/run/${encodeURIComponent(WIN)}`])
+  expect(remoteSha(c)).toBe(before)
+  expect(mainSha(c)).toBe(before)
+})
+
+test('检查还没出结果：留在队首、后面的不越过它，不合', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'a', 'a.txt', 'a\n'); mkBranch(c, 'b', 'b.txt', 'b\n')
+  hub.open('a', [running(WIN)]); hub.open('b', [ok(WIN)])
+  addEntry(c, 'a'); addEntry(c, 'b')
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(hub.merges).toEqual([])
+  const s = loadState(c.statePath)
+  expect(s.queue.map((e) => e.branch)).toEqual(['a', 'b'])
+  expect(s.queue[0].waiting).toBe(`等 GitHub 检查：${WIN}`)
+  expect(s.running).toBeNull()
+  expect(statusText(c)).toContain(`【等 GitHub 检查：${WIN}】`)
+})
+
+test('判断以后 PR 头又变了：GitHub 拒绝合并（--match-head-commit），留在队首；新头的检查绿了才合', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.open('a', [ok(WIN)])
+  addEntry(c, 'a')
+  // 在“看了检查”和“合并”之间有人往分支推了新提交
+  const realMerge = hub.merge.bind(hub)
+  let raced = false
+  hub.merge = (p, subject, body) => {
+    if (!raced) {
+      raced = true
+      sh(c.mainDir, 'checkout', '-q', 'a'); writeFileSync(join(c.mainDir, 'a2.txt'), 'x\n'); sh(c.mainDir, 'add', '.'); sh(c.mainDir, 'commit', '-qm', '又一个'); sh(c.mainDir, 'checkout', '-q', 'main')
+      sh(c.mainDir, 'push', '-q', 'origin', 'a')
+      hub.set('a', { head: remoteSha(c, 'a'), checks: [running(WIN, '2026-11-19T02:00:00Z')], mergeState: 'BLOCKED' })
     }
-    return green(x)
+    return realMerge(p, subject, body)
   }
-  await runQueue(c, { ...quiet, verify })
-  expect(calls).toBe(2)
-  expect(sh(c.mainDir, 'rev-parse', 'main^1')).toBe(moved)   // 新的合并提交接在别人的提交后面
-  expect(existsSync(join(c.mainDir, 'other.txt')) && existsSync(join(c.mainDir, 'a.txt'))).toBe(true)
-  expect(loadState(c.statePath).results[0].ok).toBe(true)
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(hub.merges).toEqual([])
+  expect(loadState(c.statePath).queue[0].waiting).toContain('gh pr merge 没成功：Head branch was modified')
+  // 再跑：新头的检查还在跑，等
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(loadState(c.statePath).queue[0].waiting).toBe(`等 GitHub 检查：${WIN}`)
+  hub.set('a', { checks: [ok(WIN, '2026-11-19T03:00:00Z')], mergeState: 'CLEAN' })
+  expect(await runQueue(c, { ...quiet, hub })).toBe('empty')
+  expect(hub.merges.map((m) => m.head)).toEqual([sh(c.mainDir, 'rev-parse', 'a')])
+  expect(sh(c.mainDir, 'show', 'main:a2.txt')).toBe('x')
 })
 
-// Bun 那段单独一行（规格-Bun后台第1批 第八节）：go-verify 另打的"合并说明另写："接在结论后面
-test('结论行：Bun 那段单独一行接在 Go 结论后面，没有 Go 时写跳过', async () => {
-  expect(conclusionOf('合并说明可以写：go vet 过\n合并说明另写：server bun test：12 通过\n合并说明另写：gen-rpc --check：生成文件是新的\n', 0, 1))
-    .toBe('go vet 过\nserver bun test：12 通过\ngen-rpc --check：生成文件是新的')
-  expect(conclusionOf('合并说明可以写：没有 Go 改动，跳过 Go 的 vet、test、archcheck\r\n合并说明另写：server bun test：3 通过\r\n', 0, 1))
-    .toBe('没有 Go 改动，跳过 Go 的 vet、test、archcheck\nserver bun test：3 通过')
-  expect(conclusionOf('什么都没有', 0, 4.2)).toBe('go-verify 退出码 0（4 秒）')
-  const c = mkRepo()
-  mkBranch(c, 'srv', 'server-note.txt', 'x\n')
-  addEntry(c, 'srv', 'feat(测试): 合 srv', '正文')
-  const verify: Verify = ({ append }) => { append('合并说明可以写：没有 Go 改动，跳过 Go 的 vet、test、archcheck\n合并说明另写：server bun test：7 通过\n'); return { ok: true, code: 0 } }
-  expect(await runQueue(c, { ...quiet, verify })).toBe('empty')
-  const msg = sh(c.mainDir, 'log', '-1', '--format=%B', 'main')
-  expect(msg).toContain('合并队列验证：没有 Go 改动，跳过 Go 的 vet、test、archcheck\nserver bun test：7 通过')
-})
-
-test('add 的拒绝：main、不存在的分支、重复；remove 不删正在跑的', () => {
-  const c = mkRepo()
+test('本地分支有没推上去的提交：不合，提示先推；推了以后照常', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
   mkBranch(c, 'a', 'a.txt', 'a\n')
-  expect(() => addEntry(c, 'main')).toThrow()
-  expect(() => addEntry(c, 'nope')).toThrow('没有这个本地分支')
-  expect(addEntry(c, 'a').position).toBe(1)
-  expect(() => addEntry(c, 'a')).toThrow('已经在队列里')
-  mutate(c, (s) => { s.running = { id: s.queue[0].id, branch: 'a', pid: process.pid, since: new Date().toISOString(), phase: '验证' } })
-  expect(() => removeEntry(c, 'a')).toThrow('正在跑')
-  mutate(c, (s) => { s.running = null })
-  removeEntry(c, 'a')
-  expect(loadState(c.statePath).queue).toEqual([])
-  expect(() => removeEntry(c, 'a')).toThrow('队列里没有')
-})
-
-test('状态文件原子写：写到一半失败，原文件完好、没有临时文件残留', () => {
-  const c = mkRepo()
-  mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.open('a', [ok(WIN)])
+  sh(c.mainDir, 'checkout', '-q', 'a'); writeFileSync(join(c.mainDir, 'late.txt'), 'late\n'); sh(c.mainDir, 'add', '.'); sh(c.mainDir, 'commit', '-qm', '后补'); sh(c.mainDir, 'checkout', '-q', 'main')
   addEntry(c, 'a')
-  const before = readFileSync(c.statePath, 'utf8')
-  const crash = { write: (p: string, body: string) => { writeFileSync(p, body.slice(0, body.length / 2)); throw new Error('写到一半断电') } }
-  expect(() => saveState(c.statePath, { queue: [], running: null, results: [] }, crash)).toThrow('断电')
-  expect(readFileSync(c.statePath, 'utf8')).toBe(before)
-  expect(JSON.parse(before).queue[0].branch).toBe('a')
-  expect(readdirSync(c.common).filter((f) => f.endsWith('.tmp'))).toEqual([])
-  // 正常写：内容可解析、没有残留
-  mutate(c, (s) => { s.results.push({ branch: 'q', title: 't', at: 'x', ok: true, reason: '', seconds: 1 }) })
-  expect(JSON.parse(readFileSync(c.statePath, 'utf8')).results.length).toBe(1)
-  expect(readdirSync(c.common).filter((f) => f.endsWith('.tmp') || f.endsWith('.lock'))).toEqual([])
-  // 写坏的文件当空队列，不抛错
-  writeFileSync(c.statePath, '{半份')
-  expect(loadState(c.statePath).queue).toEqual([])
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(hub.merges).toEqual([])
+  expect(loadState(c.statePath).queue[0].waiting).toMatch(/^本地 a（[0-9a-f]{8}）有没推上去的提交，PR 头是 [0-9a-f]{8}：推上去再合$/)
+  sh(c.mainDir, 'push', '-q', 'origin', 'a')
+  hub.set('a', { head: remoteSha(c, 'a'), checks: [ok(WIN, '2026-11-19T03:00:00Z')] })
+  expect(await runQueue(c, { ...quiet, hub })).toBe('empty')
+  expect(sh(c.mainDir, 'show', 'main:late.txt')).toBe('late')
 })
 
-test('两个执行者互斥：已有活着的执行者时第二个起不来，释放或进程没了以后能接手', async () => {
-  const c = mkRepo()
-  const first = acquireRunner(c)
-  expect('release' in first).toBe(true)
-  const second = acquireRunner(c)
-  expect('pid' in second && second.pid).toBe(process.pid)
-  // 命令行层面：run 退出码 4
-  const p = Bun.spawnSync([process.execPath, join(import.meta.dir, 'merge-queue.ts'), 'run'], { cwd: c.mainDir, env: cleanEnv() })
-  expect(p.exitCode).toBe(4)
-  expect(runQueue(c, { ...quiet, verify: green })).resolves.toBe('busy')
-  if ('release' in first) first.release()
-  const third = acquireRunner(c)
-  expect('release' in third).toBe(true)
-  if ('release' in third) third.release()
-  // 持有者进程已经没了的锁算过期
-  const dead = Bun.spawnSync([process.execPath, '-e', 'process.stdout.write(String(process.pid))'], { env: cleanEnv() })
-  const lock = join(c.common, 'sumika-merge-queue.runner')
-  writeFileSync(lock, JSON.stringify({ pid: Number(dead.stdout.toString()), at: 'x' }))
-  const fourth = acquireRunner(c)
-  expect('release' in fourth).toBe(true)
-  if ('release' in fourth) fourth.release()
+test('PR 头比本地新（点过“更新分支”、本地没拉）：照常合', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'x', 'x.txt', 'x\n'); mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.open('x'); hub.open('a')
+  addEntry(c, 'x'); addEntry(c, 'a')
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')   // x 合了，a 被更新、等检查
+  expect(sh(c.mainDir, 'rev-parse', 'a')).not.toBe(hub.prs.get('a')!.head)
+  hub.set('a', { checks: [ok(WIN, '2026-11-19T03:00:00Z')], mergeState: 'CLEAN' })
+  expect(await runQueue(c, { ...quiet, hub })).toBe('empty')
+  expect(loadState(c.statePath).results.map((r) => [r.branch, r.ok])).toEqual([['x', true], ['a', true]])
+})
+
+test('没有 PR、PR 已关：出队记红；PR 已经在 GitHub 上合了：记绿、本机 main 跟上', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'none', 'n.txt', 'n\n'); mkBranch(c, 'closed', 'c.txt', 'c\n'); mkBranch(c, 'done', 'd.txt', 'd\n')
+  hub.open('closed'); hub.set('closed', { state: 'CLOSED' })
+  const p = hub.open('done')
+  hub.merge(p, '网页上合的', '')
+  addEntry(c, 'none'); addEntry(c, 'closed'); addEntry(c, 'done')
+  expect(await runQueue(c, { ...quiet, hub })).toBe('empty')
+  const rs = loadState(c.statePath).results
+  expect(rs.map((r) => [r.branch, r.ok])).toEqual([['none', false], ['closed', false], ['done', true]])
+  expect(rs[0].reason).toBe('没找到 none 的 PR：先推到 origin、gh pr create 再排')
+  expect(rs[1].reason).toBe('PR #1 已关闭，没合')
+  expect(rs[2].reason).toBe('PR #2 已经在 GitHub 上合了')
+  expect(mainSha(c)).toBe(remoteSha(c))
+  expect(hub.merges).toHaveLength(1)   // 只有上面手动那一次
+})
+
+test('同名分支以前合过一个 PR、之后又有新提交：不算合了，记红', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.merge(hub.open('a'), '以前合的', '')
+  sh(c.mainDir, 'checkout', '-q', 'a'); writeFileSync(join(c.mainDir, 'more.txt'), 'm\n'); sh(c.mainDir, 'add', '.'); sh(c.mainDir, 'commit', '-qm', '又改'); sh(c.mainDir, 'checkout', '-q', 'main')
+  addEntry(c, 'a')
+  expect(await runQueue(c, { ...quiet, hub })).toBe('empty')
+  expect(loadState(c.statePath).results[0]).toMatchObject({ ok: false, reason: 'a 的 PR #1 以前合过，之后的提交不在 main 里：再开一个 PR' })
+})
+
+test('问 GitHub 出错（找 PR、读分支保护）：留在队首写原因，不合', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.open('a')
+  addEntry(c, 'a')
+  hub.requiredErr = '读不到 main 的分支保护（HTTP 404）'
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(loadState(c.statePath).queue[0].waiting).toBe('问 GitHub 出错：读不到 main 的分支保护（HTTP 404）')
+  hub.requiredErr = ''; hub.findErr = 'gh pr list 失败：network'
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(hub.merges).toEqual([])
+  hub.findErr = ''; hub.requiredNames = []
+  expect(await runQueue(c, { ...quiet, hub })).toBe('blocked')
+  expect(loadState(c.statePath).queue[0].waiting).toBe('main 的分支保护里没有必过检查，不合（先在 GitHub 上设好）')
+  expect(hub.merges).toEqual([])
+})
+
+test('本机 main 对不齐时不硬来：工作区有改动、本机 main 有远端没有的提交都只写说明；main 没检出时直接挪指针', async () => {
+  // 工作区有没提交的改动
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.open('a'); addEntry(c, 'a')
+  writeFileSync(join(c.mainDir, 'base.txt'), '改了没提交\n')
+  const before = mainSha(c)
+  expect(await runQueue(c, { ...quiet, hub })).toBe('empty')
+  let r = loadState(c.statePath).results[0]
+  expect(r.ok).toBe(true)
+  expect(r.reason).toContain('本机 main 没对齐：')
+  expect(r.reason).toContain('有没提交的改动，干净后 git pull --ff-only')
+  expect(mainSha(c)).toBe(before)
+
+  // 本机 main 有远端没有的提交
+  const c2 = mkRepoWithRemote()
+  const hub2 = new FakeHub(c2)
+  mkBranch(c2, 'a', 'a.txt', 'a\n')
+  hub2.open('a'); addEntry(c2, 'a')
+  writeFileSync(join(c2.mainDir, 'local.txt'), 'l\n'); sh(c2.mainDir, 'add', '.'); sh(c2.mainDir, 'commit', '-qm', '本机自己的')
+  const local = mainSha(c2)
+  expect(await runQueue(c2, { ...quiet, hub: hub2 })).toBe('empty')
+  r = loadState(c2.statePath).results[0]
+  expect(r.reason).toContain(`本机 main 有远端没有的提交（${local.slice(0, 8)}），没对齐`)
+  expect(mainSha(c2)).toBe(local)
+
+  // main 没在任何工作区检出
+  const c3 = mkRepoWithRemote()
+  const hub3 = new FakeHub(c3)
+  mkBranch(c3, 'a', 'a.txt', 'a\n')
+  hub3.open('a'); addEntry(c3, 'a')
+  sh(c3.mainDir, 'checkout', '-q', '-b', 'other')
+  expect(await runQueue(c3, { ...quiet, hub: hub3 })).toBe('empty')
+  expect(loadState(c3.statePath).results[0].reason).not.toContain('没对齐')
+  expect(mainSha(c3)).toBe(remoteSha(c3))
 })

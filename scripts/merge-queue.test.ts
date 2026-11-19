@@ -1,81 +1,85 @@
-import { afterAll, beforeAll, expect, setDefaultTimeout, test } from 'bun:test'
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { expect, test } from 'bun:test'
+import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { acquireRunner, addEntry, conclusionOf, git, loadState, makeCtx, mutate, nightlyPath, nightlyReminder, processHead, removeEntry, runnerAlive, runQueue, saveState, statusText, type Ctx, type NightlyRecord, type Verify } from './merge-queue'
-import { cleanEnv, green, mainSha, mkBranch, mkRepo, quiet, root, sh, useQueueTestEnv } from './merge-queue.testlib'
+import { addEntry, decide, nightlyPath, nightlyReminder, normChecks, removeEntry, runQueue, statusText, type Ctx, type NightlyRecord } from './merge-queue'
+import { LINUX, WIN, bad, mkBranch, mkRepo, ok, pr, quiet, running, useQueueTestEnv } from './merge-queue.testlib'
 
 useQueueTestEnv()
 
-// 合并队列的测试（第 1 份，共三份；共用的准备在 merge-queue.testlib.ts）
+// 合并队列的测试（第 1 份，共三份；共用的准备在 merge-queue.testlib.ts）：能不能合的判断、整套提醒
 
-test('按排队顺序一条条合，每条都在前一条合完的 main 上验', async () => {
-  const c = mkRepo()
-  for (const b of ['a', 'b', 'c']) mkBranch(c, b, `${b}.txt`, `${b}\n`)
-  for (const b of ['a', 'b', 'c']) addEntry(c, b, `feat(测试): 合 ${b}`, `${b} 的正文\n\nCo-Authored-By: x`)
-  const seen: string[] = []
-  const verify: Verify = (a) => { seen.push(`${a.entry.branch}:${['a', 'b', 'c'].filter((x) => existsSync(join(a.wt, `${x}.txt`))).join('')}`); return green(a) }
-  expect(await runQueue(c, { ...quiet, verify })).toBe('empty')
-  expect(seen).toEqual(['a:a', 'b:ab', 'c:abc'])   // 验 b 的时候 a 已经在树里
-  const merges = sh(c.mainDir, 'log', '--first-parent', '--merges', '--format=%s').split(/\r?\n/)
-  expect(merges).toEqual(['feat(测试): 合 c', 'feat(测试): 合 b', 'feat(测试): 合 a'])
-  const msg = sh(c.mainDir, 'log', '-1', '--format=%B', 'main')
-  expect(msg).toContain('c 的正文')
-  expect(msg).toContain('合并队列验证：go vet 过、go test 1 个包过')
-  expect(sh(c.mainDir, 'rev-parse', 'main^2')).toBe(sh(c.mainDir, 'rev-parse', 'c'))
-  const s = loadState(c.statePath)
-  expect(s.queue).toEqual([])
-  expect(s.running).toBeNull()
-  expect(s.results.map((r) => [r.branch, r.ok])).toEqual([['a', true], ['b', true], ['c', true]])
-  expect(statusText(c)).toContain('绿')
+test('必过检查都绿、能合：合，说明里每条检查一行，不挡合并的红也写上', () => {
+  const d = decide(pr({ checks: [ok(WIN), bad(LINUX)] }), [WIN])
+  expect(d.kind).toBe('merge')
+  if (d.kind !== 'merge') return
+  expect(d.summary).toContain(`${WIN}：绿 https://example.invalid/run/`)
+  expect(d.summary).toContain(`${LINUX}：红（FAILURE），不挡合并`)
 })
 
-test('验证红：不动 main，原因和输出文件记下来', async () => {
-  const c = mkRepo()
-  mkBranch(c, 'bad', 'bad.txt', 'bad\n')
-  mkBranch(c, 'env', 'env.txt', 'env\n')
-  addEntry(c, 'bad'); addEntry(c, 'env')
-  const before = mainSha(c)
-  const verify: Verify = ({ entry, append }) => {
-    if (entry.branch === 'bad') { append('--- FAIL: TestX (0.1s)\nFAIL\tm/b\t3.0s\n有检查红了。没过的 1 个：b\n'); return { ok: false, code: 1 } }
-    append('工作区里有 Go 测试会读到、还没提交的改动\n'); return { ok: false, code: 2 }
+test('两条必过：一条绿一条没出结果、一条绿一条没有记录都不合；一条红出队', () => {
+  const req = [WIN, LINUX]
+  expect(decide(pr({ checks: [ok(WIN), running(LINUX)] }), req)).toEqual({ kind: 'wait', why: `等 GitHub 检查：${LINUX}` })
+  expect(decide(pr({ checks: [ok(WIN)] }), req)).toEqual({ kind: 'wait', why: `等 GitHub 检查：${LINUX}` })
+  expect(decide(pr({ checks: [] }), req)).toEqual({ kind: 'wait', why: `等 GitHub 检查：${WIN}、${LINUX}` })
+  const red = decide(pr({ checks: [ok(WIN), bad(LINUX)] }), req)
+  expect(red.kind).toBe('red')
+  expect(red.kind === 'red' && red.why).toContain(`GitHub 检查红：${LINUX}（FAILURE） https://example.invalid/run/`)
+  expect(decide(pr({ checks: [ok(WIN), ok(LINUX)] }), req).kind).toBe('merge')
+})
+
+test('只有 SUCCESS 算绿：NEUTRAL、SKIPPED、CANCELLED、TIMED_OUT、没有结论都不合', () => {
+  for (const c of ['NEUTRAL', 'SKIPPED', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED', 'STALE', '']) {
+    expect(decide(pr({ checks: [bad(WIN, c)] }), [WIN]).kind).toBe('red')
   }
-  await runQueue(c, { ...quiet, verify })
-  expect(mainSha(c)).toBe(before)
-  const [a, b] = loadState(c.statePath).results
-  expect(a.ok).toBe(false)
-  expect(a.reason).toContain('验证红')
-  expect(a.reason).toContain('FAIL')
-  expect(readFileSync(a.outFile!, 'utf8')).toContain('有检查红了')
-  expect(a.outFile).toMatch(/queue-bad-\d{8}-\d{6}\.txt$/)
-  expect(b.reason).toContain('环境错误')
-  expect(loadState(c.statePath).queue).toEqual([])
-  expect(statusText(c)).toContain('红')
 })
 
-test('只有冲突的那条在跑时 main 不动', async () => {
-  const c = mkRepo()
-  mkBranch(c, 'x', 'base.txt', 'X\nline2\nline3\n')
-  sh(c.mainDir, 'checkout', '-q', 'main')
-  writeFileSync(join(c.mainDir, 'base.txt'), 'M\nline2\nline3\n'); sh(c.mainDir, 'commit', '-qam', 'main 改了同一行')
-  const before = mainSha(c)
-  addEntry(c, 'x')
-  await runQueue(c, { ...quiet, verify: () => { throw new Error('不该验证') } })
-  expect(mainSha(c)).toBe(before)
-  expect(loadState(c.statePath).results[0].reason).toBe('冲突')
+test('分支保护没有必过检查、或必过名单是空的：不合', () => {
+  expect(decide(pr(), [])).toEqual({ kind: 'wait', why: 'main 的分支保护里没有必过检查，不合（先在 GitHub 上设好）' })
 })
 
-test('处理中途分支被删：记红不卡队列', async () => {
-  const c = mkRepo()
-  mkBranch(c, 'a', 'a.txt', 'a\n')
-  addEntry(c, 'a')
-  sh(c.mainDir, 'branch', '-D', 'a')
-  const s = loadState(c.statePath)
-  expect(await processHead(c, s.queue[0], { ...quiet, verify: green })).toBe('done')
-  expect(loadState(c.statePath).results[0].reason).toContain('不存在')
+test('PR 状态：已合、已关、冲突、草稿、落后、GitHub 还没算出来', () => {
+  expect(decide(pr({ state: 'MERGED' }), [WIN]).kind).toBe('merged')
+  expect(decide(pr({ state: 'CLOSED' }), [WIN])).toEqual({ kind: 'red', why: 'PR #7 已关闭，没合' })
+  expect(decide(pr({ mergeState: 'DIRTY' }), [WIN]).kind).toBe('red')
+  expect(decide(pr({ mergeState: 'DRAFT' }), [WIN]).kind).toBe('wait')
+  expect(decide(pr({ mergeState: 'BEHIND' }), [WIN])).toEqual({ kind: 'update' })
+  expect(decide(pr({ mergeState: 'BEHIND', checks: [running(WIN)] }), [WIN])).toEqual({ kind: 'update' })   // 旧头上的结果反正作废
+  expect(decide(pr({ mergeState: 'BEHIND', checks: [bad(WIN)] }), [WIN]).kind).toBe('red')                  // 红了先修，不替它更新
+  expect(decide(pr({ mergeState: 'UNKNOWN' }), [WIN]).kind).toBe('wait')
+  expect(decide(pr({ mergeState: '' }), [WIN]).kind).toBe('wait')
+  expect(decide(pr({ mergeState: 'BLOCKED' }), [WIN]).kind).toBe('merge')   // 必过都绿时 BLOCKED 交给 gh pr merge 去说
+  expect(decide(pr({ mergeState: 'UNSTABLE' }), [WIN]).kind).toBe('merge')  // 不挡合并的检查红
 })
 
-// ---------- 每日整套显示（规格-每日整套 验收第 3 条） ----------
+test('同名检查有好几次（重跑）：按最新一次；同一时刻有一份不绿就不合', () => {
+  const t1 = '2026-11-19T01:00:00Z', t2 = '2026-11-19T02:00:00Z'
+  expect(decide(pr({ checks: [bad(WIN, 'FAILURE', t1), ok(WIN, t2)] }), [WIN]).kind).toBe('merge')
+  expect(decide(pr({ checks: [ok(WIN, t1), bad(WIN, 'FAILURE', t2)] }), [WIN]).kind).toBe('red')
+  expect(decide(pr({ checks: [ok(WIN, t1), running(WIN, t2)] }), [WIN]).kind).toBe('wait')
+  expect(decide(pr({ checks: [ok(WIN, t2), bad(WIN, 'FAILURE', t2)] }), [WIN]).kind).toBe('red')
+})
+
+test('normChecks：Actions 的检查和外部写的提交状态统一成一种', () => {
+  const cs = normChecks([
+    { __typename: 'CheckRun', name: WIN, status: 'COMPLETED', conclusion: 'SUCCESS', detailsUrl: 'u1', startedAt: 't1' },
+    { __typename: 'CheckRun', name: LINUX, status: 'IN_PROGRESS', conclusion: '', detailsUrl: 'u2', startedAt: 't2' },
+    { __typename: 'StatusContext', context: 'local-verify', state: 'PENDING', targetUrl: 'u3', startedAt: 't3' },
+    { __typename: 'StatusContext', context: 'ci/x', state: 'success', targetUrl: 'u4' },
+  ])
+  expect(cs).toEqual([
+    { name: WIN, done: true, conclusion: 'SUCCESS', url: 'u1', at: 't1' },
+    { name: LINUX, done: false, conclusion: '', url: 'u2', at: 't2' },
+    { name: 'local-verify', done: false, conclusion: 'PENDING', url: 'u3', at: 't3' },
+    { name: 'ci/x', done: true, conclusion: 'SUCCESS', url: 'u4', at: '' },
+  ])
+  expect(normChecks(null)).toEqual([])
+  // 外部写的提交状态当必过：PENDING 等，SUCCESS 合，ERROR 红
+  expect(decide(pr({ checks: cs }), ['local-verify']).kind).toBe('wait')
+  expect(decide(pr({ checks: cs }), ['ci/x']).kind).toBe('merge')
+  expect(decide(pr({ checks: normChecks([{ __typename: 'StatusContext', context: 'ci/x', state: 'ERROR' }]) }), ['ci/x']).kind).toBe('red')
+})
+
+// ---------- 整套提醒 ----------
 const HOUR = 60 * 60 * 1000
 const nightlyRec = (at: number, ok: boolean, failed: string[] = []): NightlyRecord => ({ at: new Date(at).toISOString(), commit: 'abcdef1234567890', tree: 't', ok, seconds: 60, exit: ok ? 0 : 1, output: 'C:\\tmp\\nightly.txt', failed })
 const writeNightly = (c: Ctx, rs: NightlyRecord[]) => writeFileSync(join(c.common, 'sumika-nightly.json'), JSON.stringify(rs))
@@ -139,18 +143,3 @@ test('nightlyPath 认 SUMIKA_NIGHTLY_RECORD', () => {
     else process.env.SUMIKA_NIGHTLY_RECORD = old
   }
 })
-
-test('run --watch 空闲时每小时最多提醒一次', async () => {
-  const c = mkRepo()
-  const t0 = Date.now()
-  writeNightly(c, [nightlyRec(t0 - 40 * HOUR, true)])
-  const logs: string[] = []
-  const clock = { t: t0 }
-  let naps = 0
-  await expect(runQueue(c, {
-    ...quiet, watch: true, log: (s) => logs.push(s), now: () => clock.t,
-    sleep: async () => { naps++; clock.t += 30 * 60_000; if (naps > 4) throw new Error('停') },
-  })).rejects.toThrow('停')
-  expect(logs.filter((l) => l.includes('超过 36 小时没有绿的整套'))).toHaveLength(3)
-})
-

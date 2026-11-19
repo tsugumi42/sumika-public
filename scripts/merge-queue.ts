@@ -1,29 +1,27 @@
-// 本地合并队列（ADR-320，规格-合并队列）：分支提交完排进队列，一个执行者按顺序取，在专用 worktree 里合上当前 main、跑 go-verify，
-// 绿了把这个合并提交快进进 main，红了退回并写原因。每条都在前一条合完的 main 上验，不再各自追 main。
-//   bun scripts/merge-queue.ts add <分支> [--title "合并标题"] [--body-file 文件]   排进队列
+// 合并队列（ADR-320，规格-合并队列；ADR-386、398，规格-合并走PR 第二节）：分支推到公开仓库、开好 PR 以后排进队列，一个执行者按顺序取。
+// 本机不合并、不跑验证：看 PR 上 GitHub 的检查，分支保护里的必过检查都绿了就 gh pr merge（合并提交、删远端分支），
+// 落后 main 就替它点“更新分支”等检查重跑，红了出队写原因，还没出结果就留在队首。合完把本机 main 快进到远端。
+// 不轮询：检查还没出结果时 run 直接退出（退出码 3），PR 绑到会话后检查出结果会有事件推来，到时再跑一次 run。
+//   bun scripts/merge-queue.ts add <分支> [--title "合并标题"] [--body-file 文件]   排进队列（只记本地，PR 在 run 时找）
 //   bun scripts/merge-queue.ts status                                                  排队中、在跑、最近 20 条结果
-//   bun scripts/merge-queue.ts run [--watch]                                           执行者；队列空了退出，--watch 一直等新条目
+//   bun scripts/merge-queue.ts run                                                     执行者；队列空了、或队首在等 GitHub 时退出
 //   bun scripts/merge-queue.ts remove <分支>                                           从队列里删一条（正在跑的不删）
 // 状态和锁放 git 公共目录（所有 worktree 共用）：sumika-merge-queue.json、.lock（读改写的短锁）、sumika-merge-queue.runner（执行者锁）。
-// 环境变量（测试和特殊情况用）：SUMIKA_QUEUE_STATE 状态文件、SUMIKA_QUEUE_WORKTREE 专用 worktree 路径、SUMIKA_QUEUE_OUT 输出目录、
-// SUMIKA_QUEUE_VERIFY 验证用的 bun 脚本路径（默认专用 worktree 里的 scripts/go-verify.ts，即合并后那棵树里的版本）。
-import { cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync, openSync, closeSync, appendFileSync } from 'node:fs'
+// 环境变量（测试和特殊情况用）：SUMIKA_QUEUE_STATE 状态文件、SUMIKA_QUEUE_REMOTE 远端名（默认 origin）、SUMIKA_QUEUE_REPO GitHub 仓库 owner/name（默认从远端地址推）。
+import { readFileSync, renameSync, rmSync, statSync, writeFileSync, openSync, closeSync, mkdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { loadNightly, type NightlyRecord } from './nightly-record'
 
-export type Ready = { commit: string; base: string; tip: string; conclusion: string; outFile: string; seconds: number }
-export type Entry = { id: string; branch: string; title: string; body: string; addedAt: string; waiting?: string; ready?: Ready }
+export type Entry = { id: string; branch: string; title: string; body: string; addedAt: string; waiting?: string }
 export type Running = { id: string; branch: string; pid: number; since: string; phase: string }
-export type Result = { branch: string; title: string; at: string; ok: boolean; reason: string; seconds: number; files?: string[]; outFile?: string; commit?: string; tip?: string }
+// outFile、files 是本机验证时代的旧结果字段，状态文件里还留着，显示照旧
+export type Result = { branch: string; title: string; at: string; ok: boolean; reason: string; seconds: number; files?: string[]; outFile?: string; commit?: string; tip?: string; pr?: string }
 export type State = { queue: Entry[]; running: Running | null; results: Result[] }
-export type Ctx = { cwd: string; main: string; common: string; mainDir: string; statePath: string; queueWt: string; outDir: string; verifyScript?: string }
-export type Verify = (a: { wt: string; entry: Entry; append: (text: string) => void; timeoutMs: number }) => Promise<{ ok: boolean; code: number; timedOut?: boolean }> | { ok: boolean; code: number; timedOut?: boolean }
+export type Ctx = { cwd: string; main: string; common: string; mainDir: string; statePath: string; remote: string; repo?: string }
 
 const KEEP = 200
 const SHOW = 20
-const BASE_ATTEMPTS = 3   // 验完发现 main 又被人动了：重合重验，最多这么多轮
 export const nowIso = () => new Date().toISOString()
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 // ---------- git ----------
 export type G = { code: number; out: string; err: string }
@@ -45,9 +43,8 @@ export function makeCtx(cwd = process.cwd(), over: Partial<Ctx> = {}): Ctx {
   return {
     cwd, main: 'main', common: c.out, mainDir,
     statePath: process.env.SUMIKA_QUEUE_STATE || join(c.out, 'sumika-merge-queue.json'),
-    queueWt: process.env.SUMIKA_QUEUE_WORKTREE || join(mainDir, '.claude', 'worktrees', '_queue'),
-    outDir: process.env.SUMIKA_QUEUE_OUT || join(mainDir, 'data', 'dev', 'test-runs'),
-    verifyScript: process.env.SUMIKA_QUEUE_VERIFY || undefined,
+    remote: process.env.SUMIKA_QUEUE_REMOTE || 'origin',
+    repo: process.env.SUMIKA_QUEUE_REPO || undefined,
     ...over,
   }
 }
@@ -128,11 +125,6 @@ export function acquireRunner(ctx: Ctx): { release: () => void } | { pid: number
   return { pid: 0 }
 }
 
-/** 常驻执行者（run --watch）空闲时 state.running 是空的：看执行者锁文件里的 pid 还活着没有 */
-export function runnerAlive(ctx: Ctx): boolean {
-  try { const pid = JSON.parse(readFileSync(join(dirname(ctx.statePath), 'sumika-merge-queue.runner'), 'utf8')).pid; return typeof pid === 'number' && pid > 0 && pidAlive(pid) } catch { return false }
-}
-
 // ---------- add / remove / status ----------
 export function addEntry(ctx: Ctx, branch: string, title?: string, body = ''): { position: number; reminder?: string } {
   if (branch === ctx.main) throw new Error(`不能把 ${ctx.main} 排进队列`)
@@ -149,8 +141,7 @@ export function removeEntry(ctx: Ctx, branch: string) {
     const i = s.queue.findIndex((e) => e.branch === branch)
     if (i < 0) throw new Error(`队列里没有 ${branch}`)
     if (s.running?.branch === branch && pidAlive(s.running.pid)) throw new Error(`${branch} 正在跑（执行者 pid ${s.running.pid}），跑完再说；要停就先停执行者`)
-    const [e] = s.queue.splice(i, 1)
-    if (e.ready) git(ctx.mainDir, ['update-ref', '-d', readyRef(e)])
+    s.queue.splice(i, 1)
     if (s.running?.branch === branch) s.running = null
   })
 }
@@ -208,211 +199,240 @@ export function statusText(ctx: Ctx, now = Date.now()) {
   const rs = s.results.slice(-SHOW).reverse()
   L.push(`最近结果（${rs.length}）：${rs.length ? '' : '还没有'}`)
   for (const r of rs) {
-    L.push(`  ${r.ok ? '绿' : '红'}　${r.branch}　${when(r.at)}　耗时 ${dur(r.seconds)}${r.commit ? `　合并提交 ${r.commit.slice(0, 8)}` : ''}${r.ok ? '' : `　原因：${r.reason}`}${r.files?.length ? `（${r.files.join('、')}）` : ''}${r.outFile ? `\n      输出：${r.outFile}` : ''}`)
+    L.push(`  ${r.ok ? '绿' : '红'}　${r.branch}　${when(r.at)}　耗时 ${dur(r.seconds)}${r.commit ? `　合并提交 ${r.commit.slice(0, 8)}` : ''}${r.pr ? `　${r.pr}` : ''}${r.ok ? '' : `　原因：${r.reason}`}${r.files?.length ? `（${r.files.join('、')}）` : ''}${r.outFile ? `\n      输出：${r.outFile}` : ''}`)
   }
   return L.join('\n')
 }
 
+// ---------- GitHub ----------
+// 一条检查：Actions 的 CheckRun 和外部写进来的提交状态（StatusContext）统一成一种
+export type Check = { name: string; done: boolean; conclusion: string; url: string; at: string }
+export type Pr = { number: number; state: string; head: string; mergeState: string; url: string; checks: Check[] }
+// 跟 GitHub 打交道的全在这里，测试换成假的
+export type Hub = {
+  findPr: (branch: string) => Pr | null
+  required: (base: string) => string[]
+  updateBranch: (pr: Pr) => void
+  merge: (pr: Pr, subject: string, body: string) => { ok: boolean; err: string; commit?: string }
+}
+
+type RawCheck = { __typename?: string; name?: string; context?: string; status?: string; conclusion?: string; state?: string; detailsUrl?: string; targetUrl?: string; startedAt?: string; completedAt?: string; createdAt?: string }
+export function normChecks(raw: RawCheck[] | null | undefined): Check[] {
+  return (raw ?? []).map((r) => {
+    if (r.__typename === 'StatusContext' || (r.context !== undefined && r.name === undefined)) {
+      const st = (r.state ?? '').toUpperCase()
+      return { name: r.context ?? '', done: !['', 'PENDING', 'EXPECTED'].includes(st), conclusion: st, url: r.targetUrl ?? '', at: r.startedAt ?? r.createdAt ?? '' }
+    }
+    return { name: r.name ?? '', done: (r.status ?? '').toUpperCase() === 'COMPLETED', conclusion: (r.conclusion ?? '').toUpperCase(), url: r.detailsUrl ?? '', at: r.startedAt ?? r.completedAt ?? '' }
+  })
+}
+
+const isGreen = (c: Check) => c.done && c.conclusion === 'SUCCESS'
+// 同名的取最新一次（重跑会留下旧记录）；最新时刻有几份时，有一份不绿就算不绿
+function latest(checks: Check[], name: string): Check | undefined {
+  const same = checks.filter((c) => c.name === name)
+  if (!same.length) return undefined
+  const top = same.reduce((a, b) => (b.at > a.at ? b : a))
+  return same.filter((c) => c.at === top.at).find((c) => !isGreen(c)) ?? top
+}
+
+export type Decision =
+  | { kind: 'merged' }
+  | { kind: 'red'; why: string }
+  | { kind: 'wait'; why: string }
+  | { kind: 'update' }
+  | { kind: 'merge'; summary: string }
+
+// 能不能合：只认分支保护里的必过检查，每一条最新一次都是 SUCCESS 才合；没有必过检查、读不到都不合（规格-合并走PR 第二节第 5 条）
+export function decide(pr: Pr, required: string[]): Decision {
+  if (pr.state === 'MERGED') return { kind: 'merged' }
+  if (pr.state !== 'OPEN') return { kind: 'red', why: `PR #${pr.number} 已关闭，没合` }
+  if (pr.mergeState === 'DIRTY') return { kind: 'red', why: `PR #${pr.number} 和 main 有冲突：本地合上 main、解决了推上去再排` }
+  if (pr.mergeState === 'DRAFT') return { kind: 'wait', why: `PR #${pr.number} 还是草稿，转成正式的再合` }
+  if (!required.length) return { kind: 'wait', why: 'main 的分支保护里没有必过检查，不合（先在 GitHub 上设好）' }
+  const pending: string[] = []
+  const lines: string[] = []
+  for (const name of required) {
+    const c = latest(pr.checks, name)
+    if (!c || !c.done) { pending.push(name); continue }
+    if (!isGreen(c)) return { kind: 'red', why: `GitHub 检查红：${name}（${c.conclusion || '没有结论'}）${c.url ? ` ${c.url}` : ''}` }
+    lines.push(`${name}：绿${c.url ? ` ${c.url}` : ''}`)
+  }
+  // 分支保护要求分支是最新的：落后了先更新，旧头上的结果作废
+  if (pr.mergeState === 'BEHIND') return { kind: 'update' }
+  if (pending.length) return { kind: 'wait', why: `等 GitHub 检查：${pending.join('、')}` }
+  if (!pr.mergeState || pr.mergeState === 'UNKNOWN') return { kind: 'wait', why: '等 GitHub 算出能不能合' }
+  // 不挡合并的检查也写进合并说明，红了看得见
+  for (const name of [...new Set(pr.checks.map((c) => c.name))].filter((n) => n && !required.includes(n))) {
+    const c = latest(pr.checks, name)!
+    lines.push(`${name}：${!c.done ? '没跑完' : isGreen(c) ? '绿' : `红（${c.conclusion}）`}，不挡合并${c.url ? ` ${c.url}` : ''}`)
+  }
+  return { kind: 'merge', summary: lines.join('\n') }
+}
+
+const firstLine = (s: string) => s.split(/\r?\n/).find((l) => l.trim())?.trim() ?? ''
+
+function gh(ctx: Ctx, args: string[]): G {
+  const env: Record<string, string | undefined> = { ...process.env, GH_PROMPT_DISABLED: '1', GIT_TERMINAL_PROMPT: '0' }
+  for (const k of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_PREFIX']) delete env[k]
+  const p = Bun.spawnSync(['gh', ...args], { cwd: ctx.mainDir, env, stdout: 'pipe', stderr: 'pipe' })
+  return { code: p.exitCode ?? 1, out: p.stdout.toString().trim(), err: p.stderr.toString().trim() }
+}
+
+// 显式带 -R：本机有 origin 和 private 两个远端，不让 gh 自己猜
+export function repoOf(ctx: Ctx): string {
+  if (ctx.repo) return ctx.repo
+  const url = git(ctx.mainDir, ['remote', 'get-url', ctx.remote]).out
+  const m = /github\.com[:/]([^/\s]+\/[^/\s]+?)(?:\.git)?\/?$/.exec(url)
+  if (!m) throw new Error(`远端 ${ctx.remote} 不是 GitHub 仓库：${url || '没有这个远端'}`)
+  return m[1]
+}
+
+const PR_FIELDS = 'number,state,headRefOid,mergeStateStatus,url,statusCheckRollup'
+type RawPr = { number: number; state: string; headRefOid: string; mergeStateStatus?: string; url: string; statusCheckRollup?: RawCheck[] }
+const toPr = (v: RawPr): Pr => ({ number: v.number, state: v.state, head: v.headRefOid, mergeState: v.mergeStateStatus ?? '', url: v.url, checks: normChecks(v.statusCheckRollup) })
+
+export const ghHub = (ctx: Ctx): Hub => ({
+  findPr(branch) {
+    const r = gh(ctx, ['pr', 'list', '-R', repoOf(ctx), '--head', branch, '--state', 'all', '--json', PR_FIELDS, '--limit', '10'])
+    if (r.code !== 0) throw new Error(`gh pr list 失败：${firstLine(r.err)}`)
+    const all = JSON.parse(r.out || '[]') as RawPr[]
+    const pick = all.find((v) => v.state === 'OPEN') ?? all.find((v) => v.state === 'MERGED') ?? all[0]
+    return pick ? toPr(pick) : null
+  },
+  required(base) {
+    const r = gh(ctx, ['api', `repos/${repoOf(ctx)}/branches/${base}/protection/required_status_checks`])
+    if (r.code !== 0) throw new Error(`读不到 ${base} 的分支保护（${firstLine(r.err)}）`)
+    const v = JSON.parse(r.out) as { contexts?: string[]; checks?: { context: string }[] }
+    return [...new Set([...(v.contexts ?? []), ...(v.checks ?? []).map((c) => c.context)])].filter(Boolean)
+  },
+  updateBranch(pr) {
+    const r = gh(ctx, ['pr', 'update-branch', String(pr.number), '-R', repoOf(ctx)])
+    if (r.code !== 0) throw new Error(firstLine(r.err) || `退出码 ${r.code}`)
+  },
+  merge(pr, subject, body) {
+    // --match-head-commit：判断时看的是这个头，合并前 PR 又推了新提交 GitHub 会拒绝；带 -R 时 gh 只删远端分支，本地分支和 worktree 不动
+    const r = gh(ctx, ['pr', 'merge', String(pr.number), '-R', repoOf(ctx), '--merge', '--delete-branch', '--match-head-commit', pr.head, '--subject', subject, '--body', body])
+    if (r.code !== 0) return { ok: false, err: firstLine(r.err) || `退出码 ${r.code}` }
+    const v = gh(ctx, ['pr', 'view', String(pr.number), '-R', repoOf(ctx), '--json', 'mergeCommit', '--jq', '.mergeCommit.oid'])
+    return { ok: true, err: '', commit: v.code === 0 ? v.out : undefined }
+  },
+})
+
+// ---------- 本机 main 跟上远端 ----------
+const isAncestor = (cwd: string, a: string, b: string) => git(cwd, ['merge-base', '--is-ancestor', a, b]).code === 0
+const remoteMain = (ctx: Ctx) => rev(ctx.mainDir, `refs/remotes/${ctx.remote}/${ctx.main}`)
+
+// main 检出在哪个 worktree（可能不是主工作区）；没检出返回空
+function checkedOutAt(ctx: Ctx): string {
+  let path = ''
+  for (const line of git(ctx.mainDir, ['worktree', 'list', '--porcelain']).out.split(/\r?\n/)) {
+    if (line.startsWith('worktree ')) path = line.slice(9)
+    else if (line === `branch refs/heads/${ctx.main}`) return path
+  }
+  return ''
+}
+
+// 合完把本机 main 快进到远端。只快进：本机 main 有远端没有的提交、工作区不干净都不动，返回说明（空串是对齐了）
+export function syncMain(ctx: Ctx): string {
+  const f = git(ctx.mainDir, ['fetch', '-q', ctx.remote, `+refs/heads/${ctx.main}:refs/remotes/${ctx.remote}/${ctx.main}`])
+  if (f.code !== 0) return `本机 ${ctx.main} 没对齐：fetch 失败（${firstLine(f.err)}）`
+  const remote = remoteMain(ctx)
+  const local = rev(ctx.mainDir, ctx.main)
+  if (local === remote) return ''
+  if (!isAncestor(ctx.mainDir, local, remote)) return `本机 ${ctx.main} 有远端没有的提交（${local.slice(0, 8)}），没对齐`
+  const wt = checkedOutAt(ctx)
+  if (!wt) return git(ctx.mainDir, ['update-ref', `refs/heads/${ctx.main}`, remote, local]).code === 0 ? '' : `本机 ${ctx.main} 没对齐：被别人抢先改了`
+  if (git(wt, ['status', '--porcelain', '--untracked-files=no']).out) return `本机 ${ctx.main} 没对齐：${wt} 有没提交的改动，干净后 git pull --ff-only`
+  const r = git(wt, ['merge', '--ff-only', '-q', remote])
+  return r.code === 0 ? '' : `本机 ${ctx.main} 没对齐：${firstLine(r.err)}`
+}
+
 // ---------- 执行者 ----------
-const readyRef = (e: { id: string }) => `refs/sumika-queue/${e.id}`
-const slug = (b: string) => b.replace(/[^\w.一-鿿-]+/g, '-')
-const stamp = () => { const d = new Date(), p = (n: number) => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}` }
-
-// 专用 worktree 回到干净状态并 detach 到 base：没有就建（顺手拷主工作区的 vendor/bin，新 worktree 缺 rg、fd）
-function prepWorktree(ctx: Ctx, base: string) {
-  const wt = ctx.queueWt
-  if (!existsSync(join(wt, '.git'))) {
-    git(ctx.mainDir, ['worktree', 'prune'])
-    mkdirSync(dirname(wt), { recursive: true })
-    const r = git(ctx.mainDir, ['worktree', 'add', '--detach', '--force', wt, base])
-    if (r.code !== 0) throw new Error(`建专用 worktree 失败（${wt}）：${r.err}`)
-    const vb = join(ctx.mainDir, 'vendor', 'bin')
-    if (existsSync(vb) && !existsSync(join(wt, 'vendor', 'bin'))) cpSync(vb, join(wt, 'vendor', 'bin'), { recursive: true })
-    return
-  }
-  git(wt, ['merge', '--abort'])
-  git(wt, ['reset', '--hard'])
-  git(wt, ['clean', '-fd'])   // 不加 -x：vendor/bin 之类被忽略的文件留着
-  const r = git(wt, ['checkout', '--detach', base])
-  if (r.code !== 0) throw new Error(`专用 worktree 切不到 ${base}：${r.err}`)
-}
-
-const fullMessage = (e: Entry, conclusion?: string) => [e.title, e.body, conclusion ? `合并队列验证：${conclusion}` : ''].filter(Boolean).join('\n\n') + '\n'
-
-// 结论行：最后一个“合并说明可以写：”当主体；go-verify 另打的“合并说明另写：”（Bun 那段等）各占一行接在后面。取不到主体写“go-verify 退出码 N”
-export function conclusionOf(text: string, code: number, vsec: number) {
-  const main = [...text.matchAll(/合并说明可以写：([^\r\n]+)/g)].pop()?.[1]?.trim() || `go-verify 退出码 ${code}（${vsec.toFixed(0)} 秒）`
-  const extra = [...text.matchAll(/合并说明另写：([^\r\n]+)/g)].map((m) => m[1].trim())
-  return [main, ...extra].join('\n')
-}
-
-function redReason(out: string, code: number) {
-  const lines = out.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
-  const hits = lines.filter((l) => /^(--- FAIL|FAIL\s|有检查红了|panic:|工作区里有)/.test(l)).slice(0, 3)
-  const what = code === 2 ? '环境错误（go-verify 退出码 2）' : '验证红'
-  return `${what}：${(hits.length ? hits : lines.slice(-1)).join(' | ') || `退出码 ${code}`}`
-}
-
-// 默认的验证：在专用 worktree 里跑 go-verify（合并后那棵树里的版本），验证档名额，输出边跑边落盘
-export const defaultVerify = (ctx: Ctx): Verify => async ({ wt, append, timeoutMs }) => {
-  const script = ctx.verifyScript ?? join(wt, 'scripts', 'go-verify.ts')
-  const p = Bun.spawn([process.execPath, script], { cwd: wt, env: { ...process.env, SUMIKA_TEST_LANE: 'verify' }, stdout: 'pipe', stderr: 'pipe' })
-  let timedOut = false
-  const timer = setTimeout(() => { timedOut = true; p.kill() }, timeoutMs)
-  const pump = async (s: ReadableStream<Uint8Array>, to: NodeJS.WriteStream) => {
-    const dec = new TextDecoder()
-    for await (const c of s) { const t = dec.decode(c, { stream: true }); append(t); to.write(t) }
-  }
-  await Promise.all([pump(p.stdout, process.stdout), pump(p.stderr, process.stderr)])
-  const code = await p.exited
-  clearTimeout(timer)
-  return { ok: code === 0 && !timedOut, code, timedOut }
-}
-
 function setRunning(ctx: Ctx, e: Entry | null, phase = '') {
   mutate(ctx, (s) => { s.running = e ? { id: e.id, branch: e.branch, pid: process.pid, since: s.running?.id === e.id ? s.running.since : nowIso(), phase } : null })
 }
 function finish(ctx: Ctx, e: Entry, r: Omit<Result, 'branch' | 'title' | 'at'>) {
-  git(ctx.mainDir, ['update-ref', '-d', readyRef(e)])
   mutate(ctx, (s) => {
     s.queue = s.queue.filter((x) => x.id !== e.id)
     s.results.push({ branch: e.branch, title: e.title, at: nowIso(), ...r })
     s.running = null
   })
 }
-
-type Ff = { kind: 'ok' } | { kind: 'moved' } | { kind: 'blocked'; why: string }
-// 快进 main。main 在主工作区检出着：工作区有已跟踪文件的改动就不碰；没检出：update-ref 带旧值，等于 compare-and-swap
-function fastForward(ctx: Ctx, commit: string, base: string): Ff {
-  const head = git(ctx.mainDir, ['symbolic-ref', '-q', 'HEAD']).out
-  if (head !== `refs/heads/${ctx.main}`) {
-    return git(ctx.mainDir, ['update-ref', `refs/heads/${ctx.main}`, commit, base]).code === 0 ? { kind: 'ok' } : { kind: 'moved' }
-  }
-  const st = git(ctx.mainDir, ['status', '--porcelain', '--untracked-files=no']).out
-  if (st) return { kind: 'blocked', why: '等主工作区干净' }
-  if (rev(ctx.mainDir, ctx.main) !== base) return { kind: 'moved' }
-  const r = git(ctx.mainDir, ['merge', '--ff-only', commit])
-  if (r.code === 0) return { kind: 'ok' }
-  if (rev(ctx.mainDir, ctx.main) !== base) return { kind: 'moved' }
-  return { kind: 'blocked', why: `等主工作区干净（快进失败：${r.err.split(/\r?\n/)[0]}）` }
+function hold(ctx: Ctx, e: Entry, why: string): Head {
+  mutate(ctx, (s) => { const x = s.queue.find((y) => y.id === e.id); if (x) x.waiting = why; s.running = null })
+  e.waiting = why
+  return 'blocked'
 }
 
-export type RunOpts = { verify?: Verify; watch?: boolean; pollMs?: number; waitCleanMs?: number; verifyTimeoutMs?: number; log?: (s: string) => void; now?: () => number; sleep?: (ms: number) => Promise<void> }
+export const mergeBody = (e: Entry, pr: Pr, summary: string) => [e.body, `GitHub 检查（PR #${pr.number}，头 ${pr.head.slice(0, 8)}）：\n${summary}`].filter(Boolean).join('\n\n')
+
+export type RunOpts = { hub?: Hub; log?: (s: string) => void; now?: () => number }
 export type Head = 'done' | 'blocked'
 
-// 处理队首一条。done：出队、结果已记（绿或红）；blocked：留在队首（等主工作区干净）
+// 处理队首一条。done：出队、结果已记（绿或红）；blocked：留在队首（等 GitHub、等推送、gh 出错）
 export async function processHead(ctx: Ctx, entry: Entry, o: RunOpts = {}): Promise<Head> {
-  const log = o.log ?? ((s: string) => console.log(s))
-  const verify = o.verify ?? defaultVerify(ctx)
+  const hub = o.hub ?? ghHub(ctx)
   const t0 = Date.now()
   const secs = () => (Date.now() - t0) / 1000
   const tip = rev(ctx.mainDir, `refs/heads/${entry.branch}`)
   if (!tip) { finish(ctx, entry, { ok: false, reason: `分支 ${entry.branch} 不存在了`, seconds: secs() }); return 'done' }
-  mkdirSync(ctx.outDir, { recursive: true })
-  for (let attempt = 1; attempt <= BASE_ATTEMPTS; attempt++) {
-    const base = rev(ctx.mainDir, ctx.main)
-    // 上一轮验完了、只是主工作区没干净：main 没动就不重验，直接快进
-    let ready = entry.ready && entry.ready.base === base && entry.ready.tip === tip && rev(ctx.mainDir, entry.ready.commit) === entry.ready.commit ? entry.ready : undefined
-    if (!ready) {
-      if (git(ctx.mainDir, ['merge-base', '--is-ancestor', tip, base]).code === 0) {
-        finish(ctx, entry, { ok: true, reason: `${entry.branch} 已经在 ${ctx.main} 里，没有要合的`, seconds: secs(), tip }); return 'done'
-      }
-      setRunning(ctx, entry, attempt > 1 ? `第 ${attempt} 轮：合并` : '合并')
-      prepWorktree(ctx, base)
-      const msgFile = join(ctx.outDir, `queue-${slug(entry.branch)}.msg.tmp`)
-      writeFileSync(msgFile, fullMessage(entry))
-      const m = git(ctx.queueWt, ['merge', '--no-ff', '-F', msgFile, tip])
-      rmSync(msgFile, { force: true })
-      if (m.code !== 0) {
-        const files = git(ctx.queueWt, ['diff', '--name-only', '--diff-filter=U']).out.split(/\r?\n/).filter(Boolean)
-        git(ctx.queueWt, ['merge', '--abort'])
-        git(ctx.queueWt, ['reset', '--hard', base])
-        finish(ctx, entry, files.length ? { ok: false, reason: '冲突', files, seconds: secs(), tip } : { ok: false, reason: `merge 没成功：${m.err.split(/\r?\n/)[0] || m.out.split(/\r?\n/)[0]}`, seconds: secs(), tip })
-        return 'done'
-      }
-      const merged = rev(ctx.queueWt, 'HEAD')
-      const outFile = join(ctx.outDir, `queue-${slug(entry.branch)}-${stamp()}.txt`)
-      writeFileSync(outFile, `合并队列验证：${entry.branch}（${tip.slice(0, 8)}）合上 ${ctx.main} ${base.slice(0, 8)} 得 ${merged.slice(0, 8)}，${nowIso()}\n\n`)
-      let text = ''
-      const append = (t: string) => { text += t; appendFileSync(outFile, t) }
-      setRunning(ctx, entry, attempt > 1 ? `第 ${attempt} 轮：验证` : '验证')
-      const tv = Date.now()
-      const v = await verify({ wt: ctx.queueWt, entry, append, timeoutMs: o.verifyTimeoutMs ?? 60 * 60 * 1000 })
-      const vsec = (Date.now() - tv) / 1000
-      appendFileSync(outFile, `\n退出码 ${v.code}，${vsec.toFixed(1)} 秒\n`)
-      if (!v.ok) {
-        git(ctx.queueWt, ['reset', '--hard', base])
-        finish(ctx, entry, { ok: false, reason: v.timedOut ? `验证超时（${(vsec / 60).toFixed(0)} 分钟，已停掉）` : redReason(text, v.code), seconds: secs(), outFile, tip })
-        return 'done'
-      }
-      // 结论行只能事后加：用 commit-tree 在同一棵树上重做一次合并提交（不走 amend，免得 pre-commit 在整棵树上再跑一遍）
-      const conclusion = conclusionOf(text, v.code, vsec)
-      const finalMsg = join(ctx.outDir, `queue-${slug(entry.branch)}.msg.tmp`)
-      writeFileSync(finalMsg, fullMessage(entry, conclusion))
-      const tree = git(ctx.queueWt, ['rev-parse', 'HEAD^{tree}']).out
-      const ct = git(ctx.queueWt, ['commit-tree', tree, '-p', base, '-p', tip, '-F', finalMsg])
-      rmSync(finalMsg, { force: true })
-      if (ct.code !== 0 || git(ctx.queueWt, ['rev-parse', `${ct.out}^{tree}`]).out !== tree) throw new Error(`重做合并提交失败：${ct.err}`)
-      git(ctx.queueWt, ['reset', '--hard', ct.out])
-      if (rev(ctx.mainDir, ctx.main) !== base) { log(`  验证期间 ${ctx.main} 被人动了，重新合、重新验（第 ${attempt} 轮）`); continue }
-      ready = { commit: ct.out, base, tip, conclusion, outFile, seconds: secs() }
-      git(ctx.mainDir, ['update-ref', readyRef(entry), ct.out])   // 防止这个提交被 gc 收走
-      entry.ready = ready
-      mutate(ctx, (s) => { const e = s.queue.find((x) => x.id === entry.id); if (e) e.ready = ready })
-    }
-    setRunning(ctx, entry, '快进 main')
-    const ff = fastForward(ctx, ready.commit, base)
-    if (ff.kind === 'ok') {
-      finish(ctx, entry, { ok: true, reason: ready.conclusion, seconds: ready.seconds, outFile: ready.outFile, commit: ready.commit, tip })
-      return 'done'
-    }
-    if (ff.kind === 'blocked') {
-      mutate(ctx, (s) => { const e = s.queue.find((x) => x.id === entry.id); if (e) e.waiting = ff.why; s.running = null })
-      entry.waiting = ff.why
-      return 'blocked'
-    }
-    log(`  快进时 ${ctx.main} 已经变了，重新合、重新验（第 ${attempt} 轮）`)
-    entry.ready = undefined
-    git(ctx.mainDir, ['update-ref', '-d', readyRef(entry)])
-    mutate(ctx, (s) => { const e = s.queue.find((x) => x.id === entry.id); if (e) delete e.ready })
+  setRunning(ctx, entry, '看 PR')
+  let pr: Pr | null, required: string[]
+  try {
+    pr = hub.findPr(entry.branch)
+    if (!pr) { finish(ctx, entry, { ok: false, reason: `没找到 ${entry.branch} 的 PR：先推到 ${ctx.remote}、gh pr create 再排`, seconds: secs(), tip }); return 'done' }
+    required = pr.state === 'OPEN' ? hub.required(ctx.main) : []
+  } catch (e) { return hold(ctx, entry, `问 GitHub 出错：${(e as Error).message}`) }
+
+  if (pr.state === 'OPEN' && tip !== pr.head) {
+    // 本地有没推的提交：PR 上的检查测的不是要合的东西。PR 头比本地新（点过“更新分支”）没关系
+    git(ctx.mainDir, ['fetch', '-q', ctx.remote, `+refs/heads/${entry.branch}:refs/remotes/${ctx.remote}/${entry.branch}`])
+    if (!isAncestor(ctx.mainDir, tip, pr.head)) return hold(ctx, entry, `本地 ${entry.branch}（${tip.slice(0, 8)}）有没推上去的提交，PR 头是 ${pr.head.slice(0, 8)}：推上去再合`)
   }
-  finish(ctx, entry, { ok: false, reason: `${ctx.main} 一直在变，重合重验 ${BASE_ATTEMPTS} 轮都没赶上，重新排队`, seconds: secs(), tip })
+
+  const d = decide(pr, required)
+  if (d.kind === 'merged') {
+    git(ctx.mainDir, ['fetch', '-q', ctx.remote, `+refs/heads/${ctx.main}:refs/remotes/${ctx.remote}/${ctx.main}`])
+    // 同名分支以前合过一个 PR、后来又有新提交：不算合了
+    if (!isAncestor(ctx.mainDir, tip, remoteMain(ctx))) { finish(ctx, entry, { ok: false, reason: `${entry.branch} 的 PR #${pr.number} 以前合过，之后的提交不在 ${ctx.main} 里：再开一个 PR`, seconds: secs(), tip, pr: pr.url }); return 'done' }
+    const note = syncMain(ctx)
+    finish(ctx, entry, { ok: true, reason: [`PR #${pr.number} 已经在 GitHub 上合了`, note].filter(Boolean).join('；'), seconds: secs(), tip, pr: pr.url })
+    return 'done'
+  }
+  if (d.kind === 'red') { finish(ctx, entry, { ok: false, reason: d.why, seconds: secs(), tip, pr: pr.url }); return 'done' }
+  if (d.kind === 'wait') return hold(ctx, entry, d.why)
+  if (d.kind === 'update') {
+    setRunning(ctx, entry, '更新分支')
+    try { hub.updateBranch(pr) } catch (e) { return hold(ctx, entry, `PR #${pr.number} 落后 ${ctx.main}，点“更新分支”失败：${(e as Error).message}`) }
+    return hold(ctx, entry, `PR #${pr.number} 落后 ${ctx.main}，已点“更新分支”，等 GitHub 检查重跑`)
+  }
+  setRunning(ctx, entry, '合并')
+  const m = hub.merge(pr, entry.title, mergeBody(entry, pr, d.summary))
+  if (!m.ok) return hold(ctx, entry, `gh pr merge 没成功：${m.err}`)
+  const note = syncMain(ctx)
+  finish(ctx, entry, { ok: true, reason: [d.summary, note].filter(Boolean).join('\n'), seconds: secs(), tip, pr: pr.url, commit: m.commit })
   return 'done'
 }
 
-// 执行者主循环。返回 empty（队列空了）、blocked（队首等主工作区干净且没开 --watch）、busy（已有执行者）
+// 执行者主循环：一条条处理，队首在等就退出（不轮询，等 PR 事件再跑）。返回 empty、blocked、busy（已有执行者）
 export async function runQueue(ctx: Ctx, o: RunOpts = {}): Promise<'empty' | 'blocked' | 'busy'> {
   const log = o.log ?? ((s: string) => console.log(s))
-  const clock = o.now ?? Date.now
-  const nap = o.sleep ?? sleep
   const got = acquireRunner(ctx)
   if (!('release' in got)) { log(`已经有执行者在跑（pid ${got.pid || '不明'}），这个不起了`); return 'busy' }
   try {
     // 只有一个执行者，状态里残留的 running 一定是上次死掉的
     mutate(ctx, (s) => { s.running = null })
-    let reminded = 0
+    const reminder = nightlyReminder(loadNightly(nightlyPath(ctx)), (o.now ?? Date.now)())
+    if (reminder) log(reminder)
     for (;;) {
-      // 每一轮都查，包括队列空的那一支；常驻 --watch 空闲时才看得到。process 内一小时最多打一次，免得每 3 秒刷屏
-      const now = clock()
-      if (now - reminded >= 60 * 60 * 1000) {
-        const reminder = nightlyReminder(loadNightly(nightlyPath(ctx)), now)
-        if (reminder) { log(reminder); reminded = now }
-      }
       const head = loadState(ctx.statePath).queue[0]
-      if (!head) {
-        if (!o.watch) return 'empty'
-        await nap(o.pollMs ?? 3000)
-        continue
-      }
+      if (!head) return 'empty'
       log(`合并队列：取 ${head.branch}（${head.title}）`)
       const r = await processHead(ctx, head, o)
+      if (r === 'blocked') { log(`  ${head.branch}：${head.waiting}；留在队首`); return 'blocked' }
       const last = loadState(ctx.statePath).results.at(-1)
-      if (r === 'done' && last) log(`  ${last.ok ? '绿' : '红'}：${last.branch}，${dur(last.seconds)}${last.ok ? '' : `，${last.reason}${last.files?.length ? `（${last.files.join('、')}）` : ''}`}${last.outFile ? `\n  输出：${last.outFile}` : ''}`)
-      if (r === 'blocked') {
-        log(`  ${head.branch} 已验好，${head.waiting}；留在队首`)
-        if (!o.watch) return 'blocked'
-        await nap(o.waitCleanMs ?? 10000)
-      }
+      if (last) log(`  ${last.ok ? '绿' : '红'}：${last.branch}${last.pr ? `（${last.pr}）` : ''}，${last.reason.split('\n')[0]}`)
     }
   } finally {
     got.release()
@@ -433,11 +453,8 @@ if (import.meta.main) {
       const bf = arg(rest, '--body-file')
       const body = bf ? readFileSync(resolve(bf), 'utf8') : ''
       const r = addEntry(ctx, branch, arg(rest, '--title'), body)
-      const st = loadState(ctx.statePath)
-      console.log(`排进队列了：${branch}，第 ${r.position} 位`)
+      console.log(`排进队列了：${branch}，第 ${r.position} 位。分支要先推上去、开好 PR；执行：bun scripts/merge-queue.ts run`)
       if (r.reminder) console.log(r.reminder)
-      // 2026-11-12：以前只看 running，常驻执行者空闲等新条目时每次都误报“没有执行者”
-      if (!(st.running && pidAlive(st.running.pid)) && !runnerAlive(ctx)) console.log('现在没有执行者在跑。要开：bun scripts/merge-queue.ts run（--watch 一直等新条目）')
     } else if (cmd === 'status') {
       console.log(statusText(ctx))
     } else if (cmd === 'remove') {
@@ -445,7 +462,8 @@ if (import.meta.main) {
       removeEntry(ctx, positional[0])
       console.log(`已从队列删掉：${positional[0]}`)
     } else if (cmd === 'run') {
-      const r = await runQueue(ctx, { watch: rest.includes('--watch') })
+      if (rest.includes('--watch')) throw new Error('不再有 --watch：GitHub 检查出结果时 PR 绑会话的事件会推来，收到再跑 run（规格-合并走PR 第五节不轮询）')
+      const r = await runQueue(ctx)
       if (r === 'busy') process.exit(4)
       if (r === 'blocked') process.exit(3)
     } else {
