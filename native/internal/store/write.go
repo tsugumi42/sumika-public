@@ -166,24 +166,28 @@ type Step struct {
 	Ordinal                                             *int
 }
 
-// StepStart 记一步开始（stepStart）。思考的这一步跟着这一轮最近一个工具的批次，没有工具就是 0。
+// StepStart 记一步开始（stepStart）。批次是这一轮里第几次模型回复调的工具（规格-右侧栏她在想什么：第 N 次请求之后的那批工具）：
+// 带 Ordinal 的（同一次回复里的第几个调用）第 0 个开新批、后面的跟着这一轮最大的批号；不看写入那一刻还有没有工具在跑——
+// 并发执行时快的工具先结束，按时机算会把同一次回复拆成两批（CI 上 TestSameAsBun/tool-more 时红时绿）。
+// 不带 Ordinal 的（回合外补记的单个工具）照旧：还有工具在跑就同批，否则开新批。思考跟着这一轮最大的工具批号，没有工具就是 0。
+// 只算真开始过的行（started_at 非空）、不算自己：审批身份的占位行（RecordStepIdentity）batch 是默认的 0，不能当成上一批。
 // 冲突时（审批占位先到了）照 Bun 版：除了 started_at 留先到的、status 是 waiting 时留着，别的都换成这一次的。
-// 临时：审批占位（stepApproval）还没有，2e 接上（规格第七节 T5）
 func (s *Store) StepStart(st Step) error {
-	var batch, open sql.NullInt64
-	err := s.Trace.QueryRow(`SELECT batch, (SELECT COUNT(*) FROM steps WHERE turn_id = ? AND kind = 'tool' AND status IN ('running', 'waiting')) AS open
-		FROM steps WHERE turn_id = ? AND kind = 'tool' ORDER BY started_at DESC LIMIT 1`, st.TurnID, st.TurnID).Scan(&batch, &open)
-	if err != nil && err != sql.ErrNoRows {
+	var last, open sql.NullInt64
+	err := s.Trace.QueryRow(`SELECT (SELECT MAX(batch) FROM steps WHERE turn_id = ?1 AND kind = 'tool' AND started_at IS NOT NULL AND id != ?2),
+		(SELECT COUNT(*) FROM steps WHERE turn_id = ?1 AND kind = 'tool' AND status IN ('running', 'waiting'))`, st.TurnID, st.ID).Scan(&last, &open)
+	if err != nil {
 		return err
 	}
-	b := int64(0)
+	b := last.Int64
 	switch {
-	case st.Kind != "tool" || !batch.Valid:
-		b = batch.Int64
-	case open.Int64 > 0:
-		b = batch.Int64
-	default:
-		b = batch.Int64 + 1
+	case st.Kind != "tool" || !last.Valid:
+	case st.Ordinal != nil:
+		if *st.Ordinal == 0 {
+			b++
+		}
+	case open.Int64 == 0:
+		b++
 	}
 	status := st.Status
 	if status == "" {

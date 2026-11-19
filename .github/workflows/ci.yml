@@ -98,7 +98,10 @@ jobs:
       # -short：慢的对拍、压力、规模测试跳过（ADR-225），和本机合并队列同一个口径。
       # -timeout 12m：Windows 上最慢的根包约 7 分钟（2026-11-18 第一次 CI）。Linux 上曾有包卡住、整步拖过 40 分钟，
       # 取消后 GitHub 不留这一步的日志；超时让卡住的包自己 panic、打出各协程停在哪，才查得到是哪条测试。
+      # 这一步和下面的脚本测试前一步红了也照跑（只有整次被取消才不跑）：默认“前一步失败、后面全跳过”会把后面那步的红盖住，
+      # Linux 一格 go test 常红，脚本测试那 16 条在 Linux 上就一直没跑到、也就一直没人看见（2026-11-19）。job 结论照旧：任一步红就红
       - name: go test -short（全部包）
+        if: ${{ !cancelled() }}
         working-directory: native
         run: go test -short -count=1 -timeout 12m ./...
 
@@ -106,6 +109,7 @@ jobs:
       # （go-verify、合并队列挑 scripts 测试的同一份来源）。冻结的 server/ 测试不在这里。
       # shell 固定 bash：Windows runner 上是 Git Bash，单引号里的多行 JS 不会被拆开。
       - name: 检查脚本的 bun 测试
+        if: ${{ !cancelled() }}
         shell: bash
         run: |
           bun -e '

@@ -316,10 +316,15 @@ func TestDesktopProjectTrustAskOnce(t *testing.T) {
 		go func() { done <- d.Reader.SendLocal(ctx, key, text, nil) }()
 		return done
 	}
+	// 已经拿过的卡：订阅里可能还压着回答之前的快照，旧卡再当新卡去答会报“审批已结束”（CI 偶发红，-cpu 1 循环 200 遍红 46 遍，2026-11-19）
+	seen := map[string]bool{}
 	card := func() api.LocalApproval {
 		for {
-			if snap := localRecv(t, sub.Updates()); len(snap.Value) > 0 {
-				return snap.Value[0]
+			for _, c := range localRecv(t, sub.Updates()).Value {
+				if !seen[c.ID] {
+					seen[c.ID] = true
+					return c
+				}
 			}
 		}
 	}

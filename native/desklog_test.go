@@ -21,6 +21,7 @@ import (
 	"sumika-native/internal/llm/llmtest"
 	"sumika-native/internal/paths"
 	"sumika-native/internal/store"
+	"sumika-native/internal/testutil/leftover"
 )
 
 const (
@@ -39,7 +40,7 @@ func logEnv(t *testing.T) backend.Options {
 	if err != nil {
 		t.Fatalf("找项目根（在 native/ 里跑）：%v", err)
 	}
-	data := t.TempDir()
+	data := leftover.Dir(t)
 	p, err := paths.Init(data)
 	if err != nil {
 		t.Fatalf("初始化临时数据目录：%v", err)
