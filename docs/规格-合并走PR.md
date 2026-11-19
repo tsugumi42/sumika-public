@@ -1,6 +1,6 @@
 # 规格：合并走 PR
 
-> 状态：2026-11-18 草稿（ADR-386）；2026-11-19 S1、S2、S4、S5 已做，S3（队列改成按 GitHub 检查合并的自动化）还是手动 `gh pr merge`。2026-11-19 被 ADR-398 修正：本机不再跑合并验证，`local-verify` 状态去掉，必过检查只剩 GitHub 两条；下面相关各处已改。第 3 节“切换开发主仓库”主人 2026-11-18 已同意，动手前完整备份；其余按本规格做。
+> 状态：2026-11-18 草稿（ADR-386）；2026-11-19 S1～S5 都已做：S3 不写自己的队列，改用 GitHub 自带的自动合并（主人 2026-11-19“打开，以后都用”；仓库开了 `allow_auto_merge`、合并后自动删分支）。2026-11-19 被 ADR-398 修正：本机不再跑合并验证，`local-verify` 状态去掉，必过检查只剩 GitHub 两条；下面相关各处已改。第 3 节“切换开发主仓库”主人 2026-11-18 已同意，动手前完整备份；其余按本规格做。
 >
 > 参考：
 > - GitHub 官方文档：分支保护的“合并前必须通过的检查”（required status checks）、提交状态接口（`POST /repos/{owner}/{repo}/statuses/{sha}`）、`gh pr create` / `gh pr merge`、公开仓库用 GitHub 自带机器跑 Actions 不计费。**采用**：必过检查加一条本机检查的提交状态；合并用合并提交。**不采用**：GitHub 自带的 merge queue（本机检查进不去它的队列；一天十来次合并用不上分组并行）。
@@ -38,7 +38,7 @@
 2. `gh pr create`，标题照提交标题规矩写行为，正文写这一步的验收和改坏检查结果；高风险步骤把复核结论贴进 PR 正文。
 3. 主会话用桌面应用把 PR 绑到会话（`bind_pr`），CI 的结果以事件推过来，不轮询。
 4. 本机不跑合并验证（ADR-398，取代原来的“本机检查写 `local-verify` 状态”）。`bun scripts/merge-queue.ts add <分支>` 只负责排队和合并，不在本机跑 go-verify。需要字体、ffmpeg、中文 pwsh 的测试由每日整套覆盖，不挡合并。
-5. 合并：队列看到 GitHub 两套检查都绿，执行 `gh pr merge --merge --delete-branch`，合并提交说明写 CI 的结论（两条检查各自的结果和运行链接）。GitHub 检查还没出结果时，该条标“等 GitHub 检查”，留在队首。
+5. 合并（已被 GitHub 自动合并取代，2026-11-19，见状态头）：队列看到 GitHub 两套检查都绿，执行 `gh pr merge --merge --delete-branch`，合并提交说明写 CI 的结论（两条检查各自的结果和运行链接）。GitHub 检查还没出结果时，该条标“等 GitHub 检查”，留在队首。
 6. 合并后本机 `git pull --ff-only` 更新 main；推送钩子不再需要（main 只能经 PR 改）。
 
 ## 三、切换开发主仓库（先问主人）
@@ -90,6 +90,6 @@
 |---|---|---|
 | S1 | 公开仓库 CI：Windows 一格全绿（2026-11-19 已合）；Linux 一格剩 QQ 撤回补发两条，修完前只参考 | 无 |
 | S2 | 切换开发主仓库（第三节）：2026-11-19 已做，公开 main eaaa5c85 起 | S1 |
-| S3 | 队列按 GitHub 两条检查合并、本机不再跑 go-verify（ADR-398；`scripts/merge-queue.ts`，ADR-389 迁 Go 时一起迁） | S2 |
+| S3 | 必过检查绿了自动合、本机不再跑 go-verify（ADR-398）：2026-11-19 改用 GitHub 自动合并，开 PR 后 `gh pr merge --auto --merge`；`scripts/merge-queue.ts` 只在 GitHub 不可用时兜底 | S2 |
 | S4 | 公开仓库开分支保护：2026-11-19 已开（`test (windows-latest)` 必过、strict、禁强推删除） | S3 |
 | S5 | AGENTS「验收」合并那一条、[规格-合并队列](规格-合并队列.md)状态头改写：2026-11-19 本 PR | S4 |
