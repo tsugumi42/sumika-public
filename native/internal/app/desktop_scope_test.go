@@ -316,10 +316,16 @@ func TestDesktopProjectTrustAskOnce(t *testing.T) {
 		go func() { done <- d.Reader.SendLocal(ctx, key, text, nil) }()
 		return done
 	}
+	// 已经拿过的卡跳过：订阅里可能还压着回答之前的快照（里面是已经答过的那张），不能把旧卡再当新卡
+	// （CI 上第二次拿卡拿到第一张，DecideLocal 报“审批已结束”；和 project_trust_slash_test 的 trustEnv.card 同一个坑）
+	seen := map[string]bool{}
 	card := func() api.LocalApproval {
 		for {
-			if snap := localRecv(t, sub.Updates()); len(snap.Value) > 0 {
-				return snap.Value[0]
+			for _, c := range localRecv(t, sub.Updates()).Value {
+				if !seen[c.ID] {
+					seen[c.ID] = true
+					return c
+				}
 			}
 		}
 	}
