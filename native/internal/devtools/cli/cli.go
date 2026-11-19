@@ -13,6 +13,7 @@ import (
 	"sumika-native/internal/devtools/conflicts"
 	"sumika-native/internal/devtools/docs"
 	"sumika-native/internal/devtools/gofmt"
+	"sumika-native/internal/devtools/notice"
 	"sumika-native/internal/devtools/private"
 	"sumika-native/internal/devtools/selfbuild"
 	"sumika-native/internal/devtools/uiskill"
@@ -35,6 +36,10 @@ const usage = `sumika-dev：Sumika 的开发工具（仓库脚本和钩子的 Go
                         提交说明的标题检查（原 scripts/check-commit-msg.ts）：超 40 字、带分号、带 ADR 编号就拦
   sumika-dev check ui-skill
                         界面技能入口页（.claude/skills/mygo-ui/SKILL.md）点名的包、函数和 mygo 版本要和代码对得上（原 scripts/check-ui-skill.ts）
+
+  sumika-dev notice [--reports 目录] [--no-ci]
+                        主会话的报告提醒（原 scripts/report-notice.ts，Claude Code 的 UserPromptSubmit 钩子）：从标准输入读钩子 JSON，
+                        把近两天复盘、巡检、早报里这个会话没看过的“## 给主会话”，加上 gh 查到的公开仓库 main 近 48 小时 CI 失败（--no-ci 不查）打出来；永远退出码 0，出错不挡发消息
 
 环境变量：
   SUMIKA_DEV_ROOT=<native 或仓库根>   指定模块根（默认从程序所在位置往上找 native/go.mod）
@@ -78,6 +83,21 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		// 隐藏子命令：只打编进来的源码摘要，给 selfbuild 拿到锁后问磁盘上的 exe 是不是已经被别的进程换新了
 		fmt.Fprintln(stdout, selfbuild.BuiltDigest)
 		return 0
+	case "__srcdigest":
+		// 隐藏子命令：算磁盘上现在这份源码的摘要（不是编进来的那个），给 settings.json 的兜底 go build 带 -ldflags 用，
+		// 编出来的程序摘要就是对的，以后别的关卡不用再重编一次
+		root, err := modRoot()
+		if err != nil {
+			fmt.Fprintln(stderr, "错误：", err)
+			return 1
+		}
+		d, err := selfbuild.Digest(root)
+		if err != nil {
+			fmt.Fprintln(stderr, "错误：", err)
+			return 1
+		}
+		fmt.Fprintln(stdout, d)
+		return 0
 	case "check":
 		if len(args) >= 2 {
 			if run, ok := checks[args[1]]; ok {
@@ -91,6 +111,14 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		}
 		fmt.Fprintf(stderr, "check 后面要跟检查名（现有：%s）\n%s", strings.Join(checkNames(), "、"), usage)
 		return 2
+	case "notice":
+		// 钩子：任何错误都不能挡住用户发消息，找不到仓库根也只写一行 stderr、退出码 0
+		root, err := repoRoot()
+		if err != nil {
+			fmt.Fprintln(stderr, "notice：找不到仓库根，已忽略：", err)
+			return 0
+		}
+		return notice.Run(args[1:], root, os.Stdin, stdout, stderr)
 	case "-h", "-help", "--help", "help":
 		fmt.Fprint(stdout, usage)
 		return 0
@@ -102,6 +130,15 @@ func Run(args []string, stdout, stderr io.Writer) int {
 
 // repoRoot 是仓库根：模块根（native/）的上一级。和旧脚本“按自己的位置找仓库根”一致，不看当前目录。
 func repoRoot() (string, error) {
+	mod, err := modRoot()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Dir(mod), nil
+}
+
+// modRoot 是模块根（native/，含 go.mod）：按程序自己所在的位置找。
+func modRoot() (string, error) {
 	exe, err := os.Executable()
 	if err != nil {
 		return "", err
@@ -109,9 +146,5 @@ func repoRoot() (string, error) {
 	if r, e := filepath.EvalSymlinks(exe); e == nil {
 		exe = r
 	}
-	mod, err := selfbuild.FindModRoot(exe)
-	if err != nil {
-		return "", err
-	}
-	return filepath.Dir(mod), nil
+	return selfbuild.FindModRoot(exe)
 }

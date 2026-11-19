@@ -34,7 +34,7 @@
 
 复盘 23:30、巡检 12:00，由 Claude 应用的 Sonnet 只读执行，报告在 `data/reports/`。错题经主人确认后先入证据存档，再提炼 LESSONS；异常进待办。复盘检查 ADR 影响清单是否漏改；巡检跑 `native/bin/sumika-dev.exe check docs`，读每日整套的结论（`merge-queue status` 前两行、`nightly.ts --status`），不自己跑整套。每日整套由任务计划 `SumikaNightly` 每天 04:30 跑 `scripts/nightly.ts`（只在登录时运行，[规格](docs/规格-每日整套.md)）。
 
-每周一查[同类界面 / 动效库](docs/notes/对照-同类界面动效库-2026-10-20.md)；每天跑 code-rules 仓库的 `_tools/check-updates.ps1`。正式小版本发布满一天就升，跨大版本先读更新说明；mygo、CrychicUI 不用等（ADR-173、176、213）。报告末尾保留“## 给主会话”（无事项写“没有”），`scripts/report-notice.ts` 随用户消息通知；收到后核对，做完手上一段再处理。
+每周一查[同类界面 / 动效库](docs/notes/对照-同类界面动效库-2026-10-20.md)；每天跑 code-rules 仓库的 `_tools/check-updates.ps1`。正式小版本发布满一天就升，跨大版本先读更新说明；mygo、CrychicUI 不用等（ADR-173、176、213）。报告末尾保留“## 给主会话”（无事项写“没有”），`sumika-dev notice`（UserPromptSubmit 钩子）随用户消息通知；收到后核对，做完手上一段再处理。
 
 ## 文档分层
 
