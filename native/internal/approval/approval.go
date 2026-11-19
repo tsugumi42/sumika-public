@@ -24,6 +24,7 @@ import (
 	"sumika-native/internal/jsjson"
 	"sumika-native/internal/jsstr"
 	"sumika-native/internal/kernel"
+	"sumika-native/internal/lineend"
 	"sumika-native/internal/policy"
 	"sumika-native/internal/store"
 )
@@ -785,9 +786,11 @@ func (g *Gate) Describe(workdir, characterID, toolCallID, tool string, args jsjs
 		return r
 	}
 	var old *string
+	var oldBytes []byte
 	if !opaqueTarget(path, abs, workdir) { // 网络共享等不读：预览里当“文件不存在”算，卡片出来前不去连
 		if fi, err := fileStat(abs); err == nil && fi.Mode().IsRegular() {
 			if b, err := fileReadFile(abs); err == nil {
+				oldBytes = b
 				s := string(b)
 				if tool == "write" {
 					s = jsstr.DecodeUTF8(b)
@@ -798,7 +801,8 @@ func (g *Gate) Describe(workdir, characterID, toolCallID, tool string, args jsjs
 	}
 	var next *string
 	if tool == "write" {
-		s := policy.JSString(args, "content", "")
+		// 卡上的字节必须就是 write 写进去的字节：同一个 lineend.Final，同样的路径、原文件开头和正文
+		s := lineend.Final(abs, oldBytes, policy.JSString(args, "content", ""))
 		next = &s
 	}
 	if tool == "edit" && old != nil {

@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -171,6 +172,11 @@ func TestGateSameAsBun(t *testing.T) {
 				dropApprovalSubject(gv)
 				dropApprovalSubject(golden[i])
 			}
+			if intendedNewFileEOL[c.Name] && runtime.GOOS == "windows" {
+				// 有意不同（规格-写文件换行）：新建文件没有别的线索时按 tools.lineEnding 的 auto，Windows 写 CRLF，
+				// 卡上的预览就是写进去的字节；Bun 基线原样给 LF。别的字段照旧逐项比。
+				crlfApprovalPreview(golden[i])
+			}
 			if !reflect.DeepEqual(gv, any(golden[i])) && sameExceptParseLanguage(gv, golden[i]) {
 				t.Logf("只有 pwsh 解析报错的语言不同（基线是中文 pwsh 录的），算相同")
 			} else if !reflect.DeepEqual(gv, any(golden[i])) {
@@ -183,6 +189,21 @@ func TestGateSameAsBun(t *testing.T) {
 
 // 卡片 subject 有意和 Bun 基线不同的场景：路径里的 ~ 现在按工具的办法换成用户目录
 var intendedSubject = map[string]bool{"read-protected": true, "grep-protected": true}
+
+// 新建文件的预览正文换行有意和 Bun 基线不同的场景（只在 Windows 上，别处 auto 是 LF，和基线一样）
+var intendedNewFileEOL = map[string]bool{"write-new": true}
+
+func crlfApprovalPreview(v any) {
+	if m, ok := v.(map[string]any); ok {
+		if a, ok := m["approval"].(map[string]any); ok {
+			if p, ok := a["preview"].(map[string]any); ok {
+				if s, ok := p["text"].(string); ok {
+					p["text"] = strings.ReplaceAll(s, "\n", "\r\n")
+				}
+			}
+		}
+	}
+}
 
 func approvalSubject(v any) string {
 	if m, ok := v.(map[string]any); ok {

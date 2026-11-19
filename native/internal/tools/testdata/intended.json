@@ -4,5 +4,17 @@
     "adr": "ADR-182",
     "why": "Go 的 powershell 输出设成纯文本，没有颜色码；Bun 录的那份带 pwsh 的颜色码",
     "text": "Remove-Item: \r\nLine |\r\n  42 |  Remove-Item sub\r\n     |  ~~~~~~~~~~~~~~~\r\n     | 目录不是空的，要删就加 -Recurse：<WORKDIR>\\sub\r\n"
+  },
+  {
+    "name": "write-new",
+    "adr": "规格-写文件换行",
+    "why": "新建文件没有仓库、.editorconfig，换行按 tools.lineEnding 的 auto：Windows 写 CRLF，别处写 LF；Bun 原样写",
+    "files": {"windows": {"a.txt": "甲\r\n乙"}, "other": {}}
+  },
+  {
+    "name": "write-nested",
+    "adr": "规格-写文件换行",
+    "why": "正文自带 CRLF，新建文件按 auto 统一：Windows 仍是 CRLF，别处改成 LF；Bun 原样写",
+    "files": {"windows": {}, "other": {"sub/deep/b.md": "# 标题\n正文\n"}}
   }
 ]
