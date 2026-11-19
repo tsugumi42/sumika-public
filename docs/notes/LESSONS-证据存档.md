@@ -523,3 +523,11 @@
 ## 2026-11-18：改行为没查只在整套里跑的测试
 
 - 出现：1×（2026-11-18，ee241a97f、84bf04dd9、2a366a862：P2-9 多一次压缩请求、ADR-384 回执改所有者，预期要到 04:30 整套才红）。主人 2026-11-19 确认，已进 LESSONS。
+
+## 2026-11-19：没复现的猜测直接做成了修法
+
+- 出现：1×（2026-11-19，PR#6：0b7fabb9b 把 `TestRunStopsCleanlyOnCancel` 的“目录不是空的”猜成 runner 上 Defender 扫文件，给 CI 加了排除步骤；4a26deded 删掉，runner 打出“实时防护：False”、盘本来就整盘排除）。多两个提交和一轮 CI。复盘 2026-11-19 提出，主人 2026-11-19 确认，已进 LESSONS。
+
+## 2026-11-19：只跑了改到的包，没跑 go-affected 挑出的全部包
+
+- 出现：1×（2026-11-19，PR#1：a72dc251f 在 lineend 里直接 `exec.LookPath`，架构检查要求外部程序经 `internal/toolchain` 查找，本机没跑 archcheck，PR 的 CI 才红，eb202722f 修）。复盘草稿写成“go-affected 通常挑不到 archcheck”，核对后不对：go-affected 每次都带 archcheck，漏在只跑了改到的包。主人 2026-11-19 确认，已进 LESSONS。
