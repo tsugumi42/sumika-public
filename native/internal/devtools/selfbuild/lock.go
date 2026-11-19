@@ -20,6 +20,11 @@ const (
 	lockPoll        = 50 * time.Millisecond                          // 拿不到就隔这么久再试（非阻塞地试，到期限为止）
 )
 
+// AcquireLock 给其他开发工具（notice 的记录和缓存文件）用同一把系统文件锁：语义同 acquireLock。
+func AcquireLock(path string, wait time.Duration) (release func(), err error) {
+	return acquireLock(path, wait)
+}
+
 // acquireLock 取锁：拿不到就每 50 毫秒试一次，到 wait 为止；返回的 release 放锁并关闭文件，不删锁文件。
 // 锁里写进持锁进程的 pid，只给超时的提示用（谁占着），不参与任何判断。
 func acquireLock(path string, wait time.Duration) (release func(), err error) {
