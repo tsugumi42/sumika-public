@@ -23,6 +23,7 @@ var toolOnly = []string{
 	"sumika-native/internal/turn/turntest",      // 内核测试的夹具
 	"sumika-native/internal/testutil/junction",  // 测试在进程内建目录联接，不给常驻代码用
 	"sumika-native/internal/testutil/volpath",   // 测试把路径写成 \\?\Volume{GUID}\… 的卷标识写法，不给常驻代码用
+	"sumika-native/internal/testutil/leftover",  // 起整个后台的测试的临时数据目录：删不掉时留现场，不给常驻代码用
 	"sumika-native/internal/localmodels",        // 本机嵌入、重排的纯 Go 实现（分词器、ORT 封装、引擎……），只给 cmd/sumika-models；ORT 是原生代码，不链进常驻程序
 	"sumika-native/third_party/goSentencePiece", // 拷进来自己改的 tggo 分词器 fork，只给 internal/localmodels/tokenizer
 }
