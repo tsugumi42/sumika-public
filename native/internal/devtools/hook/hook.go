@@ -18,6 +18,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -25,21 +27,36 @@ import (
 	"sumika-native/internal/devtools/commitmsg"
 	"sumika-native/internal/devtools/gitrun"
 	"sumika-native/internal/devtools/jstext"
-	"sumika-native/internal/devtools/selfbuild"
 )
 
 // BunProgram、GoProgram 是 bun、go 程序名（internal/ 里 exec.Command 的第一个参数不许是字面量，和 gitrun.Program 一样用变量）。
-// go 优先用编出本程序的那套 Go（selfbuild.GoBinary），找不到再按名字去 PATH 里找。
 var (
 	BunProgram = "bun"
 	GoProgram  = "go"
 )
 
+// goRoot 是编出本程序的那套 Go 的根目录（测试里可替换）。
+var goRoot = runtime.GOROOT
+
+// goProgram 给 go vet、go list 用的 go：优先用编出本程序的那套 Go（GOROOT/bin/go），找不到再按名字去 PATH 里找。
+// 有意不认 SUMIKA_DEV_GO：它是 selfbuild 找不到 go 时给重编用的出口，手敲一个假 go 指过去，vet 就恒过；
+// 检查本身不开这种旁路（LESSONS：给检查留的旁路变量在正式入口不认）。
 func goProgram() string {
-	if p, err := selfbuild.GoBinary(); err == nil {
-		return p
+	if r := goRoot(); r != "" {
+		name := "go"
+		if runtime.GOOS == "windows" {
+			name = "go.exe"
+		}
+		if p := filepath.Join(r, "bin", name); fileExists(p) {
+			return p
+		}
 	}
 	return GoProgram
+}
+
+func fileExists(p string) bool {
+	st, err := os.Stat(p)
+	return err == nil && !st.IsDir()
 }
 
 // Ctx 是每项检查共用的只读信息。
@@ -157,6 +174,11 @@ func Execute(c *Ctx, items []Item, staged []string, stdout io.Writer) int {
 
 // PreCommit 是 sumika-dev hook pre-commit 的入口：root 是仓库根；不收参数。
 func PreCommit(_ []string, root string, stdout, _ io.Writer) int {
+	return preCommit(root, Items, stdout)
+}
+
+// preCommit 是 PreCommit 的完整路径：取暂存区 → 空就跳过 → 取暂存文件 → 按表挑项 → 执行 → 退出码。items 可替换，测试用。
+func preCommit(root string, items []Item, stdout io.Writer) int {
 	// 暂存区里什么改动都没有（git commit --allow-empty、只改说明的 --amend）：和原 lefthook 一样整个跳过，不替空提交去跑隐私、文档、冲突标记
 	changed, err := stagedAny(root, os.Environ())
 	if err != nil {
@@ -172,7 +194,7 @@ func PreCommit(_ []string, root string, stdout, _ io.Writer) int {
 		fmt.Fprintln(stdout, err)
 		return 1
 	}
-	return Execute(&Ctx{Root: root}, Items, staged, stdout)
+	return Execute(&Ctx{Root: root}, items, staged, stdout)
 }
 
 // Hooks 是 hook 下的钩子名 → 入口（参数是钩子名后面的部分，root 是仓库根）。

@@ -281,6 +281,73 @@ func TestGoVetSkipsPackagesWithoutBuildableFilesAndDeletedDirs(t *testing.T) {
 	}
 }
 
+// 测试二进制自己当“假 go”：HOOK_TEST_FAKE_GO=1 时什么都不做、退出 0（给“手敲假 go 不能让 vet 恒过”的测试用）。
+func TestMain(m *testing.M) {
+	if os.Getenv("HOOK_TEST_FAKE_GO") == "1" {
+		os.Exit(0)
+	}
+	os.Exit(m.Run())
+}
+
+// 改坏检查靶子：go list 失败（GOFLAGS 坏了）不能当成“这个包没有可编的文件”放行，必须红并写出原因。
+func TestGoVetItemRedWhenGoListFails(t *testing.T) {
+	dir := goModule(t)
+	t.Setenv("GOFLAGS", "-mod=bogus")
+	out, code := execute(t, dir, pick(t, "Go检查"), []string{"native/good/g.go"})
+	if code != 1 || !strings.Contains(out, "go list ./good 失败") || strings.Contains(out, "没有落在还存在的包里") {
+		t.Fatalf("go list 失败应红：%d\n%s", code, out)
+	}
+}
+
+// go 程序起不来也要红，原因写进这一项的输出。
+func TestGoVetItemRedWhenGoMissing(t *testing.T) {
+	dir := goModule(t)
+	oldRoot, oldGo := goRoot, GoProgram
+	goRoot = func() string { return "" }
+	GoProgram = filepath.Join(t.TempDir(), "不存在的go")
+	t.Cleanup(func() { goRoot, GoProgram = oldRoot, oldGo })
+	out, code := execute(t, dir, pick(t, "Go检查"), []string{"native/good/g.go"})
+	if code != 1 || !strings.Contains(out, "起不来") || strings.Contains(out, "没有落在还存在的包里") {
+		t.Fatalf("go 起不来应红：%d\n%s", code, out)
+	}
+}
+
+// SUMIKA_DEV_GO 指到一个恒成功的假 go，vet 也照常红：hook 里的 go 不认它（理由见 goProgram）。
+func TestGoVetIgnoresSumikaDevGo(t *testing.T) {
+	dir := goModule(t)
+	t.Setenv("SUMIKA_DEV_GO", os.Args[0])
+	t.Setenv("HOOK_TEST_FAKE_GO", "1")
+	if out, code := execute(t, dir, pick(t, "Go检查"), []string{"native/bad/b.go"}); code != 1 || !strings.Contains(out, "Printf") {
+		t.Fatalf("带着 SUMIKA_DEV_GO 仍应照常 vet 并红：%d\n%s", code, out)
+	}
+}
+
+// 完整路径：非空暂存区 → 取暂存文件 → 按表挑项 → 执行 → 退出码（临时仓库，GIT_* 已清）。
+func TestPreCommitFullPath(t *testing.T) {
+	dir := newRepo(t)
+	items := pick(t, "冲突标记", "Go格式", "扫描自测")
+	put(t, dir, "native/ok.go", goodGo)
+	put(t, dir, "docs/a.md", "# 干净\n")
+	git(t, dir, "add", ".")
+	var out bytes.Buffer
+	if code := preCommit(dir, items, &out); code != 0 || !strings.Contains(out.String(), "汇总：2 项过、0 项红、1 项没挑上") {
+		t.Fatalf("全干净应过：%d\n%s", code, out.String())
+	}
+	put(t, dir, "native/bad.go", "package x\nfunc G()   int {return 1}\n")
+	put(t, dir, "docs/conflict.md", "<<<<<<< a\nx\n=======\ny\n>>>>>>> b\n")
+	git(t, dir, "add", ".")
+	out.Reset()
+	code := preCommit(dir, items, &out)
+	for _, want := range []string{"== Go格式：红", "== 冲突标记：红", "红的：冲突标记、Go格式", "汇总：0 项过、2 项红、1 项没挑上"} {
+		if !strings.Contains(out.String(), want) {
+			t.Fatalf("缺 %q：\n%s", want, out.String())
+		}
+	}
+	if code != 1 {
+		t.Fatalf("有红项应退出 1：%d", code)
+	}
+}
+
 // 起不来的程序算红，不当成通过（“缺外部依赖”不能静默放行）。
 func TestMissingProgramIsRed(t *testing.T) {
 	old := BunProgram

@@ -24,6 +24,9 @@ func TestGlobMatch(t *testing.T) {
 		{"scripts/friction-report*.ts", "scripts/sub/friction-report.ts", false}, // * 不跨目录
 		{"protocol/**", "protocol/a/b.json", true},
 		{"protocol/**", "protocols/a.json", false},
+		{"protocol/**", "protocol/a\nb", true}, // 路径里有换行（Linux 上能建）：.* 要能跨过去，对应检查不能被跳过
+		{"native/**/*.go", "native/x\ny/a.go", true},
+		{"native/**/*.go", "native/a\n.go.txt", false},
 		{"native/go.mod", "native/go.mod", true},
 		{"native/go.mod", "native/goxmod", false}, // . 不是通配
 		{"a?c", "abc", true},

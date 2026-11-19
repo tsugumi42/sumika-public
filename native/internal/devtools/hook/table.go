@@ -144,9 +144,14 @@ func runGoVet(c *Ctx, files []string, w io.Writer) int {
 			vet = listed
 			break
 		}
-		var sb strings.Builder
-		code := c.spawnSplit(&sb, io.Discard, native, goProgram(), "list", "-e", "-f", "{{if or .GoFiles .CgoFiles .TestGoFiles .XTestGoFiles}}y{{end}}", p)
-		if code == 0 && strings.TrimSpace(sb.String()) == "y" {
+		var sb, eb strings.Builder
+		code := c.spawnSplit(&sb, &eb, native, goProgram(), "list", "-e", "-f", "{{if or .GoFiles .CgoFiles .TestGoFiles .XTestGoFiles}}y{{end}}", p)
+		if code != 0 {
+			// go 起不来、GOFLAGS 坏了这类：不能当成“这个包没有可编的文件”放行（旧脚本在这里会抛异常、红）
+			fmt.Fprintf(w, "go list %s 失败（退出码 %d），没法判断要不要 vet，按红处理：\n%s\n", p, code, strings.TrimSpace(eb.String()))
+			return 1
+		}
+		if strings.TrimSpace(sb.String()) == "y" {
 			vet = append(vet, p)
 		}
 	}
