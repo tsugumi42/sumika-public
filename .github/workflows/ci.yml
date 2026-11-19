@@ -125,12 +125,19 @@ jobs:
       - name: go test -short（全部包）
         if: ${{ !cancelled() }}
         working-directory: native
-        shell: bash
+        # 用 pwsh 不用 bash：nightly.yml 第一次试跑用 Git Bash 跑 go test，四条“拒绝读取 / 独占打开”的用例红，换 pwsh 后绿（2026-11-19）。
+        # Start-Process 把输出直接写文件，是 go 原样写的 UTF-8，不经 pwsh 解码（和 nightly.yml 同一种写法）；两个系统都这样跑
+        shell: pwsh
         run: |
-          set +e
-          go test -short -count=1 -timeout 12m -json ./... > "$RUNNER_TEMP/go-test.json"
-          code=$?
-          bun ../scripts/ci-test-report.ts "$RUNNER_TEMP/go-test.json" || code=1
+          $out = Join-Path $env:RUNNER_TEMP 'go-test.json'; $err = Join-Path $env:RUNNER_TEMP 'go-test-stderr.txt'
+          $p = Start-Process -FilePath go -ArgumentList @('test', '-short', '-count=1', '-timeout', '12m', '-json', './...') -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
+          $null = $p.Handle # 先拿住句柄，不然进程结束后 ExitCode 可能读不到（.NET 的已知坑）
+          $p.WaitForExit()
+          $code = $p.ExitCode
+          Get-Content $err -ErrorAction SilentlyContinue | Select-Object -Last 20
+          bun ../scripts/ci-test-report.ts $out
+          if ($LASTEXITCODE -ne 0) { $code = 1 }
+          "go test 退出码 $($p.ExitCode)，汇总退出码 $LASTEXITCODE"
           exit $code
 
       - name: 上传 go test 的原始结果
