@@ -69,6 +69,11 @@ func newExpandHostSend(t *testing.T, mode string, fetcher linkreader.ContentFetc
 	if fetcher != nil {
 		e.linkFetcher = fetcher
 	}
+	extra := strings.Join(expandExtra, "")
+	if !strings.Contains(extra, "tweetCard:") {
+		// 假取数大多给纯文字推文、断言文字版正文；纯文字卡片（ADR-399）由专门的用例打开
+		extra = "    tweetCard: {textOnly: false}\n" + extra
+	}
 	e.extraConfig = fmt.Sprintf(`linkReader:
   context: {enabled: false}
   expand:
@@ -78,7 +83,7 @@ func newExpandHostSend(t *testing.T, mode string, fetcher linkreader.ContentFetc
     startEmoji: "76"
 %sreply:
   deny: {"qq:70011": bot}
-`, testGroup, testAccount, testOwner, strings.Join(expandExtra, ""))
+`, testGroup, testAccount, testOwner, extra)
 	e.writeConfigFreq(testToken, "0")
 	guardFixture(t, e, true)
 	writeSenderIntent(t, e.data, testAccount, sendlock.HolderGo)

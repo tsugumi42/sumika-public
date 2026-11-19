@@ -237,6 +237,7 @@ func (a *app) pageLinkSettingsBody(c *ui.Context) {
 		a.linkToggle(c, "识别裸 BV / av 号", config.LinkBareBiliID, e.BareBiliID)
 		a.linkToggle(c, "图被拒收后旋转重发一次", config.LinkRotateOnReject, e.RotateOnReject)
 		a.linkToggle(c, "拼接后另附原图", config.LinkPanoramaOriginals, e.PanoramaOriginals)
+		a.linkToggle(c, "纯文字推文画成卡片", config.LinkTweetTextCard, e.TweetCard.TextOnly)
 		a.linkToggle(c, "翻译外文正文", config.LinkTranslateEnabled, e.Translate.Enabled)
 		a.linkEdit(c, "翻译成什么语言", config.LinkTranslateTarget, e.Translate.Target, false)
 		a.linkEdit(c, "翻译时限（秒，1～60）", config.LinkTranslateTimeout, strconv.Itoa(e.Translate.TimeoutSeconds), true)
