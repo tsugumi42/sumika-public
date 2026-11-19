@@ -270,24 +270,18 @@ func TestD14(t *testing.T) {
 	specMerged := "# 规格\n\n> 状态：做完了，待合并 `feat/a`\n"
 	repo := with(base(), "docs/规格-m.md", specMerged, "docs/README.md", "[m](规格-m.md)\n")
 	root := mkRepo(t, repo)
-	git(t, root, "branch", "feat/a") // 在 main 上，是祖先
+	h := mergeIn(t, root, "feat/a", "Merge pull request #3 from someone/feat/a")
 	f := want(t, check(t, root, false), "D14", LevelWarn)
-	if f.Where != "docs/规格-m.md:3" || !strings.Contains(f.What, "feat/a") {
+	if f.Where != "docs/规格-m.md:3" || !strings.Contains(f.What, "feat/a 已合进 main（PR #3，"+h+"）") {
 		t.Fatalf("%+v", f)
 	}
-	// 反例：分支领先 main
+	// 反例：刚从 main 开出来、还没提交的分支是 main 的祖先，但没合过（旧版按祖先判断会误报）
 	root2 := mkRepo(t, repo)
-	git(t, root2, "checkout", "-q", "-b", "feat/a")
-	put(t, root2, "x", "1")
-	git(t, root2, "add", "-A")
-	git(t, root2, "commit", "-q", "-m", "ahead")
-	git(t, root2, "checkout", "-q", "main")
+	git(t, root2, "branch", "feat/a")
 	wantNone(t, check(t, root2, false), "D14")
-	// 反例：分支不存在按已删，仍提醒（128）
-	want(t, check(t, mkRepo(t, repo), false), "D14", LevelWarn)
-	// 反例：状态头没有待合并字样
-	done := with(repo, "docs/规格-m.md", "# 规格\n\n> 状态：已合 main `feat/a`\n")
-	wantNone(t, check(t, mkRepo(t, done), false), "D14")
+	// 反例：分支不存在、也没有合并记录（CI 和新克隆里本来就没有那些分支；旧版按“已删”提醒）
+	wantNone(t, check(t, mkRepo(t, repo), false), "D14")
+	// 已经写成“已合”的不报，见 TestD14StaleBranchesPerLine
 }
 
 // ———— D8 / --update ————
