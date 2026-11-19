@@ -1532,6 +1532,26 @@
   "Reason": ""
  },
  {
+  "Key": "tools.lineEnding",
+  "Name": "写文件的换行",
+  "Type": "枚举",
+  "Storage": "yml",
+  "Effect": "立即",
+  "Category": "工具与权限",
+  "Options": [
+   "auto",
+   "lf",
+   "crlf"
+  ],
+  "Min": null,
+  "Max": null,
+  "MinExclusive": false,
+  "MaxExclusive": false,
+  "Default": "auto",
+  "ReadOnly": false,
+  "Reason": ""
+ },
+ {
   "Key": "tools.autoApproveDirs",
   "Name": "工具自动放行目录",
   "Type": "列表",

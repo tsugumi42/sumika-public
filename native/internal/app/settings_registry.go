@@ -11,6 +11,7 @@ import (
 	"sumika-native/internal/api"
 	"sumika-native/internal/config"
 	"sumika-native/internal/desksettings"
+	"sumika-native/internal/lineend"
 	"sumika-native/internal/settingsreg"
 )
 
@@ -108,6 +109,13 @@ func (r *DesktopReader) WriteSetting(ctx context.Context, ch api.SettingChange, 
 			if e := a.approvalGate.SetMode(mode); e != nil {
 				err = errors.Join(err, e)
 			}
+		}
+	}
+	if saved && ch.Key == "tools.lineEnding" {
+		// 写进配置以后当场改：下一次写文件就按新值，审批预览也是
+		var mode string
+		if json.Unmarshal(ch.Value, &mode) == nil {
+			lineend.SetDefault(mode)
 		}
 	}
 	if saved && (ch.Key == "web.searchOrder" || ch.Key == "web.fetchOrder") {

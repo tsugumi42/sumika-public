@@ -364,7 +364,7 @@ func TestInertKeysAreHonest(t *testing.T) {
 	live := []string{
 		"backup.dir", "backup.daily", "backup.dailyMedia", "backup.alertGB", "backup.minFreeGB", "backup.runMaxHours", "backup.closeWaitSeconds", // app/backup.go:68-77
 		"vision.direct", "vision.directMax", // app/images.go:130,134
-		"tools.workdir", "tools.approvalMinutes", "tools.approvalMode", "tools.autoApproveDirs", // app/app.go:476-489、974
+		"tools.workdir", "tools.approvalMinutes", "tools.approvalMode", "tools.lineEnding", "tools.autoApproveDirs", // app/app.go:476-489、974
 		"memory.write.characters", "memory.write.places", "memory.write.quarantineSince", "memory.rerank.model", "memory.rerank.k", "memory.rerank.timeoutSeconds",
 		"embed.backend", "embed.enabled", "dataDir", "console.port", "group.frequency", "agent.maxLive",
 	}
