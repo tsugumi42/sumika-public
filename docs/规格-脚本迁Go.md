@@ -25,7 +25,7 @@
   - 不翻译只为冻结 Bun 服务的部分。`desktop-check.ts`，以及 `server-verify.ts`、`precommit-fast.ts`、`gen-rpc.ts` 里给 `server/`、`desktop/` 的分支，直接删掉，不迁（ADR-359 冻结，ADR-378 关卡碰到冻结代码就摘掉）。
   - 不改任何检查的规则和结论。
   - 合并队列不在本规格里重写成新的长期本地队列，跟[规格-合并走PR](规格-合并走PR.md) S3 一起做。
-  - `export-public.ts` 和 `public-exclude.txt` 在切换开发主仓库之前沿用旧的，切换后整块删除，不迁。
+  - `export-public.ts` 和 `public-exclude.txt` 在切换开发主仓库之前沿用旧的，切换后整块删除，不迁（2026-11-19 已删）。
   - `bench-t2` 题库、参考解、许可原样留着（ADR-389 第 3 条）。
 - **用户能看能试的验收**：
   - 每迁完一批，主人照常提交、推送，钩子输出的中文和以前一样；
@@ -86,7 +86,7 @@
 | `test/helpers/tmp.ts`、`test/tmp-helper.test.ts` | Go 用 `t.TempDir()` | 它的最后一个使用者迁完时 |
 | `guard-eval/generate.py`、`generate.txt` | ADR-389 第 2 条 | 第一批 |
 | `artist-review.ts`、模板 | 待办写明不迁；已排除公开 | 第一批，移到本机 `data/dev/tools/`（不进 git） |
-| `export-public.ts`、`public-exclude.txt` | 切换开发主仓库后不再需要 | 切换那一步 |
+| `export-public.ts`、`public-exclude.txt` | 切换开发主仓库后不再需要 | 切换那一步（2026-11-19 已删） |
 | `package.json`、`bun.lock`、`bunfig.toml`、根 TS 配置 | 全部迁完 | 最后一批 |
 
 ## 顺序

@@ -25,7 +25,7 @@ const usage = `sumika-dev：Sumika 的开发工具（仓库脚本和钩子的 Go
                         文档一致性检查（原 scripts/check-docs.ts）；--staged 读暂存区，--update 写 scripts/docs-baseline.json
 
   sumika-dev check private --staged | --range A..B | --allow 编号… | --tree 目录 [--allow-missing]
-                        隐私扫描（原 scripts/scan-private.ts）；--tree 给导出公开版的自检用
+                        隐私扫描（原 scripts/scan-private.ts）；--tree 在扫描规则改了以后手动扫一遍当前全部文件
 
   sumika-dev check conflicts
                         暂存区新增的行里有没有没解决的合并冲突标记（原 scripts/check-conflict-markers.ts）
