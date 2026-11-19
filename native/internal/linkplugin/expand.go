@@ -436,7 +436,7 @@ func BuildOptions(o config.LinkExpand) linkexpand.Options {
 	maps.Copy(tpl, o.Templates)
 	return linkexpand.Options{Templates: tpl, Sites: siteSettings(o.Sites), VideoEnabled: o.Video.Enabled, Forward: ForwardOptions(o.Forward),
 		PanoramaOriginals: o.PanoramaOriginals, KeepTrailingHashtags: !o.Text.StripTrailingHashtags, DirectImageMax: o.DirectImageMax,
-		ForwardVideo: o.Send.ForwardVideo}
+		ForwardVideo: o.Send.ForwardVideo, TextCard: o.TweetCard.TextOnly}
 }
 
 // siteSettings 把配置里各站点的发送设置交给 linkexpand（两边的类型独立，免得发送端依赖配置包）。

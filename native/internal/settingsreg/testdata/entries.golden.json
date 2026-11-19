@@ -2844,6 +2844,22 @@
   "Reason": ""
  },
  {
+  "Key": "linkReader.expand.tweetCard.textOnly",
+  "Name": "纯文字推文画成推特卡片（默认开，有图的推文照旧）",
+  "Type": "开关",
+  "Storage": "yml",
+  "Effect": "立即",
+  "Category": "插件",
+  "Options": null,
+  "Min": null,
+  "Max": null,
+  "MinExclusive": false,
+  "MaxExclusive": false,
+  "Default": true,
+  "ReadOnly": false,
+  "Reason": ""
+ },
+ {
   "Key": "linkReader.expand.tweetCard.maxHeight",
   "Name": "推特卡片高度封顶（像素，默认 0 不封顶，长推文整张画出来）",
   "Type": "数字",

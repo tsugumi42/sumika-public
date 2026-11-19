@@ -225,6 +225,8 @@ func (a *App) registryLinkChange(ch api.SettingChange) (config.LinkChange, error
 		c.Key, target = config.LinkRotateOnReject, &c.Bool
 	case "linkReader.expand.panoramaOriginals":
 		c.Key, target = config.LinkPanoramaOriginals, &c.Bool
+	case "linkReader.expand.tweetCard.textOnly":
+		c.Key, target = config.LinkTweetTextCard, &c.Bool
 	case "linkReader.expand.privateStatus":
 		c.Key, target = config.LinkPrivateStatus, &c.Text
 	case "linkReader.expand.translate.enabled":

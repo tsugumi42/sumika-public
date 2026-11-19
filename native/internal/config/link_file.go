@@ -46,6 +46,7 @@ const (
 	LinkVideoTimeout      LinkKey = "videoTimeout"
 	LinkVideoMaxMB        LinkKey = "videoMaxMB"
 	LinkImageMaxMB        LinkKey = "imageMaxMB"
+	LinkTweetTextCard     LinkKey = "tweetTextCard" // 纯文字推文画推特卡片（tweetCard.textOnly，ADR-399）
 )
 
 type LinkChange struct {
@@ -89,6 +90,9 @@ func (ch LinkChange) targets() ([]configEdit, error) {
 		value = ch.Bool
 	case LinkPanoramaOriginals:
 		path = append(path, "panoramaOriginals")
+		value = ch.Bool
+	case LinkTweetTextCard:
+		path = append(path, "tweetCard", "textOnly")
 		value = ch.Bool
 	case LinkMaxLinks:
 		path = append(path, "maxLinks")

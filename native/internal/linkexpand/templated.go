@@ -115,6 +115,8 @@ type builder struct {
 	quotedTweet bool
 	// artist：命中确认过的画师、且这条推文有自己的图（规格-画师原图）：用画师模板、不进 autoForward、拆图不拼回；空串是旧行为
 	artist string
+	// textCard：纯文字推文画推特卡片加链接（ADR-399）：用 XTextCard、只直发
+	textCard bool
 	// moreImages：图列不全时写在整条末尾的那句（爱发电动态最多列 10 张）
 	moreImages string
 	// articleNote：X 长文的正文已经换成译文时的“翻译自日语”（$翻译说明）；空串是没换
@@ -156,6 +158,7 @@ func Build(r *linkreader.Result, quote string, o Options, previous int) Draft {
 	if key == "x" && artistEligible(r, o.Artist) {
 		b.artist = o.Artist
 	}
+	b.textCard = TextCardApplies(r, o)
 	b.mosaic = key == "x" && b.template(key).Uses("mosaic")
 	setting := o.Sites[key]
 	over, desc := site.ForwardOver, site.DescLimit
@@ -169,8 +172,8 @@ func Build(r *linkreader.Result, quote string, o Options, previous int) Draft {
 	b.nodeBytes = o.NodeBytes(key)
 	d.nodeBytes = b.nodeBytes
 	overBytes := o.forwardBytes(key)
-	byImages := false                        // 只因为图多才进合并转发（shape.go 第 4 条）
-	if site.HasForward() && b.artist == "" { // 画师的推文只直发，图太多由 shapeDirect 按通用规则改转发或截断
+	byImages := false                                       // 只因为图多才进合并转发（shape.go 第 4 条）
+	if site.HasForward() && b.artist == "" && !b.textCard { // 画师的推文、纯文字推文的卡片只直发，图太多由 shapeDirect 按通用规则改转发或截断
 		switch setting.Forward {
 		case linktemplate.ForwardAlways:
 			b.forwd = true
@@ -336,6 +339,13 @@ func (b *builder) template(key string) *linktemplate.Template {
 		tpl, err := linktemplate.Parse(src, b.site.Set)
 		if err != nil {
 			panic("linkexpand: 画师模板写错了：" + err.Error())
+		}
+		return tpl
+	}
+	if b.textCard {
+		tpl, err := linktemplate.Parse(linktemplate.XTextCard, b.site.Set)
+		if err != nil {
+			panic("linkexpand: 纯文字推文的卡片模板写错了：" + err.Error())
 		}
 		return tpl
 	}

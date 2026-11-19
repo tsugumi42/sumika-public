@@ -119,6 +119,9 @@ func (r *DesktopReader) LinkPreview(ctx context.Context, req LinkPreviewRequest)
 		opt.Artist = mode
 		notes = append(notes, "这条推文的作者是确认过的画师（"+mode+"）：自定义模板和合并转发设置不生效，按画师的发法渲染")
 	}
+	if linkexpand.TextCardApplies(&res, opt) {
+		notes = append(notes, "这条推文是纯文字：按 tweetCard.textOnly 画推特卡片加链接（"+linktemplate.XTextCard+"），不进合并转发")
+	}
 	draft := linkexpand.Build(&res, "preview", opt, 0)
 	forward := false
 	for _, p := range draft.Parts {
