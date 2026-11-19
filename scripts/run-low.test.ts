@@ -7,6 +7,9 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+// run-low.ps1 经 Windows PowerShell P/Invoke kernel32 的作业对象（名额、内存上限、最低优先级），只在 Windows 上能跑；
+// Linux 上换 pwsh 也调不了 kernel32，所以这些用例只在 Windows 上跑（公开仓库 CI 的 Linux 一格会跳过，2026-11-19）
+const winOnly = test.skipIf(process.platform !== 'win32')
 const RL = join(import.meta.dir, 'run-low.ps1')
 const NS = `rltest-${process.pid}-${Date.now().toString(36)}`
 const env = (extra: Record<string, string> = {}) => {
@@ -32,7 +35,7 @@ function holder(dir: string, name: string) {
   return `./${name}.test.ts`
 }
 
-test('bun test 也排名额：A 拿着时 B 不开始，A 放行后 B 才开始', async () => {
+winOnly('bun test 也排名额：A 拿着时 B 不开始，A 放行后 B 才开始', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'run-low-slot-'))
   try {
     const a = lowBun(dir, holder(dir, 'a'))
@@ -48,7 +51,7 @@ test('bun test 也排名额：A 拿着时 B 不开始，A 放行后 B 才开始'
   } finally { rmSync(dir, { recursive: true, force: true }) }
 }, 180_000)
 
-test('已经拿着这一档名额（SUMIKA_SLOT_HELD）的不再抢：A 拿着时，标了已持有的 C 照样开始', async () => {
+winOnly('已经拿着这一档名额（SUMIKA_SLOT_HELD）的不再抢：A 拿着时，标了已持有的 C 照样开始', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'run-low-held-'))
   try {
     const a = lowBun(dir, holder(dir, 'a'))
@@ -62,7 +65,7 @@ test('已经拿着这一档名额（SUMIKA_SLOT_HELD）的不再抢：A 拿着�
   } finally { rmSync(dir, { recursive: true, force: true }) }
 }, 180_000)
 
-test('红的 bun test 退出码原样带出来', async () => {
+winOnly('红的 bun test 退出码原样带出来', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'run-low-red-'))
   try {
     writeFileSync(join(dir, 'bad.test.ts'), "import { expect, test } from 'bun:test'\ntest('坏', () => { expect(1).toBe(2) })\n")
@@ -78,7 +81,7 @@ const lowScript = (cwd: string, mb: number, extra: Record<string, string>) => {
   return Bun.spawn(['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', RL, process.execPath, f], { cwd, env: env(extra), stdout: 'pipe', stderr: 'pipe' })
 }
 
-test('单个进程超过内存上限会被拦下，退出码非零并明说碰到了上限', async () => {
+winOnly('单个进程超过内存上限会被拦下，退出码非零并明说碰到了上限', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'run-low-mem-'))
   try {
     const p = lowScript(dir, 1500, { SUMIKA_TEST_PROC_MEM_GB: '0.5' })
@@ -90,7 +93,7 @@ test('单个进程超过内存上限会被拦下，退出码非零并明说碰�
   } finally { rmSync(dir, { recursive: true, force: true }) }
 }, 120_000)
 
-test('没超上限照常跑完', async () => {
+winOnly('没超上限照常跑完', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'run-low-mem-ok-'))
   try {
     const p = lowScript(dir, 300, { SUMIKA_TEST_PROC_MEM_GB: '2' })
@@ -101,7 +104,7 @@ test('没超上限照常跑完', async () => {
   } finally { rmSync(dir, { recursive: true, force: true }) }
 }, 120_000)
 
-test('上限写错就报错退出，不悄悄当成不设', async () => {
+winOnly('上限写错就报错退出，不悄悄当成不设', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'run-low-mem-bad-'))
   try {
     for (const bad of ['八个G', 'NaN', 'Infinity', '1e30', '0.01', '-1']) {
@@ -112,7 +115,7 @@ test('上限写错就报错退出，不悄悄当成不设', async () => {
 }, 60_000)
 
 // Go 进程撞上限后有时卡住不退（复核实测卡过五分钟）：run-low 自己盯峰值，到九成五整串收掉，不能等它自己退出
-test('Go 测试吃到上限九成五以上后卡住，run-low 自己整串收掉并给出 137', async () => {
+winOnly('Go 测试吃到上限九成五以上后卡住，run-low 自己整串收掉并给出 137', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'run-low-mem-go-'))
   try {
     writeFileSync(join(dir, 'go.mod'), 'module memprobe\n\ngo 1.21\n')

@@ -109,7 +109,11 @@ test('sumika-dev.ts 的生产路径默认删掉 SUMIKA_SCAN_DATA（大小写不�
 })
 
 test('生产构建的程序见到 SUMIKA_SCAN_DATA、SUMIKA_SCAN_MAIBOT（含小写名）就拒绝扫描，退出码 2', () => {
-  for (const extra of [{ SUMIKA_SCAN_DATA: emptyData }, { SUMIKA_SCAN_MAIBOT: emptyData }, { sumika_scan_data: emptyData }] as Record<string, string>[]) {
+  // 小写名只在 Windows 上和大写是同一个变量（环境变量名不分大小写）；Linux 上它是另一个变量、程序读不到，照常拿真实名单扫描拦下（退出码 1），
+  // 那一边“绝不放行”由上面“小写名的变量也改不了名单”那条管（2026-11-19 公开仓库 CI 的 Linux 一格）
+  const extras: Record<string, string>[] = [{ SUMIKA_SCAN_DATA: emptyData }, { SUMIKA_SCAN_MAIBOT: emptyData }]
+  if (process.platform === 'win32') extras.push({ sumika_scan_data: emptyData })
+  for (const extra of extras) {
     const p = Bun.spawnSync([devExe(fake), 'check', 'private', '--staged'], { cwd: fake, env: cleanEnv(extra), stdout: 'pipe', stderr: 'pipe' })
     const out = p.stdout.toString() + p.stderr.toString()
     expect(p.exitCode).toBe(2)
