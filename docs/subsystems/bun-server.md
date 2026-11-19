@@ -1,6 +1,6 @@
 # Bun 后台（server/）
 
-状态：ADR-345 分批搬家中，第 1～3 批已合 main；第 3 批收尾和第 5 批（插件宿主、链接读取、生活工具、复读判定）在 `feat/bun-server-rpc` 待合。现在只接了**本地私聊**，QQ 是第 4 批的事；只在 Go 的 `-backend-url` 指向 Bun 时生效，Go 后台照常是默认。规格：第 1 批（私有存档）、第 2 批（私有存档）、第 3 批（私有存档）、第 5 批（私有存档）、本地工具补齐（私有存档）；方案见[方案-后台换Bun加pi](../notes/方案-后台换Bun加pi-2026-11-10.md)。
+状态：**已冻结，且 Go 一侧的接线已删除（ADR-401，2026-11-20）**。`server/` 不在公开仓库里；`sumika.exe` 不再拉起 Bun 子进程，`backend.local: bun` 也不再有效（读到只记日志、按 Go 处理）。下面是这个后台当年的样子，只当历史参考读，别当现状；和 Go 的对接细节（谁起它、两把锁、配置）见各条里的“已删”标注。方案见[方案-后台换Bun加pi](../notes/方案-后台换Bun加pi-2026-11-10.md)，规格都在私有存档。
 
 ## 职责与边界
 
@@ -8,7 +8,7 @@
 - 和 Go **读写同一个数据目录、同一套表**：库结构直接用 Go 的迁移文件（`native/internal/store/migrations/`），Bun 不自己建表；要加表先在 Go 的迁移目录占号。
 - **什么时候开写方法**（规格-本地私聊切到Bun（私有存档））：配置 `backend.local` 是 `bun`，**并且**拿到本地私聊的写锁 `go/local.lock`（和 Go 同一把，`LockFileEx` 独占），**并且** `run/` 收成了只给当前用户；三样缺一样就只开读方法，原因写在 `runtime.read` 的 `reason` 里。配置不是 `bun`（默认 `go`）时即使锁空着也只读。Bun **不碰** `go/backend.lock`（那把是“Go 后台在跑”，Go 两种模式都拿）。
 - **谁写什么**：`bun` 模式下 `local.db` 只有 Bun 写，Go 只读打开；`trace.db`、`memory.db` 两边都写（WAL，`busy_timeout` 5000，写事务短，Bun 用 `BEGIN IMMEDIATE`；原来的双写测试 `native/internal/store/dualwrite_test.go` 已随 Bun 冻结删除，ADR-389）。共用的 `trace.db` 里启动收拾只动自己渠道的在途行：Bun 的 `LocalStore.recover()` 只收 console 的回合、步骤、输入、运行，Go 在 `bun` 模式下排除 console。
-- **谁起它**：`backend.local: bun` 时由 `sumika.exe` 拉起并看护（`native/bunchild.go`，**临时：Electrobun 接管进程后去掉**）；`run/rpc.json` 归 Bun，Go 的 `-rpc-listen` 写 `run/rpc-go.json`。宿主先拿数据锁、Go 的后台 Open 成功才拉 Bun，blocked 时收掉；每次拉子进程给一个随机的 `SUMIKA_HOST_NONCE`，Bun 写进 `rpc.json` 的 `nonce`，宿主靠它认出地址文件是自己拉起的那个写的；`-root` 传资源根，Bun 找配置文件的顺序和 Go 一样（`SUMIKA_CONFIG`、数据目录里的 `config/sumika.yml`、资源根的 `sumika.yml`）。`run/` 的权限不管哪种模式都先收再写 `rpc.json`，收不紧不写（后台照常开着读方法）。
+- **谁起它**（**已删，ADR-401**：Go 一侧的 `bunchild.go` 等已删，下面是当年的做法）：`backend.local: bun` 时由 `sumika.exe` 拉起并看护；`run/rpc.json` 归 Bun，Go 的 `-rpc-listen` 写 `run/rpc-go.json`。宿主先拿数据锁、Go 的后台 Open 成功才拉 Bun，blocked 时收掉；每次拉子进程给一个随机的 `SUMIKA_HOST_NONCE`，Bun 写进 `rpc.json` 的 `nonce`，宿主靠它认出地址文件是自己拉起的那个写的；`-root` 传资源根，Bun 找配置文件的顺序和 Go 一样（`SUMIKA_CONFIG`、数据目录里的 `config/sumika.yml`、资源根的 `sumika.yml`）。`run/` 的权限不管哪种模式都先收再写 `rpc.json`，收不紧不写（后台照常开着读方法）。
 - **`selftest.*`（只给 `sumika-ctl` 用）**：`selftest.chat`、`selftest.slash`、`selftest.whisper`、`selftest.whisper_status`、`selftest.whisper_cancel` 在写模式下登记（`src/methods/selftest.ts`，逻辑在 `src/local/selftest.ts`），界面不调。会话由后台按角色拼成角色自己的自检话题（`console:<角色>:topic:selftest…`），参数里没有会话 id；自检话题的事件带 `selftest` 标记，不给记忆写入和插件；`isLocalPrivate` 和 `LocalChat.accepts` 仍把自检话题排除在外，只有 `acceptsOwner`（自检形状 + 话题已登记）和 `selftest.*` 进得去。不替主人批审批。见规格-本地私聊切到Bun（私有存档）第十一节。
 - 行为以 Go 的测试样例为准：审批判定、联网、记忆召回和写入、回合输入语义都和 Go 对拍（见“验证”）。
 
@@ -31,15 +31,9 @@
 | `src/prompt/` | 系统提示词（照 Go 的段落和顺序，读同一份 `prompts/` 和角色卡）、当前时间、参考信息位置、重建历史；会话实例在 `src/local/chat.ts` 里留着上一轮的工具调用和结果 |
 | `src/work/` | 工作、触发、运行（trace 迁移 0020）：建、暂停继续取消、到点触发、合并补跑、运行的阶段；上面建目标（`/goal`）、定期任务（`/loop`）、提醒、后台整理（只登记不整理），`runtime.ts` 的 `WorkService` 管调度、授权（`authorizeLoop`、`authorizeDelivery`）和状态订阅 |
 
-## 配置（`backend` 段，Go 和 Bun 都读，只在启动时读）
+## 配置（`backend` 段，已删）
 
-| 键 | 默认 | 意思 |
-| --- | --- | --- |
-| `backend.local` | `go` | 本地私聊由谁写：`go` 或 `bun`；写错 Go 启动报错、Bun 退成只读。改了要重启 sumika.exe（它会连带重启 Bun 子进程） |
-| `backend.bun` | 空 | Bun 可执行文件；空 = `PATH` 里的 `bun`，再找 `%USERPROFILE%\.bun\bin\bun.exe`；写了但不存在就报错，不悄悄换别的 |
-| `backend.server` | 空 | `server/` 目录；空 = 资源根下的 `server/`，里面要有 `src/main.ts` |
-
-退回 Go：把 `backend.local` 改回 `go` 再重启，数据不迁移；Bun 上建的提醒、目标、定期任务（`works` 表）和“记住”的授权（`run/bun-grants.json`）Go 看不到。示例见 `sumika.example.yml`。
+`backend.local`、`backend.bun`、`backend.server` 三个键已删（ADR-401）：Go 不再读它们，读配置也不因此失败；配置里还写着时启动日志记一行，后台状态页“配置里的旧项”也列出来，`backend.local: bun` 按 `go` 处理（本地私聊一直由 Go 管）。清单和说明文字在 `native/internal/config/removed.go`；不再使用的话可以把这几个键从 `sumika.yml` 里删掉。当年 Bun 上建的提醒、目标、定期任务（`works` 表）和“记住”的授权（`run/bun-grants.json`）Go 看不到。
 
 ## 依赖
 

@@ -200,7 +200,6 @@ sumika-ctl status
 **怎么做的**：协议和客户端只依赖 [`internal/ctlproto`](../../native/internal/ctlproto/proto.go)（一次连接一行 JSON 一问一答，请求最多 64 KB，读写各 5 秒；客户端等回复最久 90 秒，`--wait` 时是 wait 加 20 秒）；服务端 [`internal/ctlserver`](../../native/internal/ctlserver/server.go) 在桌面程序里，在日志和数据目录定下来以后起（`native/ctl.go`），`beforeQuit` 第一步就关；每个命令调托盘用的同一批函数（`host.startReceive` / `stopReceive`、`shell.showMain`、`setAutoReceive`、退出走 `beforeQuit`），碰窗口的回界面线程。`internal/archcheck` 守着 `cmd/sumika-ctl` 只依赖协议包。
 
 补录后台快反馈验收为 200 次新连接的真实管道请求：从连接前至 accepted 回复解析完成，包含 SID 核对及完整宿主处理，守住 P95≤100 ms / P99≤200 ms；依据是补录规格第三节“任务接受后在 100 ms 反馈目标内显示排队 / 正在补”。独立 sumika-ctl 进程的 retry / run / status、输出和退出码另作端到端功能检查。原先把 200 次 Windows 进程启动 / 退出混入后台预算的历史量测，在[补录缺口规格](../规格-补录缺口界面与自动对齐.md)第六、九节明确更正；启动耗时仍保留分段诊断。
-**配置 `backend.local: bun` 时**：`chat`、`goal`、`loop`、`trust`、`whisper create|status|cancel` 不再直调 Go 的 `DesktopReader`（那边回“本地私聊现在由 Bun 管”），而是由 `native/ctl_bun.go` 转给 Bun 的 `selftest.*` 方法，执行体在 Bun（`server/src/local/selftest.ts`）；Bun 不在回“本地后台没连上”，不退回 Go。`whisper log|list`、`checkpoint *` 在 Bun 模式下回明确的“还不能”。见规格-本地私聊切到Bun（私有存档）第十一节。`go` 模式一行没变。
 
 来源：[cmd/sumika-ctl](../../native/cmd/sumika-ctl/main.go)；规格：[本机控制接口](../规格-本机控制接口.md)。
 
