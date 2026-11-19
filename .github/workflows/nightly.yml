@@ -70,6 +70,7 @@ jobs:
       # ci.yml 用 pwsh 跑同样的用例是绿的，2026-11-19）。确认后去掉这一步。
       - name: 特权对照（临时）
         if: ${{ !cancelled() }}
+        continue-on-error: true # 只是对照，红了不挡后面
         shell: bash
         run: |
           echo "== bash"; whoami //priv | grep -iE 'Backup|Restore|Security' || true
@@ -77,16 +78,26 @@ jobs:
 
       # 不带 -short；-timeout 20m 和本机 go-verify 同一个口径（几个慢包在负载下会过 Go 默认的 10 分钟）。
       # 输出另存一份传成产物：整套的输出很长，网页上的日志不好翻，巡检和对账要下载下来按包查。
-      # shell 用 pwsh 和 ci.yml 一致，不用 bash（见上一步）。$LASTEXITCODE 是 go 的退出码（Tee-Object 不是外部程序），runner 包的那层用它退出。
+      # shell 用 pwsh 和 ci.yml 一致，不用 bash（见上一步）。
+      # go test 放进单独的新控制台跑、输出直接写文件：第二次试跑在 pwsh 里直接跑，7 分钟后 runner 失联（“lost communication”），
+      # 日志和产物都没留下（2026-11-19）。换成独立控制台：哪条测试往控制台进程组发信号、或者结束进程树，也只波及这个控制台，
+      # runner 活着，输出能传上来查是哪个包。文件是 go 原样写的 UTF-8，不经 pwsh 解码。每分钟在日志里打一行进度。
       - name: go test 整套
         id: gotest
         if: ${{ !cancelled() }}
         shell: pwsh
         working-directory: native
         run: |
-          [Console]::OutputEncoding = [Text.UTF8Encoding]::new() # go 输出 UTF-8；不设的话 pwsh 按控制台代码页解码，中文进文件就乱了
-          go test -count=1 -timeout 20m ./... 2>&1 | Tee-Object -FilePath ../go-test-full.txt
-          exit $LASTEXITCODE
+          $out = (Join-Path $env:GITHUB_WORKSPACE 'go-test-full.txt'); $err = (Join-Path $env:GITHUB_WORKSPACE 'go-test-stderr.txt')
+          $p = Start-Process -FilePath go -ArgumentList @('test', '-count=1', '-timeout', '20m', './...') -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
+          $null = $p.Handle # 先拿住句柄，不然进程结束后 ExitCode 可能读不到（.NET 的已知坑）
+          while (-not $p.WaitForExit(60000)) {
+            $last = Get-Content $out -Tail 200 -ErrorAction SilentlyContinue | Where-Object { $_ -match '^(ok|FAIL|---)\s' } | Select-Object -Last 1
+            "{0:HH:mm} 还在跑，输出 {1} KB，最近：{2}" -f (Get-Date), [math]::Round((Get-Item $out).Length / 1KB), $last
+          }
+          "go test 退出码 $($p.ExitCode)"
+          Get-Content $err -ErrorAction SilentlyContinue | Select-Object -Last 20
+          exit $p.ExitCode
 
       - name: 检查脚本的 bun 测试
         if: ${{ !cancelled() }}
@@ -124,6 +135,7 @@ jobs:
           name: nightly-output
           path: |
             go-test-full.txt
+            go-test-stderr.txt
             bun-test-scripts.txt
           retention-days: 30
           if-no-files-found: warn
