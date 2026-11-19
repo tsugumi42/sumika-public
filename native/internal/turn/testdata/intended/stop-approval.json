@@ -701,7 +701,7 @@
       {
         "approval_json": null,
         "args_json": "{\"purpose\":\"看文件\",\"path\":\"a.md\"}",
-        "batch": 1,
+        "batch": 0,
         "character_id": "suzu",
         "conversation": "console:suzu",
         "ended_at": 1792857900000,
@@ -755,5 +755,5 @@
     ]
   },
   "steers": [],
-  "why": "桌面三件（clipboard、open、notify）进了内置工具表，请求的 tools 多三项，其余和 Bun 录像一致；内核补强：审批中停止持久取消序号上界内输入，保留未执行结果和审计；输出预算4096。；本地私聊的工具表新增 process_output、process_stop（后台命令，powershell 加 background 参数）；记忆工具多一个 memory_forget（软删除，只给主人私聊），请求的 tools 里排在 remember 后面，是 Go 自己加的，Bun 没有；停止后不再开新的模型步（规格-停止三段），不多一次被中止的请求，回合返回 Stopped 而不是错误；提示词去掉写死的主人，改用 owner_name 宏和所有者（ADR-384，2026-11-15）；工具说明和回执里的主人改成所有者，ADR-384"
+  "why": "桌面三件（clipboard、open、notify）进了内置工具表，请求的 tools 多三项，其余和 Bun 录像一致；内核补强：审批中停止持久取消序号上界内输入，保留未执行结果和审计；输出预算4096。；本地私聊的工具表新增 process_output、process_stop（后台命令，powershell 加 background 参数）；记忆工具多一个 memory_forget（软删除，只给主人私聊），请求的 tools 里排在 remember 后面，是 Go 自己加的，Bun 没有；停止后不再开新的模型步（规格-停止三段），不多一次被中止的请求，回合返回 Stopped 而不是错误；提示词去掉写死的主人，改用 owner_name 宏和所有者（ADR-384，2026-11-15）；工具说明和回执里的主人改成所有者，ADR-384；steps.batch 改成这一轮里第几次模型回复（同一次回复的工具同批），不再按开始那一刻还有没有工具在跑算（Bun 按时机算，started_at 相同时还随便取一行；规格-右侧栏她在想什么，2026-11-19）"
 }
