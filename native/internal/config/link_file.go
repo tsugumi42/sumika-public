@@ -47,6 +47,16 @@ const (
 	LinkVideoTimeout      LinkKey = "videoTimeout"
 	LinkVideoMaxMB        LinkKey = "videoMaxMB"
 	LinkImageMaxMB        LinkKey = "imageMaxMB"
+	LinkTweetCardTheme    LinkKey = "tweetCardTheme"     // auto / light / dark（tweetCard.check 查）
+	LinkTweetCardMaxH     LinkKey = "tweetCardMaxHeight" // 0 不封顶或 480～8000 像素（tweetCard.check 查）
+	LinkDirectImageMax    LinkKey = "directImageMax"
+	LinkStripHashtags     LinkKey = "stripTrailingHashtags"
+	LinkArtistMode        LinkKey = "artistMode"
+	LinkArtistAutoDetect  LinkKey = "artistAutoDetect"
+	LinkEchoWait          LinkKey = "echoWaitMS"
+	LinkHistoryCheck      LinkKey = "historyCheck"
+	LinkForwardVideo      LinkKey = "forwardVideo"
+	LinkForwardQuoteReply LinkKey = "forwardQuoteReply"
 )
 
 type LinkChange struct {
@@ -116,6 +126,17 @@ var linkScalars = map[LinkKey]linkScalar{
 	LinkVideoEnabled: {path: "expand.video.enabled", kind: linkBool},
 	LinkVideoTimeout: {path: "expand.video.timeoutSeconds", kind: linkInt},
 	LinkVideoMaxMB:   {path: "expand.video.maxMB", kind: linkInt},
+	// 以下各项的范围只由 Parse 的 check 查
+	LinkTweetCardTheme:    {path: "expand.tweetCard.theme", kind: linkText},
+	LinkTweetCardMaxH:     {path: "expand.tweetCard.maxHeight", kind: linkInt},
+	LinkDirectImageMax:    {path: "expand.directImageMax", kind: linkInt},
+	LinkStripHashtags:     {path: "expand.text.stripTrailingHashtags", kind: linkBool},
+	LinkArtistMode:        {path: "expand.artist.mode", kind: linkText},
+	LinkArtistAutoDetect:  {path: "expand.artist.autoDetect", kind: linkBool},
+	LinkEchoWait:          {path: "expand.send.echoWaitMS", kind: linkInt},
+	LinkHistoryCheck:      {path: "expand.send.historyCheck", kind: linkBool},
+	LinkForwardVideo:      {path: "expand.send.forwardVideo", kind: linkBool},
+	LinkForwardQuoteReply: {path: "expand.send.forwardQuoteReply", kind: linkBool},
 }
 
 func checkLinkEmoji(ch LinkChange) error {

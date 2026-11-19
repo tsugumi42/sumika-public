@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"sumika-native/internal/api"
@@ -219,6 +220,15 @@ func (a *App) registryLinkChange(ch api.SettingChange) (config.LinkChange, error
 		} else {
 			target = &c.Conversations
 		}
+	case "linkReader.expand.forward.nodeName", "linkReader.expand.forward.source", "linkReader.expand.forward.news", "linkReader.expand.forward.summary", "linkReader.expand.forward.prompt":
+		// 合并转发外观五项是一组（LinkForward.Check 一起查）：从当前配置取整组，只换这一项
+		before, err := config.LoadIn(a.root, a.opt.DataDir)
+		if err != nil {
+			return c, err
+		}
+		c.Key, c.Card = config.LinkForwardCard, before.LinkReader.Expand.Forward
+		c.Card.News = slices.Clone(c.Card.News)
+		target = map[string]any{"nodeName": &c.Card.NodeName, "source": &c.Card.Source, "news": &c.Card.News, "summary": &c.Card.Summary, "prompt": &c.Card.Prompt}[strings.TrimPrefix(ch.Key, "linkReader.expand.forward.")]
 	default:
 		return c, errors.New("设置没有写入入口")
 	}

@@ -150,3 +150,31 @@ func TestLinkPolicyAndYAMLBoundaries(t *testing.T) {
 		t.Fatal("插件写入口扩大了键白名单")
 	}
 }
+
+// 推特卡片配色、高度封顶从设置写入：合法值写到 linkReader.expand.tweetCard 下、别的不动；非法值过不了 tweetCard.check，不出文件。
+func TestPatchLinkTweetCard(t *testing.T) {
+	raw := []byte("linkReader:\n  expand:\n    tweetCard:\n      theme: dark\n")
+	for _, theme := range []string{TweetThemeLight, TweetThemeDark, TweetThemeAuto} {
+		_, c, err := PatchLink(raw, "fixture.yml", LinkChange{Key: LinkTweetCardTheme, Text: theme})
+		if err != nil || c.LinkReader.Expand.TweetCard.Theme != theme {
+			t.Fatalf("配色 %s：%v %+v", theme, err, c.LinkReader.Expand.TweetCard)
+		}
+	}
+	for _, h := range []int{0, 480, 960, 8000} {
+		out, c, err := PatchLink(raw, "fixture.yml", LinkChange{Key: LinkTweetCardMaxH, Int: h})
+		if err != nil || c.LinkReader.Expand.TweetCard.MaxHeight != h || c.LinkReader.Expand.TweetCard.Theme != "dark" {
+			t.Fatalf("高度 %d：%v %+v", h, err, c.LinkReader.Expand.TweetCard)
+		}
+		if !strings.Contains(string(out), "maxHeight") {
+			t.Fatalf("要写进文件：\n%s", out)
+		}
+	}
+	for _, ch := range []LinkChange{
+		{Key: LinkTweetCardTheme, Text: "dim"}, {Key: LinkTweetCardTheme, Text: "Light"},
+		{Key: LinkTweetCardMaxH, Int: 479}, {Key: LinkTweetCardMaxH, Int: 8001}, {Key: LinkTweetCardMaxH, Int: -1},
+	} {
+		if out, _, err := PatchLink(raw, "fixture.yml", ch); err == nil || out != nil {
+			t.Fatalf("%+v 该拒收：%v", ch, err)
+		}
+	}
+}

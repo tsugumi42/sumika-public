@@ -39,6 +39,7 @@ func TestSettingSaveEveryKey(t *testing.T) {
 		{"tools.approvalMode", "auto"}, {"tools.lineEnding", "crlf"},
 		{"embed.modelsRoot", "D:/Models"},
 		{"web.searchOrder", []any{"tavily", "deepseek", "duckduckgo"}}, {"web.fetchOrder", []any{"deepseek", "http"}},
+		{"agent.idleCompact.enabled", false}, {"agent.idleCompact.after", json.Number("30")}, {"agent.idleCompact.minTokens", json.Number("300000")},
 		{"freeApi.probe.enabled", false}, {"freeApi.probe.intervalHours", json.Number("24")},
 		{"freeApi.limits.weather.perActorDaily", json.Number("30")}, {"freeApi.limits.weather.perConversationHourly", json.Number("10")},
 		{"freeApi.limits.exchangeRate.perActorDaily", json.Number("30")}, {"freeApi.limits.exchangeRate.perConversationHourly", json.Number("10")},
@@ -98,6 +99,14 @@ func TestSettingSaveEveryKey(t *testing.T) {
 			} else if tc.key == "qq.remoteApproval.awayAfterSeconds" {
 				if got.QQ.RemoteApproval.AwayAfterSeconds != 120 {
 					t.Fatal("wait seconds were not saved")
+				}
+			} else if tc.key == "agent.idleCompact.after" {
+				if got.Agent.IdleCompact.After != 30 {
+					t.Fatalf("空闲压缩等待没存上：%v", got.Agent.IdleCompact.After)
+				}
+			} else if tc.key == "agent.idleCompact.minTokens" {
+				if got.Agent.IdleCompact.MinTokens != 300000 {
+					t.Fatalf("空闲压缩下限没存上：%d", got.Agent.IdleCompact.MinTokens)
 				}
 			} else {
 				want := tc.value

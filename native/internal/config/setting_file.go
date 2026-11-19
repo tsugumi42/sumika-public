@@ -35,6 +35,7 @@ var settingKinds = map[string]string{
 	"tools.approvalMode": "string", "tools.lineEnding": "string",
 	"embed.modelsRoot": "string",
 	"web.searchOrder":  "weborder", "web.fetchOrder": "weborder",
+	"agent.idleCompact.enabled": "bool", "agent.idleCompact.after": "number", "agent.idleCompact.minTokens": "int",
 	"freeApi.probe.enabled": "bool", "freeApi.probe.intervalHours": "int",
 	"freeApi.limits.weather.perActorDaily": "int", "freeApi.limits.weather.perConversationHourly": "int",
 	"freeApi.limits.exchangeRate.perActorDaily": "int", "freeApi.limits.exchangeRate.perConversationHourly": "int",
