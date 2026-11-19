@@ -1,6 +1,6 @@
 // ci-test-report：缺依赖而跳过的用例在 CI 上判红，其余跳过只汇总不判；输入是 go test -json 的原样输出。
 import { afterAll, expect, test } from 'bun:test'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { MUST_HAVE, parse, skipReason, summarize } from './ci-test-report'
@@ -63,10 +63,16 @@ test('命令行：有缺依赖的跳过就退出码 1 并点名；没有就 0（
   const bad = join(dir, 'bad.json'), good = join(dir, 'good.json')
   writeFileSync(bad, sample)
   writeFileSync(good, [...run('m/ui', 'TestShot', 'skip', ['    shot_test.go:10: 设 CHATUI_SHOT 才出图']), ...run('m/ui', 'TestRed', 'fail')].join('\n'))
-  const r1 = Bun.spawnSync([process.execPath, join(import.meta.dir, 'ci-test-report.ts'), bad], { stdout: 'pipe', stderr: 'pipe' })
+  const saved = join(dir, '存一份.txt')
+  const r1 = Bun.spawnSync([process.execPath, join(import.meta.dir, 'ci-test-report.ts'), bad, saved], { stdout: 'pipe', stderr: 'pipe' })
   expect(r1.exitCode).toBe(1)
   expect(r1.stderr.toString()).toContain('::error::缺 文渊圆体')
   expect(r1.stdout.toString()).toContain('FAIL\tm/ui')
+  // 第二个参数：打出来的内容原样再存一份（nightly.yml 传成附件），错误行和包结论都在
+  const text = readFileSync(saved, 'utf8')
+  expect(text).toContain('FAIL\tm/ui')
+  expect(text).toContain('::error::缺 文渊圆体')
+  expect(text).toContain('编的失败原因')
   const r2 = Bun.spawnSync([process.execPath, join(import.meta.dir, 'ci-test-report.ts'), good], { stdout: 'pipe', stderr: 'pipe' })
   expect(r2.exitCode).toBe(0)
   expect(r2.stdout.toString()).toContain('跳过了 1 条')
