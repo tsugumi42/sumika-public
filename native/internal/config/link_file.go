@@ -126,9 +126,11 @@ var linkScalars = map[LinkKey]linkScalar{
 	LinkVideoEnabled: {path: "expand.video.enabled", kind: linkBool},
 	LinkVideoTimeout: {path: "expand.video.timeoutSeconds", kind: linkInt},
 	LinkVideoMaxMB:   {path: "expand.video.maxMB", kind: linkInt},
-	// 以下各项的范围只由 Parse 的 check 查
-	LinkTweetCardTheme:    {path: "expand.tweetCard.theme", kind: linkText},
-	LinkTweetCardMaxH:     {path: "expand.tweetCard.maxHeight", kind: linkInt},
+	// 以下各项除推特卡片两项外，范围只由 Parse 的 check 查
+	LinkTweetCardTheme: {path: "expand.tweetCard.theme", kind: linkText, check: func(ch LinkChange) error { return checkTweetCard("推特卡片配色", LinkTweetCard{Theme: ch.Text}) }},
+	LinkTweetCardMaxH: {path: "expand.tweetCard.maxHeight", kind: linkInt, check: func(ch LinkChange) error {
+		return checkTweetCard("推特卡片高度封顶", LinkTweetCard{MaxHeight: ch.Int})
+	}},
 	LinkDirectImageMax:    {path: "expand.directImageMax", kind: linkInt},
 	LinkStripHashtags:     {path: "expand.text.stripTrailingHashtags", kind: linkBool},
 	LinkArtistMode:        {path: "expand.artist.mode", kind: linkText},
@@ -137,6 +139,15 @@ var linkScalars = map[LinkKey]linkScalar{
 	LinkHistoryCheck:      {path: "expand.send.historyCheck", kind: linkBool},
 	LinkForwardVideo:      {path: "expand.send.forwardVideo", kind: linkBool},
 	LinkForwardQuoteReply: {path: "expand.send.forwardQuoteReply", kind: linkBool},
+}
+
+// checkTweetCard 用推特卡片自己的检查（只填了要写的那一项，另一项是合法的零值），报错把键名换成设置页上的叫法
+func checkTweetCard(name string, t LinkTweetCard) error {
+	if bad := t.check(); len(bad) > 0 {
+		_, msg, _ := strings.Cut(bad[0], "：")
+		return errors.New(name + "：" + msg)
+	}
+	return nil
 }
 
 func checkLinkEmoji(ch LinkChange) error {

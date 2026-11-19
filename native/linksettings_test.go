@@ -173,7 +173,7 @@ func xSite() linktemplate.Site {
 }
 
 func TestLinkTemplateEditor(t *testing.T) {
-	h := newLinkHarness(t, 2048, 1030, 20)
+	h := newLinkHarness(t, 2048, 1500, 20) // 展开设置加了推特卡片两行，“站点”被挤出 1030 高的窗口；测试的滚动点落在内容列外滚不动，所以加高
 	h.click(t, "链接解析（link-reader）")
 	h.click(t, "站点")
 	h.click(t, "X / 推特")
