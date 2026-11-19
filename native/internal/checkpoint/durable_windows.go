@@ -110,7 +110,7 @@ func openMaterialFile(parent *os.File, name string) (*os.File, error) {
 }
 
 // 删除绑定已核验的句柄；名字在核验后被换入也不会删到新文件。
-func deleteMaterialHandle(file *os.File) error {
+func deleteMaterialHandle(_ *os.Root, _ string, file *os.File) error {
 	remove := byte(1)
 	return windows.SetFileInformationByHandle(windows.Handle(file.Fd()), windows.FileDispositionInfo, &remove, 1)
 }

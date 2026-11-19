@@ -41,7 +41,7 @@ func (x *shellStats) openTrace() (*runstats.Service, error) {
 	if _, err := os.Stat(file); err != nil {
 		return nil, &errRunUnavailable{"还没有运行记录库，没有可统计的"}
 	}
-	svc, err := runstats.OpenFile(file, runstats.Options{})
+	svc, err := runstats.OpenFile(file, runstats.Options{Refs: x.s.statsRefs()})
 	if err != nil {
 		return nil, errors.New("打不开运行记录库")
 	}

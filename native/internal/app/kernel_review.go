@@ -11,6 +11,7 @@ import (
 	"sumika-native/internal/config"
 	"sumika-native/internal/kernel"
 	"sumika-native/internal/llm"
+	"sumika-native/internal/modelref"
 	"sumika-native/internal/store"
 	"sumika-native/internal/turn"
 	"sumika-native/internal/turnbudget"
@@ -33,10 +34,14 @@ func ConfigureKernelReviews(c config.ReviewConfig, models []llm.Model, tc *turn.
 	if !c.Advisor.Enabled && !c.Verify.Enabled {
 		return nil
 	}
+	var refs modelref.Resolver // 和请求用同一份：冷却表带着路由给的解析器
+	if tc.Failover != nil {
+		refs = tc.Failover.Refs
+	}
 	for purpose, id := range reviewRoutes(c) {
 		found := false
 		for _, m := range models {
-			if m.ID == id {
+			if m.Ref() == refs.Canonical(id) {
 				found = true
 				break
 			}

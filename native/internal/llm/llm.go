@@ -19,6 +19,7 @@ import (
 	"sumika-native/internal/llm/chat"
 	"sumika-native/internal/llm/media"
 	"sumika-native/internal/llm/openaichat"
+	"sumika-native/internal/modelref"
 	"time"
 )
 
@@ -71,7 +72,15 @@ type Model struct {
 	// Limits 不是服务商给的：窗口和单次输出每个字段是谁给的、各方说了多少，由 modelmeta 在取回模型列表后填
 	// （用户覆盖 > 服务商 > models.dev > 保守默认，ADR-334）。没填时（测试里手拼的模型）按"服务商报了就算服务商"读
 	Limits LimitSources `json:"-"`
+
+	// Provider 是这个模型属于哪个服务商（规格-模型配置 3.2）：不是线上字段，由装配处在取回模型列表后按来源填。
+	// 空 = 没有服务商概念的地方（测试里手拼的模型、单独的小工具），引用就是 ID 本身
+	Provider string `json:"-"`
 }
+
+// Ref 是模型的规范引用 `服务商ID/模型ID`：冷却、trace、用量和请求里认的模型标识都用它，
+// 同名模型在两家服务商不会混在一起。发给服务商的 model 字段是不带前缀的 ID（Router 去掉）
+func (m Model) Ref() string { return modelref.Ref{Provider: m.Provider, Model: m.ID}.String() }
 
 // Image is an image carried in memory for a model request.
 // 别名到叶子包：tools 产出图，不能反过来 import llm（llm 要 import chat，chat import tools）。

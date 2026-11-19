@@ -23,6 +23,22 @@ func TestProbeMissingFile(t *testing.T) {
 	}
 }
 
+// 库文件的上级目录位置被一个普通文件占着：这个库就是不存在（Windows 报路径不存在，Linux 报 ENOTDIR），
+// 不是探查出错；是否建得出目录交给后面的建库去报
+func TestProbeParentIsFileMeansMissing(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "go"), []byte("占住目录名"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	st, err := Probe(context.Background(), filepath.Join(dir, "go", "memory.db"), nil)
+	if err != nil {
+		t.Fatalf("上级是文件应当当成不存在：%v", err)
+	}
+	if st.Exists {
+		t.Fatal("上级是文件却报了 Exists")
+	}
+}
+
 func TestProbeReadsVersionsAndSchemaWithoutWriting(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "local.db")
 	db := openTestDB(t, file)

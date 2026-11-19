@@ -61,6 +61,7 @@ func clean(r Request, reason *string) map[string]any {
 }
 
 func TestGateSameAsBun(t *testing.T) {
+	windowsPathsOnly(t)
 	var cases []gateCase
 	var golden []map[string]any
 	readJSON(t, "testdata/gate-cases.json", &cases)

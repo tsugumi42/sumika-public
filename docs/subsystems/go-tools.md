@@ -369,6 +369,30 @@ ADR-162 的夹具使用正式 `OpenOwnerPool`；角色任务/游标仍从角色�
 
 ## 开发自检
 
+### sumika-dev：开发工具程序
+
+仓库里的脚本和钩子逐个改写成它的子命令（ADR-389，[规格](../规格-脚本迁Go.md)）；现在有 `version`、`help`、`check docs`、`check private`、`check conflicts`、`check gofmt`、`check commit-msg`、`check ui-skill`，后面每迁一个加一个子命令，同提交换掉钩子里的旧调用。
+
+- `check docs [--staged] [--update]`：文档一致性检查（D1、D2、D4、D8、D10～D14），原 `scripts/check-docs.ts` 和 `check-spec-merged.ts`；逻辑在 `internal/devtools/docs/`。`--staged` 读暂存区里的版本（一次 `git cat-file --batch`），并继承钩子给的 `GIT_INDEX_FILE`、`GIT_DIR`（部分提交时临时索引才是这次要提交的内容）；不带 `--staged` 和查分支是否已合进 main 时清掉全部 `GIT_*`。`--update` 写 `scripts/docs-baseline.json`（旧名计数，键顺序和旧版逐字节一致）。有“错”退出码 1，只有“提醒”退出码 0；读不到文件这类没法继续的也是 1。git 子进程统一走 `internal/devtools/gitrun`，程序名由 `cmd/sumika-dev` 注入（archcheck 不许 `internal/` 里写字面量程序名）。
+- 钩子里的调用：`lefthook.yml` 的“文档检查”一行 sh，`native/bin/sumika-dev.exe` 不存在时先 `go build` 一次再调用；新旧对拍记录见主工作区 `data/dev/scripts-go/check-docs-对拍.txt`。
+- `check private --staged | --range A..B | --allow 编号… | --tree 目录 [--allow-missing]`：隐私扫描，原 `scripts/scan-private.ts`；逻辑在 `internal/devtools/private/`。查新增的行、文件名、提交说明、作者和提交者里有没有本机认识的号码、名字、私人字符串、像密钥的串；号码分“拦”和“提醒”，输出只有打码的样子和位置；`--allow` 只登记哈希，认识的号码和私人字符串只对那个文件放行。名单只在内存里，从主工作区（按 git 的 common dir 找，worktree 里没有 `data/`）读这几类来源：Go 聊天库、MaiBot 库（环境变量 `SUMIKA_SCAN_MAIBOT` 指定，测试用）、群名表、`sumika.yml` 里 QQ 相关的号、私人字符串名单；缺聊天库或认识的号码为 0 时退出码 2、不扫（`--allow-missing` 才跳过）。有要拦的退出码 1，只有提醒 0。
+  - 入口：`lefthook.yml` 的“隐私扫描”（`--staged`，写法同文档检查）、`scripts/pre-push.ts`（`--range`）、`scripts/export-public.ts`（`--tree`，导出公开版的自检）；三处都经 `scripts/lib/sumika-dev.ts` 或同样的一行 sh 保证程序已编好。
+  - 读来源用 `modernc.org/sqlite`（只读）和 `goccy/go-yaml`（走 AST 取标量原文，按 YAML 1.2 核心模式自己判断，和旧版 Bun.YAML 一致；重复键、复杂键新版有意报错退出 2）。`SUMIKA_SCAN_DATA` 只给测试用，把名单所在的主工作区指到编造的临时目录。
+  - Go 正则没有前后查找：数字段的边界、`sk-` 词头改成显式判断，三个以 `$` 结尾的上下文判断手写；`/i` 只认 ASCII，小写转换照 JS 补了 İ 和词尾 Σ。新旧对拍记录见主工作区 `data/dev/scripts-go/scan-private-对拍.txt`。
+- `check conflicts`：暂存区新增的行里有没有没解决的合并冲突标记，原 `scripts/check-conflict-markers.ts`；逻辑在 `internal/devtools/conflicts/`。只读 `git diff --cached -U0` 加进来的行，`<<<<<<<`、`>>>>>>>` 单独出现就红，`=======`、`|||||||` 只在同一文件里还有前两种时才跟着报；继承钩子的 `GIT_INDEX_FILE`；退出码 1 有标记或读不到暂存区。新旧对拍记录见主工作区 `data/dev/scripts-go/check-conflict-markers-对拍.txt`。文本小函数（JS 的 trim 空白集、按 WHATWG 解码 UTF-8）在 `internal/devtools/jstext/`，后面几个小关卡共用。
+- `check gofmt 文件…`：暂存的 .go 文件有没有 gofmt，原 `scripts/check-gofmt.ts`；逻辑在 `internal/devtools/gofmt/`。查的是暂存区里的内容（`git show :<文件>` 交给 `gofmt -l` 的标准输入），不查工作区：worktree 签出是 CRLF，工作区查会把没问题的文件全报出来。在程序所在那棵树的根上跑（旧脚本靠钩子在根上启动，从子目录跑会读错索引；新版不看当前目录），继承钩子的 `GIT_DIR`、`GIT_INDEX_FILE`。有文件没 gofmt、读不到暂存区、gofmt 自己报错都是退出码 1，读不到和报错立刻退出、不再列前面没 gofmt 的文件（和旧版一样）。`gofmt` 程序名由包里的 `gofmt.Program` 变量给（archcheck 不许 `exec.Command` 写字面量）。对拍记录 `data/dev/scripts-go/check-gofmt-对拍.txt`。
+- `check commit-msg <说明文件>`：提交说明的标题检查，原 `scripts/check-commit-msg.ts`；逻辑在 `internal/devtools/commitmsg/`。“类型(模块): ”后面超过 40 个字（按码点数）、带分号、整行带 ADR 编号就拦；`Merge `、`Revert `、`fixup! `、`squash! `、`合并 ` 开头不查，正文不查。参数是 git 给的路径：存在就读；不存在时（反斜杠被 sh 吃掉的 D:… 路径）按结尾认 `MERGE_MSG`、`COMMIT_EDITMSG`、`.omp-commit-msg-…`，去 `git rev-parse --git-path` / `--git-dir` 报的位置找；找不到退出码 2、不放行。和别的 check 不同，它按当前工作目录（钩子启动的目录）找文件和仓库，不按程序所在的树。退出码 1 标题不合规，2 没参数或拿不到说明文件。对拍记录 `data/dev/scripts-go/check-commit-msg-对拍.txt`。
+- `check ui-skill`：界面技能入口页 `.claude/skills/mygo-ui/SKILL.md` 和代码对不对得上，原 `scripts/check-ui-skill.ts`；逻辑在 `internal/devtools/uiskill/`。查四件事：入口页超过 150 行；反引号里的 `internal/…` 路径在 `native/` 下没有对应目录；反引号里的 `包名.名字` 在 `native/internal/<包名>/` 的非 `_test.go` 里找不到 func（含方法）或 type（包名不是本仓库的，如 `ui`，只记“没核对”）；写的 `mygo vX.Y.Z` 和 `native/go.mod` 的版本不一致或一处没写。读的是工作区文件，不是暂存区（入口页很少和别的改动同时半改）。有错退出码 1，没错打“核对了 N 个包、N 个名字，跳过 N 个”。原 JS 的 `\s`、`\b` 在 Go 里按 JS 的空白集写（`uiskill.jsSpace`）。钩子的 glob 是入口页、`go.mod`、`native/internal/winshell/` 和这个检查自己的源码。对拍记录 `data/dev/scripts-go/check-ui-skill-对拍.txt`。
+
+- 编：`cd native && go build -ldflags "-X sumika-native/internal/devtools/selfbuild.BuiltDigest=$(...)" -o bin/sumika-dev.exe ./cmd/sumika-dev`。第一次不用管摘要：直接 `go build -o bin/sumika-dev.exe ./cmd/sumika-dev`，运行时发现摘要对不上会自己重编成带摘要的版本。`native/bin/` 被 git 忽略，每个 worktree 各一份。
+- 自我重编：启动时算 `cmd/sumika-dev/`、`internal/devtools/` 和它许可 import 的 `internal/jsjson/`、`internal/netsafe/`（固定列表，`selfbuild.SourceDirs`；`go list -deps` 现算要 1 秒，钩子付不起，archcheck 保证传递依赖不超出）下所有 `.go`（按相对路径排序，CRLF 先归一成 LF）加 `go.mod`、`go.sum`、编译用的那套 Go 的版本（读 `GOROOT/VERSION`）、`GOWORK` 和 `GOTOOLCHAIN` 的值的 SHA-256；这些目录里不许用 go:embed（archcheck 查），和编进去的值比；对不上就编到同目录的 `.new`，成功后旧的改名成 `.old`、新的换上（Windows 上运行中的 exe 能改名不能覆盖，`.old` 下次启动时清掉），再带原参数重新执行并原样传回退出码。编不过打印中文原因、退出码非零，不放行。
+- 重编锁：`native/bin/sumika-dev.exe.lock` 常驻、从不删除，用操作系统的文件锁（Windows `LockFileEx`，别的系统 `flock`，非阻塞每 50 毫秒试一次，上限 = 编译超时加余量，`selfbuild/lock*.go`）；锁的生命期就是打开它的文件句柄，持锁进程被杀、崩溃，系统自动放锁，不判断“老锁”“死锁”。锁里写的 pid 只在超时提示里说“谁占着”，不参与判断。以前“创建锁文件加 pid 加认领清老锁”的做法有认领到活锁再放回的空窗，复核实测两个进程同时持锁（160 次里红 16 次、再改一版仍 7 次），已整套换掉。测试用测试二进制自己当子进程，4 个进程各取锁 40 次做进入 / 退出计数，被杀的持锁进程马上放锁，超时返回中文原因。
+- 找模块根：从程序所在位置往上找 `go.mod` 或 `native/go.mod`；环境变量 `SUMIKA_DEV_ROOT` 可指定（`native/` 或仓库根）。找不到就不检查，照现有版本跑。`SUMIKA_DEV_NO_REBUILD=1` 跳过检查，给测试用。重编用的 go 不按名字去 PATH 里找（archcheck 的外部程序规则），取编出本程序的那套 `GOROOT` 里的 `bin/go`；Go 升级搬家后找不到时，设 `SUMIKA_DEV_GO` 为 go 的绝对路径，或手动 `go build` 一次。
+- 边界：`internal/devtools/...` 和 `cmd/sumika-dev` 不许 import 产品包，只许标准库、`golang.org/x/...`、`internal/jsjson`、`internal/netsafe` 和白名单里登记过的第三方库，查的是传递依赖（含测试文件），标准库按 `go list` 的 Standard 字段认（archcheck 的 `TestDevtoolsImportAllowlist`）。第三方库现在有两组：`modernc.org/sqlite`（连同它的传递依赖 `modernc.org/libc`、`mathutil`、`memory`，`dustin/go-humanize`、`mattn/go-isatty`、`ncruces/go-strftime`、`remyoudompheng/bigfft`）和 `goccy/go-yaml`，都是隐私扫描读名单用的，产品里本来就在用；要加新的先去 `devtools_test.go` 登记并写理由。第三方库的版本变化由 `go.mod`、`go.sum` 覆盖（摘要含这两个文件），不用进摘要目录。
+
+来源：[main.go](../../native/cmd/sumika-dev/main.go)、[selfbuild.go](../../native/internal/devtools/selfbuild/selfbuild.go)。
+
+
 ### sumika-proto
 
 全占位的 mygo 交互演练入口：`go run ./cmd/sumika-proto`。窗口、本地发送、流式回复、场景脚本和外观状态全部在这个 main 包内；只依赖标准库与 mygo，不导入生产后台，不发现数据目录，不调用模型或 QQ。启动及打包命令见 [native/README](../../native/README.md#独立交互原型)，范围见交互原型规格（私有存档）。

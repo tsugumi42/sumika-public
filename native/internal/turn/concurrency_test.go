@@ -18,6 +18,7 @@ import (
 	"sumika-native/internal/approval"
 	"sumika-native/internal/audience"
 	"sumika-native/internal/jsjson"
+	"sumika-native/internal/kernel"
 	"sumika-native/internal/store"
 	"sumika-native/internal/tools"
 )
@@ -143,6 +144,62 @@ func TestSteerDuringText(t *testing.T) {
 	checkSteerOnce(t, h, "顺便看下天气", "delivered")
 	if n := h.ownerSaid("console:"+h.c.CharacterID, "顺便看下天气"); n != 1 {
 		t.Fatalf("插话在库里存了 %d 次", n)
+	}
+}
+
+// 插话的"收下"一定排在"送到""丢掉"前面：发"收下"那一刻，这句插话还不能被运行循环取走、也不能已经被取走。
+// 做法是在 OnSteer 里直接看：生命周期锁没被占着的话（运行循环随时能取），这句插话要么已经排在 steers 里，要么已有后续结局，就是旧顺序
+func TestSteerAcceptedBeforeVisibleToRun(t *testing.T) {
+	t.Parallel()
+	var h *harness
+	var once sync.Once
+	var mu sync.Mutex
+	var bad []string
+	h = newHarnessOpts(t, harnessOpts{
+		replies: `[{"content":["一","二"],` + usage + `},` + textReply + `]`,
+		mutate: func(c *Config) {
+			orig := c.OnSteer
+			c.OnSteer = func(e SteerEvent) {
+				if e.Phase == "accepted" {
+					lc := h.hub.lifecycle
+					if lc.mu.TryLock() {
+						queued := 0
+						for _, rows := range lc.steers {
+							queued += len(rows)
+						}
+						lc.mu.Unlock()
+						later := len(h.steerPhases(e.Text))
+						mu.Lock()
+						bad = append(bad, fmt.Sprintf("发 accepted 时没占着生命周期锁：steers 里排着 %d 句、已有 %d 步记录", queued, later))
+						mu.Unlock()
+					}
+				}
+				orig(e)
+			}
+			c.OnDelta = func(string) { once.Do(func() { h.hub.Steer(h.c.CharacterID, "顺序要对的插话") }) }
+		},
+	})
+	h.send("你好")
+	mu.Lock()
+	defer mu.Unlock()
+	if len(bad) > 0 {
+		t.Fatalf("accepted 发出时插话已对运行循环可见：%v", bad)
+	}
+	checkSteerOnce(t, h, "顺序要对的插话", "delivered")
+}
+
+// 受理不成就不发"收下"：认的那一轮不存在（Submit 报冲突）时，观察者什么都看不到
+func TestSteerRejectedEmitsNoAccepted(t *testing.T) {
+	t.Parallel()
+	h := newHarnessOpts(t, harnessOpts{replies: `[` + textReply + `]`})
+	conv := consoleConv(h.c.CharacterID)
+	s := lifecycleSubmission(t, h, conv, "没有那一轮的插话", "no-run", kernel.InputSteer)
+	s.ExpectedRunID, s.announceSteer = "不存在的运行", true
+	if _, err := h.hub.Submit(t.Context(), s); !errors.Is(err, store.ErrInputConflict) {
+		t.Fatalf("认不到运行应当报冲突：%v", err)
+	}
+	if got := h.steerPhases("没有那一轮的插话"); len(got) != 0 {
+		t.Fatalf("受理失败不该有任何进度：%v", got)
 	}
 }
 

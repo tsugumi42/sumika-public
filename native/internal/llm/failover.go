@@ -7,12 +7,17 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"sumika-native/internal/modelref"
 )
 
-// Failover keeps cooldowns for one model source. Its zero value is ready to use.
+// Failover keeps cooldowns for models. Its zero value is ready to use.
+// 冷却表的键是规范引用 `服务商ID/模型ID`（Refs 把传进来的模型换成规范形式）：同名模型在两家服务商互不影响；
+// Refs 是零值（没声明服务商）时模型串原样当键，和改动前一样。
 type Failover struct {
 	Now      func() time.Time
 	Cooldown time.Duration
+	Refs     modelref.Resolver
 	mu       sync.Mutex
 	until    map[string]time.Time
 }
@@ -89,13 +94,14 @@ func (f *Failover) Plan(primary string, backups []string) *FailoverPlan {
 	p := &FailoverPlan{owner: f, enabled: len(backups) > 0}
 	seen := make(map[string]bool)
 	for _, model := range append([]string{primary}, backups...) {
+		model = f.Refs.Canonical(model)
 		if model != "" && !seen[model] {
 			seen[model] = true
 			p.models = append(p.models, model)
 		}
 	}
 	if !p.enabled {
-		p.Model = primary
+		p.Model = f.Refs.Canonical(primary)
 		return p
 	}
 	p.selectNext("", "")

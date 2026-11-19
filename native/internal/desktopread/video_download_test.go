@@ -96,7 +96,7 @@ func TestVideoDownloadVisibilityAndServiceClose(t *testing.T) {
 	}
 	select {
 	case <-started:
-	case <-time.After(5 * time.Second):
+	case <-time.After(60 * time.Second): // 等的是“开始了”事件，期限只是防卡死的安全网（2026-11-19 同包另一处 5 秒在忙时不够）
 		t.Fatal("下载未开始")
 	}
 	if err := s.CancelVideoDownload(ctx, valid); err != nil {
@@ -117,14 +117,14 @@ func TestVideoDownloadVisibilityAndServiceClose(t *testing.T) {
 	}
 	select {
 	case <-started:
-	case <-time.After(5 * time.Second):
+	case <-time.After(60 * time.Second): // 同上
 		t.Fatal("私聊下载未开始")
 	}
 	closed := make(chan struct{})
 	go func() { s.Close(); close(closed) }()
 	select {
 	case <-closed:
-	case <-time.After(5 * time.Second):
+	case <-time.After(30 * time.Second): // 这里的期限就是断言（卡死才会超）；30 秒照样抓得到卡死，不会被机器忙误判
 		t.Fatal("未消费订阅阻止 Service.Close")
 	}
 	unread.Close()

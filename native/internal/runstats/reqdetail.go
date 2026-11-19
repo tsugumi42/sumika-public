@@ -45,7 +45,7 @@ func (s *Service) RequestDetail(ctx context.Context, id string) (ctlproto.Reques
 	if err != nil {
 		return ctlproto.RequestDetail{}, s.queryErr(ctx, err)
 	}
-	d.Stage, d.Model, d.Route, d.CacheWrite, d.Error = stage, model, route.String, write, failure
+	d.Stage, d.Model, d.Route, d.CacheWrite, d.Error = stage, s.canon(model), route.String, write, failure
 	d.RequestRaw = request.String
 
 	// sections_json：[{id, source, chars, hash}]，全文按哈希在 prompt_sections

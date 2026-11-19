@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
+
+	"sumika-native/internal/uitest"
 )
 
 // ADR-287：一轮里两段回复之间的过程折进一个能展开的气泡。
@@ -101,7 +103,7 @@ func TestProcessBubblePendingOpen(t *testing.T) {
 	}}
 	m := procMsg("p", 0, &Step{ID: "c", Kind: StepCommand, State: StepRunning, Target: "rm -rf build", Approval: &Approval{State: ApprovalPending, Reason: "清理", Remaining: 272 * time.Second}})
 	tt := msgsTester(h, []*Msg{m}, 900)
-	if !tt.HasText("等你批准") || !tt.HasText("想运行 rm -rf build") || !tt.HasText("允许一次") || !tt.HasText("4:32") {
+	if tt.HasText("等你批准") || tt.HasText("想运行 rm -rf build") || !tt.HasText("想运行命令") || !tt.HasText("rm -rf build") || !tt.HasText("允许一次") || !tt.HasText("4:32") {
 		t.Fatalf("等批准时应该展开、摘要行有剩余时间：%v", tt.Texts())
 	}
 	_ = tt.Click("过程摘要")
@@ -229,25 +231,40 @@ func TestProcessBubbleInGroup(t *testing.T) {
 }
 
 // 展开后里面的凹块（命令、输出、审批）离气泡左右边都是 pv、圆角同心；三档外观。
+// 只有一步在等批准时审批不再是凹块（压成一张卡，按钮直接在气泡上）：它只查左右离气泡 pv，不查圆角；多步时的审批块还是凹块，圆角照旧同心。
 func TestProcessBubbleInnerGeometry(t *testing.T) {
 	for _, s := range []Settings{DefaultSettings(), {Text: TextMin, Radius: RadiusMin, Density: DensityMin}, {Text: TextMax, Radius: RadiusMax, Density: DensityMax}} {
 		tk := Derive(s)
 		h := Host{T: tk, Column: 720, NoEnter: true}
-		m := procMsg("p", 0, &Step{ID: "c", Kind: StepCommand, State: StepRunning, Target: "rm x", Output: "", Approval: &Approval{State: ApprovalPending, Reason: "清理", Remaining: time.Minute}})
-		root := tree(msgsTester(h, []*Msg{m}, 900))
-		b := root.find("p").find("bubble")
-		name := fmt.Sprintf("外观 %v/%v/%v", s.Text, s.Radius, s.Density)
-		for _, key := range []string{"command", "approval"} {
-			blk := b.find(key)
-			if blk == nil {
-				t.Fatalf("%s 找不到 %s 块", name, key)
-			}
-			l, r := blk.Box.X-b.Box.X, b.Box.X+b.Box.W-(blk.Box.X+blk.Box.W)
-			if !near(l, tk.BubblePadV) || !near(r, tk.BubblePadV) {
-				t.Errorf("%s %s 块离气泡左 %.2f、右 %.2f，期望 %.2f", name, key, l, r, tk.BubblePadV)
-			}
-			if want := max(tk.Inner(b.Radius[1], tk.BubblePadV), tk.RInnerMin); math.Abs(float64(blk.Radius[1]-want)) > 0.5 {
-				t.Errorf("%s %s 块右上圆角 %.2f，期望和气泡同心 %.2f", name, key, blk.Radius[1], want)
+		pend := func(id string) *Step {
+			return &Step{ID: id, Kind: StepCommand, State: StepRunning, Target: "rm x", Output: "", Approval: &Approval{State: ApprovalPending, Reason: "清理", Remaining: time.Minute}}
+		}
+		for _, c := range []struct {
+			name    string
+			steps   []*Step
+			concave map[string]bool // 要按凹块查圆角的块
+		}{
+			{"单步", []*Step{pend("c")}, map[string]bool{"command": true}},
+			{"多步", []*Step{{ID: "r", Kind: StepRead, State: StepDone, Target: "a.md"}, pend("c")}, map[string]bool{"command": true, "approval": true}},
+		} {
+			root := tree(msgsTester(h, []*Msg{procMsg("p", 0, c.steps...)}, 900))
+			b := root.find("p").find("bubble")
+			name := fmt.Sprintf("%s 外观 %v/%v/%v", c.name, s.Text, s.Radius, s.Density)
+			for _, key := range []string{"command", "approval"} {
+				blk := b.find(key)
+				if blk == nil {
+					t.Fatalf("%s 找不到 %s 块", name, key)
+				}
+				l, r := blk.Box.X-b.Box.X, b.Box.X+b.Box.W-(blk.Box.X+blk.Box.W)
+				if !near(l, tk.BubblePadV) || !near(r, tk.BubblePadV) {
+					t.Errorf("%s %s 块离气泡左 %.2f、右 %.2f，期望 %.2f", name, key, l, r, tk.BubblePadV)
+				}
+				if !c.concave[key] {
+					continue
+				}
+				if want := max(tk.Inner(b.Radius[1], tk.BubblePadV), tk.RInnerMin); math.Abs(float64(blk.Radius[1]-want)) > 0.5 {
+					t.Errorf("%s %s 块右上圆角 %.2f，期望和气泡同心 %.2f", name, key, blk.Radius[1], want)
+				}
 			}
 		}
 	}
@@ -418,6 +435,7 @@ func hasSub(list []string, part string) bool {
 
 // 摘要行铺满气泡：悬停底和点击区到气泡边，气泡大小不变（主人 2026-11-09）。
 func TestProcessSummaryFillsBubble(t *testing.T) {
+	uitest.RequireWindowsFontMetrics(t, "过程气泡的高度")
 	tk := Derive(DefaultSettings())
 	step := &Step{ID: "r", Kind: StepRead, State: StepDone, Target: "编造.txt"}
 	for _, group := range []bool{false, true} {

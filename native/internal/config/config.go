@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"slices"
 	"strconv"
@@ -521,6 +522,14 @@ func LoadIn(root, data string) (Config, error) {
 // Parse 是启动和保存自检共用的字节解析、默认值与校验边界。
 func Parse(b []byte, file string) (Config, error) {
 	c := Defaults()
+	original := b
+	b, err := normalizeModelRefObjects(b) // 模型引用的对象写法换成字符串（只在内存里，规格-模型配置 3.2）
+	if err != nil {
+		return c, fmt.Errorf("%s：%w", file, err)
+	}
+	if err := checkStructKeys(b, reflect.TypeOf(c)); err != nil {
+		return c, fmt.Errorf("%s：%w", file, err)
+	}
 	if err := yaml.Unmarshal(b, &c); err != nil {
 		return c, fmt.Errorf("%s 不是合法的 YAML，或者某一项的类型不对：%s", file, yaml.FormatError(err, false, false))
 	}
@@ -584,7 +593,7 @@ func Parse(b []byte, file string) (Config, error) {
 		}
 	}
 	c.Source = file
-	c.Version = ContentVersion(b)
+	c.Version = ContentVersion(original) // 版本认磁盘上的原文，不认换过写法的
 	if c.Characters == nil {
 		c.Characters = map[string]CharacterModels{}
 	}
@@ -625,6 +634,7 @@ func (c Config) check(raw map[string]any) error {
 		bad = append(bad, "magpie.baseUrl：不是网址")
 	}
 	bad = append(bad, c.providerIssues(magpieDeclared)...)
+	bad = append(bad, c.modelRefIssues()...)
 	bad = append(bad, providerRawIssues(raw)...)
 	for name, t := range map[string]Thinking{"defaults.backgroundThinking": c.Defaults.BackgroundThinking, "agent.thinking.local": c.Agent.Thinking.Local, "agent.thinking.private": c.Agent.Thinking.Private, "agent.thinking.group": c.Agent.Thinking.Group} {
 		if !thinkingLevels[t] {

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 
 	_ "modernc.org/sqlite"
 )
@@ -50,7 +51,8 @@ type State struct {
 // 文件不存在返回 Exists=false；存在时用 mode=ro + query_only(1) 打开，不建表、不写库、不用 goose Provider。
 func Probe(ctx context.Context, file string, tracks []Track) (State, error) {
 	if _, err := os.Stat(file); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
+		// 路径中间某一级是文件时，Windows 报“路径不存在”，Linux 报 ENOTDIR；两边都是“这个库不存在”
+		if errors.Is(err, os.ErrNotExist) || errors.Is(err, syscall.ENOTDIR) {
 			return State{File: file}, nil
 		}
 		return State{File: file}, fmt.Errorf("看 %s 在不在：%w", file, err)

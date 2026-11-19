@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -27,6 +28,14 @@ func mediaToolEnv() toolchain.Env {
 	}
 }
 
+// fakeExe 是测试里造假程序文件的名字：和 toolchain 登记表找程序的规则一致，Windows 带 .exe，别的系统不带
+func fakeExe(name string) string {
+	if runtime.GOOS == "windows" {
+		return name + ".exe"
+	}
+	return name
+}
+
 func sameMediaPath(a, b string) bool {
 	return strings.EqualFold(filepath.Clean(a), filepath.Clean(b))
 }
@@ -40,8 +49,8 @@ func TestMediaToolUsesRegistry(t *testing.T) {
 	pathDir := filepath.Join(root, "path")
 	vendorDir := filepath.Join(root, "vendor", "bin")
 	for _, dir := range []string{pathDir, vendorDir} {
-		writeMediaTool(t, filepath.Join(dir, "ffmpeg.exe"))
-		writeMediaTool(t, filepath.Join(dir, "ffprobe.exe"))
+		writeMediaTool(t, filepath.Join(dir, fakeExe("ffmpeg")))
+		writeMediaTool(t, filepath.Join(dir, fakeExe("ffprobe")))
 	}
 	t.Setenv("PATH", pathDir)
 
@@ -51,7 +60,7 @@ func TestMediaToolUsesRegistry(t *testing.T) {
 		toolchain.Refresh(env)
 		for _, name := range []string{"ffmpeg", "ffprobe"} {
 			got, err := mediaTool(name)
-			if err != nil || !sameMediaPath(got, filepath.Join(vendorDir, name+".exe")) {
+			if err != nil || !sameMediaPath(got, filepath.Join(vendorDir, fakeExe(name))) {
 				t.Errorf("%s：mediaTool = %q, %v，要 vendor/bin", name, got, err)
 			}
 		}
@@ -72,7 +81,7 @@ func TestMediaToolUsesRegistry(t *testing.T) {
 	t.Run("PATH 兜底", func(t *testing.T) {
 		toolchain.Refresh(mediaToolEnv())
 		got, err := mediaTool("ffmpeg")
-		if err != nil || !sameMediaPath(got, filepath.Join(pathDir, "ffmpeg.exe")) {
+		if err != nil || !sameMediaPath(got, filepath.Join(pathDir, fakeExe("ffmpeg"))) {
 			t.Errorf("mediaTool = %q, %v，要 PATH 里的", got, err)
 		}
 	})

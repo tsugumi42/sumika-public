@@ -44,6 +44,7 @@ func (s *Service) ConvTurns(ctx context.Context, conversation string, maxRuns in
 		if id == "" {
 			continue // 后台任务不算一轮
 		}
+		r.Model = s.canon(r.Model)
 		r.Input += r.CacheRead + write
 		if failure != "" {
 			r.Failed = class

@@ -14,6 +14,7 @@ import (
 	"sumika-native/internal/api"
 	"sumika-native/internal/config"
 	"sumika-native/internal/llm"
+	"sumika-native/internal/modelref"
 	"sumika-native/internal/persona"
 	"sumika-native/internal/turn"
 )
@@ -29,6 +30,22 @@ type ModelRuntime struct {
 	summaryErrors map[string]string // 每个角色未生效的原因；无关保存保留，不隐式重试
 	turn          turn.Config
 	ReviewModels  map[string]string // 审阅用途独立发布，不替换角色模型。
+	Refs          modelref.Resolver // 引用解析器（服务商和 defaultProvider 来自配置，启动时定）
+}
+
+// Find 按引用在目录里找模型：裸引用归 defaultProvider，`服务商/模型` 认已声明的服务商。
+// 找不到不拿别的顶替（规格-模型配置 3.2）
+func (s *ModelRuntime) Find(ref string) (llm.Model, bool) {
+	if s == nil {
+		return llm.Model{}, false
+	}
+	want := s.Refs.Canonical(ref)
+	for _, m := range s.Models {
+		if m.Ref() == want {
+			return m, true
+		}
+	}
+	return llm.Model{}, false
 }
 
 func (a *App) currentModels() *ModelRuntime {
@@ -62,7 +79,7 @@ func (a *App) initModelRuntimeCatalog(models []llm.Model, readAt time.Time, cata
 		}
 		version = config.ContentVersion(b)
 	}
-	s := &ModelRuntime{Values: config.ModelsOf(a.cfg), Models: models, Version: version, ReadAt: readAt, CatalogError: catalogErr}
+	s := &ModelRuntime{Values: config.ModelsOf(a.cfg), Models: a.tagProvider(models), Version: version, ReadAt: readAt, CatalogError: catalogErr, Refs: a.cfg.ModelRefs()}
 	s.ReviewModels = reviewRoutes(a.cfg.Agent.ReviewConfig)
 	s.turn = s.turnConfig()
 	s.turn.ModelVersion = version
@@ -176,13 +193,8 @@ func (r *DesktopReader) SetModelSettings(ctx context.Context, ch api.ModelSettin
 			return api.ModelSettingsView{}, api.ErrModelsUnavailable
 		}
 		value := ch.StringValue()
-		found := value == ""
-		for _, m := range old.Models {
-			if m.ID == value {
-				found = true
-				break
-			}
-		}
+		_, listedModel := old.Find(value)
+		found := value == "" || listedModel
 		if !found {
 			return api.ModelSettingsView{}, errors.New("模型不在当前列表里")
 		}
@@ -259,12 +271,11 @@ func (a *App) modelSettingsView(ctx context.Context) (api.ModelSettingsView, err
 		v.ModelsDisabledReason = "模型列表为空，请刷新模型列表"
 	}
 	groups := map[string][]api.ModelOption{}
-	listed := map[string]bool{}
+	listed := func(ref string) bool { _, ok := s.Find(ref); return ok }
 	for _, m := range s.Models {
 		option := modelOption(m)
 		v.Models = append(v.Models, option)
 		groups[m.OwnedBy] = append(groups[m.OwnedBy], option)
-		listed[m.ID] = true
 	}
 	for provider, options := range groups {
 		sort.Slice(options, func(i, j int) bool { return options[i].Name < options[j].Name })
@@ -285,7 +296,7 @@ func (a *App) modelSettingsView(ctx context.Context) (api.ModelSettingsView, err
 				return v, err
 			}
 		}
-		v.Characters = append(v.Characters, api.ModelCharacterSettings{ID: id, ConfiguredModel: ch.Model, ConfiguredBackground: ch.Background, RunningModel: actual, RunningBackground: s.Values.Background(id), ModelMissing: !s.ReadAt.IsZero() && !listed[ch.Model] && ch.Model != "", BackgroundMissing: !s.ReadAt.IsZero() && !listed[v.Configured.Background(id)] && v.Configured.Background(id) != ""})
+		v.Characters = append(v.Characters, api.ModelCharacterSettings{ID: id, ConfiguredModel: ch.Model, ConfiguredBackground: ch.Background, RunningModel: actual, RunningBackground: s.Values.Background(id), ModelMissing: !s.ReadAt.IsZero() && !listed(ch.Model) && ch.Model != "", BackgroundMissing: !s.ReadAt.IsZero() && !listed(v.Configured.Background(id)) && v.Configured.Background(id) != ""})
 		v.ReadOnly = append(v.ReadOnly, api.ModelReadOnly{Key: "characters." + id + ".topic", Value: ch.Topic, Reason: "话题还没做"})
 	}
 	v.ReadOnly = append(v.ReadOnly, api.ModelReadOnly{Key: "agent.context.topicCompactAt", Value: fmt.Sprint(c.Agent.Context.TopicCompactAt), Reason: "话题还没做"}, api.ModelReadOnly{Key: "vision.model", Value: c.Vision.Model, Reason: "Go 还没做识图"}, api.ModelReadOnly{Key: "magpie.baseUrl", Value: c.MagpieBaseURL(), Reason: "模型页只读；连接结果见 ModelsError / ModelsReadAt"})

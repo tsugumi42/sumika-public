@@ -1,9 +1,12 @@
-import { afterAll, expect, test } from 'bun:test'
+import { afterAll, expect, setDefaultTimeout, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { addVerified, goTree, loadVerified, needsMygoVet, overBudget, parseVerifyArgs, passedPkgs, RUNNERS, splitSlow, uncovered, verify, verifyMygo, WATCH, type Verified } from './go-verify'
 import { EXAMPLE, FULL, pick } from './go-affected'
+// 每条测试连着起好几次 git、go、sumika-dev 子进程，没有事件可等，只能按墙钟；空闲时单条最多两三秒，
+// 2026-11-19 合并队列和交叉编译同时跑时 git commit、go env 各自超过默认 5 秒。放到 30 秒（AGENTS 验收“测试超时不靠放宽了事”的例外：纯起进程）。
+setDefaultTimeout(30_000)
 
 // 示例配置不在整套名单里（只测读它的包），但改了它旧的绿记录不能再算：指纹必须照旧包含它（2026-11-13 复核建议）
 test('示例配置移出整套名单后仍在指纹范围里', () => {

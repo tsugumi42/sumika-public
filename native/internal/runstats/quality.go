@@ -297,7 +297,7 @@ func (s *Service) Quality(ctx context.Context, r ctlproto.UsageRange, a ctlproto
 		rowOf("model", task).add(outOK, "", d, 0)
 		total.add(outOK, "", d, 0)
 		if d >= 0 {
-			addSlow("model", task, taskLabels[task], model, d)
+			addSlow("model", task, taskLabels[task], s.canon(model), d)
 		}
 	}
 	if err := okRows.Err(); err != nil {
@@ -351,7 +351,7 @@ func (s *Service) Quality(ctx context.Context, r ctlproto.UsageRange, a ctlproto
 			recentOf++
 			if len(recent) < limit {
 				recent = append(recent, ctlproto.QualityFailure{
-					ID: id, AtMS: at, Kind: "model", Key: task, Label: taskLabels[task], Model: ctlproto.CleanRaw(model), Outcome: outcome, Class: class,
+					ID: id, AtMS: at, Kind: "model", Key: task, Label: taskLabels[task], Model: ctlproto.CleanRaw(s.canon(model)), Outcome: outcome, Class: class,
 					Place: placeOf(conv), Ms: d, Summary: s.summary(class, text), TurnID: turnID, RouteProvider: ctlproto.CleanRaw(rp), RouteModel: ctlproto.CleanRaw(rm)})
 			}
 		}

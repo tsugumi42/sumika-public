@@ -38,7 +38,7 @@ func waitIdle(t *testing.T, d *Desktop, conv string) {
 	}
 }
 
-// 一句话进自检话题：回复、模型、会话 id 对；库里主人的话和她的回复都带 selftest 标记，记忆的事件视图读出来是自检；
+// 一句话进自检话题：回复、模型（trace 里带服务商 ID：magpie/模型）、会话 id 对；库里主人的话和她的回复都带 selftest 标记，记忆的事件视图读出来是自检；
 // QQ 库一行没多；界面的会话列表里这个话题标题是"自检"；别的会话没被碰
 func TestSelftestChatNormalSentence(t *testing.T) {
 	t.Parallel()
@@ -50,7 +50,7 @@ func TestSelftestChatNormalSentence(t *testing.T) {
 		t.Fatal(err)
 	}
 	conv := "console:" + testChar + ":topic:selftest-" + testChar
-	if res.Status != SelftestDone || res.Reply != "自检回复" || res.Conversation != conv || res.Character != testChar || res.TurnID == "" || res.Model != testModel || res.Error != "" {
+	if res.Status != SelftestDone || res.Reply != "自检回复" || res.Conversation != conv || res.Character != testChar || res.TurnID == "" || res.Model != "magpie/"+testModel || res.Error != "" {
 		t.Fatalf("结果不对：%+v", res)
 	}
 	st, _ := a.set.For("console")

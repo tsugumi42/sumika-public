@@ -8,7 +8,6 @@ import (
 
 	"sumika-native/internal/config"
 	"sumika-native/internal/kernel"
-	"sumika-native/internal/llm"
 	"sumika-native/internal/modelcall"
 	"sumika-native/internal/runmetrics"
 	"sumika-native/internal/store"
@@ -17,7 +16,7 @@ import (
 )
 
 // WireKernelBudget 供 Open 在 NewHub 前装配；三种用途共用同一账本和模型 transport 槽。
-func WireKernelBudget(tc *turn.Config, st *store.Store, transport *llm.Client, scheduler config.Scheduler, budget config.Budget) {
+func WireKernelBudget(tc *turn.Config, st *store.Store, transport modelcall.Transport, scheduler config.Scheduler, budget config.Budget) {
 	ledger := &turnbudget.Ledger{Store: st}
 	tc.Budget = ledger
 	tc.BudgetConfig = budget

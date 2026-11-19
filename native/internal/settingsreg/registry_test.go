@@ -244,7 +244,7 @@ func TestFakeIPRangesIsReadOnlySecurityKey(t *testing.T) {
 			t.Fatalf("应只读、列表、重启接收：%+v", e)
 		}
 		def, ok := e.Default.([]any)
-		if !ok || len(def) != 1 || def[0] != "198.18.0.0/15" {
+		if !ok || len(def) != 3 || def[0] != "198.18.0.0/15" || def[1] != "2001:2::/48" || def[2] != "fdfe:dcba:9876::/48" {
 			t.Fatalf("默认值：%#v", e.Default)
 		}
 		return

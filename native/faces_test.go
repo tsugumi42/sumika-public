@@ -22,6 +22,7 @@ import (
 
 	"sumika-native/internal/api"
 	"sumika-native/internal/segview"
+	"sumika-native/internal/uitest"
 )
 
 // ───────────── 测试用的假网络和假的界面线程 ─────────────
@@ -453,6 +454,7 @@ const longFaceText = "今天天气很好，我们去公园散步，看到了很�
 
 // 红色的脸画在排版给出的框里；含脸的行不比没有脸的行高
 func TestFaceDrawnInsideBox(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	n := &fakeNet{png: map[string][]byte{"14": facePNG(64, 64, red)}}
 	with := faceMsg(false, "a", "你好", "#14", "世界")
 	without := faceMsg(false, "b", "你好", "世界")

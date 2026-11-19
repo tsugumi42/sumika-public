@@ -100,6 +100,25 @@ func TestEchoClaimsUnknownPartWithinWindow(t *testing.T) {
 	}
 }
 
+// 认领的那行日志写明来源：链接展开这类插件发的和她自己开口的分得开（2026-11-16 巡检只看到“被回声认领”，误判成闸门漏了）
+func TestEchoClaimLogNamesOrigin(t *testing.T) {
+	t.Parallel()
+	h := newOH(t, types.Caps{})
+	h.run(nil)
+	h.unknownReceipts()
+	id, err := h.out.Send(context.Background(), "ca", "automation:link-reader", group("g1"), []types.Part{txt("链接预览")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	h.waitPlan(id, store.PlanUnknown)
+	if !h.claim(echoOf(acctA, group("g1"), "7001", "链接预览")) {
+		t.Fatal("该认领")
+	}
+	if want := "（来源 automation:link-reader）第 0 段已发出、被回声认领"; !strings.Contains(h.logText(), want) {
+		t.Fatalf("日志里没写来源，想要含 %q：\n%s", want, h.logText())
+	}
+}
+
 // 超过窗口不认：差 1 毫秒到点还认，过 1 毫秒就不认了，段保持结果未知
 func TestEchoAfterWindowIsNotClaimed(t *testing.T) {
 	t.Parallel()

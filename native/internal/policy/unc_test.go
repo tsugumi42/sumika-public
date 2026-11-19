@@ -60,6 +60,7 @@ func wantAskOnce(t *testing.T, label string, d Decision) {
 
 // 基线：本地写法本来就问；UNC 写法要和它一样
 func TestUNCPathToolsAlwaysAsk(t *testing.T) {
+	windowsPathsOnly(t)
 	shapes := append([]string{`C:\Users\x\sdata\c.yml`}, uncShapes...)
 	for _, tool := range []string{"read", "ls", "grep", "find", "write", "edit"} {
 		for _, mode := range []string{"manual", "auto", "yolo"} {
@@ -76,6 +77,7 @@ func TestUNCPathToolsAlwaysAsk(t *testing.T) {
 
 // 递归搜索：搜的目录是受保护目录的上级，用 UNC 写法也要问
 func TestUNCRecursiveAncestorAsk(t *testing.T) {
+	windowsPathsOnly(t)
 	for _, p := range []string{`\\localhost\C$\Users`, `//localhost/C$/Users/x`, `\\?\C:\Users`, `\\.\C:\`, `\\?\UNC\localhost\C$`, `\\?\C:\`} {
 		for _, tool := range []string{"grep", "find"} {
 			for _, mode := range []string{"manual", "auto", "yolo"} {
@@ -261,6 +263,7 @@ func TestNonStringPathArgAlignedWithTools(t *testing.T) {
 // 无盘符的根相对路径（\data\x、/data/x）：策略按进程当前盘的根、工具接在工作目录后面、还有按工作目录所在盘的根，
 // 三种解释任一碰到受保护目录都要问
 func TestRootedPathsAllInterpretations(t *testing.T) {
+	windowsPathsOnly(t)
 	prot := `D:\work\proj\data`
 	for _, tool := range []string{"read", "ls", "grep", "find", "write", "edit"} {
 		for _, mode := range []string{"manual", "auto", "yolo"} {
@@ -313,6 +316,7 @@ func TestUNCTouchesProtectedDirect(t *testing.T) {
 
 // gate 要先解析联接的路径里不能有网络共享、设备路径：解析会真的连过去（SMB），而它们本来就每次都问
 func TestUNCNotResolvedAsLinks(t *testing.T) {
+	windowsPathsOnly(t)
 	for _, p := range uncShapes {
 		env := uncEnv("auto", "")
 		got := LinkPaths(Specs["read"], ruleArgs("path", p), env)
@@ -481,6 +485,7 @@ func TestCommandNoFalseAlarmReview(t *testing.T) {
 
 // 数据流名、末尾点和空格：Windows 规整以后指到受保护的文件，字面比不上
 func TestStreamAndDotFormsAsk(t *testing.T) {
+	windowsPathsOnly(t)
 	for _, p := range []string{
 		`C:\Users\x\sdata\c.yml::$DATA`, `C:\Users\x\sdata::$INDEX_ALLOCATION\c.yml`, `C:\Users\x\sdata\c.yml:alt`,
 		`C:\Users\x\sdata::$INDEX_ALLOCATION\new.txt`, `D:\work\proj\.env:x`, `D:\work\proj\.env::$DATA`, `D:\work\proj\.env.local::$DATA`,
@@ -502,6 +507,7 @@ func TestStreamAndDotFormsAsk(t *testing.T) {
 
 // 拒绝规则：指向本机盘的共享、设备路径写法、末尾点和数据流，都要判拒绝而不是降成问；放行、ask 方向不还原
 func TestDenyRuleSeesThroughShareForms(t *testing.T) {
+	windowsPathsOnly(t)
 	deny := mustRules(t, [2]string{"Read(D:/secret/**)", "deny"}, [2]string{"Write(D:/secret/**)", "deny"})
 	env := Env{Mode: "yolo", Workdir: `D:\Work`, ProtectedDirs: []string{`D:\Data`}, Audience: ownerConsole, Declared: true, Rules: deny, Conversation: "c"}
 	for _, p := range []string{
@@ -527,6 +533,7 @@ func TestDenyRuleSeesThroughShareForms(t *testing.T) {
 
 // 命令文字里受保护路径的各种写法：规整以后再比
 func TestCommandTextNormalizedBeforeMatch(t *testing.T) {
+	windowsPathsOnly(t)
 	cmds := []string{
 		`Get-Content 'C:\\Users\\x\\sdata\\c.yml'`,
 		`Get-Content ('C:\\Users\\x\\sdata\\c.yml')`,
@@ -568,6 +575,7 @@ func TestCommandTextNormalizedBeforeMatch(t *testing.T) {
 
 // open 工具的 target 是路径：受保护、不透明的写法和别的路径工具一样每次问，授权不吃；网址和普通路径照旧
 func TestOpenTargetProtected(t *testing.T) {
+	windowsPathsOnly(t)
 	targets := append([]string{`C:\Users\x\sdata\c.yml`, `C:\Users\x\sdata`, `C:\Users\x\sdata.\c.yml`, `C:\Users\x\sdata::$DATA`, `  C:\Users\x\sdata\c.yml  `, `@C:\Users\x\sdata\c.yml`}, uncShapes...)
 	targets = append(targets, driveRelativeShapes...)
 	for _, p := range targets {
@@ -596,6 +604,7 @@ func TestOpenTargetProtected(t *testing.T) {
 
 // 拒绝、ask 规则遇到无盘符根相对路径：三种解释任一命中就算；放行方向不变（放行规则不因此多放行）
 func TestRulesSeeRootedPaths(t *testing.T) {
+	windowsPathsOnly(t)
 	wd := `D:\work\proj`
 	mk := func(raw, effect string) []UserRule { return mustRules(t, [2]string{raw, effect}) }
 	for _, p := range []string{`\secrets\a.txt`, `/secrets/a.txt`, `\SECRETS\a.txt`, `\secrets\x\..\a.txt`, `@/secrets/a.txt`} {
@@ -646,6 +655,7 @@ func TestUNCWorkdirRelativePath(t *testing.T) {
 
 // 本地写法里每段末尾的点和空格：Windows 会去掉，sdata.\c.yml 就是 sdata\c.yml，字面上却比不上受保护目录
 func TestTrailingDotSpaceLocalForms(t *testing.T) {
+	windowsPathsOnly(t)
 	asks := []string{
 		`C:\Users\x\sdata.\c.yml`, `C:\Users\x\sdata \c.yml`, `C:\Users\x\sdata. .\c.yml`, `C:\Users\x\sdata\c.yml.`, `C:\Users\x\sdata\c.yml `,
 		`C:\Users\x\sdata.`, `C:\Users\x.\sdata\c.yml`, `C:/Users/x/sdata./c.yml`, `D:\work\proj\.env `, `D:\work\proj\.env.`, `D:\work\proj\sub.\.env.local`,

@@ -74,6 +74,18 @@ func (o OKLCH) Color() ui.Color {
 	return ui.RGBA(encode(r), encode(g), encode(b), float32(o.A))
 }
 
+// FromColor 把 sRGB 颜色换回 oklch（Björn Ottosson 的矩阵），透明度照搬；Color 的反方向。
+func FromColor(c ui.Color) OKLCH {
+	r, g, b := decode(c.R), decode(c.G), decode(c.B)
+	l := math.Cbrt(0.4122214708*r + 0.5363434216*g + 0.0514459929*b)
+	m := math.Cbrt(0.2119034982*r + 0.6806995451*g + 0.1073969566*b)
+	s := math.Cbrt(0.0883024619*r + 0.2817188376*g + 0.6299787005*b)
+	L := 0.2104542553*l + 0.7936177850*m - 0.0040720468*s
+	A := 1.9779984951*l - 2.4285922050*m + 0.4505937099*s
+	B := 0.0259040371*l + 0.7827717662*m - 0.8086757660*s
+	return OKLCH{L, math.Hypot(A, B), math.Atan2(B, A) * 180 / math.Pi, float64(c.A) / 255}
+}
+
 // WithAlpha 返回同色、不透明度为 a 的颜色。
 func (o OKLCH) WithAlpha(a float64) OKLCH { o.A = a; return o }
 

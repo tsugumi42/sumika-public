@@ -12,6 +12,7 @@ import (
 	"sumika-native/internal/assets/fonts"
 	"sumika-native/internal/desksettings"
 	"sumika-native/internal/paths"
+	"sumika-native/internal/uitest"
 )
 
 // tinyFont 是 testdata 里文渊圆体改名后的子集（内部名字 SumikaTestRounded，可变字重，只有 ASCII 和几个字），测试不读 46 MB 的真文件。
@@ -79,6 +80,10 @@ func inkOf(tt *ui.Tester, label string) int {
 
 // 可变字重真的生效（不是合成加粗）；子集里没有的字回退到系统字体，不显示成方块。
 func TestVariableWeightAndFallback(t *testing.T) {
+	uitest.RequireGlyphs(t)
+	// 第六轮 CI 的 Linux 一格：连“字体里有的字用这款字体画”也红（306873 对 306873），说明那里默认家族解析到的就是这款字体，
+	// 测试的前提“默认字体和它不一样、有系统回退”只在 Windows 成立；字重、回退都依赖系统字体，Noto 下度量不同不算错
+	uitest.RequireWindowsFontMetrics(t, "可变字重和字体回退")
 	data, err := os.ReadFile(tinyFont)
 	if err != nil {
 		t.Fatal(err)

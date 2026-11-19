@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"sumika-native/internal/jsjson"
@@ -309,7 +310,13 @@ func toolPathPre(path string) string {
 	case p == "~":
 		p = home()
 	case strings.HasPrefix(p, "~/") || strings.HasPrefix(p, `~\`):
-		p = win32Join(home(), p[2:])
+		if runtime.GOOS == "windows" {
+			p = win32Join(home(), p[2:])
+		} else {
+			// 和工具那边（tools.normalizePath / resolveToCwd）一致：用本机的 filepath.Join。win32Join 拼出“家目录、反斜杠、相对部分”连在一起的怪名字，
+			// 工具真正打开的是 /home/x/a，两边不是同一个路径，canon 就看不穿那里的符号链接
+			p = filepath.Join(home(), p[2:])
+		}
 	case fileURL.MatchString(p):
 		if fp, err := jsstr.FileURLToPath(p); err == nil {
 			p = fp

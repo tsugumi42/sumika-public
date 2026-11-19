@@ -23,6 +23,7 @@ func TestSourceGuard(t *testing.T) {
 		char    string
 		wantErr string // 空 = 通过
 		notCopy bool   // 还要 errors.Is(err, paths.ErrMemoryPath)
+		winOnly string // 非空：只在 Windows 上成立，别的系统跳过并写这段原因（要在子测试自己的 t 上跳，不能在 prep 里用外层 t 跳）
 	}{
 		{name: "固定角色记忆库", char: testChar},
 		{name: "Go 的记忆库不存在", char: testChar, wantErr: "不存在",
@@ -42,10 +43,8 @@ func TestSourceGuard(t *testing.T) {
 				makeLink(t, dir, other)
 			}},
 		{name: "Go 的记忆库其实是 Bun 原库的硬链接", char: testChar, wantErr: "过不了副本路径检查", notCopy: true,
+			winOnly: "原因：CheckMemoryPath 只在 Windows 上查硬链接数",
 			prep: func(f *fixture) {
-				if runtime.GOOS != "windows" {
-					t.Skip("CheckMemoryPath 只在 Windows 上查硬链接数")
-				}
 				if err := os.Remove(f.memDB()); err != nil {
 					t.Fatal(err)
 				}
@@ -57,6 +56,9 @@ func TestSourceGuard(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
+			if c.winOnly != "" && runtime.GOOS != "windows" {
+				t.Skip(c.winOnly)
+			}
 			f := newFixture(t)
 			if c.prep != nil {
 				c.prep(f)

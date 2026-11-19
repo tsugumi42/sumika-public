@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -370,7 +371,12 @@ func TestRunNotADatabaseIsCarriedAsFile(t *testing.T) {
 	f := newFx(t)
 	write(t, filepath.Join(f.data, "plugins", "x", "junk.db"), "我不是 SQLite，只是名字叫 .db")
 	write(t, filepath.Join(f.data, "plugins", "x", "empty.db"), "")
-	write(t, filepath.Join(f.data, "plugins", "x", "Thumbs.db"), "windows 缩略图缓存")
+	// Thumbs.db 只在 Windows 目录里出现：layout.go 的 lower() 只在 Windows 上转小写（Linux 区分大小写、故意不转），
+	// Linux 上 Thumbs.db 和 thumbs.db 是两个文件，不拿它当缩略图缓存跳过
+	thumbs := runtime.GOOS == "windows"
+	if thumbs {
+		write(t, filepath.Join(f.data, "plugins", "x", "Thumbs.db"), "windows 缩略图缓存")
+	}
 	res := f.mustRun(ReasonManual)
 	m, _ := ReadManifest(res.Folder)
 	for _, rel := range []string{"plugins/x/junk.db", "plugins/x/empty.db"} {
@@ -383,7 +389,7 @@ func TestRunNotADatabaseIsCarriedAsFile(t *testing.T) {
 			}
 		}
 	}
-	if _, ok := fileOf(m, "plugins/x/Thumbs.db"); ok {
+	if _, ok := fileOf(m, "plugins/x/Thumbs.db"); thumbs && ok {
 		t.Error("Thumbs.db 不该带")
 	}
 	if !strings.Contains(strings.Join(m.Notes, "\n"), "plugins/x/junk.db：名字是 .db 但文件头不是 SQLite") {

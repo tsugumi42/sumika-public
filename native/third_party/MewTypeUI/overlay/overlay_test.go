@@ -107,7 +107,7 @@ func TestBoxLongBodyAndTheme(t *testing.T) {
 		theme.Apply(c, custom)
 		Box(c, &state, "Long", BoxOptions{Actions: []BoxAction{{ID: "done", Label: "Done"}}}, func() {
 			for i := range 40 {
-				ui.Text(c, "Line").Key(i)
+				ui.Text(c.Key(i), "Line")
 			}
 		})
 	}, 500, 300)

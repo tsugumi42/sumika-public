@@ -166,7 +166,7 @@ func TestConvListSelectionFollowsIDAfterFilterAndOverview(t *testing.T) {
 		a.keys[cv.Key.Conversation] = cv.Key
 	}
 	tt := paneTester(a, 2048, 1030)
-	clickAt(t, tt, "小桃")
+	click(t, tt, "小桃")
 	selected := a.dialogs[0].state.SelectedID
 	if a.sel != "console:c1" || selected != dialogID(a.local[1].Key) {
 		t.Fatal("选择没有按完整ID打开")
@@ -213,7 +213,7 @@ func TestConvListCurrentConversationReopensInNarrowList(t *testing.T) {
 			tt := paneTester(a, width, 1030)
 			for range 2 {
 				click(t, tt, "返回会话列表")
-				clickAt(t, tt, a.local[0].Title)
+				click(t, tt, a.local[0].Title)
 				if chat, ok := tt.Find("聊天窗口"); !ok || chat.W <= 0 || chat.H <= 0 || a.pn.layout.Active != layout.Chat {
 					t.Fatal("single-pane-reopen: 返回列表后单击当前会话没有进入聊天")
 				}
@@ -259,7 +259,7 @@ func TestConvListThousandRowsAndCompactSelection(t *testing.T) {
 	if l, _, _ := paneWidths(tt); l != 66 {
 		t.Fatalf("头像栏宽=%v", l)
 	}
-	clickAt(t, tt, "虚拟会话0001")
+	click(t, tt, "虚拟会话0001")
 	if a.sel != "qq:group:90001" {
 		t.Fatalf("头像窄栏选择=%q", a.sel)
 	}

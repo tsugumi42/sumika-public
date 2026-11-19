@@ -25,6 +25,9 @@ import (
 )
 
 func TestResolveBunExeAndServerDir(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("原因：bun 子进程监护只在 Windows 上用（bunchild.go 头一行：临时，Electrobun 接管进程后去掉），用例写的是 Windows 路径（D:\\repo、E:\\elsewhere\\server），不为它做 Linux 兼容")
+	}
 	t.Parallel()
 	exists := func(set ...string) func(string) bool {
 		return func(p string) bool {

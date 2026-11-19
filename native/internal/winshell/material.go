@@ -103,14 +103,17 @@ func (k *Kit) Glass(e ui.Element, level Level, solid ui.Color) {
 func (k *Kit) FloatPanel(e ui.Element) ui.Element {
 	k.Glass(e, LevelFloat, k.T.C.Float)
 	k.FloatShadow(e)
-	return e.Border(1, k.T.C.FloatRing)
+	return e.Border(sunkenRing, k.P.Line) // 边线和凹块（下拉入口）的同色同粗
 }
 
-// FloatMenu 是 FloatPanel 加上菜单、下拉的进出场（MenuTransition）：淡入、从触发的一边出来 6、缩放 .98，出场更快；
-// 退场期间拷贝保留最后的内容，不收点击和焦点。缩放的原点在面板上沿中间，靠近触发钮。
-func (k *Kit) FloatMenu(e ui.Element) ui.Element {
+// FloatMenu 是 FloatPanel 加上菜单、选择器的进出场：从贴着按钮的那条边展开、关掉时缩回去（chatui.Tokens.MenuMorph，主人 2026-11-15）；
+// 退场期间拷贝保留最后的内容，不收点击和焦点。用 ChatTokens：画廊慢放时弹簧也跟着放慢。
+func (k *Kit) FloatMenu(c *ui.Context, e ui.Element) ui.Element {
 	k.FloatPanel(e)
-	return e.TransformOrigin(.5, 0).Transition(MenuTransition)
+	// 用 FloatMenu 的面板都是控件圆角；阴影交给 MenuMorph 在长开以后淡入（浮层档，浓度乘 a）
+	return k.ChatTokens().MenuMorph(c, e, k.G.RadiusControl, func(a float32) {
+		e.Shadow(0, floatY, floatBlur, 0, k.shadowInk(k.pick(floatAlphaLight, floatAlphaDark)*a))
+	})
 }
 
 // NoteBar 是输入框位置上的一条提示（这里只能看之类，照 Bun 的只读条）：和输入框同一层，玻璃底、圆角同心、左边一个图标。
@@ -181,5 +184,34 @@ func (k *Kit) edge(c *ui.Context, name string, top bool, height float32) {
 			e.Bottom(0)
 		}
 		e.Material(glass.Blur{Radius: radii[i], Mask: &ui.LinearGradient{Angle: angle, Stops: stops[i]}})
+	}
+}
+
+// 气泡玻璃的底色浓度（背景模糊半径和磨砂档同一个 blurRadius）：层级靠浓度分，气泡最淡，标题栏 .72、输入框 .76、浮层 .84 依次更浓。
+// 只有模糊加半透明底，不做边缘折射（折射只留给标题栏、输入区、菜单这些浮在最上面的少数几样）。
+const (
+	BubbleAlphaThin  float32 = .5  // 淡：能看出壁纸的波点和光晕
+	BubbleAlphaThick float32 = .75 // 浓：接近标题栏，只剩一点透
+	BubbleAlphaMin   float32 = .3
+	BubbleAlphaMax   float32 = .98 // 贴近实色的一头也要能调：壁纸很淡，填充色一旦低了气泡就和背景分不开（主人 2026-11-15）
+)
+
+// BubbleGlass 给聊天宿主（chatui.Host.BubbleGlass）一个气泡材质回调：背景模糊 blurRadius 加 bg 的 alpha 浓度底。
+// 退回实色（返回 nil）的情况：材质设成实色或系统开了降低透明度、聊天区没有壁纸（模糊的只是一片平色，白白花钱）、浓度到 1。
+func (k *Kit) BubbleGlass(alpha float32) func(e ui.Element, bg ui.Color, radii [4]float32) {
+	return k.BubbleGlassBlur(alpha, blurRadius)
+}
+
+// BubbleGlassBlur 同 BubbleGlass，模糊半径由调用方给：气泡玻璃有两个各自可调的量，
+// 填充色的不透明度（和背景分得多开）和模糊的程度（背后的东西糊掉多少），主人 2026-11-15。
+// mygo 里一个元素的“材质”和“底色”只画其中一样（ui/paint.go 的 background：fillMaterial 时只画材质），
+// 所以不能写 Material(...).Background(...)：那样填充色根本不画，气泡就是一块纯模糊。填充色用 Draw 画在模糊上面、内容下面。
+func (k *Kit) BubbleGlassBlur(alpha, radius float32) func(e ui.Element, bg ui.Color, radii [4]float32) {
+	if k.EffectiveMaterial() == MaterialSolid || !k.S.Wallpaper || alpha >= 1 {
+		return nil
+	}
+	return func(e ui.Element, bg ui.Color, radii [4]float32) {
+		tint := bg.Alpha(alpha)
+		e.Material(glass.Blur{Radius: radius}).Draw(func(pt *ui.Painter, r ui.Rect) { pt.FillRadii(r, radii, tint) })
 	}
 }

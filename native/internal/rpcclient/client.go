@@ -107,7 +107,7 @@ func DialRunFile(ctx context.Context, path, client string) (*Client, error) {
 	if err := json.Unmarshal(b, &rf); err != nil {
 		return nil, fmt.Errorf("后台的地址文件坏了：%w", err)
 	}
-	if !processAlive(rf.PID) {
+	if !rpcwire.ProcessAlive(rf.PID) {
 		return nil, fmt.Errorf("地址文件里的后台（进程 %d）已经不在了", rf.PID)
 	}
 	return Dial(ctx, rf.URL, rf.Token, client)

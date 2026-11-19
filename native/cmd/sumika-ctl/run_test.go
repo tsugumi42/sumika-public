@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net"
 	"reflect"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -276,6 +277,9 @@ func TestNotRunningExitsWithin2Seconds(t *testing.T) {
 
 // "没在运行"的提示里不能带管道名：里面有当前用户的 SID。名字里放一个编的 SID，真连一次不存在的管道，人读的和 --json 的输出都不许出现
 func TestNotRunningMessageHasNoPipeNameOrSID(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("原因：控制接口是 Windows 命名管道，“错误号”来自拨号失败的 syscall.Errno，只在 Windows 上有这条路径")
+	}
 	name := `\\.\pipe\sumika-ctl-S-1-5-21-111-222-333-1000-test-nobody-listens`
 	dial := func(ctx context.Context, _ bool) (net.Conn, error) { return ctlproto.Dial(ctx, name) }
 	for _, args := range [][]string{{"status"}, {"--json", "status"}} {

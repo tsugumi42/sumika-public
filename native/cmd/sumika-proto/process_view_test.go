@@ -26,7 +26,8 @@ func TestViewApproveCommand(t *testing.T) {
 	tt := tester(a)
 	runScene(t, a, tt, "要批准的命令")
 	tt.Advance(time.Second)
-	if !tt.HasText("想运行 rm -rf build") || !tt.HasText("允许一次") || !tt.HasText("清掉旧的构建，下一步重新编译。") || !tt.HasText("4:29") {
+	// 2026-11-15 审批卡改版：摘要行只写“想运行命令”，命令原文只在终端块里出现一次（chatui TestAskCardLayers）
+	if !tt.HasText("想运行命令") || !strings.Contains(allText(tt), "rm -rf build") || !tt.HasText("允许一次") || !tt.HasText("清掉旧的构建，下一步重新编译。") || !tt.HasText("4:29") {
 		t.Fatalf("等批准的卡不全：%v", tt.Texts())
 	}
 	click(t, tt, "允许一次")
@@ -38,7 +39,7 @@ func TestViewApproveCommand(t *testing.T) {
 	click(t, tt, "过程摘要") // 点开看细节
 	tt.Frame()
 	tt.Frame()
-	if all = allText(tt); !strings.Contains(all, "运行了 rm -rf build") || !strings.Contains(all, "允许了") {
+	if all = allText(tt); !strings.Contains(all, "运行了 rm -rf build") || !strings.Contains(all, "已允许") { // 结果是行尾小图标加“已允许”（审批卡改版）
 		t.Fatalf("点开以后：%q", all)
 	}
 }

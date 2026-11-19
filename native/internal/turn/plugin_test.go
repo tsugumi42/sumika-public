@@ -26,6 +26,7 @@ import (
 	"sumika-native/internal/config"
 	"sumika-native/internal/llm"
 	"sumika-native/internal/memory"
+	"sumika-native/internal/modelcall"
 	"sumika-native/internal/paths"
 	"sumika-native/internal/store"
 )
@@ -69,6 +70,9 @@ type harnessOpts struct {
 	// model、models：换角色的模型和网关的模型清单（线上字节对拍要看图片消息，用能看图的模型）
 	model  string
 	models []json.RawMessage
+	// routed：假装有两家服务商（规格-模型配置 M2）。假网关是服务商 a，它的模型标成 a 的；这个函数拿到 a 的客户端，
+	// 返回按引用分发的路由，和再加进目录的别家模型。Hub 的传输层换成这个路由
+	routed func(a *llm.Client) (*llm.Router, []llm.Model)
 }
 
 // newHarness 照 refresh_test 搭一个 Hub：live-second 的角色、模型、假网关（回固定的几句）
@@ -170,6 +174,15 @@ func newHarnessOpts(t *testing.T, o harnessOpts) *harness {
 	if err != nil {
 		t.Fatal(err)
 	}
+	var transport modelcall.Transport = client
+	if o.routed != nil {
+		router, extra := o.routed(client)
+		for i := range models {
+			models[i].Provider = "a"
+		}
+		models = append(models, extra...)
+		transport = router
+	}
 	now, _ := time.Parse(time.RFC3339, h.c.Now)
 	h.wd = o.wd
 	if h.wd == "" {
@@ -208,7 +221,7 @@ func newHarnessOpts(t *testing.T, o harnessOpts) *harness {
 		cancel()
 		h.hub.Idle()
 	})
-	h.hub = NewHub(ctx, cfg, anyConv{h.st}, client, models)
+	h.hub = NewHub(ctx, cfg, anyConv{h.st}, transport, models)
 	h.approvals.OnResolved = append(h.approvals.OnResolved, func(req approval.Request, _ approval.Decision) { h.hub.ApprovalResolved(req.CharacterID) })
 	return h
 }

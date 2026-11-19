@@ -150,3 +150,18 @@ func TestAuditAccessHiddenStillChecked(t *testing.T) {
 		t.Errorf("AccessHidden 的元素照常绘制，越出父元素要报第 2 类：%v", fs)
 	}
 }
+
+// RequireGlyphs 的判断依据：有字体时两个不同的字画出不同的图，所以不跳过；跳过与否本身随机器字体变，这里只钉住“有字体的机器上不跳过”。
+// 缺字体那一侧（跳过）只能在没有中文字体的机器上看到，由 CI 的 Linux 一格走一遍。
+func TestGlyphImageDiffersBetweenCharacters(t *testing.T) {
+	a, b := glyphImage("汉"), glyphImage("永")
+	if !hasInk(a) || !hasInk(b) {
+		t.Skip("这台机器画不出中文字")
+	}
+	if sameImage(a, b) {
+		t.Fatal("两个不同的汉字画出了同一张图：判断“是不是真的画出了字”的办法失效")
+	}
+	if !sameImage(a, glyphImage("汉")) {
+		t.Fatal("同一个字两次画出的图不一样")
+	}
+}

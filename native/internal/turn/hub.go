@@ -21,6 +21,7 @@ import (
 	"sumika-native/internal/llm"
 	"sumika-native/internal/llm/chat"
 	"sumika-native/internal/modelcall"
+	"sumika-native/internal/modelref"
 	"sumika-native/internal/persona"
 	"sumika-native/internal/plugintrace"
 	"sumika-native/internal/policy"
@@ -109,9 +110,11 @@ type Hub struct {
 	late         sync.Map // 这一轮的运行 id → 晚到的图（*lateQueue），见 late.go
 	// Stores 按会话取库（规格-聊天记录按平台分库 第五节第 3 步）：聊天记录在会话所在平台的库里，运行记录（trace）共用一份。
 	// 内核只经 storeOf、trace 取，不自己拆会话串
-	Stores    store.Stores
-	Client    *llm.Client
+	Stores store.Stores
+	// Client 是模型请求的传输层：生产里是 llm.Router（按引用里的服务商分发），测试和小工具可以直接给 *llm.Client
+	Client    modelcall.Transport
 	Models    []llm.Model
+	refs      modelref.Resolver // 模型引用解析器，从传输层取（llm.RefsOf）；传输层不带就是零值，模型串原样当 ID
 	lifecycle *hubLifecycle
 
 	base       context.Context
@@ -291,9 +294,9 @@ func policyAudience(a audience.Audience) policy.Audience {
 // 建的时候收拾上一个进程没收尾的（表一 A9：没有结局的回合记成被打断、停在执行中的工具记成不知道结果、等审批的记成取消，
 // store.SweepInterrupted）。这些都在共用的运行记录里，只扫这一次：再扫一次会把正在跑的回合当成上一个进程没收尾。
 // stores 为 nil 的只能用不碰库的那几样（插件、通知）
-func NewHub(ctx context.Context, cfg Config, stores store.Stores, client *llm.Client, models []llm.Model) *Hub {
+func NewHub(ctx context.Context, cfg Config, stores store.Stores, client modelcall.Transport, models []llm.Model) *Hub {
 	ctx, staged := newStagedStop(ctx, cfg.Lifecycle.defaults().StopGrace, cfg.Logf, nil)
-	h := &Hub{Cfg: cfg, Stores: stores, Client: client, Models: models, base: ctx, cancelBase: staged.stop, stop: staged, plugins: newPlugins(ctx, cfg.Hooks, cfg.Logf),
+	h := &Hub{Cfg: cfg, Stores: stores, Client: client, refs: llm.RefsOf(client), Models: models, base: ctx, cancelBase: staged.stop, stop: staged, plugins: newPlugins(ctx, cfg.Hooks, cfg.Logf),
 		live: map[string]*Live{}, active: map[string]*Live{}, turnTail: map[string]chan struct{}{}, done: map[string]map[int64]bool{},
 		queued: map[string][]int64{}, turnGen: map[string]uint64{}, compactJobs: map[string]*compactJob{}, compactFailures: map[string]compactFailure{}, idleTimers: map[string]*idleCompactTimer{},
 		bg: newBgTasks(), stoppedLeft: map[string]*string{}}
@@ -550,6 +553,7 @@ func (h *Hub) Steer(characterID, text string) (string, bool) {
 // 渠道的回合不由内核写库（ADR-184 第 3 条）：中间件先把这几条存进库，seqs 是它们；送到时内核只登记，前缀也不写"主人亲口说的"。
 // 渠道的不带 seqs 不收（返回 false）。
 // 认"在跑"和收下这句在同一把锁里：这一轮收尾（取走没送到的退回去）也在这把锁里，收下的插话一定有人送到或者退回
+// "收下"（accepted）由 Submit 在受理的那把锁里发，不在这里发：Submit 一放锁，运行循环就可能取走这句并报"送到"
 func (h *Hub) SteerIn(characterID, conversation, text string, seqs []int64) (string, bool) {
 	lc := h.lifecycle
 	lc.mu.Lock()
@@ -569,15 +573,12 @@ func (h *Hub) SteerIn(characterID, conversation, text string, seqs []int64) (str
 	if err != nil {
 		return "", false
 	}
-	rec, err := h.Submit(h.base, Submission{Input: in, Mode: kernel.InputSteer, ClientKey: h.inputClientKey(in), ExpectedRunID: r.input.Identity.RunID})
+	rec, err := h.Submit(h.base, Submission{Input: in, Mode: kernel.InputSteer, ClientKey: h.inputClientKey(in), ExpectedRunID: r.input.Identity.RunID, announceSteer: true})
 	if err != nil {
 		return "", false
 	}
 	if rec.RunID != r.input.Identity.RunID {
 		return "", false
-	}
-	if h.Cfg.OnSteer != nil {
-		h.Cfg.OnSteer(SteerEvent{Phase: "accepted", ID: rec.InputID, Text: text})
 	}
 	return rec.InputID, true
 }
@@ -969,14 +970,16 @@ func (h *Hub) cardAndModel(cfg Config, models []llm.Model, characterID string) (
 	if err != nil {
 		return c, nil, err
 	}
+	want := h.refs.Canonical(c.Model)
 	for i := range models {
-		if models[i].ID == c.Model {
+		if models[i].Ref() == want {
 			return c, &models[i], nil
 		}
 	}
 	if len(cfg.fallbacks(characterID)) > 0 {
 		// 列表可能暂时缺失；按真实请求错误判断是否换模型。
-		return c, &llm.Model{ID: c.Model}, nil
+		m := modelFor(h.refs, c.Model)
+		return c, &m, nil
 	}
 	// 目录本身没取到：说的是"来源连不上"（设置里修地址），不是"模型不存在"
 	if cfg.CatalogError != "" {
@@ -1296,7 +1299,7 @@ func (h *Hub) compactEarly(l *Live) {
 		return
 	}
 	h.compactJobs[ck] = job
-	guard := &compactGuard{start: start, latestID: latestID, model: src.b.Model.ID, modelVersion: src.cfg.ModelVersion, gen: h.staleGen[ck], job: job}
+	guard := &compactGuard{start: start, latestID: latestID, model: src.b.Model.Ref(), modelVersion: src.cfg.ModelVersion, gen: h.staleGen[ck], job: job}
 	h.mu.Unlock()
 	h.bg.Add(1)
 	go func() {
@@ -1557,7 +1560,7 @@ func (h *Hub) startIdleCompact(ck string, state *idleCompactTimer) {
 		return
 	}
 	h.compactJobs[ck] = job
-	guard := &compactGuard{start: start, latestID: latestID, model: src.b.Model.ID, modelVersion: src.cfg.ModelVersion, gen: gen, job: job}
+	guard := &compactGuard{start: start, latestID: latestID, model: src.b.Model.Ref(), modelVersion: src.cfg.ModelVersion, gen: gen, job: job}
 	h.mu.Unlock()
 	h.bg.Add(1)
 	go func() {
@@ -1843,7 +1846,7 @@ func (h *Hub) acquire(cfg Config, st *store.Store, c persona.Character, m llm.Mo
 		decls = withoutResultRead(decls)
 		delete(regs, "result_read")
 	}
-	if l != nil && l.in.Identity.Scope == in.Identity.Scope && l.in.Workspace == in.Workspace && l.system == system && l.model == m.ID && tools.FixedJSON(l.b.Decls) == tools.FixedJSON(decls) && l.b.EpochSeen == latestID &&
+	if l != nil && l.in.Identity.Scope == in.Identity.Scope && l.in.Workspace == in.Workspace && l.system == system && l.model == m.Ref() && tools.FixedJSON(l.b.Decls) == tools.FixedJSON(decls) && l.b.EpochSeen == latestID &&
 		l.staleGen == stale && now.Sub(l.lastUsed) < cfg.idleAfter() {
 		l.b.refresh(cfg, m)
 		if err := l.catchUp(st, in, done); err != nil {
@@ -1869,7 +1872,7 @@ func (h *Hub) acquire(cfg Config, st *store.Store, c persona.Character, m llm.Mo
 		b.Compacted = l != nil && l.b.EpochSeen != latestID
 		if l != nil {
 			b.Trace.carry(l)
-			b.Trace.add(reuseBlockers(l, in, m.ID, sections, system, decls, latestID, stale, now, cfg.idleAfter()))
+			b.Trace.add(reuseBlockers(l, in, m.Ref(), sections, system, decls, latestID, stale, now, cfg.idleAfter()))
 		} else {
 			if missing == "" {
 				missing = settleFirst(&b.Trace)
@@ -1980,8 +1983,8 @@ func (l *Live) fill(b *Built, base int64) {
 	if l.contextID != "" && l.cfg.ForgetContext != nil {
 		l.cfg.ForgetContext(l.contextID)
 	}
-	l.b, l.msgs, l.system, l.model = b, b.Msgs, b.System, b.Model.ID
-	l.reasoningModel = b.Model.ID
+	l.b, l.msgs, l.system, l.model = b, b.Msgs, b.System, b.Model.Ref()
+	l.reasoningModel = b.Model.Ref()
 	l.relation, l.approvalRule, l.lastClockAt, l.lastTotalInput, l.first, l.todoChecked = b.Relation, "", b.ClockAt, 0, true, false
 	l.workState, l.workRecord = kernel.WorkState{}, workRecord{}
 	l.seen, l.baseSeq, l.turnSeqs = map[int64]bool{}, base, nil
@@ -2524,14 +2527,14 @@ func (h *Hub) runTurn(ctx context.Context, l *Live, c persona.Character, in Inpu
 			if e := checkUnlistedImages(cfg, l, failover.Model); e != nil {
 				return out, e
 			}
-			if failover.Model != b.Model.ID {
-				if e := l.useFailoverModel(cfg, failover.Model); e != nil {
+			if failover.Model != b.Model.Ref() {
+				if e := l.useFailoverModel(cfg, h.refs, failover.Model); e != nil {
 					return out, failover.Exhausted(e)
 				}
 			}
 			failoverNotice(in, turnID, step, failover)
 		}
-		l.clearModelReasoning(b.Model.ID)
+		l.clearModelReasoning(b.Model.Ref())
 		// 这一次发出去的（agent.ts transformContext）：超了软门槛就把本轮之前的长工具结果换成短占位，只改这一次，不改实例里的
 		requestSeqs := append([]int64(nil), inputSeqs...)
 		endRequest := cfg.timeline.begin("context.request", "")
@@ -2688,7 +2691,7 @@ func (h *Hub) runTurn(ctx context.Context, l *Live, c persona.Character, in Inpu
 					return out, e
 				}
 				discardModelDraft(l, in, turnID, step)
-				if e := l.useFailoverModel(cfg, failover.Model); e != nil {
+				if e := l.useFailoverModel(cfg, h.refs, failover.Model); e != nil {
 					return out, failover.Err(e)
 				}
 				failoverNotice(in, turnID, step, failover)

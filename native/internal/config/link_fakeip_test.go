@@ -9,7 +9,7 @@ import (
 
 func TestLinkFakeIPRanges(t *testing.T) {
 	d := DefaultLinks()
-	if len(d.FakeIPRanges) != 1 || d.FakeIPRanges[0] != "198.18.0.0/15" || len(d.check()) != 0 {
+	if len(d.FakeIPRanges) != 3 || d.FakeIPRanges[0] != "198.18.0.0/15" || d.FakeIPRanges[1] != "2001:2::/48" || d.FakeIPRanges[2] != "fdfe:dcba:9876::/48" || len(d.check()) != 0 {
 		t.Fatalf("默认值：%v %v", d.FakeIPRanges, d.check())
 	}
 	// 改默认值的副本不能改到包级默认
@@ -24,8 +24,8 @@ func TestLinkFakeIPRanges(t *testing.T) {
 	}{
 		{"fakeIPRanges: [\"198.18.0.1/16\"]", []string{"198.18.0.1/16"}, ""},
 		{"fakeIPRanges: [\"198.18.0.0/15\", \"fdfe:dcba:9876::/48\"]", []string{"198.18.0.0/15", "fdfe:dcba:9876::/48"}, ""},
-		{"fakeIPRanges: []", []string{}, ""},                            // 显式空表：没有假地址段
-		{"proxy: http://127.0.0.1:7897", []string{"198.18.0.0/15"}, ""}, // 没写这个键：保持默认
+		{"fakeIPRanges: []", []string{}, ""},                        // 显式空表：没有假地址段
+		{"proxy: http://127.0.0.1:7897", DefaultFakeIPRanges(), ""}, // 没写这个键：保持默认
 		{"fakeIPRanges: [\"nope\"]", nil, "fakeIPRanges"},
 		{"fakeIPRanges: [\"0.0.0.0/0\"]", nil, "范围太大"},
 		{"fakeIPRanges: [\"::/0\"]", nil, "范围太大"},

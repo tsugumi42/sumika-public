@@ -225,6 +225,7 @@ func (p *rejectPeer) handle(c *websocket.Conn, data []byte) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if e := c.Write(ctx, websocket.MessageText, []byte(body)); e != nil {
+		p.t.Logf("假协议端写回包失败，连接随之关闭：%v", e)
 		panic(e)
 	}
 	if echo != nil {
@@ -267,6 +268,7 @@ func (p *rejectPeer) pushEcho(c *websocket.Conn, lf landedFrame) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if e := c.Write(ctx, websocket.MessageText, []byte(b)); e != nil {
+		p.t.Logf("假协议端推回声失败，连接随之关闭：%v", e)
 		panic(e)
 	}
 }
@@ -290,6 +292,7 @@ func (p *rejectPeer) answerRecall(c *websocket.Conn, echo string, data []byte) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if e := c.Write(ctx, websocket.MessageText, []byte(body)); e != nil {
+		p.t.Logf("假协议端写回包失败，连接随之关闭：%v", e)
 		panic(e)
 	}
 }
@@ -557,7 +560,19 @@ func waitRows(t *testing.T, a *App, class, outcome string, want int) {
 
 func waitImages(t *testing.T, p *rejectPeer, n int) {
 	t.Helper()
-	waitFor(t, fmt.Sprintf("协议端收到 %d 个带图的帧", n), func() bool { return len(p.imageFrames()) >= n })
+	deadline := time.Now().Add(60 * time.Second)
+	for time.Now().Before(deadline) {
+		if len(p.imageFrames()) >= n {
+			return
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	// 超时把协议端实际收到的发送帧列出来（动作、几张图、几段文字、撤回了哪些号），CI 日志里才看得出卡在哪一步
+	var got []string
+	for i, f := range p.sent() {
+		got = append(got, fmt.Sprintf("#%d %s 图%d 文字%d", i, f.Action, len(f.Images), len(f.Texts)))
+	}
+	t.Fatalf("60 秒内没等到：协议端收到 %d 个带图的帧；实际收到的发送帧：%s；撤回过：%v", n, strings.Join(got, "；"), p.recallSnapshot())
 }
 
 func waitTextHas(t *testing.T, p *rejectPeer, want string) {
@@ -1570,6 +1585,7 @@ func (p *rejectPeer) answerHistory(c *websocket.Conn, action, echo string, data 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if e := c.Write(ctx, websocket.MessageText, []byte(body)); e != nil {
+		p.t.Logf("假协议端写回包失败，连接随之关闭：%v", e)
 		panic(e)
 	}
 }

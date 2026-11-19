@@ -9,8 +9,10 @@ import (
 	"os"
 
 	backend "sumika-native/internal/app"
+	"sumika-native/internal/config"
 	"sumika-native/internal/ctlproto"
 	"sumika-native/internal/ctlserver"
+	"sumika-native/internal/modelref"
 	"sumika-native/internal/paths"
 	"sumika-native/internal/runstats"
 )
@@ -35,7 +37,7 @@ func (b *ctlBackend) Usage(ctx context.Context, a ctlproto.StatsArgs) (ctlproto.
 	if _, err := os.Stat(file); err != nil {
 		return ctlproto.UsageReport{}, ctlproto.Errorf(ctlproto.CodeFailed, "还没有运行记录库（go/trace.db），没有可统计的")
 	}
-	svc, err := runstats.OpenFile(file, runstats.Options{})
+	svc, err := runstats.OpenFile(file, runstats.Options{Refs: b.s.statsRefs()})
 	if err != nil {
 		return ctlproto.UsageReport{}, ctlproto.Errorf(ctlproto.CodeFailed, "打不开运行记录库")
 	}
@@ -93,7 +95,7 @@ func (b *ctlBackend) Spans(ctx context.Context, a ctlproto.StatsArgs) (ctlproto.
 	if _, err := os.Stat(file); err != nil {
 		return ctlproto.SpansReport{}, ctlproto.Errorf(ctlproto.CodeFailed, "还没有运行记录库（go/trace.db）")
 	}
-	svc, err := runstats.OpenFile(file, runstats.Options{})
+	svc, err := runstats.OpenFile(file, runstats.Options{Refs: b.s.statsRefs()})
 	if err != nil {
 		return ctlproto.SpansReport{}, ctlproto.Errorf(ctlproto.CodeFailed, "打不开运行记录库")
 	}
@@ -128,7 +130,7 @@ func (b *ctlBackend) Rebuild(ctx context.Context, a ctlproto.StatsArgs) (ctlprot
 	if _, err := os.Stat(file); err != nil {
 		return ctlproto.RebuildReport{}, ctlproto.Errorf(ctlproto.CodeFailed, "还没有运行记录库（go/trace.db）")
 	}
-	svc, err := runstats.OpenFile(file, runstats.Options{})
+	svc, err := runstats.OpenFile(file, runstats.Options{Refs: b.s.statsRefs()})
 	if err != nil {
 		return ctlproto.RebuildReport{}, ctlproto.Errorf(ctlproto.CodeFailed, "打不开运行记录库")
 	}
@@ -162,7 +164,7 @@ func (b *ctlBackend) Quality(ctx context.Context, a ctlproto.StatsArgs) (ctlprot
 	if _, err := os.Stat(file); err != nil {
 		return ctlproto.QualityReport{}, ctlproto.Errorf(ctlproto.CodeFailed, "还没有运行记录库（go/trace.db），没有可统计的")
 	}
-	svc, err := runstats.OpenFile(file, runstats.Options{Redact: func(s string) string { return backend.RedactLog(s, nil) }})
+	svc, err := runstats.OpenFile(file, runstats.Options{Refs: b.s.statsRefs(), Redact: func(s string) string { return backend.RedactLog(s, nil) }})
 	if err != nil {
 		return ctlproto.QualityReport{}, ctlproto.Errorf(ctlproto.CodeFailed, "打不开运行记录库")
 	}
@@ -179,4 +181,15 @@ func (b *ctlBackend) Quality(ctx context.Context, a ctlproto.StatsArgs) (ctlprot
 		return ctlproto.QualityReport{}, ctlproto.Errorf(ctlproto.CodeFailed, "读运行记录库出错")
 	}
 	return rep, nil
+}
+
+// statsRefs 是统计读 model_runs.model 用的引用解析器：按现在的配置（已声明的服务商、defaultProvider），
+// 把 M2 之前写的裸模型 ID 补成规范引用，和新记录统计成一个模型（规格-模型配置 M2）。读不到配置就按历史上的唯一服务商 magpie
+func (s *shell) statsRefs() modelref.Resolver {
+	if loc, err := backend.ResourceRoot(s.opt.Root); err == nil {
+		if cfg, err := config.LoadIn(loc.Dir, s.opt.DataDir); err == nil {
+			return cfg.ModelRefs()
+		}
+	}
+	return modelref.New("magpie", "magpie")
 }

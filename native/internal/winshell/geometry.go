@@ -4,12 +4,15 @@
 package winshell
 
 import (
+	"math"
+	"os"
 	"time"
 
 	"github.com/egoist/mygo/ui"
 
 	"sumika-native/internal/chatui"
 	"sumika-native/internal/design"
+	"sumika-native/internal/design/colorx"
 )
 
 // 分栏常量照 Telegram，不随外观缩放（令牌 layout.*、opacity.*；design 的 TestLayoutConstants 钉着两边一致）。
@@ -38,10 +41,12 @@ const (
 )
 
 // 动效时长和曲线不随外观变，取令牌的 motion.fast、motion.panel 和 ease.*（换层 250 → 230 是主人 2026-11-10 看过并排图后定的）。
+// 下面所有动效量都由 motionscale.go 的 newMotionSet 一处算出（慢放倍数只在那里乘），这里只是按名字取出来用。
 var (
 	base        = design.Derive(design.DefaultSettings())
-	MotionFast  = base.Motion.MotionFast
-	MotionRoute = base.Motion.MotionPanel
+	mo          = newMotionSet(1)
+	MotionFast  = mo.fast
+	MotionRoute = mo.route
 )
 
 // Geometry 是随外观（字号、圆角、疏密）缩放的尺寸、字号和字重。
@@ -60,10 +65,13 @@ type Geometry struct {
 	SearchHeight, SearchInset, CompactBadge                                               float32
 	SwitchThumbSize, IconSize, IconSmall, NavItemHeight, SendSize, ComposerMin            float32
 	ControlWide, ValueWidth                                                               float32
-	BodySize, BodyLine, LabelSize, LabelLine, MetaSize, MetaLine                          float32
-	ConversationLine, ConversationSlot, TitleSize, TitleLine                              float32
-	NormalWeight, MediumWeight, StrongWeight, BoldWeight                                  int
-	NavWidth, BreakpointNarrow, BreakpointWide                                            float32
+	// 设置页的分组面（SettingGroup）：面最宽 640（让名字和右边的控件一眼连上，窗口宽了也靠左不拉满）；
+	// 一行左右留 SettingsInsetX；下拉入口定宽 SettingsSelectWidth（不随选中的字变宽）；“改过”的小圆点直径 SettingsDot。
+	SettingsGroupWidth, SettingsInsetX, SettingsSelectWidth, SettingsDot float32
+	BodySize, BodyLine, LabelSize, LabelLine, MetaSize, MetaLine         float32
+	ConversationLine, ConversationSlot, TitleSize, TitleLine             float32
+	NormalWeight, MediumWeight, StrongWeight, BoldWeight                 int
+	NavWidth, BreakpointNarrow, BreakpointWide                           float32
 }
 
 // NewGeometry 按外观令牌重算整套几何。
@@ -93,7 +101,15 @@ func NewGeometry(t chatui.Tokens) Geometry {
 	g.ComposerMin = chatui.ComposerMinHeight(t) // 胶囊输入框的高（ADR-351），外壳按它预留消息列底下的位置
 	g.IconSmall = m.SizeIconSm
 	g.ControlWide, g.ValueWidth = 280*kt, 40*kt
+	g.SettingsGroupWidth, g.SettingsSelectWidth, g.SettingsDot = 640*kt, 160*kt, 6*kt
+	g.SettingsInsetX = g.SpaceMedium
 	g.ConversationAvatar, g.ConversationInset = 46*kt, g.SpaceSmall
+	if os.Getenv("DL_AVATAR") == "40" { // 临时：设计专场并排图
+		g.ConversationAvatar = 40 * kt
+	}
+	if os.Getenv("DL_FIELD") == "40" { // 临时：设计专场并排图
+		g.RowHeight = m.SizeCtlMd
+	}
 	g.ListInset = g.ConversationInset
 	g.ListCompactWidth = g.ConversationAvatar + 2*g.ConversationInset
 	g.SearchHeight = g.HeaderHeight - g.SpaceSmall // 搜索框和聊天标题条同高、同一条线
@@ -125,25 +141,71 @@ func NewGeometry(t chatui.Tokens) Geometry {
 
 // Palette 是窗口外壳用的颜色（原型 palette）；全部从 chatui 令牌推出。
 type Palette struct {
+	Content, Group                                                                                                            ui.Color // 设置页内容区的底（最亮一档）和分组面的底（比内容区深一档，和分类栏同色）
 	Canvas, Rail, Pane, Bubble, Composer, Ink, Muted, Meta, Accent, OnAccent, Self, OnSelf, GroupUser, Selected, Danger, Line ui.Color
-	AccentHover, AccentPress                                                                                                  ui.Color    // 主按钮悬停、按下：角色色阶梯的 hover、press
-	Hover, Press                                                                                                              ui.Color    // 悬停、按下：正文色 6%、11% 的叠色
-	Strong, OnStrong, OnStrongMuted                                                                                           ui.Color    // 选中行：强调色解出的深档 + 白字
-	Avatar, AvatarInk                                                                                                         [8]ui.Color // 首字头像：角色色实底和它上面的字色（照 Bun .su-avatar-face）
+	AccentHover, AccentPress                                                                                                  ui.Color // 主按钮悬停、按下：角色色阶梯的 hover、press
+	Hover, Press                                                                                                              ui.Color // 悬停、按下：正文色 6%、11% 的叠色
+	// Track 是“平的”那档的底：分段轨道、没选中的筛选片、右栏页签的胶囊、徽标、标题栏图标钮的悬停。
+	// 现在和凹块底（Bubble，令牌 color.sunken）同色；分开放是为了两档能各自调（2026-11-17 体检：凹和平分不出来，一半原因是共用一个色）。
+	Track ui.Color
+	// Edge 是认出控件要靠的那条边、那段轨道：关着的开关的轨道、滑块没填满的那段和滑钮的描边。
+	// 从深一档的细线色出发只调明度，取对页面底、内容区都刚好过 3:1 的一档（WCAG 2 1.4.11；设计语言第 117 行“控件边框 3”）。
+	Edge ui.Color
+	// Well 是“凹下去”那档的底：一层半透明的暗色（浅色用正文色、深色用黑），不透明度取“盖在页面底上明度正好降 WellDepth”的一档。
+	// 放到白卡片上也只比卡片深差不多同样多；以前用实色的凹块底，在页面底上几乎看不出、在白卡片上又显得特别深
+	// （2026-11-17 体检 A，主人在画廊对比小样里挑定 A5“相对凹”）。
+	Well                            ui.Color
+	Strong, OnStrong, OnStrongMuted ui.Color    // 选中行：强调色解出的深档 + 白字
+	Avatar, AvatarInk               [8]ui.Color // 首字头像：角色色实底和它上面的字色（照 Bun .su-avatar-face）
 }
 
 // NewPalette 从 chatui 令牌推出外壳的颜色。等 fix/proto-palette 的主题预设合进来，只在这里换来源。
 func NewPalette(t chatui.Tokens) Palette {
 	c := t.C
 	acc := t.AccentOf(chatui.DefaultChar)
-	p := Palette{Canvas: c.Bg, Rail: c.Rail, Pane: c.Bg, Bubble: c.Sunken, Composer: c.Surface, Ink: c.Text, Muted: c.Text2, Meta: c.Text3,
+	p := Palette{Content: c.Surface, Group: c.Bg, Canvas: c.Bg, Rail: c.Rail, Pane: c.Bg, Bubble: c.Sunken, Composer: c.Surface, Ink: c.Text, Muted: c.Text2, Meta: c.Text3,
 		Accent: acc.Base, OnAccent: acc.On, Self: acc.Soft, OnSelf: c.Text, GroupUser: c.Text, Selected: c.SunkenHover, Danger: c.Danger, Line: c.Line, Hover: c.Hover, Press: c.Press,
-		Strong: acc.Strong, OnStrong: acc.OnStrong, OnStrongMuted: acc.OnStrongMuted, AccentHover: acc.Hover, AccentPress: acc.Press}
+		Strong: acc.Strong, OnStrong: acc.OnStrong, OnStrongMuted: acc.OnStrongMuted, AccentHover: acc.Hover, AccentPress: acc.Press, Track: c.Sunken, Edge: controlEdge(t),
+		Well: wellOf(t)}
 	for i := range p.Avatar {
 		a := t.AccentOf(chatui.CharColors[i%len(chatui.CharColors)])
 		p.Avatar[i], p.AvatarInk[i] = a.Face, a.On
 	}
 	return p
+}
+
+// WellDepth 是凹槽比它所在的面暗多少（OKLab 明度 × 100 的 4，亮暗一样）。主人 2026-11-17 在对比小样里拖滑块看过，默认 4。
+const WellDepth = .04
+
+// wellOf 算 Palette.Well：ink 盖在页面底上明度正好降 WellDepth 的那个不透明度（二分）。
+func wellOf(t chatui.Tokens) ui.Color {
+	c := t.C
+	ink := c.Text
+	if t.S.Dark {
+		ink = ui.RGB(0, 0, 0)
+	}
+	target := colorx.FromColor(c.Bg).L - WellDepth
+	lo, hi := 0.0, 1.0
+	for range 30 {
+		mid := (lo + hi) / 2
+		if colorx.FromColor(colorx.Over(ink, mid, c.Bg)).L > target {
+			lo = mid
+		} else {
+			hi = mid
+		}
+	}
+	ink.A = uint8(math.Round(hi * 255))
+	return ink
+}
+
+// controlEdge 算 Palette.Edge：浅色往深调、深色往浅调。
+func controlEdge(t chatui.Tokens) ui.Color {
+	c, dir := t.C, -1.0
+	if t.S.Dark {
+		dir = 1
+	}
+	o, _ := colorx.Reach(colorx.FromColor(c.LineStrong), dir, chatui.MinIconContrast, c.Bg, c.Surface)
+	return o.Color()
 }
 
 // NewTheme 是 mygo 的主题（给没有自己画的控件、焦点环和读屏用）；由 design.Theme 构造（规格 7.5）。
@@ -152,45 +214,22 @@ func NewTheme(t chatui.Tokens, p Palette, font string) ui.Theme {
 	return design.Theme(t.D, t.D.AccentOf(chatui.DefaultChar.Design()), font)
 }
 
-// ControlMotion 和 RouteMotion 是控件状态与换层的动画（原型 controlMotion、routeMotion）；ControlFade 是同样快慢的颜色、透明度淡变，
-// 带 NonMotion：系统要求减少动态效果时位移、旋转直接到位，AnimateTo 做的透明度淡变照常（ADR-124）。AnimateColor 在 mygo 里本来就
-// 不受减少动态影响，颜色也用 ControlFade 只是为了一眼看出“这是淡变”。
+// 控件、换层、抽屉、弹层、下拉的动效（说明写在 motionscale.go 的 newMotionSet 里，和原来一字不差的取值）。
 var (
-	ControlMotion = ui.Animation{Duration: MotionFast, Ease: ui.CubicBezier(base.Curve.EaseStandard[0], base.Curve.EaseStandard[1], base.Curve.EaseStandard[2], base.Curve.EaseStandard[3])}
-	ControlFade   = ui.Animation{Duration: MotionFast, Ease: ControlMotion.Ease, NonMotion: true}
-	RouteMotion   = ui.Animation{Duration: MotionRoute, Ease: ui.CubicBezier(base.Curve.EaseRoute[0], base.Curve.EaseRoute[1], base.Curve.EaseRoute[2], base.Curve.EaseRoute[3])}
-)
-
-// PanelOutMotion 是抽屉、右栏退场：200 毫秒（令牌 motion.panel-out），进场仍是 RouteMotion 的 230；曲线暂同进场（退场曲线三选一等主人定）。
-// PanelFade 是抽屉的透明度：进出都淡，带 NonMotion，减少动态效果时位移直接到位、淡变还在。
-var (
-	PanelOutMotion = ui.Animation{Duration: base.Motion.MotionPanelOut, Ease: RouteMotion.Ease}
-	PanelFade      = ui.Animation{Duration: MotionRoute, Ease: RouteMotion.Ease, NonMotion: true}
-	PanelFadeOut   = ui.Animation{Duration: base.Motion.MotionPanelOut, Ease: RouteMotion.Ease, NonMotion: true}
-)
-
-// SelectFade 是“选中”这一族（导航项、会话行、设置分类、筛选片）底色和阴影的淡变：选中那块浮起的白底加阴影、悬停和按下的浅底，都 140 毫秒淡进淡出
-// （规格 A9、A10、B2）。只开 Colors、Shadows：位置、大小不动画，拖分栏时行跟手。
-var SelectFade = ui.ElementTransition{Duration: MotionFast, Ease: ControlMotion.Ease, Colors: true, Shadows: true}
-
-// 弹层的进出场（规格-过渡动画 3.1，时长和位移都取令牌 motion.*、travel.*、scale.*）。
-// 菜单、下拉：180 进 / 130 出，从触发的那一边出来（Flip：菜单翻到触发钮上方时镜像）6、缩放 .98；
-// 对话框：220 / 160，进场 Y 10、缩放 .985；提示：150 / 100，Y 2。进出场都只淡加这点位移缩放，高度不动。
-// 退场曲线沿用进场（ExitEase 留空）；规格里的 (.42,0,1,1) / animate-ui / 直接用 route 三选一等主人定，定了只改 popTransition。
-// 减少动态效果时 mygo 保留淡入淡出、位移缩放归零（transition.go:158-161）。
-var (
-	MenuTransition = popTransition(base.Motion.MotionMenuIn, base.Motion.MotionMenuOut,
-		ui.Motion{Y: -float32(base.Num.TravelMenu), Scale: float32(base.Num.ScaleMenu), Flip: true})
-	// 对话框：遮罩和面板一起淡（Transition 挂在整窗遮罩上，它是浮层的直接孩子，进出场才播），面板的上移和缩放另用 DialogPop 状态驱动
-	// （面板和遮罩同一帧出现，它自己的 Enter 不播）；退场是遮罩拷贝整个淡出，面板不再位移。
-	DialogFade    = popTransition(base.Motion.MotionDialogIn, base.Motion.MotionDialogOut, ui.Motion{})
-	DialogPop     = ui.Animation{Duration: base.Motion.MotionDialogIn, Ease: ui.EaseOut}
-	TipTransition = popTransition(base.Motion.MotionTipIn, base.Motion.MotionTipOut, ui.Motion{Y: float32(base.Num.TravelTip), Flip: true})
+	ControlMotion  = mo.controlMotion
+	ControlFade    = mo.controlFade
+	RouteMotion    = mo.routeMotion
+	SizeMotion     = mo.sizeMotion // 宽高、进度条：“利落”弹簧，不过冲
+	PanelOutMotion = mo.panelOut
+	PanelFade      = mo.panelFade
+	PanelFadeOut   = mo.panelFadeOut
+	SelectFade     = mo.selectFade
+	TipTransition  = mo.tip
 	// StatusTransition 是标题栏状态字换内容：140 毫秒淡入、淡出，不位移（规格-过渡动画 C21）。
-	StatusTransition = popTransition(base.Motion.MotionFast, base.Motion.MotionFast, ui.Motion{})
-	// ContentFadeAnim 是“换内容”（换页、换会话、换设置分类）：新内容 200 毫秒淡入，不位移，旧的不做出场（规格 3.1）。
-	// 淡入带 NonMotion：系统要求减少动态效果时淡入照常（ADR-124）。状态驱动（fadeIn），因为换内容的元素和它的父元素常常是同一帧新出现的，Transition 的 Enter 不播。
-	ContentFadeAnim = ui.Animation{Duration: base.Motion.MotionMsg, Ease: ui.EaseOut, NonMotion: true}
+	StatusTransition = mo.status
+	ContentFadeAnim  = mo.contentFade
+	DropdownGrow     = mo.ddGrow
+	DropdownShrink   = mo.ddShrink
 )
 
 // popTransition 是进出场用同一个起点的 Transition：in 进、out 出。

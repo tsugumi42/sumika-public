@@ -136,7 +136,7 @@ func (h *Hub) loadWork(ctx context.Context, l *Live, in Input) (kernel.WorkState
 		raw, _ := json.Marshal(struct {
 			Model, ModelVersion, System, Tools string
 			Workspace                          Workspace
-		}{l.b.Model.ID, l.cfg.ModelVersion, l.b.System, toolsDigest(l.b), in.Workspace})
+		}{l.b.Model.Ref(), l.cfg.ModelVersion, l.b.System, toolsDigest(l.b), in.Workspace})
 		hash := sha256.Sum256(raw)
 		if err := p.service.Open(ctx, inv, hex.EncodeToString(hash[:])); err != nil {
 			return kernel.WorkState{}, nil, err

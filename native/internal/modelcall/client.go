@@ -14,6 +14,7 @@ import (
 	"sumika-native/internal/llm"
 	"sumika-native/internal/llm/chat"
 	"sumika-native/internal/llm/openaichat"
+	"sumika-native/internal/modelref"
 	"sumika-native/internal/store"
 	"sumika-native/internal/turnbudget"
 )
@@ -30,6 +31,9 @@ type Client struct {
 	RequestOutputTokens int64
 	Now                 func() time.Time
 	Failover            *llm.Failover
+	// Refs 把请求里的模型换成规范引用 `服务商ID/模型ID`（trace、用量记的就是它）；从传输层（llm.Router）取，
+	// 传输层不带解析器时是零值，模型串原样记
+	Refs modelref.Resolver
 
 	// 排队的请求：运行页的"模型请求槽位"行读它（Load）。只记开始等的时刻，拿到槽或放弃就删，没有协程
 	waitMu  sync.Mutex
@@ -41,7 +45,8 @@ type Client struct {
 }
 
 func New(transport Transport, budget kernel.Budget, st *store.Store, capacity int, output int64) *Client {
-	return &Client{Transport: transport, Budget: budget, Store: st, Slots: make(chan struct{}, capacity), RequestOutputTokens: output, Now: time.Now, Failover: &llm.Failover{}}
+	refs := llm.RefsOf(transport)
+	return &Client{Transport: transport, Budget: budget, Store: st, Slots: make(chan struct{}, capacity), RequestOutputTokens: output, Now: time.Now, Failover: &llm.Failover{Refs: refs}, Refs: refs}
 }
 
 // enterWait 记下一个请求开始等槽，返回"不等了"的函数（拿到槽或放弃时调；可以重复调）
@@ -196,6 +201,7 @@ func (c *Client) waitSettle(ctx context.Context) error {
 // StreamChat 是中立请求的预算和记账入口：和发送共用槽位、预留、结算、model_runs。
 // 失败切换的 trace 由 WithFailover 带进来。
 func (c *Client) StreamChat(ctx context.Context, in kernel.Invocation, req chat.Request, onEvent func(llm.Event)) (result llm.Result, err error) {
+	req.Model = c.Refs.Canonical(req.Model)
 	return c.stream(ctx, in, transportCall{
 		model:           req.Model,
 		failover:        llm.FailoverFrom(ctx),

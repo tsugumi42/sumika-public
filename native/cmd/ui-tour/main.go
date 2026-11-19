@@ -99,8 +99,14 @@ func run(app, out, sockets string) (ret error) {
 			ret = fmt.Errorf("%v; 写报告: %w", ret, err)
 		}
 	}()
-	for _, size := range []struct{ name, value string }{{"wide", "2048x1030"}, {"narrow", "480x720"}} {
-		for _, mode := range []struct{ name, value string }{{"light", "light"}, {"dark", "night"}} {
+	sizes := []struct{ name, value string }{{"wide", "2048x1030"}, {"narrow", "480x720"}}
+	modes := []struct{ name, value string }{{"light", "light"}, {"dark", "night"}}
+	if quick { // 临时：设计专场截并排图用，只截三个画面
+		sizes = []struct{ name, value string }{{"q", "1280x860"}, {"n", "900x700"}}
+		modes = modes[:1]
+	}
+	for _, size := range sizes {
+		for _, mode := range modes {
 			variant := size.name + "-" + mode.name
 			stats, err := session(app, out, sockets, variant, size.value, mode.value, &r.States)
 			r.Runs = append(r.Runs, stats)
@@ -139,6 +145,9 @@ func session(app, out, sockets, variant, size, mode string, states *[]state) (st
 	log := &journal{file: file}
 	cmd := exec.Command(app, "-demo")
 	cmd.Env = append(cleanEnv(), "MYGO_AUTOMATION="+sock, "MYGO_FRAME_STATS=all", "SUMIKA_SIZE="+size, "SUMIKA_AUTOMATION_THEME="+mode)
+	if quick {
+		cmd.Env = append(cmd.Env, "SUMIKA_MAIN_VIEW=workbench")
+	}
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return stats, err
@@ -198,11 +207,60 @@ func session(app, out, sockets, variant, size, mode string, states *[]state) (st
 	}
 	c.win = ws.Windows[0].ID
 	t := tour{c: c, log: log, out: out, prefix: variant, start: 0, states: states}
+	if quick {
+		time.Sleep(2 * time.Second)
+		c.idle()
+		if err = t.take("start-"+size, ""); err != nil {
+			return stats, err
+		}
+		steps := os.Getenv("UI_TOUR_STEPS")
+		if size == "900x700" {
+			steps = os.Getenv("UI_TOUR_STEPS_N")
+		}
+		for i, step := range strings.Split(steps, "|") { // 临时：按无障碍名字依次点，每步截一张
+			if step == "" {
+				continue
+			}
+			if err = c.press(step); err != nil {
+				return stats, fmt.Errorf("点 %q: %w", step, err)
+			}
+			time.Sleep(600 * time.Millisecond)
+			c.idle()
+			if err = t.take(fmt.Sprintf("step%d-%s", i, size), ""); err != nil {
+				return stats, err
+			}
+		}
+		return stats, nil
+	}
 	if err = t.wait("聊天窗口"); err != nil {
 		return stats, err
 	}
 	if onlyRunPage {
 		return stats, t.runPageTabs(c)
+	}
+	if quick {
+		if err = t.conversation("QQ", "测试群"); err != nil {
+			return stats, err
+		}
+		if size == "900x700" { // 窄一点的窗口里右侧栏是浮动面板
+			if err = c.pressWithin(`展开右侧栏（Ctrl+\）`, "聊天顶栏"); err != nil {
+				return stats, err
+			}
+			if err = t.wait("这个会话"); err != nil {
+				return stats, err
+			}
+			return stats, t.take("side", "")
+		}
+		if err = t.take("chat", ""); err != nil {
+			return stats, err
+		}
+		if err = c.press("设置"); err != nil {
+			return stats, err
+		}
+		if err = c.press("模型"); err != nil {
+			return stats, err
+		}
+		return stats, t.take("settings", "")
 	}
 	if err = t.listPage(); err != nil {
 		return stats, err
@@ -293,6 +351,9 @@ func session(app, out, sockets, variant, size, mode string, states *[]state) (st
 
 // onlyRunPage 为真时只看运行页的几个标签（-runpage），不走前面的会话、设置各页
 var onlyRunPage bool
+
+// quick：临时，设计专场截并排图用（UI_TOUR_QUICK=1）
+var quick = os.Getenv("UI_TOUR_QUICK") == "1"
 
 // runPageTabs 走运行页的状态、资源、用量、存储标签（演示读服务造的六个角色、四十天数据）
 func (t *tour) runPageTabs(c *client) error {

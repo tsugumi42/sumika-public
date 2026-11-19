@@ -94,7 +94,7 @@ func (h *Hub) compactGuardBroken(st *store.Store, src compactSource, g *compactG
 	if curCfg.ModelVersion != g.modelVersion {
 		return "开始压缩以后换了模型设置"
 	}
-	if want := curCfg.Models[src.b.CharacterID]; want != "" && want != g.model {
+	if want := curCfg.Models[src.b.CharacterID]; want != "" && h.refs.Canonical(want) != g.model {
 		return "开始压缩以后换了模型"
 	}
 	return ""
@@ -568,7 +568,7 @@ func (h *Hub) compactNow(ctx context.Context, src compactSource, trigger string,
 	skipEpoch := ctx.Err() != nil && (trigger == "early" || trigger == "idle")
 	if !skipEpoch {
 		if err := st.AddEpoch(store.Epoch{ID: id, Conversation: b.Conversation, CharacterID: b.CharacterID, FromSeq: cut, Summary: summary, Kind: kind, Trigger: trigger,
-			TokensBefore: src.before, TokensAfter: after, Dropped: dropped, Kept: kept, Model: b.Model.ID, Status: status, Error: errStr,
+			TokensBefore: src.before, TokensAfter: after, Dropped: dropped, Kept: kept, Model: b.Model.Ref(), Status: status, Error: errStr,
 			Ms: now.Sub(started).Milliseconds(), CreatedAt: now.UnixMilli()}); err != nil {
 			h.plugins.logf("会话 %s 压缩的结果没写进库：%v", b.Conversation, err)
 			return Compacted{Err: err.Error(), Stopped: ctx.Err() != nil}

@@ -3,7 +3,7 @@ name: mygo-maintenance
 description: Maintain Go applications using github.com/egoist/mygo, including UI changes, crash fixes, and dependency upgrades. Apply MyGo-specific lifetime, identity, threading, and testing practices.
 ---
 
-> 来源：egoist/mygo v0.9.1 自带的 `cmd/mygo/template/shared/.agents/skills/mygo-maintenance/SKILL.md`（MIT），2026-10-26 原样拷进来，2026-10-27 升到 v0.7.1、2026-10-29 升到 v0.7.3、2026-11-02 升到 v0.7.4、2026-11-07 升到 v0.8.1 时对过，正文没变；2026-11-12 升到 v0.9.0，同步了列表行那一条（悬停、按下用 ListRow 自己的方法读）；2026-11-16 升到 v0.9.1，同步了 `SelectAll(c)` 那一句。
+> 来源：egoist/mygo v0.10.0 自带的 `cmd/mygo/template/shared/.agents/skills/mygo-maintenance/SKILL.md`（MIT），2026-10-26 原样拷进来，2026-10-27 升到 v0.7.1、2026-10-29 升到 v0.7.3、2026-11-02 升到 v0.7.4、2026-11-07 升到 v0.8.1 时对过，正文没变；2026-11-12 升到 v0.9.0，同步了列表行那一条（悬停、按下用 ListRow 自己的方法读）；2026-11-16 升到 v0.9.1，同步了 `SelectAll(c)` 那一句；2026-11-18 升到 v0.10.0 时对过，正文没变。
 > Sumika 用法：`native/` 里的 mygo / CrychicUI 界面代码、界面 bug、升级 mygo 时用；版本以 `native/go.mod` 为准，mygo 升级时把这份换成新版本里的同一个文件（ADR-176）。项目自己的规矩以 AGENTS.md、LESSONS.md、ADR 为准。
 > 许可：MIT。Copyright (c) 2026 MyGo contributors。许可全文见仓库里的 `native/cmd/logotool/LICENSE-mygo`；本文件改自上游模板，再分发时保留这段版权声明和许可全文。
 

@@ -188,7 +188,7 @@ func (g memoryGenerator) Call(ctx context.Context, model, prompt, cacheKey strin
 		req.Thinking = ""
 		chosen := llm.Model{ID: plan.Model}
 		for _, m := range s.Models {
-			if m.ID == plan.Model {
+			if m.Ref() == plan.Model { // plan.Model 是 Failover 给的规范引用
 				chosen = m
 				level := string(s.Values.BackgroundThinking)
 				if g.thinking != "" {

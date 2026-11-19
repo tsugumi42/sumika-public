@@ -5,18 +5,19 @@ import (
 
 	"sumika-native/internal/llm"
 	"sumika-native/internal/llm/chat"
+	"sumika-native/internal/modelref"
 )
 
 // failoverSelector 是这个 Hub 共用的冷却表：宿主没给时才建，并发回合拿到同一份。
 func (h *Hub) failoverSelector(cfg Config) *llm.Failover {
-	h.failoverOnce.Do(func() { h.failover = &llm.Failover{Now: cfg.Now} })
+	h.failoverOnce.Do(func() { h.failover = &llm.Failover{Now: cfg.Now, Refs: h.refs} })
 	return h.failover
 }
 
 // checkUnlistedImages：模型列表里没有的模型能力未知，历史里有图时不能悄悄不带图发出去（规格验收第 7 条）。
 func checkUnlistedImages(cfg Config, l *Live, model string) error {
 	for _, candidate := range cfg.modelCatalog {
-		if candidate.ID == model {
+		if candidate.Ref() == model { // model 是 Failover.Plan 给的规范引用
 			return nil
 		}
 	}
@@ -47,10 +48,20 @@ func (l *Live) clearModelReasoning(model string) {
 	l.reasoningModel = model
 }
 
-func (l *Live) useFailoverModel(cfg Config, name string) error {
-	model := llm.Model{ID: name}
+// modelFor 是目录里没有的模型：只知道引用（服务商 + ID），能力未知
+func modelFor(refs modelref.Resolver, name string) llm.Model {
+	ref, err := refs.Parse(name)
+	if err != nil {
+		return llm.Model{ID: name}
+	}
+	return llm.Model{Provider: ref.Provider, ID: ref.Model}
+}
+
+// useFailoverModel 换到备选模型；name 是 Failover.Plan 给的规范引用
+func (l *Live) useFailoverModel(cfg Config, refs modelref.Resolver, name string) error {
+	model := modelFor(refs, name)
 	for _, candidate := range cfg.modelCatalog {
-		if candidate.ID == name {
+		if candidate.Ref() == name {
 			model = candidate
 			break
 		}

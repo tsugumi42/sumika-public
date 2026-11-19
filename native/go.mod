@@ -1,6 +1,6 @@
 module sumika-native
 
-go 1.27.3
+go 1.27.4
 
 tool github.com/egoist/mygo/cmd/mygo
 
@@ -11,7 +11,7 @@ require (
 	github.com/JohannesKaufmann/html-to-markdown v1.6.0
 	github.com/Microsoft/go-winio v0.6.4
 	github.com/coder/websocket v1.8.15
-	github.com/egoist/mygo v0.9.1
+	github.com/egoist/mygo v0.10.0
 	github.com/gen2brain/pngn v0.1.3
 	github.com/gen2brain/vpx v0.2.2
 	github.com/goccy/go-yaml v1.19.2

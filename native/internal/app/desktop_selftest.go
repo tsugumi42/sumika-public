@@ -268,7 +268,7 @@ func (r *DesktopReader) fillSelftestTrace(res *SelftestResult) {
 	err = tr.Trace.QueryRow(`SELECT model,route_provider,route_model,error FROM model_runs WHERE turn_id=? AND stage<>'reply-retry'
 		ORDER BY started_at DESC, rowid DESC LIMIT 1`, res.TurnID).Scan(&model, &provider, &route, &runErr)
 	if err == nil {
-		res.Model = model.String
+		res.Model = a.cfg.ModelRefs().Canonical(model.String) // 历史行是裸 ID，读时补成规范引用
 		if route.Valid && route.String != "" {
 			res.Route = strings.Trim(provider.String+"/"+route.String, "/")
 		}

@@ -16,7 +16,7 @@ func TestUseVendorBinMakesSearchToolsFindable(t *testing.T) {
 	if err := os.MkdirAll(bin, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	for _, n := range []string{"rg.exe", "fd.exe"} {
+	for _, n := range []string{fakeExe("rg"), fakeExe("fd")} {
 		if err := os.WriteFile(filepath.Join(bin, n), nil, 0o755); err != nil {
 			t.Fatal(err)
 		}

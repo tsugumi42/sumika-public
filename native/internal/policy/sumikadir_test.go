@@ -49,6 +49,7 @@ func TestHookConfigWriteAlwaysAsks(t *testing.T) {
 
 // 读不拦；名字像的也不误伤；工作目录里别的文件照旧
 func TestHookConfigReadAndNeighboursUntouched(t *testing.T) {
+	windowsPathsOnly(t)
 	work := `D:\work\proj`
 	console := Audience{Channel: "console", PrivateOk: true}
 	env := Env{Mode: "yolo", Workdir: work, Declared: true, Audience: console}

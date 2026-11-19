@@ -41,7 +41,25 @@ func (a *App) resolveModels(models []llm.Model, overrides map[string]config.Mode
 	if a.modelDev != nil {
 		cat = a.modelDev.Catalog()
 	}
-	return modelmeta.ResolveAll(models, ov, cat)
+	return a.tagProvider(modelmeta.ResolveAll(models, ov, cat))
+}
+
+// catalogProvider 是现在唯一有目录的服务商：magpie（规格-模型配置 M3 才做多服务商目录）。
+// 目录里的模型打上它的 ID，引用 `magpie/xxx` 和裸 `xxx` 才找得到同一项
+const catalogProvider = "magpie"
+
+// tagProvider 给没标服务商的模型标上 catalogProvider；配置里没有这个服务商（没读过配置的零值配置）就不标，
+// 引用原样当模型 ID。已标的不动
+func (a *App) tagProvider(models []llm.Model) []llm.Model {
+	if !a.cfg.ModelRefs().Declared(catalogProvider) {
+		return models
+	}
+	for i := range models {
+		if models[i].Provider == "" {
+			models[i].Provider = catalogProvider
+		}
+	}
+	return models
 }
 
 // reresolveModels 在 models.dev 缓存换了新内容以后重算已发布的模型列表（下一轮用）

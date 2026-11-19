@@ -40,7 +40,7 @@ func Listen(ctx context.Context, s *Server, runFile string) (*Listener, error) {
 	if runFile != "" {
 		if b, err := os.ReadFile(runFile); err == nil {
 			var old rpcwire.RunFile
-			if json.Unmarshal(b, &old) == nil && old.PID > 0 && old.PID != os.Getpid() && processAlive(old.PID) {
+			if json.Unmarshal(b, &old) == nil && old.PID > 0 && old.PID != os.Getpid() && rpcwire.ProcessAlive(old.PID) {
 				return nil, fmt.Errorf("数据目录里已经有一个后台开着协议入口（%s，进程 %d）；同一时刻只跑一个后台", old.Impl, old.PID)
 			}
 		}
@@ -154,16 +154,6 @@ func writeRunFile(path string, rf rpcwire.RunFile) error {
 		return err
 	}
 	return os.Rename(tmp, path)
-}
-
-// processAlive：Windows 上 FindProcess 会去开进程句柄，进程不在就失败；别的系统 FindProcess 总成功，只当活着
-func processAlive(pid int) bool {
-	p, err := os.FindProcess(pid)
-	if err != nil {
-		return false
-	}
-	p.Release()
-	return true
 }
 
 type wsTransport struct{ c *websocket.Conn }

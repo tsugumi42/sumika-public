@@ -61,7 +61,7 @@ func (h *Hub) reasonOf(state kernel.Outcome, err error, res *Result) RunReason {
 		r.Detail = truncate(err.Error(), detailRunes)
 	}
 	if r.Model == "" && res != nil && res.Built != nil {
-		r.Model = res.Built.Model.ID
+		r.Model = res.Built.Model.Ref()
 	}
 	return r
 }

@@ -82,6 +82,9 @@ func notifyUIApp(t *testing.T, reg *notifyRegReader) (*app, *ui.Tester, func()) 
 	a, tt, pump := remoteUIApp(t, &regReader{})
 	a.realTab = tabNotify
 	a.reader = reg
+	// 读设置是异步的：只 pump 一次时请求已发出（asked、busy）但结果可能还没回来，断言会读到空的 known（2026-11-19 合并队列红过）。
+	// 照 notifyWaitWrites 的写法等结果回到界面
+	remoteWait(t, "通知设置读到、结果回到界面", func() bool { pump(); return a.notifyUI.asked && !a.notifyUI.busy })
 	pump()
 	return a, tt, pump
 }

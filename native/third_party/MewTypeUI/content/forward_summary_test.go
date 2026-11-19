@@ -56,9 +56,15 @@ func TestForwardSummaryDisabledRetryOpacity(t *testing.T) {
 	render := func(disabled bool) *ui.Tester {
 		tt := ui.NewTester(func(c *ui.Context) {
 			surface(c, func() {
-				e := ForwardSummary(c, ForwardSummaryData{ID: "s", Title: "Forward", Status: SummaryFailed, Error: "Failed"}, ForwardSummaryOptions{Appearance: Appearance{Disabled: disabled}, CanRetry: true, RetryLabel: "Retry", OnRetry: func(string) {}})
-				if !disabled {
-					e.Opacity(.5)
+				build := func(off bool) {
+					ForwardSummary(c, ForwardSummaryData{ID: "s", Title: "Forward", Status: SummaryFailed, Error: "Failed"}, ForwardSummaryOptions{Appearance: Appearance{Disabled: off}, CanRetry: true, RetryLabel: "Retry", OnRetry: func(string) {}})
+				}
+				// mygo 0.8.0 起 Opacity 是整组淡出，和禁用继承的 0.5 不再等价；
+				// 参照改成：启用的卡片放进禁用的父元素，只吃 mygo 的那一次 0.5。
+				if disabled {
+					build(true)
+				} else {
+					ui.Column(c).FillWidth().Disabled(true).Children(func() { build(false) })
 				}
 			})
 		}, 300, 160)

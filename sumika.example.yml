@@ -21,6 +21,11 @@ magpie:
 #     keyRef: ${env:OLLAMA_API_KEY}    # 只放引用：${secret:名字}（密钥库）或 ${env:名字}；明文 key 不收
 #     compat: { cacheKey: false }      # 兼容开关，按服务商单独开
 # defaultProvider: magpie              # 裸模型引用归哪个服务商；不写 = magpie
+# 模型引用（下面各处的 model / background / topic / fallbackModels、defaults.backgroundModel、defaults.fallbackModels、
+# agent.advisor.model、agent.verify.model、subagents.model、vision.model 都一样）：写 服务商ID/模型ID，按第一个斜杠切；
+# 不带已声明服务商前缀的裸字符串整串当模型 ID、归 defaultProvider（Magpie 自己的 group/auto-xxx 就是这样）；
+# 也可以写对象 { provider: 服务商ID, model: 模型ID }，读进来等价于字符串；老配置不用改，也不会被自动改写。
+# 现在只有 magpie 接了连接和模型列表，别的服务商的引用会在发请求时明确报"还没有可用的连接"，不会落到 magpie
 
 dataDir: data
 charactersDir: characters
@@ -66,10 +71,11 @@ linkReader:
   context:
     enabled: true
   # proxy: http://127.0.0.1:<端口>   # 取 X 要走代理时写；空 = 直连
-  # fake-ip：Clash / mihomo 的 fake-ip 模式会把域名解析成假地址（默认落在 198.18.0.0/15），真地址只有代理知道。
+  # fake-ip：Clash / mihomo 的 fake-ip 模式会把域名解析成假地址（IPv4 默认落在 198.18.0.0/15；IPv6 常见 2001:2::/64 或 fdfe:dcba:9876::/64），真地址只有代理知道。
+  # 收图下载（QQ 图片）和链接取数共用这一项：收图在名单内主机解析到假地址时直连假地址（TUN 接管）。
   # 解析到这些段时：取数 / 下载名单里的主机经上面的 proxy（或环境变量 HTTPS_PROXY / HTTP_PROXY）按主机名连，让代理去解析；
   # 名单外的主机一律拒绝；名单内但没有代理可走也拒绝。改了要重启接收。写 [] = 没有假地址段（保留段地址一律拒绝）。段不能盖住本机 / 内网地址（127.0.0.0/8、10.0.0.0/8、192.168.0.0/16 等），写成那样加载会报错
-  fakeIPRanges: ["198.18.0.0/15"]
+  fakeIPRanges: ["198.18.0.0/15", "2001:2::/48", "fdfe:dcba:9876::/48"]
   # 取数节奏：每个平台每分钟最多发几次请求。用满了排队等空位（最多 maxWaitSeconds 秒），不算失败；
   # 只有平台自己回了限流（429、B 站 412 风控）才冷却、才失败。B 站默认放慢：它按 IP 风控，连发会连累同一个网络里刷 B 站的人
   rate:

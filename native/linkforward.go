@@ -119,9 +119,16 @@ func (a *app) linkForwardPage(c *ui.Context, e config.LinkExpand) {
 		}
 		a.settingsRow(c.Key("fwd-card"), "节点名和卡片文字", settings.ButtonOptions{Value: value, Arrow: true, OnActivate: func() { f.open = !f.open }})
 	}
-	if !f.open {
-		return
+	if k := a.settingsKit(); k != nil {
+		k.Disclose(c, "fwd-card-body", f.open, k.G.PaneInset, func() { a.linkForwardBody(c, f) }) // 展开收起：高度弹簧加淡变
+	} else if f.open {
+		a.linkForwardBody(c, f)
 	}
+}
+
+// linkForwardBody 是“节点名和卡片文字”展开后的内容：说明、各个字段、插入占位符、预览、保存。
+func (a *app) linkForwardBody(c *ui.Context, f *linkForwardState) {
+	s := &a.linkSettings
 	errs, bad := f.errors()
 	a.modelNote(c, "节点名留空用她的 QQ 名字，头像永远是她自己的。卡片文字留空用 QQ 默认；字段取不到整项退回默认，太长自动加省略号。", false)
 	a.modelNote(c, "节点名（留空用她的 QQ 名字）", false)

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"slices"
 	"strings"
 
@@ -79,7 +80,12 @@ func dirInside(wd, dir string) bool {
 
 // absDir：写进规则的项目目录必须是绝对路径（盘符或 UNC），相对路径没有"相对谁"可言。
 func absDir(p string) bool {
-	p = strings.ReplaceAll(strings.TrimSpace(p), "/", `\`)
+	p = strings.TrimSpace(p)
+	// 别的系统上 /home/x 这种 POSIX 绝对路径就是绝对路径（//x 开头的当 UNC 写法，和下面一样走原来的判断）；Windows 上不认
+	if runtime.GOOS != "windows" && strings.HasPrefix(p, "/") && !strings.HasPrefix(p, "//") && len(p) > 1 {
+		return true
+	}
+	p = strings.ReplaceAll(p, "/", `\`)
 	if strings.HasPrefix(p, `\\?\`) || strings.HasPrefix(p, `\\.\`) {
 		return false // 设备路径写法：和普通写法的工作目录比不上，写进去永远不命中，让人换写法
 	}
@@ -430,17 +436,17 @@ func ruleHits(r UserRule, tool string, args jsjson.Value, env Env, segs []string
 			if deny { // 指向本机盘的网络共享、设备路径写法，拒绝规则按还原后的本地路径比（多拒不吃亏）
 				p = localOfShare(p)
 			}
-			if pathHits(r.Spec, p, env.Workdir) {
+			if specHits(r, p, env.Workdir) {
 				if !deny { // 放行还要联接解析后的真实路径也在规则里，不能靠联接绕出去
-					return pathHits(r.Spec, placeOf(env).canon(p), env.Workdir)
+					return specHits(r, placeOf(env).canon(p), env.Workdir)
 				}
 				return true
 			}
 			if deny && (tool == "grep" || tool == "find") { // 递归搜索：被搜的目录是规则的上级，搜得到规则里面的内容
 				pl := placeOf(env)
-				return pathHits(r.Spec, pl.canon(p), env.Workdir) || specInside(r.Spec, p, env.Workdir) || specInside(r.Spec, pl.canon(p), env.Workdir)
+				return specHits(r, pl.canon(p), env.Workdir) || specInsideRule(r, p, env.Workdir) || specInsideRule(r, pl.canon(p), env.Workdir)
 			}
-			return deny && pathHits(r.Spec, placeOf(env).canon(p), env.Workdir)
+			return deny && specHits(r, placeOf(env).canon(p), env.Workdir)
 		}
 		if one(ToolPath(raw, env.Workdir)) {
 			return true
@@ -545,13 +551,55 @@ func domainHits(domain, rawURL string, lenient bool) bool {
 	return u == domain || strings.HasSuffix(u, "."+domain)
 }
 
+// resolveSpec 把规则里写的路径相对工作目录解成绝对路径，并统一成反斜杠写法（下面的匹配都按反斜杠比）。
+// Windows 上一字不变：先把 / 换成 \ 再解析。别的系统上 \ 不是分隔符，不能先换（`src/**` 会变成一个叫 `src\**` 的怪名字，
+// 工作目录里的文件永远命不中规则），所以先按本机规则解析，再把结果里的 / 换成 \。
+func resolveSpec(workdir, spec string) string {
+	if runtime.GOOS == "windows" {
+		return resolve(workdir, strings.ReplaceAll(spec, "/", `\`))
+	}
+	return strings.ReplaceAll(resolve(workdir, spec), "/", `\`)
+}
+
+// looseSpec 说这条规则在非 Windows 上要“宽松再比一遍”：从 Windows 抄来的 `.\secrets\**`、`src\..\secrets\**` 这类写法，
+// 非 Windows 上 \ 不是分隔符，按本机规则解析永远命不中；拒绝和每次都问的规则多拦不吃亏，所以再按“先把 \ 换成 /”比一遍。
+// 放行规则不加这条：多放行是放宽（allow 要的是和本机写法一字不差地命中）。Windows 上两种写法本来就一样，不需要。
+func looseSpec(r UserRule) (string, bool) {
+	if runtime.GOOS == "windows" || r.Effect == EffectAllow || !strings.Contains(r.Spec, `\`) {
+		return "", false
+	}
+	return strings.ReplaceAll(r.Spec, `\`, "/"), true
+}
+
+// specHits 是 pathHits 加上 looseSpec 那一遍
+func specHits(r UserRule, p, workdir string) bool {
+	if pathHits(r.Spec, p, workdir) {
+		return true
+	}
+	if spec, ok := looseSpec(r); ok {
+		return pathHits(spec, p, workdir)
+	}
+	return false
+}
+
+// specInsideRule 是 specInside 加上 looseSpec 那一遍
+func specInsideRule(r UserRule, dir, workdir string) bool {
+	if specInside(r.Spec, dir, workdir) {
+		return true
+	}
+	if spec, ok := looseSpec(r); ok {
+		return specInside(spec, dir, workdir)
+	}
+	return false
+}
+
 // specInside：路径规则指到的位置（通配符之前的那一段目录）在 dir 里面或就是 dir——在 dir 下递归搜索会搜到规则里的内容。
 func specInside(spec, dir, workdir string) bool {
 	spec = strings.TrimSpace(spec)
 	if strings.HasPrefix(spec, "//") {
 		spec = spec[1:]
 	}
-	spec = strings.ToLower(resolve(workdir, strings.ReplaceAll(expandHome(spec), "/", `\`)))
+	spec = strings.ToLower(resolveSpec(workdir, expandHome(spec)))
 	if i := strings.IndexAny(spec, "*?"); i >= 0 {
 		spec = spec[:i]
 		if j := strings.LastIndex(spec, `\`); j >= 0 {
@@ -571,7 +619,7 @@ func pathHits(spec, p, workdir string) bool {
 		spec = spec[1:]
 	}
 	spec = expandHome(spec)
-	spec = resolve(workdir, strings.ReplaceAll(spec, "/", `\`))
+	spec = resolveSpec(workdir, spec)
 	low := strings.ToLower(strings.ReplaceAll(dropTrailingDotSpace(p), "/", `\`)) // 末尾的点和空格、数据流名按 Windows 的规整
 	pat := strings.ToLower(spec)
 	if !strings.ContainsAny(pat, "*?") {

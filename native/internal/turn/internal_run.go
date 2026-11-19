@@ -34,7 +34,7 @@ func (h *Hub) StartInternal(ctx context.Context, in InternalRun) (RunHandle, err
 	}
 	var model *llm.Model
 	for i := range models {
-		if models[i].ID == in.ModelID {
+		if models[i].Ref() == h.refs.Canonical(in.ModelID) {
 			model = &models[i]
 			break
 		}

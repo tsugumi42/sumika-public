@@ -64,9 +64,14 @@ type Host struct {
 	// Appear 用在虚拟列表里：mygo 的 List 不触发行的 Transition 进场（2026-11-06 实测），
 	// 所以由调用方告诉"这条是不是刚到、这一帧是它第一次被画"，第一帧从下移 8、透明开始，之后用弹簧回到原位。
 	// 设了它就不再用 Transition 那一套。
-	Appear      func(id string) bool
-	soleSegment bool  // 这一轮过程只有一段：外层展开就直接看内容，不再折第二层（主人 2026-11-09）
-	procChar    OKLCH // 正在画的这一轮过程是哪个角色的（processBody 里设，kindIcon 用）
+	Appear func(id string) bool
+	// FollowingEnd 说列表现在是不是贴着末尾跟随（新内容进来就滚到底）。过程气泡、工具卡展开收起要动高度，只有它返回 false、
+	// 并且这一行的顶部在 ViewRect 里才动（规格-过渡动画 铁律 4）；贴底时高度直接切换、内容淡入。nil 当成贴底：安全的做法。
+	// 宿主一般给 !(list.FollowEnd && list.AtEnd())，ViewRect 给聊天列在窗口里的框。
+	FollowingEnd func() bool
+	soleSegment  bool  // 这一轮过程只有一段：外层展开就直接看内容，不再折第二层（主人 2026-11-09）
+	procChar     OKLCH // 正在画的这一轮过程是哪个角色的（processBody 里设，kindIcon 用）
+	motionOK     bool  // 铁律 4 的条件这一帧成立没有（processBubble 里算，展开收起的 disclose 用）
 
 	// MD 是每条消息的 markdown 状态（宿主持有）；不空时她的回复正文用 markdown 画（流式时逐字出现），见 body.go。
 	MD *MD
@@ -83,6 +88,14 @@ type Host struct {
 	OnDeny   func(stepID, why string)
 	// DenyReason 为真时"⋯"里有"拒绝并说明原因"（宿主能弹写原因的框）。
 	DenyReason bool
+	// BubbleGlass 让宿主把气泡做成半透明玻璃：e 是气泡，bg 是它实色时的底。宿主决定浓度，调用 e.Material 加模糊再叠 bg 的半透明底。
+	// nil 就是实色，也是没有壁纸、系统要求降低透明度、材质设成实色时宿主该给的值。
+	// 只用在对方的、自己的、过程气泡；图片气泡、撤回的消息、贴纸不用。
+	// radii 是气泡四角半径：模糊材质和底色不会叠着画，填充色那层要宿主自己照这个圆角画在模糊上面。
+	BubbleGlass func(e ui.Element, bg ui.Color, radii [4]float32)
+	// SelfGlassTint 是玻璃气泡里“自己发的”保留多少主题色，0～1；0 当成 1（不减）。
+	// 半透明的主题色叠在带颜色的壁纸上会比实色时更鲜艳，所以玻璃时往对方气泡的底色靠一些（主人 2026-11-15：“底色看起来有点太鲜艳了”）。
+	SelfGlassTint float32
 }
 
 // MessageColors 是宿主语义色。缺的角色不在这里发明，调用方只填已经有的。
@@ -318,16 +331,16 @@ func (h Host) Message(c *ui.Context, m, prev, next *Msg) {
 		if h.Appear(m.ID) {
 			ty, to = 8, 0
 		}
-		spring := t.Smooth
+		spring := t.Spring.Firm
 		if m.Self {
-			spring = t.Bouncy // 自己发的用回弹（主人要回弹，ADR-285 第 6 条）
+			spring = t.Spring.Bouncy // 自己发的用“弹跳”预设（主人要回弹，ADR-285 第 6 条）
 		}
 		row.Translate(0, row.Spring("appear-y", ty, spring)).Opacity(row.AnimateTo("appear-o", to, ui.Animation{Duration: t.Fast, NonMotion: true}))
 	} else if !h.NoEnter && !l.JoinPrev {
-		// 进场：透明 + 下移 8 → 原位；自己发的用回弹弹簧（主人要回弹），别人的用平滑弹簧。
-		spring := t.Smooth
+		// 进场：透明 + 下移 8 → 原位；自己发的用“弹跳”预设（主人要回弹），别人的用“利落”（不回弹）。
+		spring := t.Spring.Firm
 		if m.Self {
-			spring = t.Bouncy
+			spring = t.Spring.Bouncy
 		}
 		// 只动"出现"这一下：不指定的话 mygo 会把位置、大小、颜色都一起动，回弹弹簧过冲会让消息行在列表重排时冲出边界
 		// 系统要求减少动态效果时 mygo 自己只在原地淡入、不位移（ui/transition.go:85-88），这里不用再判断
@@ -449,11 +462,44 @@ func (h Host) status(c *ui.Context, m *Msg) {
 	}
 }
 
+// lift 让气泡浮起一点：sh-1 两层投影（Bun chat.css:120、529；设计语言第三节）。有壁纸时浮起；用主题配色的浅色气泡浮在聊天底上；
+// 深色靠底色比聊天底亮一档，不画阴影。对方的、自己的、过程气泡共用这一条，三者浮得一样。
+func (h Host) lift(e ui.Element, m *Msg) {
+	t := h.T
+	if t.S.Wallpaper || (h.Colors != nil && !t.S.Dark && m.State != Recalled) {
+		e.Shadow(0, 0.5, 1, 0, t.C.ShadowA).Shadow(0, 1, 3, 0, t.C.ShadowB)
+	}
+}
+
+// 玻璃气泡上沿那一道高光的不透明度：浅色用面色，深色用正文色，都只是一道发丝线，不是描边。
+const (
+	bubbleRimLight float32 = .8
+	bubbleRimDark  float32 = .12
+)
+
+// fill 给气泡上底：玻璃时是宿主给的模糊材质加半透明底，上沿一道很淡的高光（和 lift 的贴身短阴影配合，边界不靠描边）；否则就是实色。
+func (h Host) fill(e ui.Element, bg ui.Color, radii Corners, glass bool) {
+	if !glass || h.BubbleGlass == nil {
+		e.Background(bg)
+		return
+	}
+	t := h.T
+	h.BubbleGlass(e, bg, [4]float32(radii))
+	rim := t.C.Surface.Alpha(bubbleRimLight)
+	if t.S.Dark {
+		rim = t.C.Text.Alpha(bubbleRimDark)
+	}
+	e.InsetShadow(0, 1, 0, 0, rim)
+}
+
 func (h Host) bubble(c *ui.Context, m *Msg, l layout, acc Accent) {
 	t := h.T
 	bg, ink := t.C.Bubble, t.C.Text
 	if m.Self {
 		bg = acc.Soft
+		if k := h.SelfGlassTint; h.BubbleGlass != nil && k > 0 && k < 1 {
+			bg = t.C.Bubble.Mix(acc.Soft, k)
+		}
 	}
 	link := acc
 	if h.Colors != nil && m.State != Recalled {
@@ -474,19 +520,14 @@ func (h Host) bubble(c *ui.Context, m *Msg, l layout, acc Accent) {
 	if l.Media == mediaSticker {
 		bg = ui.Color{} // 贴纸没有底
 	}
-	e := ui.Column(c.Key("bubble")).Label("气泡").MaxWidth(l.MaxW).MinWidth(0).Padding(pad).Background(bg).Radius(l.Corners[:]...)
+	e := ui.Column(c.Key("bubble")).Label("气泡").MaxWidth(l.MaxW).MinWidth(0).Padding(pad).Radius(l.Corners[:]...)
+	h.fill(e, bg, l.Corners, h.Colors == nil && m.State != Recalled && l.Media == mediaNone)
 	if flush {
 		e.Clip() // 按气泡的圆角裁图：外侧四角跟气泡同心
 	}
-	if m.Self && h.Colors == nil && l.Media != mediaSticker {
-		e.InsetShadow(0, 0, 0, 1, acc.Line) // 细边画在里侧，不撑高气泡（Border 会改变高度，胶囊就不圆了）
-	}
-	if t.S.Wallpaper && l.Media != mediaSticker { // 有壁纸时两边的气泡都浮起来一点：sh-1 两层投影（Bun chat.css:120、529；审查 B4）
-		e.Shadow(0, 0.5, 1, 0, t.C.ShadowA).Shadow(0, 1, 3, 0, t.C.ShadowB)
-	}
-	if h.Colors != nil && !m.Self && !t.S.Dark && m.State != Recalled && l.Media != mediaSticker {
-		// 设计语言第三节：入站气泡是第 1 层，浅色靠 shadow-1 浮在聊天底（第 0 层）上；深色靠比底亮一档，不画阴影
-		e.Shadow(0, 0.5, 1, 0, t.C.ShadowA).Shadow(0, 1, 3, 0, t.C.ShadowB)
+	// 两边的气泡同一种"浮起来"：同一组投影、都不描边，自己的靠底色（acc.Soft）和对方分开（主人 2026-11-15："一边没边框、一边有边框，边框那边更突出"）
+	if l.Media != mediaSticker {
+		h.lift(e, m)
 	}
 	if m.State == Recalled && l.Media != mediaSticker {
 		// Bun 是整块 opacity 0.55，字会掉到约 2.3:1；这里只换底和描边表示"已撤回"，字保持实色（审查 A1）
@@ -540,6 +581,7 @@ func (h Host) bubble(c *ui.Context, m *Msg, l layout, acc Accent) {
 		} else if h.useMD(m) {
 			// 她的回复用 markdown：还在出字时 Stream（逐字淡入），完成后在同一位置换成 View，没出完的字接着出（mygo view.go:106）
 			opts := h.options(c, m, ink, link)
+			h.MD.entry(m.ID).width = l.ContentW // 表格排进这么宽
 			src := mdSource(m)
 			// 文字比气泡的块多缩进 side：用外边距不用内距（几何规则只给"字行"左右内距的例外，这一层是容器）
 			// 外层定宽（气泡按它收缩）、不设内距；缩进放在 markdown 自己的外边距上（气泡收缩时不算子元素的外边距）

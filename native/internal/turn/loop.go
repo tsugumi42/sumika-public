@@ -17,6 +17,7 @@ import (
 	"sumika-native/internal/jsjson"
 	"sumika-native/internal/llm"
 	"sumika-native/internal/llm/chat"
+	"sumika-native/internal/modelcall"
 
 	"sumika-native/internal/kernel"
 	"sumika-native/internal/store"
@@ -247,7 +248,7 @@ func (b *Built) requestFor(msgs []Msg) chat.Request {
 		decls = []tools.Declaration{}
 	}
 	return chat.Request{
-		Model: b.Model.ID, SystemRole: b.SystemRole, Messages: chatMessages(msgs), Tools: decls,
+		Model: b.Model.Ref(), SystemRole: b.SystemRole, Messages: chatMessages(msgs), Tools: decls,
 		MaxOutputTokens: int64(maxTokens), Thinking: b.Effort, CacheKey: b.CacheKey, LongCache: true, NoStore: true,
 		SeeImages: b.Model.SupportsImages(), Style: chat.StyleForeground,
 	}
@@ -447,7 +448,7 @@ const toolSummaryRunes = 400
 // Run 跑一轮：主人在主窗口对角色 characterID 说了 text。每次新建一个 Hub，所以总是冷启动（turn-check、第 1 步的对拍用）。
 // 回完就收掉这个 Hub：后台要是起了提前压缩，取消它、等它收尾（不写库），调用方接着关库也碰不到它。
 // stores 至少要有本地库（主窗口只用它，store.OpenGo(p, "local")）
-func Run(ctx context.Context, cfg Config, stores store.Stores, client *llm.Client, models []llm.Model, characterID, text string) (*Result, error) {
+func Run(ctx context.Context, cfg Config, stores store.Stores, client modelcall.Transport, models []llm.Model, characterID, text string) (*Result, error) {
 	hctx, cancel := context.WithCancel(ctx)
 	hub := NewHub(hctx, cfg, stores, client, models)
 	o := <-hub.Send(characterID, text)
@@ -531,7 +532,7 @@ func (b *Built) runRow(cfg Config, res *llm.Result, turnID string, startedAt, fi
 		rt = nil
 	}
 	run := store.Run{
-		ID: store.NewID(now), CharacterID: characterID, Conversation: conversation, Stage: "reply", Model: b.Model.ID, TurnID: turnID,
+		ID: store.NewID(now), CharacterID: characterID, Conversation: conversation, Stage: "reply", Model: b.Model.Ref(), TurnID: turnID,
 		StartedAt: startedAt.UnixMilli(), TTFTMs: ttft, TotalMs: now.Sub(startedAt).Milliseconds(),
 		Input: res.Usage.Input, Output: res.Usage.Output, CacheRead: res.Usage.CacheRead, CacheWrite: &cw, Reasoning: rt,
 		RouteProvider: orNil(res.Route.Provider), RouteModel: orNil(res.Route.Model), Sections: secs, Error: errMsg, ErrorClass: errClass, Context: ctxJSON, Now: now.UnixMilli(),

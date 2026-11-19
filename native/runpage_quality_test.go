@@ -82,6 +82,7 @@ func TestRunQualityRangeAndUnsubscribe(t *testing.T) {
 	h := newRunHarness(t, f, f, runTabQuality, 1100, 800)
 	before := func() int { f.mu.Lock(); defer f.mu.Unlock(); return f.qualityCalls }()
 	h.click("最近 7 天")
+	h.settleMotion()
 	h.click("最近 30 天")
 	if h.a.run.rangeKey != "30d" {
 		t.Fatalf("范围没换：%q", h.a.run.rangeKey)

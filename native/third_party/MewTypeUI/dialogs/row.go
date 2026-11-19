@@ -50,10 +50,13 @@ func rowGeometry(t *theme.Theme, item Conversation, compact bool) (height, previ
 // Row is a full-width rectangular conversation row. Set c.Key before calling
 // it for a standalone row; List supplies identity from Conversation.ID.
 func Row(c *ui.Context, item Conversation, o RowOptions) ui.Element {
-	return buildRow(c, item, o, true)
+	return buildRow(c, item, o, nil)
 }
 
-func buildRow(c *ui.Context, item Conversation, o RowOptions, standalone bool) ui.Element {
+// buildRow builds a conversation row. lr is nil for a standalone Row; inside a
+// mygo list it is the list's row, which takes the click, the name and the
+// hover and press state, so the row content only draws them.
+func buildRow(c *ui.Context, item Conversation, o RowOptions, lr *ui.ListRow) ui.Element {
 	t := theme.T(c)
 	m := t.Metrics().Conversation()
 	ty := t.Typography()
@@ -65,22 +68,27 @@ func buildRow(c *ui.Context, item Conversation, o RowOptions, standalone bool) u
 	previewTop += extra
 	tagTop += extra
 	height = max(height+extra, previewTop+previewHeight+m.PaddingBottom())
-	root := ui.Box(c).FillWidth().Height(height).Shrink(0).Label(item.Name).Disabled(o.Disabled).Clip()
-	if standalone {
-		root = root.OnClick(func() {
+	root := ui.Box(c).FillWidth().Height(height).Shrink(0).Disabled(o.Disabled).Clip()
+	if lr == nil {
+		root = root.Label(item.Name).OnClick(func() {
 			if o.OnActivate != nil {
 				o.OnActivate(item.ID)
 			}
 		}).Focusable().Role(ui.RoleButton)
 	}
-	hovered := root.Hovered()
+	var hovered bool
+	if lr != nil {
+		hovered = lr.Hovered()
+	} else {
+		hovered = root.Hovered()
+	}
 	palette := colors(t, o.Selected, hovered, item.Muted)
 	root.Background(palette.bg)
 	pressed := t.Colors().Conversation().PressedBackground()
 	if o.Selected {
 		pressed = t.Colors().Conversation().PressedBackgroundActive()
 	}
-	ripple(c, root, pressed)
+	ripple(c, root, pressed, lr)
 	if o.Menu != nil {
 		root.ContextMenu(func(menu *ui.Menu) { o.Menu(menu, item.ID) })
 	}

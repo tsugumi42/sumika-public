@@ -256,13 +256,13 @@ func (s *Service) review(ctx context.Context, r kernel.ReviewRequest, verify boo
 		req.Model = plan.Model
 		req.MaxOutputTokens = int64(maxOut)
 		for _, candidate := range models {
-			if candidate.ID == plan.Model && candidate.MaxOutputTokens > 0 && int64(candidate.MaxOutputTokens) < req.MaxOutputTokens {
+			if candidate.Ref() == plan.Model && candidate.MaxOutputTokens > 0 && int64(candidate.MaxOutputTokens) < req.MaxOutputTokens {
 				req.MaxOutputTokens = int64(candidate.MaxOutputTokens)
 				break
 			}
 		}
 		for _, candidate := range models {
-			if candidate.ID == plan.Model {
+			if candidate.Ref() == plan.Model {
 				// 复核材料大时别让输出顶出窗口
 				req.MaxOutputTokens = min(req.MaxOutputTokens, candidate.ClampOutput(len(payload), 0))
 				break

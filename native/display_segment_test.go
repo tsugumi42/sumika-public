@@ -162,7 +162,7 @@ func TestDisplaySegmentForwardNode(t *testing.T) {
 			ui.Column(c).Fill().Children(func() { a.forwardCard(c, m, m.segs[0]) })
 			a.forwardWindow(c)
 		})
-		clickAt(t, tt, "编造聊天记录")
+		click(t, tt, "编造聊天记录")
 		select {
 		case fn := <-posts:
 			fn()

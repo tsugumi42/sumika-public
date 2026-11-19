@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -183,7 +184,8 @@ func repoDirChecker(t *testing.T, dir string) func(absDir string) string {
 func goWorkFiles(tracked []string) []string {
 	var bad []string
 	for _, f := range tracked {
-		if b := path.Base(filepath.ToSlash(f)); b == "go.work" || b == "go.work.sum" {
+		// 反斜杠自己换成正斜杠：filepath.ToSlash 在 Linux 上不动反斜杠，`a\go.work` 就漏过去了
+		if b := path.Base(strings.ReplaceAll(f, `\`, "/")); b == "go.work" || b == "go.work.sum" {
 			bad = append(bad, f)
 		}
 	}
@@ -313,12 +315,15 @@ func TestGoModTextEndToEnd(t *testing.T) {
 		raw  bool   // true：text 就是整个文件，前面不加 header
 		bad  int    // 期望的问题条数
 		want string // 非空：问题里应含这段话
+		// 非空且不在 Windows 上：Windows 路径写法在 Linux 上被 go mod edit 自己先拒绝（“replacement directory appears to be Windows path”），
+		// 我们的检查读不懂就算红，一样拦得住，只是文案不是“带盘符 / 绝对路径”，这时改查 go 的拒绝原因
+		wantNonWindows string
 	}{
 		// 要红：写法
 		{name: "盘符正斜杠", text: "replace a/b => D:/x/y\n", bad: 1, want: "带盘符"},
-		{name: "盘符反斜杠", text: "replace a/b => D:\\x\\y\n", bad: 1, want: "带盘符"},
+		{name: "盘符反斜杠", text: "replace a/b => D:\\x\\y\n", bad: 1, want: "带盘符", wantNonWindows: "Windows path"},
 		{name: "绝对路径", text: "replace a/b => /abs/y\n", bad: 1, want: "绝对路径"},
-		{name: "UNC", text: "replace a/b => \\\\server\\share\\x\n", bad: 1, want: "绝对路径"},
+		{name: "UNC", text: "replace a/b => \\\\server\\share\\x\n", bad: 1, want: "绝对路径", wantNonWindows: "Windows path"},
 		{name: "家目录", text: "replace a/b => ~/x\n", bad: 1, want: "go mod edit"},
 		{name: "带引号的盘符路径", text: "replace a/b => \"D:/Program Files/x\"\n", bad: 1, want: "带盘符"},
 		{name: "反引号的盘符路径", text: "replace a/b => `D:\\x`\n", bad: 1, want: "go mod edit"},
@@ -375,8 +380,12 @@ func TestGoModTextEndToEnd(t *testing.T) {
 			if len(got) != c.bad {
 				t.Fatalf("期望 %d 条问题，得到 %d 条：%q\n输入：%q", c.bad, len(got), got, text)
 			}
-			if c.want != "" && !strings.Contains(strings.Join(got, "|"), c.want) {
-				t.Fatalf("问题 %q 里应含 %q", got, c.want)
+			want := c.want
+			if c.wantNonWindows != "" && runtime.GOOS != "windows" {
+				want = c.wantNonWindows
+			}
+			if want != "" && !strings.Contains(strings.Join(got, "|"), want) {
+				t.Fatalf("问题 %q 里应含 %q", got, want)
 			}
 		})
 	}

@@ -116,6 +116,7 @@ func TestBashRuleMatching(t *testing.T) {
 }
 
 func TestPathRuleMatching(t *testing.T) {
+	windowsPathsOnly(t)
 	env := Env{Workdir: `D:\Work`}
 	allow := mustRules(t, [2]string{"Write(src/**)", "allow"}, [2]string{"Edit(docs)", "allow"}, [2]string{`Write(D:\Other\*.md)`, "allow"})
 	for path, want := range map[string]bool{
@@ -149,6 +150,7 @@ func TestPathRuleMatching(t *testing.T) {
 
 // 路径里有中文：按字节拼正则会把多字节字符拆坏，放行规则永远对不上（端到端测试里查出来的）。
 func TestPathRuleChinese(t *testing.T) {
+	windowsPathsOnly(t)
 	env := Env{Workdir: `D:\工作`}
 	allow := mustRules(t, [2]string{"Write(文档/**)", "allow"}, [2]string{"Write(笔记/?.md)", "allow"})
 	for path, want := range map[string]bool{"文档/甲.txt": true, "文档/深/乙.txt": true, "笔记/a.md": true, "笔记/ab.md": false, "别的/甲.txt": false} {
@@ -185,6 +187,7 @@ func TestWebAndTaskAndMCPRules(t *testing.T) {
 
 // Decide 的顺序：拒绝先于一切放行；放行不越过受保护路径、灾难性命令、不是主人发起的；deny 不越过场合（场合先判）。
 func TestDecideUserRules(t *testing.T) {
+	windowsPathsOnly(t)
 	clean := &Verdict{Names: []string{"git status"}}
 	rules := mustRules(t, [2]string{"Bash(git status:*)", "allow"}, [2]string{"Bash(git push:*)", "deny"}, [2]string{"Write(src/**)", "allow"}, [2]string{"Write(src/locked/**)", "deny"})
 	base := func() Env {
@@ -300,6 +303,7 @@ func TestDenyRuleSeesAnalyzerNames(t *testing.T) {
 
 // 拒绝读 secrets 里的内容：对上级目录递归 grep、find 也要拒；ls 和读别的目录不受影响。
 func TestDenyReadCoversRecursiveSearchFromParent(t *testing.T) {
+	windowsPathsOnly(t)
 	env := Env{Workdir: `D:\Work`}
 	deny := mustRules(t, [2]string{"Read(secrets/**)", "deny"})
 	for _, c := range []struct {

@@ -99,7 +99,7 @@ type Tokens struct {
 	C Palette
 	D design.Tokens // 令牌来源；新代码直接用 D，旧字段是第 3 步留下的薄壳
 
-	Smooth, Bouncy   ui.SpringOptions
+	Spring           design.Springs // 弹簧预设（利落、灵敏、柔和、弹跳、拉伸一对），位移尺寸缩放只从这里挑
 	Fast, Msg, Panel time.Duration
 }
 
@@ -189,14 +189,18 @@ func Derive(s Settings) Tokens {
 	t.GapInGroup, t.GapGroups = t.S1, t.S3
 	t.JoinWindow = 900 * time.Second
 	t.Badge, t.BadgeHit = 18, m.SizeHitMin
-	c := d.Color
-	t.C = Palette{Surface: c.Surface, Bg: c.Bg, Rail: c.Rail, Sunken: c.Sunken, SunkenHover: c.SunkenHover, Line: c.Line, LineStrong: c.LineStrong,
+	t.C = paletteOf(d)
+	t.Spring = d.Springs()
+	t.Fast, t.Msg, t.Panel = d.Motion.MotionFast, d.Motion.MotionMsg, d.Motion.MotionPanel
+	return t
+}
+
+func paletteOf(d design.Tokens) Palette {
+	c, n := d.Color, d.Num
+	return Palette{Surface: c.Surface, Bg: c.Bg, Rail: c.Rail, Sunken: c.Sunken, SunkenHover: c.SunkenHover, Line: c.Line, LineStrong: c.LineStrong,
 		Text: c.Text, Text2: c.Text2, Text3: c.Text3, Bubble: c.Bubble, ChatBg: c.ChatBg, Hover: c.Hover, Press: c.Press,
 		Danger: c.Danger, DangerHover: c.DangerHover, OnDanger: c.OnDanger, Ok: c.Ok, OkText: c.OkText, DangerText: c.DangerText,
 		DiffTint: float32(n.DiffTint), ShadowA: c.ShadowA, ShadowB: c.ShadowB, Float: c.Float, FloatRing: c.FloatRing, DotInk: c.DotInk}
-	t.Smooth, t.Bouncy = d.Spring(false), d.Spring(true)
-	t.Fast, t.Msg, t.Panel = d.Motion.MotionFast, d.Motion.MotionMsg, d.Motion.MotionPanel
-	return t
 }
 
 // BodyLeading 是正文行高对字号的倍数（给按倍数排版的 markdown 用），和 BodyLine 同源。

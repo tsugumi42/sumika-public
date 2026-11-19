@@ -87,6 +87,7 @@ func alignTester(t *testing.T, sc alignScene) (*app, *ui.Tester) {
 }
 
 func TestWindowStructure(t *testing.T) {
+	uitest.RequireWindowsFontMetrics(t, "聊天头部和标题的间距")
 	for _, sc := range alignScenes() {
 		a, tt := alignTester(t, sc)
 		root := uitest.Tree(tt)

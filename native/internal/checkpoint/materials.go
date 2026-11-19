@@ -177,5 +177,5 @@ func removeRestoreMaterial(dir *os.Root, name string, identity materialIdentity)
 	if !info.Mode().IsRegular() || identity.File == "" || actual != identity.File || p != identity.Parent {
 		return fmt.Errorf("材料身份不符，保留 %s：%w", name, ErrConflict)
 	}
-	return deleteRestoreMaterial(f)
+	return deleteRestoreMaterial(dir, name, f)
 }

@@ -8,6 +8,8 @@ on:
   workflow_dispatch:
 jobs:
   race:
+    # 只在公开仓库跑：公开仓库的 Actions 不计分钟，私有仓库按免费额度扣（Windows 按 2 倍）、推 main 时两边各跑一遍是重复（2026-11-18 免费 2000 分钟快用完）
+    if: github.event.repository.private == false
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

@@ -25,7 +25,7 @@ type Provider struct {
 	Policy  web.URLPolicy
 	Dial    func(context.Context, string, string) (net.Conn, error)
 	Version string
-	// Proxy 只在域名解析到代理的假地址（198.18.0.0/15，fake-ip）时才用：让代理按域名自己解析并出网。
+	// Proxy 只在域名解析到代理的假地址（netsafe 的默认假地址段，IPv4 198.18.0.0/15、IPv6 2001:2::/48 等，fake-ip）时才用：让代理按域名自己解析并出网。
 	// 为空用环境变量里的代理；没有代理就直接连假地址（TUN 会接住）。
 	Proxy func(*http.Request) (*url.URL, error)
 }

@@ -21,7 +21,7 @@ func (k *Kit) Tip(c *ui.Context, e ui.Element, s string) ui.Element {
 	}
 	ui.TooltipBase(c, e, func(tip ui.Element) {
 		tip.MaxWidth(t.Space(80)).Padding(t.Space(1.25), t.Space(2)).Radius(t.Space(1.25)).Background(fill).TextColor(text).FontSize(t.FontSize - 1)
-		tip.Shadow(0, 2, 8, 0, ui.RGBA(0, 0, 0, 0.2))
+		k.RaisedShadow(tip) // 内容档阴影
 		tip.AttachTo(e, ui.AnchorTop, ui.AnchorBottom).Margin(0, 0, t.Space(1.5), 0)
 		tip.Transition(TipTransition)
 		tip.Children(func() { ui.Text(c, s) })

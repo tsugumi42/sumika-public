@@ -82,7 +82,9 @@ func TestFileDownloadNestedAuthorizationAndPlayback(t *testing.T) {
 				if _, err := s.RequestVideoDownload(ctx, ref); err != nil {
 					t.Fatal(err)
 				}
-				deadline := time.NewTimer(5 * time.Second)
+				// 等的是“下载完成”这个事件，这个期限只是防卡死的安全网：5 秒在机器忙、Defender 扫临时文件时不够
+				// （2026-11-19 合并队列红过一次“下载未结束”），放到 60 秒，正常情况下仍在事件到达时立刻结束
+				deadline := time.NewTimer(60 * time.Second)
 				done := false
 				for !done {
 					select {

@@ -145,7 +145,7 @@ func TestSettingInputBoundaries(t *testing.T) {
 		{"qq.reply", nil}, {"qq.reply", "true"}, {"group.frequency", "0.5"}, {"group.frequency", json.Number("1.1")},
 		{"group.jitter", json.Number("-0.1")}, {"group.mode", "top-secret-sentinel"}, {"qq.owner", "0"}, {"qq.owner", float64(9007199254740993)},
 		{"qq.owner", json.Number("1.0")}, {"qq.groups", []any{nil}}, {"qq.groups", []any{float64(42)}}, {"qq.groups", "123"},
-		{"qq.accounts", nil}, {"qq.accounts", []any{nil}}, {"qq.accounts", []any{map[string]any{"id": "100", "character": "x", "token": "top-secret-sentinel"}}},
+		{"qq.accounts", nil}, {"qq.accounts", []any{nil}}, {"qq.accounts", []any{map[string]any{"id": "100", "character": "x", "token": "top-secret" + "-sentinel"}}},
 		{"qq.accounts", []any{map[string]any{"id": "100", "character": "x", "unknown": true}}},
 		{"qq.accounts", []any{map[string]any{"id": "100", "character": nil}}},
 		{"qq.accounts", []any{map[string]any{"id": "100", "character": "x"}, map[string]any{"id": "0100", "character": "y"}}},

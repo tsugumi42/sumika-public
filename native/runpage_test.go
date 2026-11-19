@@ -224,6 +224,14 @@ func (h *runHarness) click(label string) {
 	h.frame()
 }
 
+// settleMotion 推进时钟直到画面不再有动画（下拉、弹层从入口展开，ADR-395）；点开下拉以后、点里面的项之前用。
+func (h *runHarness) settleMotion() {
+	for i := 0; i < 200 && h.tt.FramePending(); i++ {
+		h.tt.Advance(16 * time.Millisecond)
+		h.tt.Frame()
+	}
+}
+
 // until 放行队列、画帧，直到条件成立（读数在后台协程里做，点完马上看计数会看到旧值）
 func (h *runHarness) until(what string, cond func() bool) {
 	h.t.Helper()

@@ -47,9 +47,96 @@ const (
 // approvalEnterGuard：审批块出现后这么久之内不认 Enter（防正在按回车发消息时块一出现就被批，Bun keys.ts）。
 const approvalEnterGuard = 500 * time.Millisecond
 
-// approvalBlock 画审批块。等决定时：上面是谁引起的、原因；下面左边剩余时间，右边"拒绝""允许一次""⋯"。
+// approvalKeys 接审批块的键盘：焦点在块本身时 Enter = 允许一次，块里任何地方 Esc = 拒绝；出现后 500ms 内不认 Enter。
+// 返回这一帧在块里按了 Enter 没有（按的是哪个按钮由焦点在谁身上决定，见 approvalButtons）。只在等决定时有效。
+func (h Host) approvalKeys(c *ui.Context, blk ui.Element, s *Step) (enter bool) {
+	a := s.Approval
+	if a.State != ApprovalPending {
+		return false
+	}
+	blk.Focusable()
+	ready := a.Shown.IsZero() || c.Now().Sub(a.Shown) >= approvalEnterGuard
+	enter = blk.Shortcut(0, ui.KeyEnter) && ready
+	if enter && blk.Focused() && h.OnApprove != nil { // 焦点在块本身：允许一次
+		h.OnApprove(s.ID, AllowOnce)
+	}
+	if blk.Shortcut(0, ui.KeyEscape) && h.OnDeny != nil { // 块里任何地方 Esc：拒绝
+		h.OnDeny(s.ID, "")
+	}
+	return enter
+}
+
+// approvalResult 是审批决定后行尾写的结果：图标、两三个字、要不要用危险色（只有拒绝用）。还在等、放行记录没有。
+func approvalResult(a *Approval) (icon, text string, danger bool) {
+	if a == nil {
+		return "", "", false
+	}
+	switch a.State {
+	case ApprovalAllowed:
+		return "check", "已允许", false
+	case ApprovalDenied:
+		return "close", "已拒绝", true
+	case ApprovalExpired:
+		return "time", "超时", false
+	case ApprovalRevoked:
+		return "close", "已撤回", false
+	}
+	return "", "", false
+}
+
+// approvalResultChip 画结果：一个小图标加两三个字，和头部行尾的别的状态（用时、停止）同一个字号、同一档灰；只有拒绝用危险色。
+func (h Host) approvalResultChip(c *ui.Context, a *Approval) {
+	t := h.T
+	icon, text, danger := approvalResult(a)
+	if text == "" {
+		return
+	}
+	ink := t.C.Text3
+	if danger {
+		ink = t.C.DangerText
+	}
+	ui.Row(c.Key("result")).Shrink(0).Gap(t.S1).AlignItems(ui.Center).Children(func() {
+		ui.Icon(c, Icon(icon, false)).Size(t.FS[2], t.FS[2]).TextColor(ink)
+		ui.Text(c, text).Font(h.Font).FontSize(t.FS[1]).TextColor(ink).SingleLine()
+	})
+}
+
+// askCard 是过程气泡里"只有一步、而且在等批准"时画的审批卡（主人 2026-11-15："叠了很多层，图标和命令各出现两次"）：
+// 第一行（图标、想做什么、倒计时）是气泡的摘要行，这里从下面接着画——要运行的命令或改动的差异（一块凹块，命令只在这里出现一次）、
+// 一句理由、右对齐的按钮。按钮直接在气泡上，不再套一块灰底；键盘、提交中、"⋯"的行为照旧。
+//
+// frozen 为真是决定之后这张卡正在收起（processbubble.go 的 askState）：画的是等批准时最后的样子，淡出、高度收到一行；
+// 这时它不收键盘也不收点击，决定已经做完了，不能再批一次。
+func (h Host) askCard(c *ui.Context, s *Step, frozen bool) {
+	t := h.T
+	a := s.Approval
+	col := ui.Column(c.Key("approval")).FillWidth().Gap(t.S2).Label("审批")
+	enter := false
+	if !frozen {
+		enter = h.approvalKeys(c, col, s)
+	}
+	col.Children(func() {
+		if s.Kind == StepEdit {
+			if s.Diff != "" {
+				h.diffBlock(c, s)
+			}
+		} else {
+			h.console(c, s)
+		}
+		// 理由、谁引起的：字和凹块里的字同一条左边线
+		if a.Reason != "" {
+			ui.Text(c.Key("reason"), a.Reason).Font(h.Font).FontSize(t.FS[2]).FixedLineHeight(h.rowLine()).TextColor(t.C.Text2).MaxLines(3).FillWidth().Padding(0, t.S2)
+		}
+		if a.Cause != "" {
+			ui.Text(c.Key("cause"), "是 "+a.Cause+" 的话引起的").Font(h.Font).FontSize(t.FS[1]).FixedLineHeight(h.rowLine()).TextColor(t.C.Text3).MaxLines(2).FillWidth().Padding(0, t.S2)
+		}
+		h.approvalButtons(c, s, enter, true, frozen)
+	})
+}
+
+// approvalBlock 画审批块（输入区上方的审批卡、多步过程里的那一步用）。等决定时：上面是谁引起的、原因；下面右边"拒绝""允许一次""⋯"。
 // 键盘只在焦点在块里时有效：焦点在块本身时 Enter = 允许一次；焦点在按钮上时 Enter 按那个按钮；块里任何地方 Esc = 拒绝。
-// 不画键帽，新审批不抢焦点。决定后换成一行结果。
+// 不画键帽，新审批不抢焦点。决定后只剩一行结果（图标 + 两三个字），不再画一块灰底。
 func (h Host) approvalBlock(c *ui.Context, s *Step) {
 	t := h.T
 	a := s.Approval
@@ -64,19 +151,12 @@ func (h Host) approvalBlock(c *ui.Context, s *Step) {
 		})
 		return
 	}
-	blk := h.block(c, "approval").Gap(t.S1).Label("审批")
-	enter := false // 这一帧在块里按了 Enter（出现后 500ms 内不算）；按的是哪个由焦点在谁身上决定，见 approvalButtons
-	if a.State == ApprovalPending {
-		blk.Focusable()
-		ready := a.Shown.IsZero() || c.Now().Sub(a.Shown) >= approvalEnterGuard
-		enter = blk.Shortcut(0, ui.KeyEnter) && ready
-		if enter && blk.Focused() && h.OnApprove != nil { // 焦点在块本身：允许一次
-			h.OnApprove(s.ID, AllowOnce)
-		}
-		if blk.Shortcut(0, ui.KeyEscape) && h.OnDeny != nil { // 块里任何地方 Esc：拒绝
-			h.OnDeny(s.ID, "")
-		}
+	if a.State != ApprovalPending && a.State != ApprovalSubmitting {
+		ui.Row(c.Key("approval")).Label("审批结果").FillWidth().MinHeight(t.HSm).AlignItems(ui.Center).Justify(ui.End).Children(func() { h.approvalResultChip(c, a) })
+		return
 	}
+	blk := h.block(c, "approval").Gap(t.S1).Label("审批")
+	enter := h.approvalKeys(c, blk, s)
 	blk.Children(func() {
 		if a.Cause != "" {
 			h.rowText(c, ui.Span{Text: "是 " + a.Cause + " 的话引起的", Color: t.C.Text3, Size: t.FS[1]})
@@ -84,48 +164,41 @@ func (h Host) approvalBlock(c *ui.Context, s *Step) {
 		if a.Reason != "" {
 			ui.Text(c.Key("reason"), a.Reason).Font(h.Font).FontSize(t.FS[2]).FixedLineHeight(h.rowLine()).TextColor(t.C.Text2).MaxLines(3).FillWidth()
 		}
-		switch a.State {
-		case ApprovalPending, ApprovalSubmitting:
-			h.approvalButtons(c, s, enter)
-		default:
-			icon, text := "check", "允许了"
-			switch a.State {
-			case ApprovalDenied:
-				icon, text = "close", "拒绝了"
-			case ApprovalExpired:
-				icon, text = "time", "超时了"
-			case ApprovalRevoked:
-				icon, text = "close", "撤回了"
-			}
-			ui.Row(c.Key("result")).MinHeight(t.HSm).AlignItems(ui.Center).Children(func() {
-				h.lead(c, t.BubblePadV+t.S2, 0, func() { ui.Icon(c, Icon(icon, false)).Size(t.FS[2], t.FS[2]).TextColor(t.C.Text3) })
-				h.rowText(c, ui.Span{Text: text})
-			})
-		}
+		h.approvalButtons(c, s, enter, false, false)
 	})
 }
 
 // approvalButtons 是等决定时的按钮行：左边剩余时间（时钟 + 等宽"4:32"），右边次要"拒绝"、主按钮"允许一次"、"⋯"更多。
 // 提交中按钮全部禁用，主按钮里转圈。按钮圆角和审批块同心。
-func (h Host) approvalButtons(c *ui.Context, s *Step, enter bool) {
+func (h Host) approvalButtons(c *ui.Context, s *Step, enter, pill, frozen bool) {
 	t := h.T
 	a := s.Approval
 	busy := a.State == ApprovalSubmitting
 	blockR := max(t.Inner(t.R1, t.BubblePadV), t.RInnerMin)
 	r := max(t.Inner(blockR, t.S2), t.RInnerMin)
+	if pill {
+		r = t.HSm / 2 // 直接放在气泡上的按钮：单行控件的胶囊
+	}
+	fs := t.FS[2]
 	acc := t.AccentOf(h.SelfChar)
 	// 按钮四边内距一样（字行高放进去刚好 hsm），左右多出来的一截补在字行自己身上（和引用块同一个做法）
 	line := h.rowLine()
 	pad := max(0, (t.HSm-line)/2)
 	label := func(text string) {
-		ui.Text(c, text).Font(h.Font).FontSize(t.FS[2]).FixedLineHeight(line).Padding(0, max(0, t.S3-pad)).SingleLine()
+		ui.Text(c, text).Font(h.Font).FontSize(fs).FixedLineHeight(line).Padding(0, max(0, t.S3-pad)).SingleLine()
 	}
 	// 窄窗口、大字号时按钮换到下一行，不挤出块外
 	ui.Row(c.Key("buttons")).FillWidth().Gap(t.S2).Wrap().AlignItems(ui.Center).Children(func() {
 		ui.Spacer(c) // 剩余时间在过程气泡的摘要行（ADR-287），这一行只有按钮、靠右
 		btn := func(key, label string, primary bool, onClick func()) ui.Element {
+			if frozen {
+				onClick = nil // 收起中的卡：决定已经做完，点了不再算
+			}
 			b := ui.ButtonBase(c.Key(key)).Label(label).Height(t.HSm).Padding(pad).Center().Radius(r).Disabled(busy).OnClick(onClick)
 			bg, ink := t.C.Surface, t.C.Text
+			if pill {
+				bg = t.C.Hover // 直接在气泡上：次要按钮的底和气泡同色，用凹块那一档的底才看得出是按钮
+			}
 			if primary {
 				bg, ink = acc.Strong, acc.OnStrong
 			}
@@ -172,7 +245,7 @@ func (h Host) approvalButtons(c *ui.Context, s *Step, enter bool) {
 		}
 		more := btn("more", "更多选择", false, nil).Width(t.HSm)
 		more.Children(func() { ui.Icon(c, Icon("more", false)).Size(t.FS[2], t.FS[2]) })
-		if !busy {
+		if !busy && !frozen {
 			// 窗口里画的菜单（和消息右键同一套主题）：系统菜单不认 Danger，“拒绝并说明原因…”红不了
 			restore := h.withMenuTheme(c)
 			defer restore()
@@ -194,7 +267,7 @@ func (h Host) approvalButtons(c *ui.Context, s *Step, enter bool) {
 						h.OnDeny(s.ID, "?") // "?" 表示宿主要弹出写原因的输入框
 					}
 				}
-			})
+			}, h.T.MenuButton(c))
 		}
 	})
 }
@@ -261,7 +334,7 @@ func (h Host) ApprovalCard(c *ui.Context, a ApprovalInfo, detail *bool, line, fi
 			h.egressBlock(c, e)
 		}
 		if a.Detail != "" {
-			more := ui.ButtonBase(c.Key("detail")).Label("查看详情").Height(t.HSm).Padding(0, t.S2).Radius(t.RInnerMin).OnClick(func() { *detail = !*detail })
+			more := ui.ButtonBase(c.Key("detail")).Label("查看详情").Height(t.HSm).Padding(0, t.S2).Radius(t.HSm / 2).OnClick(func() { *detail = !*detail })
 			word := "查看详情"
 			if *detail {
 				word = "收起详情"

@@ -10,6 +10,7 @@ import (
 
 	"sumika-native/internal/api"
 	"sumika-native/internal/ctlproto"
+	"sumika-native/internal/modelref"
 	"sumika-native/internal/store"
 )
 
@@ -27,6 +28,9 @@ type Options struct {
 	Redact  RedactFunc       // 质量标签失败摘要的脱敏；nil 只走 taskrun.Detail 兜底
 	// Resources 是资源标签的数据来源（internal/resstat.Sampler）；nil 表示没接入。runstats 不 import resstat，也不碰库
 	Resources ResourceSource
+	// Refs 把 model_runs.model 读成规范引用（服务商ID/模型ID）再分组、显示：M2 之前写的历史行是裸 ID，
+	// 按 defaultProvider 补上前缀，和新记录算同一个模型；不改历史行。零值原样放行
+	Refs modelref.Resolver
 }
 
 // RedactFunc 给质量标签的失败摘要先过一遍脱敏（装配处传 app.RedactLog 那一路，runstats 不能 import app）；
@@ -75,12 +79,16 @@ type Service struct {
 	storage   StorageSource
 	redact    RedactFunc
 	resources ResourceSource
+	refs      modelref.Resolver
 }
+
+// canon 是 model_runs.model 的读法：裸 ID 补成规范引用，已经是规范引用的不变
+func (s *Service) canon(model string) string { return s.refs.Canonical(model) }
 
 // New 用一个已经打开的只读连接建服务（连接归调用方关）。传可写连接不会被拒绝，但统计查询只有 SELECT，
 // 而且应当用只读连接，免得抢写连接（规格第二节第 5 条）
 func New(db *sql.DB, o Options) *Service {
-	s := &Service{db: db, loc: o.Loc, now: o.Now, timeout: o.Timeout, storage: o.Storage, redact: o.Redact, resources: o.Resources}
+	s := &Service{db: db, loc: o.Loc, now: o.Now, timeout: o.Timeout, storage: o.Storage, redact: o.Redact, resources: o.Resources, refs: o.Refs}
 	if s.loc == nil {
 		s.loc = time.Local
 	}
@@ -214,7 +222,7 @@ func (s *Service) Usage(ctx context.Context, r ctlproto.UsageRange) (ctlproto.Us
 		if err := rows.Scan(&purpose, &stage, &model, &day, &a.runs, &a.failed, &a.noUsage, &a.uncached, &a.cacheRead, &a.cacheWrite, &a.output, &a.reasoning, &a.okRuns, &a.okMs); err != nil {
 			return ctlproto.UsageReport{}, s.queryErr(ctx, err)
 		}
-		g.add(purpose, stage, model, day, a)
+		g.add(purpose, stage, s.canon(model), day, a)
 	}
 	if err := rows.Err(); err != nil {
 		return ctlproto.UsageReport{}, s.queryErr(ctx, err)

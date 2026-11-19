@@ -27,6 +27,8 @@ type Submission struct {
 	Mode          kernel.InputMode
 	ClientKey     string
 	ExpectedRunID string
+	// announceSteer：受理成插话时由 Submit 在生命周期锁里发"收下"（只有 SteerIn 要；桌面 Submit 一向不发，共用对拍数据里也没有这一步）
+	announceSteer bool
 }
 
 var ErrInputAuthority = errors.New("输入没有匹配的可信身份")
@@ -353,6 +355,11 @@ func (h *Hub) Submit(ctx context.Context, s Submission) (kernel.Receipt, error) 
 	}
 	if s.Mode == kernel.InputSteer {
 		lc.steers[in.Identity.RunID] = append(lc.steers[in.Identity.RunID], row)
+		// 收下的这一声在生命周期锁里发：取走（takeInputSteers）、停止丢掉、收尾退回都要这把锁，
+		// 它们的"送到""丢掉"一定排在这一声后面。回调不许再进 Hub，也不许拿调用 Submit / SteerIn 的人手里的锁
+		if s.announceSteer && h.Cfg.OnSteer != nil {
+			h.Cfg.OnSteer(SteerEvent{Phase: "accepted", ID: row.Identity.InputID, Text: in.Text})
+		}
 		return receipt(row), nil
 	}
 	if requestedMode == kernel.InputSteer && !in.local() {

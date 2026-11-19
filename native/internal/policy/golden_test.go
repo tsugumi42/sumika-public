@@ -25,6 +25,7 @@ func readGolden(t *testing.T, name string, v any) {
 }
 
 func TestRiskSameAsBun(t *testing.T) {
+	windowsPathsOnly(t)
 	var g struct {
 		SelfPorts   []int `json:"selfPorts"`
 		RawCommands []struct {
@@ -120,6 +121,7 @@ func TestAnalyzerComparisonRejectsChangedError(t *testing.T) {
 
 // Go 起的 pwsh 拆出来的和 Bun 的一样（同一段解析脚本、同一个 pwsh）
 func TestAnalyzerSameAsBun(t *testing.T) {
+	windowsPathsOnly(t)
 	var g []shellGolden
 	readGolden(t, "shell", &g)
 	a := NewAnalyzer()
@@ -165,6 +167,7 @@ func TestJudgeSameAsBun(t *testing.T) {
 
 // 判定、"同一类"、能不能"始终"、碰到的外面、要解析联接的路径、工具路径，逐组比
 func TestDecideSameAsBun(t *testing.T) {
+	windowsPathsOnly(t)
 	var g struct {
 		Base Env `json:"base"`
 		Out  []struct {

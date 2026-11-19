@@ -114,7 +114,7 @@ type Config struct {
 	Now                   func() time.Time // 时钟（测试里定住）
 	Gate                  *approval.Gate   // 工具执行前的那一道关；nil = 工具一个都不跑（报"没有接上审批"）
 	Context               ContextLimits    // agent.context（上下文的几道线）；零值用默认
-	OnSteer               func(SteerEvent) // 插话走到了哪一步（agent.ts 的 turn/event steer）；可以是 nil
+	OnSteer               func(SteerEvent) // 插话走到了哪一步（agent.ts 的 turn/event steer）；可以是 nil。accepted 在 Hub 的生命周期锁里发，先于这句的 delivered / dropped：回调不许进 Hub，也不许拿调 Submit / SteerIn 的人手里的锁
 	// OnLocalStored 在主人消息（含已送达插话）入库后、拼上下文前调用；只许排任务，不等网络。
 	OnLocalStored func(conversation string, seq int64, text string)
 	BeforeTurn    func()                           // 一轮排到了、读卡之前（测试用来让几句话前后脚到）；可以是 nil

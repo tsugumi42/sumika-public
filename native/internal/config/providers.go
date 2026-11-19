@@ -10,6 +10,8 @@ import (
 	"sort"
 	"strings"
 	"unicode"
+
+	"sumika-native/internal/modelref"
 )
 
 // Provider 是一个模型服务商的连接声明。服务商 ID 是它在 providers 里的键：
@@ -83,6 +85,68 @@ func (c *Config) prepareProviders(raw map[string]any) {
 	if _, declared := providerEntry(raw, "magpie"); declared && c.Present["magpie.baseUrl"] {
 		c.Notices = append(c.Notices, "providers.magpie 已经在用，magpie.baseUrl 被忽略；改地址请改 providers.magpie.baseUrl")
 	}
+}
+
+// ModelRefs 是模型引用的解析器（规格-模型配置 3.2）：已声明的服务商 ID（含停用的）、裸引用归 defaultProvider。
+// 没有读过配置的零值 Config（Providers 空）得到不认任何服务商的解析器，引用原样当模型 ID
+func (c Config) ModelRefs() modelref.Resolver {
+	ids := make([]string, 0, len(c.Providers))
+	for id := range c.Providers {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	return modelref.New(c.DefaultProvider, ids...)
+}
+
+// modelRefIssues 查各用途键里的模型引用（规格-模型配置 3.3）：空 = 没选，不算错；`服务商/` 后面没写模型、
+// 或模型写不成引用才报。引用指向没声明或已停用的服务商不在这里报：保留值，请求时明确报错（规格 9.8）。
+// 不改写任何值：裸字符串照原样用（ADR-390 第 1 条）
+func (c Config) modelRefIssues() []string {
+	refs := c.ModelRefs()
+	var bad []string
+	check := func(key, v string) {
+		if v == "" {
+			return
+		}
+		if _, err := refs.Parse(v); err != nil {
+			bad = append(bad, key+"："+err.Error())
+		}
+	}
+	ids := make([]string, 0, len(c.Characters))
+	for id := range c.Characters {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	for _, id := range ids {
+		ch := c.Characters[id]
+		check("characters."+id+".model", ch.Model)
+		check("characters."+id+".background", ch.Background)
+		check("characters."+id+".topic", ch.Topic)
+		for i, m := range ch.FallbackModels {
+			check(fmt.Sprintf("characters.%s.fallbackModels[%d]", id, i), m)
+		}
+	}
+	check("defaults.backgroundModel", c.Defaults.BackgroundModel)
+	for i, m := range c.Defaults.FallbackModels {
+		check(fmt.Sprintf("defaults.fallbackModels[%d]", i), m)
+	}
+	check("agent.advisor.model", c.Agent.Advisor.Model)
+	check("agent.verify.model", c.Agent.Verify.Model)
+	check("subagents.model", c.Subagents.Model)
+	check("vision.model", c.Vision.Model)
+	return bad
+}
+
+// DisabledProviders 是已声明但停用的服务商 ID（排好序）
+func (c Config) DisabledProviders() []string {
+	var ids []string
+	for id, p := range c.Providers {
+		if !p.On() {
+			ids = append(ids, id)
+		}
+	}
+	sort.Strings(ids)
+	return ids
 }
 
 // MagpieBaseURL 是现在实际连的 magpie 地址：providers.magpie 存在就以它为准，

@@ -17,7 +17,7 @@ func TestEditContextMenuScopeCopyDataAndFocus(t *testing.T) {
 	tt := ui.NewTester(func(c *ui.Context) {
 		theme.Apply(c, theme.Light())
 		ui.Column(c).Fill().Children(func() {
-			ui.Column(c).Key("body").Selectable().Bind(&handle).CopyData(func(selected []ui.SelectedText) transfer.Data {
+			ui.Column(c.Key("body")).Selectable().Bind(&handle).CopyData(func(selected []ui.SelectedText) transfer.Data {
 				copies++
 				var text []string
 				for _, p := range selected {

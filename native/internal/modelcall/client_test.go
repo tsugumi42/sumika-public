@@ -17,6 +17,7 @@ import (
 	"sumika-native/internal/llm"
 	"sumika-native/internal/llm/chat"
 	"sumika-native/internal/llm/llmtest"
+	"sumika-native/internal/modelref"
 	"sumika-native/internal/paths"
 	"sumika-native/internal/runstate"
 	"sumika-native/internal/store"
@@ -390,6 +391,53 @@ func TestRequestOutputCapFollowsRootLimits(t *testing.T) {
 		}
 		if g := got[len(got)-1]; g != c.want {
 			t.Errorf("%s：max_completion_tokens = %d，想要 %d", c.root, g, c.want)
+		}
+	}
+}
+
+// 规格-模型配置 M2：trace 里的模型是规范引用（服务商ID/模型ID），不管调用方传的是裸 ID 还是带前缀的；
+// 发给服务商的 model 字段不带前缀（线上字节没变）
+func TestStreamRecordsCanonicalModelRef(t *testing.T) {
+	ctx := context.Background()
+	st, err := store.OpenFresh(paths.Paths{Root: t.TempDir()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	ledger := &turnbudget.Ledger{Store: st}
+	var bodies []string
+	var mu sync.Mutex
+	srv := httptest.NewServer(llmtest.Handler(llmtest.Script{Reply: llmtest.Text("好")}, &bodies, &mu))
+	defer srv.Close()
+	router := llm.NewRouter(modelref.New("magpie", "magpie", "other"), map[string]*llm.Client{"magpie": llm.New(llm.Magpie(srv.URL + "/v1"))})
+	caller := New(router, ledger, st, 1, 100)
+	if caller.Refs.Default() != "magpie" || caller.Failover.Refs.Default() != "magpie" {
+		t.Fatal("modelcall 和它的冷却表该从路由取同一份引用解析器")
+	}
+	for i, model := range []string{"group/auto-x", "magpie/group/auto-x"} {
+		attempt := []string{"a1", "a2"}[i]
+		in := kernel.Invocation{RootID: "r" + attempt, RunID: "run" + attempt, StepID: "s", AttemptID: attempt, Kind: "foreground"}
+		limits := kernel.Limits{MaxRequests: 3, MaxTools: 2, MaxTokens: 10000, MaxOutputTokens: 200, Deadline: time.Now().Add(time.Minute)}
+		if err := ledger.OpenRoot(ctx, in.RootID, in.Scope, limits); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := caller.StreamChat(ctx, in, testChatRequest(model, 30), nil); err != nil {
+			t.Fatal(err)
+		}
+		var recorded string
+		if err := st.Trace.QueryRow(`SELECT model FROM model_runs WHERE attempt_id = ?`, attempt).Scan(&recorded); err != nil {
+			t.Fatal(err)
+		}
+		if recorded != "magpie/group/auto-x" {
+			t.Errorf("调用方传 %q 时 trace 里的模型 = %q，想要 magpie/group/auto-x", model, recorded)
+		}
+	}
+	for i, body := range bodies {
+		var sent struct {
+			Model string `json:"model"`
+		}
+		if err := json.Unmarshal([]byte(body), &sent); err != nil || sent.Model != "group/auto-x" {
+			t.Errorf("第 %d 个请求发给服务商的 model = %q（%v），想要不带前缀的 group/auto-x", i+1, sent.Model, err)
 		}
 	}
 }

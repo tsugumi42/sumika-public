@@ -47,7 +47,12 @@ func openMaterialFile(parent *os.File, name string) (*os.File, error) {
 	return os.Open(filepath.Join(parent.Name(), name))
 }
 
-func deleteMaterialHandle(*os.File) error {
-	// 没有按句柄删除的原语时保留材料，不能退回有换入竞态的按名删除。
-	return ErrUnavailable
+// deleteMaterialHandle：Unix 没有按句柄删除的原语。dir 是 removeRestoreMaterial 已经核验过身份的材料目录，
+// f 是核验过的材料文件：取 f 的对象身份，在 dir 里比对名字后再删（removeSameFile），不是无条件按名删，也不再按路径字符串重新打开目录
+func deleteMaterialHandle(dir *os.Root, name string, f *os.File) error {
+	fi, err := f.Stat()
+	if err != nil {
+		return err
+	}
+	return removeSameFile(dir, name, fi)
 }

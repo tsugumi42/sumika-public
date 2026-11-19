@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
+
+	"sumika-native/internal/uitest"
 )
 
 func luminance(c color.RGBA) float64 {
@@ -30,6 +32,7 @@ func pixelRect(r ui.Rect) image.Rectangle {
 	return image.Rect(int(math.Ceil(float64(r.X*1.25))), int(math.Ceil(float64(r.Y*1.25))), int((r.X+r.W)*1.25), int((r.Y+r.H)*1.25))
 }
 func TestSelectedConversationContrast(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	for _, dark := range []bool{false, true} {
 		a := newApp()
 		a.Dark = dark
@@ -87,6 +90,7 @@ func TestSceneEntryAcrossLayers(t *testing.T) {
 }
 
 func TestAvatarFamily(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	for _, dark := range []bool{false, true} {
 		a := newApp()
 		a.Dark, a.Group, a.Selected["local"] = dark, 1, "B"
@@ -122,6 +126,7 @@ func TestAvatarFamily(t *testing.T) {
 }
 
 func TestActivityHierarchy(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	for _, dark := range []bool{false, true} {
 		a := newApp()
 		a.Dark = dark

@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
+
+	"sumika-native/internal/uitest"
 )
 
 // 回弹铺到位移上（ADR-285 第 6 条）：开关圆钮、分段选中块切换时冲过终点再回来；减少动态效果时直接到位。
@@ -111,6 +113,7 @@ func TestSegmentIndicatorBounces(t *testing.T) {
 
 // 选中格的字要看得清：选中块不能盖在字上（2026-11-06 第一版的选中块是单独的浮层元素，把"群聊"两个字盖没了）。
 func TestSegmentSelectedTextVisible(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	for _, dark := range []bool{false, true} {
 		a := newApp()
 		a.Dark, a.Group = dark, 1
@@ -244,6 +247,7 @@ func titleLeft(tt *ui.Tester, name string, w, from float32) int {
 
 // 窄窗右栏抽屉从右边滑出来（审查 B8）：打开那一帧"资料与活动"偏右或还看不见，停稳后回原位。
 func TestDrawerSlides(t *testing.T) {
+	uitest.RequireGlyphs(t)
 	a := newApp()
 	a.Layer = 1
 	tt := ui.NewTester(a.view, 900, 700)

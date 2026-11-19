@@ -35,6 +35,15 @@ func TestWatchChildArgsDropsWatchFlag(t *testing.T) {
 }
 
 func TestWatchLockNameIsPerDataDir(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		// 本机写法的路径：不同目录不同锁，结尾斜杠不影响。大小写不同算不算同一个目录是 Windows 盘的语义（watchLockName 一律转小写），
+		// 这一条只在 Windows 上断言
+		a, b := watchLockName("/a/data"), watchLockName("/b/data")
+		if a == b || a != watchLockName("/a/data/") {
+			t.Fatalf("%s %s", a, b)
+		}
+		return
+	}
 	a, b := watchLockName(`D:\a\data`), watchLockName(`D:\b\data`)
 	if a == b || a != watchLockName(`d:\A\data\`) { // 大小写、末尾斜杠不影响
 		t.Fatalf("%s %s", a, b)

@@ -40,10 +40,10 @@ func TestCheckpointMaterialIdentityReplacement(t *testing.T) {
 			} else if stage == "after-check" {
 				original := deleteRestoreMaterial
 				t.Cleanup(func() { deleteRestoreMaterial = original })
-				deleteRestoreMaterial = func(file *os.File) error {
+				deleteRestoreMaterial = func(dir *os.Root, name string, file *os.File) error {
 					require(t, os.Rename(owned, moved))
 					require(t, os.WriteFile(owned, []byte("user-file"), 0600))
-					return original(file)
+					return original(dir, name, file)
 				}
 			} else if stage == "missing-registration" {
 				require(t, os.Remove(filepath.Join(f.data, inverse.ID, "materials.jsonl")))

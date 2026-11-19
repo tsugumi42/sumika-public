@@ -189,7 +189,8 @@ type App struct {
 	account   string // 要连的小号
 	character string // 这个号绑的角色
 
-	llm          *llm.Client
+	llm          *llm.Client // magpie 的客户端（现在唯一有目录的服务商，见 catalogProvider）；发请求走 router
+	router       *llm.Router
 	modelRuntime atomic.Pointer[ModelRuntime]
 	modelMu      sync.Mutex       // 保存、前提转换和发布按同一顺序完成
 	modelDev     *modelmeta.Store // models.dev 的本地缓存（模型窗口和单次输出的第三层，ADR-334）
@@ -477,6 +478,9 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 		client.ContentIdle = time.Duration(cfg.Agent.ContentIdleSeconds * float64(time.Second))
 	}
 	a.llm = client
+	// 请求按模型引用里的服务商分发：现在只有 magpie 接了连接（其余服务商的连接和目录是后面的步骤），
+	// 引用到别家的明确报"没有可用的连接"，不落到 magpie
+	a.router = llm.NewRouter(cfg.ModelRefs(), map[string]*llm.Client{catalogProvider: client}, cfg.DisabledProviders()...)
 	a.initModelMeta()
 	// 列模型不再挡启动（规格-模型配置 6.1）：取不到时有同来源的缓存用缓存、没有用空列表，
 	// CatalogError 记下原因照常进接收中，后台按退避自己重试
@@ -624,8 +628,8 @@ func Open(ctx context.Context, opt Options) (*App, error) {
 	ac := cfg.Agent.Context
 	tc.Context = turn.ContextLimits{Window: ac.Window, Reserve: ac.Reserve, SoftRatio: ac.SoftRatio, HardRatio: ac.HardRatio,
 		KeepTokens: ac.KeepTokens, NoAutoCompact: !ac.AutoCompactChat}
-	WireKernelBudget(&tc, set.TraceStore(), client, cfg.Agent.Scheduler, cfg.Agent.Budget)
-	a.hub = turn.NewHub(hubCtx, tc, set, client, models)
+	WireKernelBudget(&tc, set.TraceStore(), a.router, cfg.Agent.Scheduler, cfg.Agent.Budget)
+	a.hub = turn.NewHub(hubCtx, tc, set, a.router, models)
 	a.slashes = newSlashTable()
 	a.slashes.add(cdSlashCommand, a.slashCD)
 	a.slashes.add(trustSlashCommand, a.slashTrust)
@@ -1138,10 +1142,8 @@ func (a *App) checkModels() error {
 	if cur == nil || cur.CatalogError != "" {
 		return nil // 目录没取到就没法判断；原因启动时已经记过一行，重试成功前不重复
 	}
-	for _, m := range cur.Models {
-		if m.ID == c.Model {
-			return nil
-		}
+	if _, ok := cur.Find(c.Model); ok {
+		return nil
 	}
 	a.logf("角色 %s 的模型 %q 不在模型的列表里（%s 现在有 %d 个）；照常进接收中，发消息时会报错", a.character, c.Model, a.catalogSource(), len(cur.Models))
 	return nil

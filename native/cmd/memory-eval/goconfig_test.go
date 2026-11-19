@@ -139,12 +139,15 @@ func TestEmbedLocalConfigVariants(t *testing.T) {
 	})
 	t.Run("命令行盖过配置", func(t *testing.T) {
 		data := writeConfig(t, "  backend: go-models\n  model: gte-multilingual-base\n  modelsRoot: D:/Models\n  modelsExe: D:/x/a.exe\n  ortLibrary: D:/x/a.dll\n")
-		cfg, err := embedLocalConfig(embedSetup{dataDir: data, modelsExe: "D:/y/b.exe", ortLibrary: "D:/y/b.dll", modelsRoot: "D:/y/models"})
+		// 用本机的绝对路径：写死 D:/y/... 在 Linux 上是相对路径，会被拼到当前目录下
+		y := t.TempDir()
+		exe, dll, models := filepath.Join(y, "b.exe"), filepath.Join(y, "b.dll"), filepath.Join(y, "models")
+		cfg, err := embedLocalConfig(embedSetup{dataDir: data, modelsExe: exe, ortLibrary: dll, modelsRoot: models})
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, p := range [][2]string{{cfg.Exe, "D:/y/b.exe"}, {cfg.OrtLibrary, "D:/y/b.dll"}, {cfg.ModelsRoot, "D:/y/models"}} {
-			if !strings.EqualFold(filepath.ToSlash(p[0]), p[1]) || !filepath.IsAbs(p[0]) {
+		for _, p := range [][2]string{{cfg.Exe, exe}, {cfg.OrtLibrary, dll}, {cfg.ModelsRoot, models}} {
+			if !strings.EqualFold(filepath.ToSlash(p[0]), filepath.ToSlash(p[1])) || !filepath.IsAbs(p[0]) {
 				t.Fatalf("命令行没盖过配置：%q 要 %q", p[0], p[1])
 			}
 		}

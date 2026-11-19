@@ -158,8 +158,10 @@ func (s Spec) Validate() error {
 	return fmt.Errorf("登记表里 %s 有问题：%s", id, strings.Join(p, "；"))
 }
 
+// safeRelPath：登记表会跟着配置在机器间拷，所以判断与本机系统无关。
+// filepath.IsAbs / VolumeName 在 Linux 上不认 C:/models/x，盘符要自己拦（第二个字符是冒号、第一个是字母）
 func safeRelPath(v string) bool {
-	if v == "" || filepath.IsAbs(v) || strings.HasPrefix(v, "/") || strings.HasPrefix(v, `\`) || filepath.VolumeName(v) != "" {
+	if v == "" || filepath.IsAbs(v) || strings.HasPrefix(v, "/") || strings.HasPrefix(v, `\`) || filepath.VolumeName(v) != "" || hasDriveLetter(v) {
 		return false
 	}
 	for _, seg := range strings.FieldsFunc(v, func(r rune) bool { return r == '/' || r == '\\' }) {
@@ -168,6 +170,14 @@ func safeRelPath(v string) bool {
 		}
 	}
 	return true
+}
+
+func hasDriveLetter(v string) bool {
+	if len(v) < 2 || v[1] != ':' {
+		return false
+	}
+	c := v[0] | 0x20 // 转小写
+	return c >= 'a' && c <= 'z'
 }
 
 // CharLimit 是单条字符串允许的字符数（按 rune 数，分词之前拦）。
