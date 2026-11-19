@@ -1,7 +1,7 @@
 # 每日整套搬到公开仓库（ADR-398 第 3 条，规格-每日整套“搬到公开仓库的定时工作流”一节）：每天北京时间 04:30 在 Windows 机器上跑不带 -short 的整套。
 #
 # 和 ci.yml 的分工：ci.yml 在 PR 上跑 -short（慢的对拍、压力、规模测试跳过），这里每天把它们跑满一次，不挡合并。
-# 和本机 scripts/nightly.ts 的关系：本机那一份照旧留着，直到两边并行几天、对出 CI 上因为缺字体、ffmpeg、中文 pwsh 跳过了哪些测试，
+# 和本机 scripts/nightly.ts 的关系：本机那一份照旧留着，直到两边并行几天、对出 CI 上跳过了哪些测试（字体、Twemoji、ffmpeg 下面已装齐，跳过汇总在 go-test-full.txt 末尾；剩中文 pwsh 一类），
 # 再决定本机缩成只跑这几类还是停掉（停本机任务计划要先问主人）。
 #
 # 和本机版的不同：Go 整套和检查脚本的 bun 测试各跑各的，谁红都不挡另一个。本机版是脚本测试先跑、红了 Go 部分就不跑，
@@ -56,6 +56,21 @@ jobs:
           "TEMP=$t" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
           "TMP=$t" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
 
+      # 测试依赖和 ci.yml 一样装齐（那边有逐项说明）：rg、fd 由上面 bun install 的 postinstall 按钉死的摘要装；ffmpeg 钉 9.0.2；
+      # 文渊圆体、Twemoji 由 scripts/ci-assets.ts 按钉死的版本和摘要取，和 ci.yml 共用一份缓存。缺了的话，下面的汇总把“缺依赖而跳过”判红
+      - name: 装 ffmpeg
+        run: choco install ffmpeg --version=9.0.2 -y --no-progress
+
+      - uses: actions/cache@v6
+        with:
+          path: |
+            native/fonts/WenYuanRoundedSCVF.ttf
+            native/twemoji
+          key: test-assets-${{ hashFiles('scripts/ci-assets.ts') }}
+
+      - name: 取测试素材（文渊圆体、Twemoji）
+        run: bun scripts/ci-assets.ts
+
       - name: go vet
         working-directory: native
         run: go vet ./...
@@ -80,16 +95,22 @@ jobs:
         shell: pwsh
         working-directory: native
         run: |
-          $out = (Join-Path $env:GITHUB_WORKSPACE 'go-test-full.txt'); $err = (Join-Path $env:GITHUB_WORKSPACE 'go-test-stderr.txt')
-          $p = Start-Process -FilePath go -ArgumentList @('test', '-count=1', '-timeout', '20m', './...') -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
+          # go test 出 -json（原始结果，go-test-full.json）；跑完交 scripts/ci-test-report.ts 写成人看的 go-test-full.txt
+          # （包结论、红用例原文、按原因汇总的跳过，和 ci.yml 一样），缺依赖而跳过的判红。下面“红的包”照旧读 txt 里的 ok / FAIL 行
+          $json = (Join-Path $env:GITHUB_WORKSPACE 'go-test-full.json'); $out = (Join-Path $env:GITHUB_WORKSPACE 'go-test-full.txt'); $err = (Join-Path $env:GITHUB_WORKSPACE 'go-test-stderr.txt')
+          $p = Start-Process -FilePath go -ArgumentList @('test', '-count=1', '-timeout', '20m', '-json', './...') -RedirectStandardOutput $json -RedirectStandardError $err -PassThru
           $null = $p.Handle # 先拿住句柄，不然进程结束后 ExitCode 可能读不到（.NET 的已知坑）
           while (-not $p.WaitForExit(60000)) {
-            $last = Get-Content $out -Tail 200 -ErrorAction SilentlyContinue | Where-Object { $_ -match '^(ok|FAIL|---)\s' } | Select-Object -Last 1
-            "{0:HH:mm} 还在跑，输出 {1} KB，最近：{2}" -f (Get-Date), [math]::Round((Get-Item $out).Length / 1KB), $last
+            $last = Get-Content $json -Tail 400 -ErrorAction SilentlyContinue | Select-String '"Action":"(pass|fail)","Package":"([^"]+)","Elapsed"' | Select-Object -Last 1
+            $what = if ($last) { "$($last.Matches[0].Groups[1].Value) $($last.Matches[0].Groups[2].Value)" } else { '' }
+            "{0:HH:mm} 还在跑，输出 {1} KB，最近一个包：{2}" -f (Get-Date), [math]::Round((Get-Item $json).Length / 1KB), $what
           }
-          "go test 退出码 $($p.ExitCode)"
+          $code = $p.ExitCode
           Get-Content $err -ErrorAction SilentlyContinue | Select-Object -Last 20
-          exit $p.ExitCode
+          bun ../scripts/ci-test-report.ts $json $out
+          if ($LASTEXITCODE -ne 0) { $code = 1 }
+          "go test 退出码 $($p.ExitCode)，汇总退出码 $LASTEXITCODE"
+          exit $code
 
       - name: 检查脚本的 bun 测试
         if: ${{ !cancelled() }}
@@ -127,6 +148,7 @@ jobs:
           name: nightly-output
           path: |
             go-test-full.txt
+            go-test-full.json
             go-test-stderr.txt
             bun-test-scripts.txt
           retention-days: 30
