@@ -10,7 +10,7 @@ import (
 // 链接设置页的推特卡片配色、高度封顶：选“深色”存上；高度能填 1200、也能填 0（不封顶，行上写“不封顶”）；
 // 填 100 过不了配置检查，值不变、提示写在页面上。
 func TestLinkPageTweetCardSettings(t *testing.T) {
-	h := newLinkHarness(t, 2048, 1500, 20)
+	h := newLinkHarness(t, 2048, 1030, 20)
 	h.click(t, "链接解析（link-reader）")
 	h.click(t, "推特卡片：深色") // 旧外壳没有行标题，选项文字自己带上是哪一项
 	h.wait(t)
