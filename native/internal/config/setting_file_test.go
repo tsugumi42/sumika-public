@@ -34,7 +34,6 @@ func TestSettingSaveEveryKey(t *testing.T) {
 		{"group.frequency", json.Number("0")}, {"group.jitter", json.Number("0.1")}, {"group.mode", "speak"},
 		{"plugins.sessions", map[string]any{"qq:group:200": map[string]any{"poke": false}}},
 		{"reply.deny", map[string]any{"qq:401": "ai"}}, {"linkReader.proxy", "http://127.0.0.1:8080"},
-		{"linkReader.expand.startEmoji", "123"},
 		{"location", map[string]any{"name": "编的市", "city": "编的市", "latitude": json.Number("31.5"), "longitude": json.Number("121.25")}},
 		{"tools.approvalMode", "auto"}, {"tools.lineEnding", "crlf"},
 		{"embed.modelsRoot", "D:/Models"},
@@ -161,7 +160,7 @@ func TestSettingInputBoundaries(t *testing.T) {
 		{"plugins.sessions", map[string]any{"qq:group:123": nil}}, {"plugins.sessions", map[string]any{"qq:group:123": map[string]any{"poke": nil}}},
 		{"plugins.sessions", map[string]any{"qq:group:123": map[string]any{"unknown": true}}},
 		{"reply.deny", map[string]any{"qq:123": nil}}, {"reply.deny", map[string]any{"qq:123": "wrong"}},
-		{"magpie.baseUrl", "http://"}, {"linkReader.proxy", "https://bad.invalid"}, {"linkReader.expand.startEmoji", "0"},
+		{"magpie.baseUrl", "http://"}, {"linkReader.proxy", "https://bad.invalid"},
 	}
 	for _, ch := range bad {
 		_, _, err := PatchSetting(raw, "fixture", ch)

@@ -121,3 +121,29 @@ func TestTweetCardSettingsWritable(t *testing.T) {
 		t.Fatalf("拒收不该动运行中的设置：%+v", tc)
 	}
 }
+
+// 群开始表情登记的是“立即”生效：从设置登记写进去，运行中的链接设置当场就要变，且照链接那一路查编号。
+// 以前它也在普通配置键表里，抢先走了普通写入，不刷新链接运行时，也不按表情编号报错。
+func TestStartEmojiSettingAppliesNow(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	a := e.open()
+	defer a.Close()
+	d := a.Desktop()
+	defer d.Close()
+	var r api.SettingsRegistry = &d.Reader
+	ctx := context.Background()
+	v, err := r.ReadSettingsRegistry(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v, err = r.WriteSetting(ctx, api.SettingChange{Key: "linkReader.expand.startEmoji", Value: json.RawMessage(`"77"`)}, v.Version); err != nil {
+		t.Fatal(err)
+	}
+	if got := a.currentLinks().Values.Expand.StartEmoji; got != "77" {
+		t.Fatalf("运行中的开始表情：%q", got)
+	}
+	if _, err := r.WriteSetting(ctx, api.SettingChange{Key: "linkReader.expand.startEmoji", Value: json.RawMessage(`"0"`)}, v.Version); err == nil || !strings.Contains(err.Error(), "表情编号") {
+		t.Fatalf("编号 0 该按表情编号拒收：%v", err)
+	}
+}

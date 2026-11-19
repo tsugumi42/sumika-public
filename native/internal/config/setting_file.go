@@ -31,7 +31,7 @@ var settingKinds = map[string]string{
 	"notifications.goal": "bool", "notifications.loop": "bool", "notifications.approval": "bool", "notifications.question": "bool", "notifications.reminder": "bool",
 	"qq.remoteApproval.enabled": "bool", "qq.remoteApproval.awayAfterSeconds": "number",
 	"group.frequency": "number", "group.jitter": "number", "group.mode": "string",
-	"plugins.sessions": "sessions", "reply.deny": "deny", "linkReader.proxy": "string", "linkReader.expand.startEmoji": "string", "location": "location",
+	"plugins.sessions": "sessions", "reply.deny": "deny", "linkReader.proxy": "string", "location": "location",
 	"tools.approvalMode": "string", "tools.lineEnding": "string",
 	"embed.modelsRoot": "string",
 	"web.searchOrder":  "weborder", "web.fetchOrder": "weborder",
