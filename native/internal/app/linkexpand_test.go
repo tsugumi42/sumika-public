@@ -62,11 +62,17 @@ func newExpandHostSend(t *testing.T, mode string, fetcher linkreader.ContentFetc
 	t.Helper()
 	e := newEnv(t)
 	e.goSend = goSend
-	e.callTimeout = time.Second // 进程内的假协议端回包是毫秒级；“不回包”的用例只等到这个时限
+	// 协议调用时限用宿主默认的 3 秒，不压到 1 秒：时限盖住核验、发送、撤回所有调用，CI 的两核机器挤着跑时正常回包也会晚过 1 秒，
+	// 核验超时关连接、写到一半被取消也关连接（coder/websocket），整条用例跟着红（2026-11-19）。“不回包”的用例因此多等 2 秒。
 	f := &linkFake{}
 	e.linkFetcher = f
 	if fetcher != nil {
 		e.linkFetcher = fetcher
+	}
+	extra := strings.Join(expandExtra, "")
+	if !strings.Contains(extra, "tweetCard:") {
+		// 假取数大多给纯文字推文、断言文字版正文；纯文字卡片（ADR-399）由专门的用例打开
+		extra = "    tweetCard: {textOnly: false}\n" + extra
 	}
 	e.extraConfig = fmt.Sprintf(`linkReader:
   context: {enabled: false}
@@ -77,7 +83,7 @@ func newExpandHostSend(t *testing.T, mode string, fetcher linkreader.ContentFetc
     startEmoji: "76"
 %sreply:
   deny: {"qq:70011": bot}
-`, testGroup, testAccount, testOwner, strings.Join(expandExtra, ""))
+`, testGroup, testAccount, testOwner, extra)
 	e.writeConfigFreq(testToken, "0")
 	guardFixture(t, e, true)
 	writeSenderIntent(t, e.data, testAccount, sendlock.HolderGo)

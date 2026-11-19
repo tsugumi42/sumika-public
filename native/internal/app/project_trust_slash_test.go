@@ -23,6 +23,7 @@ type trustEnv struct {
 	key  api.ConversationKey
 	sub  api.Subscription[[]api.LocalApproval]
 	done chan error
+	seen map[string]bool // 已经拿过的卡：订阅里可能还压着回答之前的快照，不能把旧卡再当新卡
 }
 
 func newTrustEnv(t *testing.T, withFile bool) *trustEnv {
@@ -39,7 +40,7 @@ func newTrustEnv(t *testing.T, withFile bool) *trustEnv {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { sub.Close() })
-	return &trustEnv{t: t, e: e, a: a, d: d, key: localKey("console:" + testChar), sub: sub}
+	return &trustEnv{t: t, e: e, a: a, d: d, key: localKey("console:" + testChar), sub: sub, seen: map[string]bool{}}
 }
 
 func (x *trustEnv) send(text string) chan error {
@@ -50,8 +51,11 @@ func (x *trustEnv) send(text string) chan error {
 
 func (x *trustEnv) card() api.LocalApproval {
 	for {
-		if snap := localRecv(x.t, x.sub.Updates()); len(snap.Value) > 0 {
-			return snap.Value[0]
+		for _, c := range localRecv(x.t, x.sub.Updates()).Value {
+			if !x.seen[c.ID] {
+				x.seen[c.ID] = true
+				return c
+			}
 		}
 	}
 }

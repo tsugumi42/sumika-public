@@ -57,6 +57,7 @@ const (
 	LinkHistoryCheck      LinkKey = "historyCheck"
 	LinkForwardVideo      LinkKey = "forwardVideo"
 	LinkForwardQuoteReply LinkKey = "forwardQuoteReply"
+	LinkTweetTextCard     LinkKey = "tweetTextCard" // 纯文字推文画推特卡片（tweetCard.textOnly，ADR-399）
 )
 
 type LinkChange struct {
@@ -95,6 +96,7 @@ var linkScalars = map[LinkKey]linkScalar{
 	LinkFailEmoji:         {path: "expand.failEmoji", kind: linkText, check: checkLinkEmoji},
 	LinkRotateOnReject:    {path: "expand.rotateOnReject", kind: linkBool},
 	LinkPanoramaOriginals: {path: "expand.panoramaOriginals", kind: linkBool},
+	LinkTweetTextCard:     {path: "expand.tweetCard.textOnly", kind: linkBool},
 	LinkMaxLinks:          {path: "expand.maxLinks", kind: linkInt},
 	LinkImageMaxMB:        {path: "expand.imageMaxMB", kind: linkInt},
 	LinkPrivateStatus:     {path: "expand.privateStatus", kind: linkText},

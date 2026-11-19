@@ -243,6 +243,7 @@ func (a *app) pageLinkSettingsBody(c *ui.Context) {
 		a.linkToggle(c, "识别裸 BV / av 号", config.LinkBareBiliID, e.BareBiliID)
 		a.linkToggle(c, "图被拒收后旋转重发一次", config.LinkRotateOnReject, e.RotateOnReject)
 		a.linkToggle(c, "拼接后另附原图", config.LinkPanoramaOriginals, e.PanoramaOriginals)
+		a.linkToggle(c, "纯文字推文画成卡片", config.LinkTweetTextCard, e.TweetCard.TextOnly)
 		themes := []string{config.TweetThemeAuto, config.TweetThemeLight, config.TweetThemeDark}
 		a.settingsOneOfHint(c, "link-tweet-theme", "推特卡片配色", "自动：北京时间 6～18 点浅色，其余深色", []string{"自动", "浅色", "深色"}, []string{"推特卡片：自动（北京时间 6～18 点浅色）", "推特卡片：浅色", "推特卡片：深色"}, max(slices.Index(themes, e.TweetCard.Theme), 0), s.busy, func(i int) {
 			a.linkJob(&api.LinkSettingsChange{Key: config.LinkTweetCardTheme, Text: themes[i]})

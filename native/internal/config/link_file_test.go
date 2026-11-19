@@ -178,3 +178,21 @@ func TestPatchLinkTweetCard(t *testing.T) {
 		}
 	}
 }
+
+// 设置页的“纯文字推文画成卡片”开关写到 linkReader.expand.tweetCard.textOnly，其他键不动（ADR-399）。
+func TestPatchLinkTweetTextCard(t *testing.T) {
+	raw := []byte("linkReader:\n  expand:\n    tweetCard:\n      theme: dark\n")
+	out, c, err := PatchLink(raw, "fixture.yml", LinkChange{Key: LinkTweetTextCard, Bool: false})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.LinkReader.Expand.TweetCard.TextOnly || c.LinkReader.Expand.TweetCard.Theme != "dark" {
+		t.Fatalf("要关掉、配色不动：%+v", c.LinkReader.Expand.TweetCard)
+	}
+	if !strings.Contains(string(out), "textOnly") {
+		t.Fatalf("要写进文件：\n%s", out)
+	}
+	if _, c, err = PatchLink(out, "fixture.yml", LinkChange{Key: LinkTweetTextCard, Bool: true}); err != nil || !c.LinkReader.Expand.TweetCard.TextOnly {
+		t.Fatalf("再打开：%v %+v", err, c.LinkReader.Expand.TweetCard)
+	}
+}
