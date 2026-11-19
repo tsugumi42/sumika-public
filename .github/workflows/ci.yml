@@ -40,6 +40,22 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
+      # Windows runner 的 Defender 实时防护会扫刚写、刚关的文件：删临时目录时文件还在被扫，Go 报“目录不是空的”
+      # （TestRunStopsCleanlyOnCancel，2026-11-19；本机查过 run 返回时我们自己没开着文件）。工作区和临时目录加进排除项，
+      # 要在 checkout 之前（参考 warpbuild.com/guides/faster-windows-github-actions）。先打出实时防护开没开，留证据；
+      # Defender 服务没响应时 Add-MpPreference 会报 0x800106ba，这一步不能把整格弄红，所以吞掉错误只打一行。
+      - name: Defender 排除工作区和临时目录
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          try {
+            "实时防护：" + (Get-MpComputerStatus).RealTimeProtectionEnabled
+            Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE, $env:RUNNER_TEMP, $env:TEMP, "$env:LOCALAPPDATA\go-build", "$env:USERPROFILE\go"
+            "已排除：" + ((Get-MpPreference).ExclusionPath -join '; ')
+          } catch {
+            "Defender 排除没加上（不影响后面的步骤）：$_"
+          }
+
       # 各 action 固定到当前官方文档推荐的大版本：checkout v7、setup-go v7、setup-bun v2
       - uses: actions/checkout@v7
 

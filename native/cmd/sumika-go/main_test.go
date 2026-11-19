@@ -187,6 +187,9 @@ func TestRunStopsCleanlyOnCancel(t *testing.T) {
 		t.Fatal("60 秒内 run 没返回")
 	}
 
+	if held := openFiles(e.data); len(held) > 0 {
+		t.Errorf("run 返回以后数据目录里还开着这些文件：%v", held)
+	}
 	logFile := filepath.Join(e.data, "logs", "go-"+time.Now().Format(filelog.DayLayout)+".log")
 	b, err := os.ReadFile(logFile)
 	if err != nil {
