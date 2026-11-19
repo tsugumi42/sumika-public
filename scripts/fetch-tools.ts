@@ -30,6 +30,7 @@ const PINNED: Record<string, { version: string; sha256: Record<string, string> }
     sha256: {
       'x86_64-pc-windows-msvc': '71b2fef860abe467217a538ff31de02f5258807c0129f771846f87bd029aafc5',
       'aarch64-pc-windows-msvc': 'e4abca10c3a64ebea742667dd7009449d49403db5460dd6873e389fa2945360f',
+      'x86_64-unknown-linux-musl': '33e15bcf1624b25cdd2a55813a47a2f95dbe126268203e76aa6a585d1e7b149c', // 2026-11-19 补：公开仓库 CI 的 Linux 一格用
     },
   },
   fd: {
@@ -37,6 +38,7 @@ const PINNED: Record<string, { version: string; sha256: Record<string, string> }
     sha256: {
       'x86_64-pc-windows-msvc': 'a227701b8551c35a9931d9f6da75503cf86d88e182d71fb849a70864c5d57cd7',
       'aarch64-pc-windows-msvc': 'a2bcddcfd259b05357a77bbc6cd671fdb30f63fd266a0e748305890a8c5ceaa6',
+      'x86_64-unknown-linux-musl': '761c72dc8e120d85b22292063be8a796e2eeb20eb3e4f38b8fa2343ccf3514a7', // 同上
     },
   },
 }
@@ -83,11 +85,13 @@ async function fetchTool(t: (typeof TOOLS)[number]) {
 }
 
 mkdirSync(BIN, { recursive: true })
-// 下载失败只警告、不让 bun install 失败：Sumika 照样能用，只是少了两个搜索工具
+// 下载失败只警告、不让 bun install 失败：Sumika 照样能用，只是少了两个搜索工具。
+// CI 上（GitHub Actions 设 CI=true）照样装完别的，但退出码 1：测试要用真 rg、fd，悄悄少了只会让那几组测试被跳过（2026-11-19）
 for (const t of TOOLS) {
   try {
     await fetchTool(t)
   } catch (e) {
     console.warn(`${t.bin}：${(e as Error).message}。搜内容 / 找文件工具暂时不可用，联网后运行 bun run setup 重试。`)
+    if (process.env.CI === 'true') process.exitCode = 1
   }
 }
