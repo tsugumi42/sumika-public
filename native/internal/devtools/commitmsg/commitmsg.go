@@ -1,4 +1,4 @@
-// Package commitmsg 是 sumika-dev check commit-msg：提交说明的标题检查（原 scripts/check-commit-msg.ts，lefthook.yml 的 commit-msg，参数是 git 给的说明文件路径）。
+// Package commitmsg 是 sumika-dev hook commit-msg（2026-11-19 前叫 check commit-msg，旧名已删）：提交说明的标题检查（原 scripts/check-commit-msg.ts，lefthook.yml 的 commit-msg，参数是 git 给的说明文件路径）。
 // 上级 AGENTS「提交」第 1 条：标题 30 个汉字左右、只写一件事、不用分号。
 // 主人 2026-10-27 嫌标题和说明太长、“很多有的没的也写进去了”，光靠记守不住，所以拦标题；正文写什么、不写什么靠第 2 条，这里不查。
 // 字数和分号只查“类型(模块): ”后面那段，按 Unicode 码点数；ADR 编号整行都查（模块名里也不写 ADR 号）。合并、回退（Merge、Revert）和 fixup! / squash! 不查。
@@ -117,11 +117,11 @@ func Problems(title string) []string {
 	return bad
 }
 
-// Run 是 sumika-dev check commit-msg 的入口；args[0] 是 git 给的说明文件路径。root 不用（见包注释）。
+// Run 是 sumika-dev hook commit-msg 的入口；args[0] 是 git 给的说明文件路径。root 不用（见包注释）。
 // 退出码：0 通过；1 标题不合规（读不出说明文件的怪情形也是 1）；2 没给参数，或拿不到说明文件、没检查（按失败处理）。
 func Run(args []string, _ string, stdout, _ io.Writer) int {
 	if len(args) == 0 || args[0] == "" {
-		fmt.Fprintln(stdout, "用法：sumika-dev check commit-msg <说明文件>")
+		fmt.Fprintln(stdout, "用法：sumika-dev hook commit-msg <说明文件>")
 		return 2
 	}
 	arg := args[0]

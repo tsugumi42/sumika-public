@@ -1,6 +1,6 @@
 # 规格：仓库脚本和钩子改写成 Go
 
-> 状态：草稿（2026-11-18）；进度：第 1～4 步已合 main（第 2 步合并提交，第 3 步，第 4 步小关卡见合并 chore/sumika-dev-4 的提交）。来源：ADR-389（主人原话见那条）。参考：盘点 `data/dev/research/盘点-脚本迁Go-Sol-.md`（Sol 只读盘点，每个文件一行，带出处；下文“盘点”指它）；[规格-合并走PR](规格-合并走PR.md)（合并队列和导出器的去留跟它走）。
+> 状态：草稿（2026-11-18）；进度：第 1～4 步已合 main（第 2 步合并提交，第 3 步，第 4 步小关卡见合并 chore/sumika-dev-4 的提交）；第 5 步的通知（`report-notice`）在分支 feat/notice-go 上，已迁成 `sumika-dev notice`，并加了“main 上 CI 失败带进上下文”，待合 main。来源：ADR-389（主人原话见那条）。参考：盘点 `data/dev/research/盘点-脚本迁Go-Sol-.md`（Sol 只读盘点，每个文件一行，带出处；下文“盘点”指它）；[规格-合并走PR](规格-合并走PR.md)（合并队列和导出器的去留跟它走）。
 
 ## 开工卡
 
@@ -22,7 +22,7 @@
   - 旧的 bun 脚本一次 306 毫秒。
   - 提交钩子并行跑好几条检查，所以要调用编好的程序，只在开发工具自己的源码改过时才重编。
 - **不做什么**：
-  - 不翻译只为冻结 Bun 服务的部分。`desktop-check.ts`，以及 `server-verify.ts`、`precommit-fast.ts`、`gen-rpc.ts` 里给 `server/`、`desktop/` 的分支，直接删掉，不迁（ADR-359 冻结，ADR-378 关卡碰到冻结代码就摘掉）。
+  - 不翻译只为冻结 Bun 服务的部分。`desktop-check.ts`，以及 `server-verify.ts`、`precommit-fast.ts`（2026-11-19 已整个删：server-tests 一支摘掉，go-vet 一支迁进 `hook pre-commit`）、`gen-rpc.ts` 里给 `server/`、`desktop/` 的分支，直接删掉，不迁（ADR-359 冻结，ADR-378 关卡碰到冻结代码就摘掉）。
   - 不改任何检查的规则和结论。
   - 合并队列不在本规格里重写成新的长期本地队列，跟[规格-合并走PR](规格-合并走PR.md) S3 一起做。
   - `export-public.ts` 和 `public-exclude.txt` 在切换开发主仓库之前沿用旧的，切换后整块删除，不迁（2026-11-19 已删）。
@@ -62,14 +62,14 @@
 | 小关卡 | `check-commit-msg.ts`、`check-conflict-markers.ts`、`check-gofmt.ts`（必须查暂存区内容）、`check-ui-skill.ts` | 各自的例外规则 |
 | 挑包和分片 | `go-affected.ts`、`go-shard.ts`、`nightly-record.ts`、`go-test-times.ts` | 直接导入方、穿透没有测试的包、根包例外、archcheck；分片退出码聚合 |
 | 下载和素材 | `fetch-tools.ts`、`fetch-ort.ts`、`lib/zip.ts`、`lib/tgz.ts`、`gen-mingcute.ts`、`update-twemoji.ts` | 固定摘要、不取最新；解包拒绝越界路径；许可文件 |
-| 其他 | `report-notice.ts`、`dsh-ask.ts`、`dsh-readonly.yml`（原样留） | 通知出错不挡发消息；dsh 默认只读 |
+| 其他 | `report-notice.ts`（已迁，`sumika-dev notice`）、`dsh-ask.ts`、`dsh-readonly.yml`（原样留） | 通知出错不挡发消息；dsh 默认只读 |
 | 测试 | 各 `*.test.ts`、`test/*.test.ts` | 跟被测工具一起迁成 Go 测试，临时目录用 `t.TempDir()` |
 
 ## 重新设计
 
 | 文件 | 为什么不能照搬 | 做法 |
 |---|---|---|
-| `go-verify.ts`、`server-verify.ts`、`precommit-fast.ts`、`pre-push.ts` | 里面混着冻结 Bun 的检查；执行器指纹写死了 TS 和 PS1 路径 | 只留 Go 的部分，指纹改成新路径；多 ref、删除 ref、新分支、记录复用的语义不变 |
+| `go-verify.ts`、`server-verify.ts`、`pre-push.ts` | 里面混着冻结 Bun 的检查；执行器指纹写死了 TS 和 PS1 路径 | 只留 Go 的部分，指纹改成新路径；多 ref、删除 ref、新分支、记录复用的语义不变 |
 | `run-low.ps1` + `slot.ts` | PowerShell 里内嵌 C# 调 Win32；`slot.ts` 转了一手，参数不能带空格 | 合成 `sumika-dev run`，用 `golang.org/x/sys/windows` 做命名 Mutex、Job Object、优先级、内存上限。过渡期锁名不变（`run-low.ps1:100`），新旧工具共用同一套名额。Mutex 要固定在一个系统线程上（`runtime.LockOSThread`） |
 | `gen-rpc.ts` | 一半是给冻结的 `server/` 生成 TS | 只留 Go 生成和 `--check` |
 | `nightly.ts`、`merge-queue.ts` | nightly 反向 import 队列；队列要跟着合并走 PR 变 | 先抽出共用的 git、锁、记录、worktree 操作，nightly 先迁；队列跟[规格-合并走PR](规格-合并走PR.md) S3 一起做 |

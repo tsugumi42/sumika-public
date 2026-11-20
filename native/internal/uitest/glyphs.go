@@ -3,6 +3,7 @@ package uitest
 import (
 	"image"
 	"runtime"
+	"sync"
 
 	"github.com/egoist/mygo/ui"
 )
@@ -24,12 +25,21 @@ type skipper interface {
 // 两个不同的字画出一样的图，说明画的是同一个缺字符号。
 func RequireGlyphs(t skipper) {
 	t.Helper()
-	a, b := glyphImage("汉"), glyphImage("永")
-	if hasInk(a) && hasInk(b) && !sameImage(a, b) {
+	// 一台机器的结果不会变，一个进程只探一次：每个 Tester 都带一套原生字体、mygo 没有释放接口，每次调用开两个就漏两套
+	glyphsOnce.Do(func() {
+		a, b := glyphImage("汉"), glyphImage("永")
+		glyphsDrawn = hasInk(a) && hasInk(b) && !sameImage(a, b)
+	})
+	if glyphsDrawn {
 		return
 	}
 	t.Skip("原因：这台机器画不出中文字（公开仓库不带字体文件，系统里也没有中文字体），像素和布局的量不出来；Windows 一格有微软雅黑，覆盖这条测试")
 }
+
+var (
+	glyphsOnce  sync.Once
+	glyphsDrawn bool
+)
 
 func glyphImage(text string) *image.RGBA {
 	tt := ui.NewTester(func(c *ui.Context) {
