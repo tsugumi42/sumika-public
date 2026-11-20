@@ -21,6 +21,7 @@ import (
 	"sumika-native/internal/rpcclient"
 	"sumika-native/internal/rpcwire"
 	"sumika-native/internal/store"
+	"sumika-native/internal/testutil/leftover"
 )
 
 func refuseDial(context.Context, string, string) (net.Conn, error) {
@@ -30,7 +31,8 @@ func refuseDial(context.Context, string, string) (net.Conn, error) {
 // hostFixture 用真实迁移建临时 Go 库；配置里一个编造的小号没写协议端地址，receive 一定开不了。
 func hostFixture(t *testing.T) backend.Options {
 	t.Helper()
-	data := filepath.Join(t.TempDir(), "宿主 #%&")
+	// 用 leftover.Dir：CI 整套 11-20 这里红过一次“目录不是空的”（TestCtlReceiveStartWithoutAccount），删不掉时打出剩下的文件和协程栈
+	data := filepath.Join(leftover.Dir(t), "宿主 #%&")
 	p, err := paths.Init(data)
 	if err != nil {
 		t.Fatal(err)
