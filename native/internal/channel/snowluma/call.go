@@ -199,11 +199,20 @@ func (a *Adapter) callFor(ctx context.Context, l *live, action string, params an
 		// 大帧（十几 MB 的图）写到协议端、等它传到 QQ 要比 10 秒久：写入不能被 10 秒的计时器掐断（coder/websocket 写入被取消会关掉整条连接）
 		extend(limit + extra)
 	}
+	// 诊断（2026-11-20，待办第八节“CI 偶发红的遗留”①）：CI 上撤回补发那批红时，适配器自己先关了连接、前面没有一行说是谁关的。
+	// coder/websocket 写帧途中 ctx 结束会顺手关掉整条连接（write.go 的 setupWriteTimeout），这里把写失败和写得慢都记下来；查清后再定改法
+	start := time.Now()
 	if err := l.c.Write(ctx, body); err != nil {
 		if ctx.Err() != nil {
 			err = context.Cause(ctx)
+			a.warnf("写 %s 帧（%d 字节）用了 %v 被打断，库会顺手关掉这条连接: %s", action, len(body), time.Since(start).Round(time.Millisecond), a.safeError(err))
+		} else {
+			a.warnf("写 %s 帧（%d 字节）失败，用了 %v: %s", action, len(body), time.Since(start).Round(time.Millisecond), a.safeError(err))
 		}
 		return a.complete(echo, ch, true, err)
+	}
+	if d := time.Since(start); d > time.Second {
+		a.logf("写 %s 帧（%d 字节）用了 %v", action, len(body), d.Round(time.Millisecond))
 	}
 	select {
 	case res := <-ch:

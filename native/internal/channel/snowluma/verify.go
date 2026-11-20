@@ -89,6 +89,7 @@ func (a *Adapter) verify(ctx context.Context, l *live, sid uint64) {
 	if err != nil || !wrote || !ok || !actionOK(frame) {
 		// 进入 Write 后即使报错也可能已发；没有能用的回包就关掉，走掉线重连。
 		if wrote && ctx.Err() == nil && a.sessionAlive(sid) {
+			a.warnf("核验查登录号没拿到能用的回包，关掉连接重连: %s", a.closeWhy(err, frame, ok))
 			l.c.Close()
 		}
 		return
@@ -125,6 +126,7 @@ func (a *Adapter) watchStatus(ctx context.Context, l *live, sid uint64) {
 		}
 		if err != nil || !wrote || !actionOK(frame) {
 			if wrote && ctx.Err() == nil && a.sessionAlive(sid) {
+				a.warnf("核验查状态没拿到能用的回包，关掉连接重连: %s", a.closeWhy(err, frame, true))
 				l.c.Close()
 			}
 			return
@@ -444,4 +446,17 @@ func decimalField(raw json.RawMessage) (string, bool) {
 		return "", false
 	}
 	return decimalID(s)
+}
+
+// closeWhy 是核验关连接前记进日志的原因（诊断用，2026-11-20）：出错、没回包、回包里没有要的字段、回包报失败
+func (a *Adapter) closeWhy(err error, frame []byte, ok bool) string {
+	switch {
+	case err != nil:
+		return a.safeError(err)
+	case frame == nil:
+		return "没有回包"
+	case !ok:
+		return "回包里没有登录号"
+	}
+	return "回包报失败"
 }
