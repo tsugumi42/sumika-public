@@ -38,8 +38,10 @@
 2. `gh pr create`，标题照提交标题规矩写行为，正文写这一步的验收和改坏检查结果；高风险步骤把复核结论贴进 PR 正文。
 3. 主会话用桌面应用把 PR 绑到会话（`bind_pr`），CI 的结果以事件推过来，不轮询。
 4. 本机不跑合并验证（ADR-398，取代原来的“本机检查写 `local-verify` 状态”）。`bun scripts/merge-queue.ts add <分支>` 只负责排队和合并，不在本机跑 go-verify。需要字体、ffmpeg、中文 pwsh 的测试由每日整套覆盖，不挡合并。
-5. 合并：队列看到 GitHub 两套检查都绿，执行 `gh pr merge --merge --delete-branch`，合并提交说明写 CI 的结论（两条检查各自的结果和运行链接）。GitHub 检查还没出结果时，该条标“等 GitHub 检查”，留在队首。
-6. 合并后本机 `git pull --ff-only` 更新 main；推送钩子不再需要（main 只能经 PR 改）。
+5. 合并：队列（`bun scripts/merge-queue.ts run`）看到分支保护里的必过检查都绿，执行 `gh pr merge --merge --delete-branch --match-head-commit <判断时的 PR 头>`，合并提交说明写 CI 的结论（每条检查的结果和运行链接，不挡合并的也写）。必过检查的名单每次从分支保护读（2026-11-19 只有 `test (windows-latest)`，Linux 那格修完加进分支保护，队列不用改）；读不到或名单是空的不合。只有 SUCCESS 算绿，同名检查按最新一次算。GitHub 检查还没出结果时，该条标“等 GitHub 检查”，留在队首，`run` 以退出码 3 结束；检查出结果时 PR 绑会话的事件推来，再跑一次 `run`（2026-11-19 S3 做完）。
+   - PR 落后 main（分支保护要求分支是最新的，前一条合完后面的都会落后）：队列替它点“更新分支”（`gh pr update-branch`），等检查重跑。
+   - 必过检查红、PR 已关、和 main 冲突、找不到 PR：出队记红。本地分支有没推上去的提交：留在队首，等推了再合。
+6. 合并后队列把本机 main 快进到远端（只快进：本机 main 有远端没有的提交、检出 main 的工作区有没提交的改动时不动，在结果里写原因）；推送钩子不再需要（main 只能经 PR 改）。
 
 ## 三、切换开发主仓库（先问主人）
 

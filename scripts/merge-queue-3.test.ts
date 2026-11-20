@@ -1,53 +1,75 @@
-import { afterAll, beforeAll, expect, setDefaultTimeout, test } from 'bun:test'
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { expect, test } from 'bun:test'
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { acquireRunner, addEntry, conclusionOf, git, loadState, makeCtx, mutate, processHead, removeEntry, runnerAlive, runQueue, saveState, statusText, type Ctx, type Verify } from './merge-queue'
-import { cleanEnv, green, mainSha, mkBranch, mkRepo, quiet, root, sh, useQueueTestEnv } from './merge-queue.testlib'
+import { acquireRunner, addEntry, loadState, mutate, processHead, removeEntry, repoOf, runQueue, saveState } from './merge-queue'
+import { FakeHub, cleanEnv, mkBranch, mkRepo, mkRepoWithRemote, quiet, root, sh, useQueueTestEnv } from './merge-queue.testlib'
 
 useQueueTestEnv()
 
-// 合并队列的测试（第 3 份，共三份；共用的准备在 merge-queue.testlib.ts）
+// 合并队列的测试（第 3 份，共三份）：排队、状态文件、锁、命令行
 
-test('主工作区有没提交的改动：不快进、留在队首；干净后接着快进，不重验', async () => {
+test('add 的拒绝：main、不存在的分支、重复；remove 不删正在跑的', () => {
   const c = mkRepo()
   mkBranch(c, 'a', 'a.txt', 'a\n')
-  mkBranch(c, 'b', 'b.txt', 'b\n')
-  addEntry(c, 'a'); addEntry(c, 'b')
-  writeFileSync(join(c.mainDir, 'base.txt'), '没提交的改动\n')
-  const before = mainSha(c)
-  let calls = 0
-  const verify: Verify = (x) => { calls++; return green(x) }
-  expect(await runQueue(c, { ...quiet, verify })).toBe('blocked')
-  expect(mainSha(c)).toBe(before)
-  expect(readFileSync(join(c.mainDir, 'base.txt'), 'utf8')).toBe('没提交的改动\n')   // 没碰用户的改动
-  let s = loadState(c.statePath)
-  expect(s.queue.map((e) => e.branch)).toEqual(['a', 'b'])   // a 还在队首，b 不抢先
-  expect(s.queue[0].waiting).toContain('等主工作区干净')
-  expect(s.results).toEqual([])
-  expect(statusText(c)).toContain('等主工作区干净')
-  // 未跟踪文件不算脏
-  sh(c.mainDir, 'checkout', '--', 'base.txt')
-  writeFileSync(join(c.mainDir, 'untracked.txt'), 'u\n')
-  expect(await runQueue(c, { ...quiet, verify })).toBe('empty')
-  expect(calls).toBe(2)   // a 只验了一次（第二轮直接用上一轮验好的），b 验一次
-  s = loadState(c.statePath)
-  expect(s.results.map((r) => [r.branch, r.ok])).toEqual([['a', true], ['b', true]])
-  expect(existsSync(join(c.mainDir, 'b.txt'))).toBe(true)
+  expect(() => addEntry(c, 'main')).toThrow()
+  expect(() => addEntry(c, 'nope')).toThrow('没有这个本地分支')
+  expect(addEntry(c, 'a').position).toBe(1)
+  expect(() => addEntry(c, 'a')).toThrow('已经在队列里')
+  mutate(c, (s) => { s.running = { id: s.queue[0].id, branch: 'a', pid: process.pid, since: new Date().toISOString(), phase: '看 PR' } })
+  expect(() => removeEntry(c, 'a')).toThrow('正在跑')
+  mutate(c, (s) => { s.running = null })
+  removeEntry(c, 'a')
+  expect(loadState(c.statePath).queue).toEqual([])
+  expect(() => removeEntry(c, 'a')).toThrow('队列里没有')
 })
 
-test('main 一直在变：重合三轮后记红，不动 main 也不无限转', async () => {
+test('处理中途本地分支被删：记红不卡队列', async () => {
+  const c = mkRepoWithRemote()
+  const hub = new FakeHub(c)
+  mkBranch(c, 'a', 'a.txt', 'a\n')
+  hub.open('a')
+  addEntry(c, 'a')
+  sh(c.mainDir, 'branch', '-D', 'a')
+  expect(await processHead(c, loadState(c.statePath).queue[0], { ...quiet, hub })).toBe('done')
+  expect(loadState(c.statePath).results[0].reason).toContain('不存在')
+  expect(hub.merges).toEqual([])
+})
+
+test('状态文件原子写：写到一半失败，原文件完好、没有临时文件残留', () => {
   const c = mkRepo()
   mkBranch(c, 'a', 'a.txt', 'a\n')
   addEntry(c, 'a')
-  let calls = 0
-  const verify: Verify = (x) => { sh(c.mainDir, 'commit', '--allow-empty', '-qm', `抢 ${++calls}`); return green(x) }
-  await runQueue(c, { ...quiet, verify })
-  expect(calls).toBe(3)
-  const r = loadState(c.statePath).results[0]
-  expect(r.ok).toBe(false)
-  expect(r.reason).toContain('一直在变')
-  expect(existsSync(join(c.mainDir, 'a.txt'))).toBe(false)
+  const before = readFileSync(c.statePath, 'utf8')
+  const crash = { write: (p: string, body: string) => { writeFileSync(p, body.slice(0, body.length / 2)); throw new Error('写到一半断电') } }
+  expect(() => saveState(c.statePath, { queue: [], running: null, results: [] }, crash)).toThrow('断电')
+  expect(readFileSync(c.statePath, 'utf8')).toBe(before)
+  expect(JSON.parse(before).queue[0].branch).toBe('a')
+  expect(readdirSync(c.common).filter((f) => f.endsWith('.tmp'))).toEqual([])
+  mutate(c, (s) => { s.results.push({ branch: 'q', title: 't', at: 'x', ok: true, reason: '', seconds: 1 }) })
+  expect(JSON.parse(readFileSync(c.statePath, 'utf8')).results.length).toBe(1)
+  expect(readdirSync(c.common).filter((f) => f.endsWith('.tmp') || f.endsWith('.lock'))).toEqual([])
+  writeFileSync(c.statePath, '{半份')
+  expect(loadState(c.statePath).queue).toEqual([])
+})
+
+test('两个执行者互斥：已有活着的执行者时第二个起不来，释放或进程没了以后能接手', async () => {
+  const c = mkRepo()
+  const first = acquireRunner(c)
+  expect('release' in first).toBe(true)
+  const second = acquireRunner(c)
+  expect('pid' in second && second.pid).toBe(process.pid)
+  const p = Bun.spawnSync([process.execPath, join(import.meta.dir, 'merge-queue.ts'), 'run'], { cwd: c.mainDir, env: cleanEnv() })
+  expect(p.exitCode).toBe(4)
+  expect(await runQueue(c, quiet)).toBe('busy')
+  if ('release' in first) first.release()
+  const third = acquireRunner(c)
+  expect('release' in third).toBe(true)
+  if ('release' in third) third.release()
+  const dead = Bun.spawnSync([process.execPath, '-e', 'process.stdout.write(String(process.pid))'], { env: cleanEnv() })
+  writeFileSync(join(c.common, 'sumika-merge-queue.runner'), JSON.stringify({ pid: Number(dead.stdout.toString()), at: 'x' }))
+  const fourth = acquireRunner(c)
+  expect('release' in fourth).toBe(true)
+  if ('release' in fourth) fourth.release()
 })
 
 test('几个进程同时 add 不丢条目（读改写有锁）', async () => {
@@ -66,37 +88,21 @@ test('几个进程同时 add 不丢条目（读改写有锁）', async () => {
   expect(readdirSync(c.common).filter((f) => f.endsWith('.tmp') || f.endsWith('.lock'))).toEqual([])
 })
 
-test('main 没在主工作区检出时用带旧值的 update-ref 推进，且 main 被抢先动了就不覆盖', async () => {
+test('run --watch 不再有：退出码 2，说明改成收事件再跑', () => {
   const c = mkRepo()
-  mkBranch(c, 'a', 'a.txt', 'a\n')
-  sh(c.mainDir, 'checkout', '-q', '-b', 'other')
-  addEntry(c, 'a')
-  await runQueue(c, { ...quiet, verify: green })
-  expect(sh(c.mainDir, 'rev-parse', 'main^2')).toBe(sh(c.mainDir, 'rev-parse', 'a'))
-  expect(existsSync(join(c.mainDir, 'a.txt'))).toBe(false)   // 主工作区在 other 上，没被动
+  const p = Bun.spawnSync([process.execPath, join(import.meta.dir, 'merge-queue.ts'), 'run', '--watch'], { cwd: c.mainDir, env: cleanEnv() })
+  expect(p.exitCode).toBe(2)
+  expect(p.stdout.toString()).toContain('不再有 --watch')
 })
 
-test('分支已经在 main 里：记绿、没有要合的', async () => {
+test('repoOf：从远端地址推出 owner/name，两种写法都认；不是 GitHub 的报错', () => {
   const c = mkRepo()
-  mkBranch(c, 'a', 'a.txt', 'a\n')
-  sh(c.mainDir, 'merge', '-q', '--ff-only', 'a')
-  addEntry(c, 'a')
-  const before = mainSha(c)
-  await runQueue(c, { ...quiet, verify: () => { throw new Error('不该验证') } })
-  expect(mainSha(c)).toBe(before)
-  expect(loadState(c.statePath).results[0].reason).toContain('已经在 main 里')
-})
-
-test('runnerAlive：执行者锁文件里的 pid 活着才算有执行者（常驻执行者空闲时 running 是空的）', () => {
-  const d = mkdtempSync(join(tmpdir(), 'mq-runner-'))
-  try {
-    const ctx = { statePath: join(d, 'sumika-merge-queue.json') } as Ctx
-    expect(runnerAlive(ctx)).toBe(false)                                         // 没有锁文件
-    writeFileSync(join(d, 'sumika-merge-queue.runner'), JSON.stringify({ pid: process.pid }))
-    expect(runnerAlive(ctx)).toBe(true)                                          // 自己的进程当然活着
-    writeFileSync(join(d, 'sumika-merge-queue.runner'), JSON.stringify({ pid: 2147483646 }))
-    expect(runnerAlive(ctx)).toBe(false)                                         // 早没了的进程
-    writeFileSync(join(d, 'sumika-merge-queue.runner'), '写了一半')
-    expect(runnerAlive(ctx)).toBe(false)
-  } finally { rmSync(d, { recursive: true, force: true }) }
+  sh(c.mainDir, 'remote', 'add', 'origin', 'https://github.com/tsugumi42/sumika-public.git')
+  expect(repoOf(c)).toBe('tsugumi42/sumika-public')
+  sh(c.mainDir, 'remote', 'set-url', 'origin', 'git@github.com:tsugumi42/sumika-public')
+  expect(repoOf(c)).toBe('tsugumi42/sumika-public')
+  expect(repoOf({ ...c, repo: 'a/b' })).toBe('a/b')
+  sh(c.mainDir, 'remote', 'set-url', 'origin', 'D:\\别处\\repo.git')
+  expect(() => repoOf(c)).toThrow('不是 GitHub 仓库')
+  expect(() => repoOf({ ...c, remote: 'nope' })).toThrow('没有这个远端')
 })

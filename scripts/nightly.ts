@@ -104,7 +104,7 @@ export function makeNightlyCtx(cwd = process.cwd(), over: Partial<NightlyCtx> = 
     common: q.common,
     mainDir: q.mainDir,
     wt: process.env.SUMIKA_NIGHTLY_WORKTREE || join(q.mainDir, '.claude', 'worktrees', 'nightly'),
-    outDir: q.outDir,
+    outDir: join(q.mainDir, 'data', 'dev', 'test-runs'),
     recordPath: process.env.SUMIKA_NIGHTLY_RECORD || join(q.common, 'sumika-nightly.json'),
     queuePath: q.statePath,
     ...over,
